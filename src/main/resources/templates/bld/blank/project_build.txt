@@ -1,0 +1,26 @@
+package {{v package/}};
+
+import rife.bld.Project;
+
+import java.util.List;
+
+import static rife.bld.dependencies.Repository.*;
+import static rife.bld.dependencies.Scope.*;
+
+public class {{v projectBuild/}} extends Project {
+    public {{v projectBuild/}}() {
+        pkg = "{{v package/}}";
+        name = "{{v project/}}";
+        mainClass = "{{v package/}}.{{v projectMain/}}";
+        version = version(0,1,0);
+
+        downloadSources = true;
+        repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
+{{v scopes}}{{/v}}{{b scope}}        scope({{v name/}}){{v dependencies}}{{/v}};
+{{b dependency}}
+            .include(dependency("{{v groupId/}}", "{{v artifactId/}}", version({{v version/}}))){{/b}}{{/b}}    }
+
+    public static void main(String[] args) {
+        new {{v projectBuild/}}().start(args);
+    }
+}

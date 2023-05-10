@@ -1,0 +1,16 @@
+{
+    "java.project.sourcePaths": [
+        "src/main/java",
+        "src/main/resources",
+        "src/main/webapp",
+        "src/test/java",
+        "src/bld/java"
+    ],
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.project.referencedLibraries": [
+        "lib/compile/*.jar",
+        "lib/runtime/*.jar",
+        "lib/standalone/*.jar",
+        "lib/test/*.jar"
+    ]
+}

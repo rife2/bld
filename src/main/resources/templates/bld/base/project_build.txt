@@ -1,0 +1,20 @@
+package {{v package/}};
+
+import rife.bld.BaseProject;
+
+import java.util.List;
+
+public class {{v projectBuild/}} extends BaseProject {
+    public {{v projectBuild/}}() {
+        pkg = "{{v package/}}";
+        name = "{{v project/}}";
+        mainClass = "{{v package/}}.{{v projectMain/}}";
+        version = version(0,1,0);
+
+        testOperation().mainClass("{{v package/}}.{{v projectTest/}}");
+    }
+
+    public static void main(String[] args) {
+        new {{v projectBuild/}}().start(args);
+    }
+}

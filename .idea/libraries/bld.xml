@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="bld">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/lib/bld" />
+      <root url="jar://$USER_HOME$/.rife2/dist/rife2-1.6.3.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.rife2/dist/rife2-1.6.3-sources.jar!/" />
+    </SOURCES>
+    <excluded>
+      <root url="jar://$PROJECT_DIR$/lib/bld/bld-wrapper.jar!/" />
+    </excluded>
+    <jarDirectory url="file://$PROJECT_DIR$/lib/bld" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/bld" recursive="false" type="SOURCES" />
+  </library>
+</component>

@@ -1,0 +1,21 @@
+:root {
+    /* fonts */
+    --main-font: sans-serif;
+
+    /* font sizes */
+    --main-font-size: 18px;
+
+    /* colors */
+    --main-background-color: #0d0d0d;
+    --main-text-color: #d0d0d0;
+
+    /* margins and padding */
+    --content-padding: 2em;
+}
+body {
+    background: var(--main-background-color);
+    font-family: var(--main-font);
+    font-style: var(--main-font-size);
+    color: var(--main-text-color);
+    padding: var(--content-padding);
+}

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId><!--v groupId--><!--/v--></groupId>
+  <artifactId><!--v artifactId--><!--/v--></artifactId>
+  <version><!--v version--><!--/v--></version>
+  <name><!--v name--><!--/v--></name>
+  <description><!--v description--><!--/v--></description>
+  <url><!--v url--><!--/v--></url>
+
+  <!--v licenses-tag--><!--/v-->
+  <!--b licenses-tag-->
+  <licenses>
+    <!--v licenses--><!--/v-->
+    <!--b license-->
+    <license>
+      <name><!--v license-name--><!--/v--></name>
+      <url><!--v license-url--><!--/v--></url>
+    </license>
+    <!--/b-->
+  </licenses>
+  <!--/b-->
+
+  <!--v dependencies-tag--><!--/v-->
+  <!--b dependencies-tag-->
+  <dependencies>
+    <!--v dependencies--><!--/v-->
+    <!--b dependency-->
+    <dependency>
+      <groupId><!--v dependency-groupId--><!--/v--></groupId>
+      <artifactId><!--v dependency-artifactId--><!--/v--></artifactId>
+      <!--v dependency-version-tag--><!--/v-->
+      <!--b dependency-version-tag--><version><!--v dependency-version--><!--/v--></version><!--/b-->
+      <!--v dependency-type-tag--><!--/v-->
+      <!--b dependency-type-tag--><type><!--v dependency-type--><!--/v--></type><!--/b-->
+      <!--v dependency-classifier-tag--><!--/v-->
+      <!--b dependency-classifier-tag--><classifier><!--v dependency-classifier--><!--/v--></classifier><!--/b-->
+      <scope><!--v dependency-scope--><!--/v--></scope>
+      <!--v dependency-exclusions-tag--><!--/v-->
+      <!--b dependency-exclusions-tag-->
+      <exclusions>
+        <!--v dependency-exclusions--><!--/v-->
+        <!--b dependency-exclusion-->
+        <exclusion>
+          <groupId><!--v exclusion-groupId--><!--/v--></groupId>
+          <artifactId><!--v exclusion-artifactId--><!--/v--></artifactId>
+        </exclusion>
+        <!--/b-->
+      </exclusions>
+      <!--/b-->
+    </dependency>
+    <!--/b-->
+  </dependencies>
+  <!--/b-->
+
+  <!--v developers-tag--><!--/v-->
+  <!--b developers-tag-->
+  <developers>
+    <!--v developers--><!--/v-->
+    <!--b developer-->
+    <developer>
+      <id><!--v developer-id--><!--/v--></id>
+      <name><!--v developer-name--><!--/v--></name>
+      <email><!--v developer-email--><!--/v--></email>
+      <url><!--v developer-url--><!--/v--></url>
+    </developer>
+    <!--/b-->
+  </developers>
+  <!--/b-->
+
+  <!--v scm-tag--><!--/v-->
+  <!--b scm-tag-->
+  <scm>
+    <connection><!--v scm-connection--><!--/v--></connection>
+    <developerConnection><!--v scm-developerConnection--><!--/v--></developerConnection>
+    <url><!--v scm-url--><!--/v--></url>
+  </scm>
+  <!--/b-->
+</project>

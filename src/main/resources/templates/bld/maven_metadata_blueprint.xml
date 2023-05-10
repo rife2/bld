@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId><!--v groupId--><!--/v--></groupId>
+  <artifactId><!--v artifactId--><!--/v--></artifactId>
+  <!--v mainVersion-tag--><!--/v-->
+  <!--b mainVersion-tag-->
+  <version><!--v mainVersion--><!--/v--></version>
+  <!--/b-->
+
+  <versioning>
+    <!--v versionLatest-tag--><!--/v-->
+    <!--b versionLatest-tag-->
+    <latest><!--v latestVersion--><!--/v--></latest>
+    <release><!--v releaseVersion--><!--/v--></release>
+    <!--/b-->
+
+    <!--v versions-tag--><!--/v-->
+    <!--b versions-tag-->
+    <versions>
+      <!--v versions--><!--/v-->
+      <!--b version-->
+      <version><!--v version--><!--/v--></version>
+      <!--/b-->
+    </versions>
+    <!--/b-->
+
+    <!--v snapshot-tag--><!--/v-->
+    <!--b snapshot-tag-->
+    <snapshot>
+      <timestamp><!--v snapshot-timestamp--><!--/v--></timestamp>
+      <buildNumber><!--v snapshot-buildNumber--><!--/v--></buildNumber>
+    </snapshot>
+    <!--/b-->
+    <!--b snapshot-local-tag-->
+    <snapshot>
+      <localCopy>true</localCopy>
+    </snapshot>
+    <!--/b-->
+
+    <!--v lastUpdated-tag--><!--/v-->
+    <!--b lastUpdated-tag-->
+    <lastUpdated><!--v lastUpdated--><!--/v--></lastUpdated>
+    <!--/b-->
+
+    <!--v snapshotVersions-tag--><!--/v-->
+    <!--b snapshotVersions-tag-->
+    <snapshotVersions>
+      <!--v snapshotVersions--><!--/v-->
+      <!--b snapshotVersion-->
+      <snapshotVersion>
+        <!--v snapshotVersionClassifier-tag--><!--/v-->
+        <!--b snapshotVersionClassifier-tag-->
+        <classifier><!--v snapshotVersion-classifier--><!--/v--></classifier>
+        <!--/b-->
+        <extension><!--v snapshotVersion-extension--><!--/v--></extension>
+        <value><!--v snapshotVersion-value--><!--/v--></value>
+        <updated><!--v snapshotVersion-updated--><!--/v--></updated>
+      </snapshotVersion>
+      <!--/b-->
+    </snapshotVersions>
+    <!--/b-->
+  </versioning>
+</metadata>

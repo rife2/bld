@@ -1,0 +1,11 @@
+package {{v package/}};
+
+import rife.engine.Server;
+
+public class {{v projectMainUber/}} extends {{v projectMain/}} {
+    public static void main(String[] args) {
+        new Server()
+            .staticUberJarResourceBase("webapp")
+            .start(new {{v projectMainUber/}}());
+    }
+}

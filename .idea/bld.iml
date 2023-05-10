@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <output url="file://$MODULE_DIR$/build/bld" />
+    <output-test url="file://$MODULE_DIR$/build/bld" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/src/bld">
+      <sourceFolder url="file://$MODULE_DIR$/src/bld/java" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="bld" level="project" />
+  </component>
+</module>

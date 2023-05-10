@@ -1,0 +1,31 @@
+package {{v package/}};
+
+import rife.bld.WebProject;
+
+import java.util.List;
+
+import static rife.bld.dependencies.Repository.*;
+import static rife.bld.dependencies.Scope.*;
+import static rife.bld.operations.TemplateType.*;
+
+public class {{v projectBuild/}} extends WebProject {
+    public {{v projectBuild/}}() {
+        pkg = "{{v package/}}";
+        name = "{{v project/}}";
+        mainClass = "{{v package/}}.{{v projectMain/}}";
+        uberJarMainClass = "{{v package/}}.{{v projectMainUber/}}";
+        version = version(0,1,0);
+
+        downloadSources = true;
+        repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
+{{v scopes}}{{/v}}{{b scope}}        scope({{v name/}}){{v dependencies}}{{/v}};
+{{b dependency}}
+            .include(dependency("{{v groupId/}}", "{{v artifactId/}}", version({{v version/}}))){{/b}}{{/b}}
+        precompileOperation()
+            .templateTypes(HTML);
+    }
+
+    public static void main(String[] args) {
+        new {{v projectBuild/}}().start(args);
+    }
+}

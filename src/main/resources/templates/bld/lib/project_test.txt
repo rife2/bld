@@ -1,0 +1,15 @@
+package {{v package/}};
+
+public class {{v projectTest/}} {
+    void verifyHello() {
+        if (!"Hello World!".equals(new {{v projectMain/}}().getMessage())) {
+            throw new AssertionError();
+        } else {
+            System.out.println("Succeeded");
+        }
+    }
+
+    public static void main(String[] args) {
+        new {{v projectTest/}}().verifyHello();
+    }
+}

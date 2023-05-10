@@ -1,0 +1,12 @@
+package {{v package/}};
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class {{v projectTest/}} {
+    @Test
+    void verifyHello() {
+        assertEquals("Hello World!", new {{v projectMain/}}().getMessage());
+    }
+}
