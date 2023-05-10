@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 /**
  * Upgrades the project's bld wrapper to the version of the running
- * RIFE2 framework.
+ * bld tool.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
  * @since 1.5

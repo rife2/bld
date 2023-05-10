@@ -5,7 +5,6 @@
 package rife.bld.operations;
 
 import rife.bld.BaseProject;
-import rife.bld.Project;
 import rife.template.TemplateDeployer;
 import rife.template.TemplateFactory;
 import rife.tools.FileUtils;

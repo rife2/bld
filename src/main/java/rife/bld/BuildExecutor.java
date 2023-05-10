@@ -4,7 +4,6 @@
  */
 package rife.bld;
 
-import rife.bld.dependencies.DependencyResolver;
 import rife.bld.dependencies.Repository;
 import rife.bld.help.HelpHelp;
 import rife.bld.operations.HelpOperation;
@@ -29,6 +28,7 @@ import java.util.regex.Pattern;
  * @since 1.5
  */
 public class BuildExecutor {
+    public static final File BLD_USER_DIR = new File(System.getProperty("user.home"), ".bld");
     public static final File RIFE2_USER_DIR = new File(System.getProperty("user.home"), ".rife2");
     public static final String BLD_PROPERTIES = "bld.properties";
     public static final String LOCAL_PROPERTIES = "local.properties";
@@ -83,7 +83,10 @@ public class BuildExecutor {
         HierarchicalProperties bld_properties = null;
         HierarchicalProperties local_properties = null;
 
-        var bld_properties_file = new File(RIFE2_USER_DIR, BLD_PROPERTIES);
+        var bld_properties_file = new File(BLD_USER_DIR, BLD_PROPERTIES);
+        if (!bld_properties_file.exists() || !bld_properties_file.isFile() || !bld_properties_file.canRead()) {
+            bld_properties_file = new File(RIFE2_USER_DIR, BLD_PROPERTIES);
+        }
         if (bld_properties_file.exists() && bld_properties_file.isFile() && bld_properties_file.canRead()) {
             try {
                 var bld = new Properties();

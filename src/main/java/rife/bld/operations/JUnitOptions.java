@@ -79,7 +79,7 @@ public class JUnitOptions extends ArrayList<String> {
     }
 
     /**
-     * Configures the default options that RIFE2 uses when no
+     * Configures the default options that bld uses when no
      * options have been explicitly set.
      *
      * @return this list of options

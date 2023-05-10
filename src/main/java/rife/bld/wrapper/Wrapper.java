@@ -22,7 +22,7 @@ import static rife.tools.FileUtils.JAR_FILE_PATTERN;
 import static rife.tools.FileUtils.JAVA_FILE_PATTERN;
 
 /**
- * Wrapper implementation for the build system that ensures the RIFE2
+ * Wrapper implementation for the build system that ensures the bld
  * jar gets downloaded locally and that the classpath for running the
  * build logic is properly setup.
  *
@@ -31,23 +31,23 @@ import static rife.tools.FileUtils.JAVA_FILE_PATTERN;
  */
 public class Wrapper {
     static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2/";
-    static final String DOWNLOAD_LOCATION = MAVEN_CENTRAL + "com/uwyn/rife2/rife2/${version}/";
-    static final String RIFE2_FILENAME = "rife2-${version}.jar";
-    static final String RIFE2_SOURCES_FILENAME = "rife2-${version}-sources.jar";
+    static final String DOWNLOAD_LOCATION = MAVEN_CENTRAL + "com/uwyn/rife2/bld/${version}/";
+    static final String BLD_FILENAME = "bld-${version}.jar";
+    static final String BLD_SOURCES_FILENAME = "bld-${version}-sources.jar";
     static final String BLD_VERSION = "BLD_VERSION";
     static final String BLD_BUILD_HASH = "bld-build.hash";
     static final String WRAPPER_PREFIX = "bld-wrapper";
     static final String WRAPPER_PROPERTIES = WRAPPER_PREFIX + ".properties";
     static final String WRAPPER_JAR = WRAPPER_PREFIX + ".jar";
-    static final String PROPERTY_VERSION = "rife2.version";
-    static final String PROPERTY_DOWNLOAD_LOCATION = "rife2.downloadLocation";
+    static final String BLD_PROPERTY_VERSION = "bld.version";
+    static final String BLD_PROPERTY_DOWNLOAD_LOCATION = "bld.downloadLocation";
     static final String PROPERTY_REPOSITORIES = "bld.repositories";
     static final String PROPERTY_EXTENSION_PREFIX = "bld.extension";
     static final String PROPERTY_EXTENSIONS = "bld.extensions";
     static final String PROPERTY_DOWNLOAD_EXTENSION_SOURCES = "bld.downloadExtensionSources";
     static final String PROPERTY_DOWNLOAD_EXTENSION_JAVADOC = "bld.downloadExtensionJavadoc";
-    static final File RIFE2_USER_DIR = new File(System.getProperty("user.home"), ".rife2");
-    static final File DISTRIBUTIONS_DIR = new File(RIFE2_USER_DIR, "dist");
+    static final File BLD_USER_DIR = new File(System.getProperty("user.home"), ".bld");
+    static final File DISTRIBUTIONS_DIR = new File(BLD_USER_DIR, "dist");
 
     private File currentDir_ = new File(System.getProperty("user.dir"));
 
@@ -75,7 +75,7 @@ public class Wrapper {
      * Creates the files required to use the wrapper.
      *
      * @param destinationDirectory the directory to put those files in
-     * @param version              the RIFE2 version they should be using
+     * @param version              the bld version they should be using
      * @throws IOException when an error occurred during the creation of the wrapper files
      * @since 1.5
      */
@@ -87,13 +87,16 @@ public class Wrapper {
 
     private static final Pattern RIFE2_JAR_PATTERN = Pattern.compile("rife2-[^\"/!]+(?<!sources)\\.jar");
     private static final Pattern RIFE2_SOURCES_JAR_PATTERN = Pattern.compile("rife2-[^\"/!]+-sources\\.jar");
-    private static final Pattern PROPERTY_VERSION_PATTERN = Pattern.compile(".*rife2\\.version.*");
+    private static final Pattern RIFE2_PROPERTY_VERSION_PATTERN = Pattern.compile(".*rife2\\.version.*");
+    private static final Pattern BLD_JAR_PATTERN = Pattern.compile("bld-[^\"/!]+(?<!sources)\\.jar");
+    private static final Pattern BLD_SOURCES_JAR_PATTERN = Pattern.compile("bld-[^\"/!]+-sources\\.jar");
+    private static final Pattern BLD_PROPERTY_VERSION_PATTERN = Pattern.compile(".*bld\\.version.*");
 
     /**
      * Upgraded the IDEA bld files that were generated with a previous version.
      *
      * @param destinationDirectory the directory with the IDEA files
-     * @param version              the RIFE2 version they should be using
+     * @param version              the bld version they should be using
      * @throws IOException when an error occurred during the upgrade of the IDEA files
      * @since 1.5.2
      */
@@ -103,8 +106,10 @@ public class Wrapper {
         if (file.exists()) {
             try {
                 var content = FileUtils.readString(file);
-                content = RIFE2_JAR_PATTERN.matcher(content).replaceAll("rife2-" + version + ".jar");
-                content = RIFE2_SOURCES_JAR_PATTERN.matcher(content).replaceAll("rife2-" + version + "-sources.jar");
+                content = BLD_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + ".jar");
+                content = BLD_SOURCES_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + "-sources.jar");
+                content = RIFE2_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + ".jar");
+                content = RIFE2_SOURCES_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + "-sources.jar");
                 FileUtils.writeString(content, file);
             } catch (FileUtilsErrorException e) {
                 throw new IOException(e);
@@ -116,7 +121,7 @@ public class Wrapper {
      * Upgraded the vscode settings files that were generated with a previous version.
      *
      * @param destinationDirectory the directory with the vscode files
-     * @param version              the RIFE2 version they should be using
+     * @param version              the bld version they should be using
      * @throws IOException when an error occurred during the upgrade of the IDEA files
      * @since 1.5.6
      */
@@ -126,7 +131,8 @@ public class Wrapper {
         if (file.exists()) {
             try {
                 var content = FileUtils.readString(file);
-                content = RIFE2_JAR_PATTERN.matcher(content).replaceAll("rife2-" + version + ".jar");
+                content = BLD_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + ".jar");
+                content = RIFE2_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + ".jar");
                 FileUtils.writeString(content, file);
             } catch (FileUtilsErrorException e) {
                 throw new IOException(e);
@@ -140,7 +146,8 @@ public class Wrapper {
         if (file.exists()) {
             try {
                 var contents = FileUtils.readString(file);
-                contents = PROPERTY_VERSION_PATTERN.matcher(contents).replaceAll(PROPERTY_VERSION + "=" + version);
+                contents = BLD_PROPERTY_VERSION_PATTERN.matcher(contents).replaceAll(BLD_PROPERTY_VERSION + "=" + version);
+                contents = RIFE2_PROPERTY_VERSION_PATTERN.matcher(contents).replaceAll(BLD_PROPERTY_VERSION + "=" + version);
                 FileUtils.writeString(contents, file);
             } catch (FileUtilsErrorException e) {
                 throw new IOException(e);
@@ -151,8 +158,8 @@ public class Wrapper {
                 bld.downloadExtensionSources=true
                 bld.extensions=
                 bld.repositories=MAVEN_CENTRAL,RIFE2
-                rife2.downloadLocation=
-                rife2.version=${version}
+                bld.downloadLocation=
+                bld.version=${version}
                 """
                 .replace("${version}", version);
 
@@ -283,9 +290,9 @@ public class Wrapper {
     throws IOException {
         // ensure required properties are available
         wrapperProperties_.put(PROPERTY_REPOSITORIES, MAVEN_CENTRAL);
-        wrapperProperties_.put(PROPERTY_VERSION, version);
+        wrapperProperties_.put(BLD_PROPERTY_VERSION, version);
         if (wrapperProperties_.getProperty(DOWNLOAD_LOCATION) == null) {
-            wrapperProperties_.put(PROPERTY_DOWNLOAD_LOCATION, DOWNLOAD_LOCATION);
+            wrapperProperties_.put(BLD_PROPERTY_DOWNLOAD_LOCATION, DOWNLOAD_LOCATION);
         }
 
         // retrieve properties from possible locations
@@ -328,11 +335,11 @@ public class Wrapper {
 
     private String getWrapperVersion()
     throws IOException {
-        return wrapperProperties_.getProperty(PROPERTY_VERSION, getVersion());
+        return wrapperProperties_.getProperty(BLD_PROPERTY_VERSION, getVersion());
     }
 
     private String getWrapperDownloadLocation() {
-        var location = wrapperProperties_.getProperty(PROPERTY_DOWNLOAD_LOCATION, DOWNLOAD_LOCATION);
+        var location = wrapperProperties_.getProperty(BLD_PROPERTY_DOWNLOAD_LOCATION, DOWNLOAD_LOCATION);
         if (location.trim().isBlank()) {
             return DOWNLOAD_LOCATION;
         }
@@ -349,12 +356,12 @@ public class Wrapper {
         return result.toString();
     }
 
-    private String rife2FileName(String version) {
-        return replaceVersion(RIFE2_FILENAME, version);
+    private String bldFileName(String version) {
+        return replaceVersion(BLD_FILENAME, version);
     }
 
-    private String rife2SourcesFileName(String version) {
-        return replaceVersion(RIFE2_SOURCES_FILENAME, version);
+    private String bldSourcesFileName(String version) {
+        return replaceVersion(BLD_SOURCES_FILENAME, version);
     }
 
     private String replaceVersion(String text, String version) {
@@ -377,12 +384,12 @@ public class Wrapper {
             System.err.println("Failed to retrieve wrapper version number.");
             throw e;
         }
-        var filename = rife2FileName(version);
+        var filename = bldFileName(version);
         var distribution_file = new File(DISTRIBUTIONS_DIR, filename);
         if (!distribution_file.exists()) {
             downloadDistribution(distribution_file, downloadUrl(version, filename));
         }
-        var sources_filename = rife2SourcesFileName(version);
+        var sources_filename = bldSourcesFileName(version);
         var distribution_sources_file = new File(DISTRIBUTIONS_DIR, sources_filename);
         if (!distribution_sources_file.exists()) {
             try {

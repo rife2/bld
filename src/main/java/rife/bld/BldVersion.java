@@ -8,10 +8,10 @@ import rife.resources.ResourceFinderClasspath;
 import rife.resources.exceptions.ResourceFinderErrorException;
 
 /**
- * Singleton class that provides access to the current RIFE2 version as a string.
+ * Singleton class that provides access to the current bld version as a string.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 1.0
+ * @since 1.7
  */
 public class BldVersion {
     private String version_;

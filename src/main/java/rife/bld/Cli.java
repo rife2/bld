@@ -8,8 +8,8 @@ import rife.bld.help.*;
 import rife.bld.operations.*;
 
 /**
- * Implements the RIFE2 CLI build executor that is available when running
- * the RIFE2 jar as an executable jar.
+ * Implements the CLI build executor that is available when running
+ * the bld jar as an executable jar.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
  * @since 1.5

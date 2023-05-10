@@ -155,7 +155,7 @@ public class WrapperExtensionResolver {
         if (!dependencies.isEmpty()) {
             ensurePrintedHeader();
 
-            dependencies.removeIf(dependency -> dependency.baseDependency().equals(new Dependency("com.uwyn.rife2", "rife2")));
+            dependencies.removeIf(dependency -> dependency.baseDependency().equals(new Dependency("com.uwyn.rife2", "bld")));
 
             var additional_classifiers = new String[0];
             if (downloadSources_ || downloadJavadoc_) {

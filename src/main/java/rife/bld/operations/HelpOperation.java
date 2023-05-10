@@ -77,7 +77,7 @@ public class HelpOperation {
         var commands = executor_.buildCommands();
 
         System.err.println("""
-            The RIFE2 CLI provides its features through a series of commands that
+            The bld CLI provides its features through a series of commands that
             perform specific tasks. The help command provides more information about
             the other commands.
                         

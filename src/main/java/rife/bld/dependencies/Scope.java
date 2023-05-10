@@ -6,7 +6,7 @@ package rife.bld.dependencies;
 
 /**
  * Provides all the dependency scopes that are supported by
- * the RIFE2 build system.
+ * the bld build system.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
  * @since 1.5
