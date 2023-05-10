@@ -112,6 +112,7 @@ public class BldBuild extends Project {
             "test.h2");
 
         javadocOperation()
+            .sourceFiles(FileUtils.getJavaFileList(core_src_main_java_directory))
             .excluded(
                 "rife/antlr/",
                 "rife/asm/",
