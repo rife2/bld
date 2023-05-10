@@ -40,6 +40,7 @@ public class Wrapper {
     static final String WRAPPER_PROPERTIES = WRAPPER_PREFIX + ".properties";
     static final String WRAPPER_JAR = WRAPPER_PREFIX + ".jar";
     static final String BLD_PROPERTY_VERSION = "bld.version";
+    static final String RIFE2_PROPERTY_DOWNLOAD_LOCATION = "rife2.downloadLocation";
     static final String BLD_PROPERTY_DOWNLOAD_LOCATION = "bld.downloadLocation";
     static final String PROPERTY_REPOSITORIES = "bld.repositories";
     static final String PROPERTY_EXTENSION_PREFIX = "bld.extension";
@@ -85,11 +86,11 @@ public class Wrapper {
         createWrapperJar(destinationDirectory);
     }
 
-    private static final Pattern RIFE2_JAR_PATTERN = Pattern.compile("rife2-[^\"/!]+(?<!sources)\\.jar");
-    private static final Pattern RIFE2_SOURCES_JAR_PATTERN = Pattern.compile("rife2-[^\"/!]+-sources\\.jar");
+    private static final Pattern RIFE2_JAR_PATTERN = Pattern.compile("/\\.rife2/dist/rife2-[^\"/!]+(?<!sources)\\.jar");
+    private static final Pattern RIFE2_SOURCES_JAR_PATTERN = Pattern.compile("/\\.rife2/dist/rife2-[^\"/!]+-sources\\.jar");
     private static final Pattern RIFE2_PROPERTY_VERSION_PATTERN = Pattern.compile(".*rife2\\.version.*");
-    private static final Pattern BLD_JAR_PATTERN = Pattern.compile("bld-[^\"/!]+(?<!sources)\\.jar");
-    private static final Pattern BLD_SOURCES_JAR_PATTERN = Pattern.compile("bld-[^\"/!]+-sources\\.jar");
+    private static final Pattern BLD_JAR_PATTERN = Pattern.compile("/\\.bld/dist/bld-[^\"/!]+(?<!sources)\\.jar");
+    private static final Pattern BLD_SOURCES_JAR_PATTERN = Pattern.compile("/\\.bld/dist/bld-[^\"/!]+-sources\\.jar");
     private static final Pattern BLD_PROPERTY_VERSION_PATTERN = Pattern.compile(".*bld\\.version.*");
 
     /**
@@ -106,10 +107,10 @@ public class Wrapper {
         if (file.exists()) {
             try {
                 var content = FileUtils.readString(file);
-                content = BLD_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + ".jar");
-                content = BLD_SOURCES_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + "-sources.jar");
-                content = RIFE2_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + ".jar");
-                content = RIFE2_SOURCES_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + "-sources.jar");
+                content = BLD_JAR_PATTERN.matcher(content).replaceAll("/.bld/dist/bld-" + version + ".jar");
+                content = BLD_SOURCES_JAR_PATTERN.matcher(content).replaceAll("/.bld/dist/bld-" + version + "-sources.jar");
+                content = RIFE2_JAR_PATTERN.matcher(content).replaceAll("/.bld/dist/bld-" + version + ".jar");
+                content = RIFE2_SOURCES_JAR_PATTERN.matcher(content).replaceAll("/.bld/dist/bld-" + version + "-sources.jar");
                 FileUtils.writeString(content, file);
             } catch (FileUtilsErrorException e) {
                 throw new IOException(e);
@@ -146,6 +147,7 @@ public class Wrapper {
         if (file.exists()) {
             try {
                 var contents = FileUtils.readString(file);
+                contents = contents.replace(RIFE2_PROPERTY_DOWNLOAD_LOCATION, BLD_PROPERTY_DOWNLOAD_LOCATION);
                 contents = BLD_PROPERTY_VERSION_PATTERN.matcher(contents).replaceAll(BLD_PROPERTY_VERSION + "=" + version);
                 contents = RIFE2_PROPERTY_VERSION_PATTERN.matcher(contents).replaceAll(BLD_PROPERTY_VERSION + "=" + version);
                 FileUtils.writeString(contents, file);
