@@ -1,0 +1,107 @@
+name: bld-ci
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build-bld-project:
+    runs-on: ubuntu-latest
+
+    services:
+      oracle:
+        image: gvenzl/oracle-xe:18-slim
+        env:
+          ORACLE_RANDOM_PASSWORD: true
+          APP_USER: unittests
+          APP_USER_PASSWORD: password
+        ports:
+          - 1521:1521
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+      oracle-free:
+        image: gvenzl/oracle-free:latest
+        env:
+          ORACLE_RANDOM_PASSWORD: true
+          APP_USER: unittests
+          APP_USER_PASSWORD: password
+        ports:
+          - 1522:1521
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_DATABASE: unittests
+          MYSQL_USER: unittests
+          MYSQL_PASSWORD: password
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+      mariadb:
+        image: mariadb:10.9
+        env:
+          MARIADB_DATABASE: unittests
+          MARIADB_USER: unittests
+          MARIADB_PASSWORD: password
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: unittests
+          POSTGRES_PASSWORD: password
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: unittests
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      MYSQL_DATABASE: unittests
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+
+    strategy:
+      matrix:
+        java-version: [ 17, 19 ]
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+
+      - name: Run tests
+        run: >-
+          ./bld download compile test
+          -Dtest.postgres=true -Dtest.mysql=true -Dtest.mariadb=true -Dtest.oracle=true -Dtest.oracle-free=true
