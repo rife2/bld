@@ -106,3 +106,5 @@ jobs:
         run: >-
           ./bld download compile test
           -Dtest.postgres=true -Dtest.mysql=true -Dtest.mariadb=true -Dtest.oracle=true -Dtest.oracle-free=true
+          -DtestsBadgeUrl=https://rife2.com/tests-badge/update/com.uwyn.rife2/bld
+          -DtestsBadgeApiKey=${{ secrets.TESTS_BADGE_API_KEY }}
