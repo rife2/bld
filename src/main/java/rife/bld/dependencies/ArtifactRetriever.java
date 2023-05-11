@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.security.MessageDigest;
 import java.util.*;
@@ -99,9 +100,7 @@ public abstract class ArtifactRetriever {
             }
 
             try {
-                var connection = new URL(artifact.location()).openConnection();
-                connection.setUseCaches(false);
-                connection.setRequestProperty("User-Agent", "bld " + BldVersion.getVersion());
+                var connection = openUrlConnection(artifact);
                 if (artifact.repository().username() != null && artifact.repository().password() != null) {
                     connection.setRequestProperty(
                         HEADER_AUTHORIZATION,
@@ -163,8 +162,7 @@ public abstract class ArtifactRetriever {
                         }
                     }
 
-                    var connection = new URL(artifact.location()).openConnection();
-                    connection.setUseCaches(false);
+                    var connection = openUrlConnection(artifact);
                     if (artifact.repository().username() != null && artifact.repository().password() != null) {
                         connection.setRequestProperty(
                             HEADER_AUTHORIZATION,
@@ -188,6 +186,13 @@ public abstract class ArtifactRetriever {
         } finally {
             System.out.println();
         }
+    }
+
+    private static URLConnection openUrlConnection(RepositoryArtifact artifact) throws IOException {
+        var connection = new URL(artifact.location()).openConnection();
+        connection.setUseCaches(false);
+        connection.setRequestProperty("User-Agent", "bld " + BldVersion.getVersion());
+        return connection;
     }
 
     private boolean checkHash(RepositoryArtifact artifact, File downloadFile, String extension, String algorithm) {
