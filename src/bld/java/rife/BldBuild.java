@@ -96,7 +96,7 @@ public class BldBuild extends Project {
 
         zipBldOperation
             .destinationDirectory(buildDistDirectory())
-            .destinationFileName("rife2-" + version() + "-bld.zip");
+            .destinationFileName("bld-" + version() + ".zip");
 
         testsBadgeOperation
             .classpath(core_src_main_resources_directory.getAbsolutePath())
@@ -156,7 +156,7 @@ public class BldBuild extends Project {
                 .signKey(property("sign.key"))
                 .signPassphrase(property("sign.passphrase")))
             .artifacts(
-                new PublishArtifact(zipBldOperation.destinationFile(), "bld", "zip"));
+                new PublishArtifact(zipBldOperation.destinationFile(), "", "zip"));
     }
 
     void propagateJavaProperties(JavaOptions options, String... names) {
