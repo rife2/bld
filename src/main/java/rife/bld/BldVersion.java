@@ -4,8 +4,9 @@
  */
 package rife.bld;
 
-import rife.resources.ResourceFinderClasspath;
-import rife.resources.exceptions.ResourceFinderErrorException;
+import rife.tools.FileUtils;
+
+import java.io.IOException;
 
 /**
  * Singleton class that provides access to the current bld version as a string.
@@ -17,10 +18,18 @@ public class BldVersion {
     private String version_;
 
     BldVersion() {
-        ResourceFinderClasspath resource_finder = ResourceFinderClasspath.instance();
+        var resource = getClass().getClassLoader().getResource("BLD_VERSION");
         try {
-            version_ = resource_finder.getContent("BLD_VERSION");
-        } catch (ResourceFinderErrorException e) {
+            if (resource == null) {
+                version_ = null;
+            } else {
+                var connection = resource.openConnection();
+                connection.setUseCaches(false);
+                try (var input_stream = connection.getInputStream()) {
+                    version_ = FileUtils.readString(input_stream);
+                }
+            }
+        } catch (IOException e) {
             version_ = null;
         }
 

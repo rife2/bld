@@ -429,7 +429,7 @@ public class Wrapper {
             }
         }
 
-        // find the wrapper classloader in the hierarchy and add the RIFE2 jar to it
+        // find the wrapper classloader in the hierarchy and add the bld jar to it
         classloader_ = new WrapperClassLoader();
         classloader_.add(distribution_file.toURI().toURL());
 
