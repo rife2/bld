@@ -248,6 +248,12 @@ public class BldBuild extends Project {
         super.publish();
     }
 
+    public void publishLocal()
+    throws Exception {
+        all();
+        super.publishLocal();
+    }
+
     public static void main(String[] args)
     throws Exception {
         new BldBuild().start(args);
