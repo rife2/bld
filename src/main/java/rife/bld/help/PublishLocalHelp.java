@@ -8,21 +8,23 @@ import rife.bld.CommandHelp;
 import rife.tools.StringUtils;
 
 /**
- * Provides help for the publish command.
+ * Provides help for the publish-local command.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 1.5.7
+ * @since 1.7
  */
-public class PublishHelp implements CommandHelp {
+public class PublishLocalHelp implements CommandHelp {
     public String getSummary() {
-        return "Publishes the artifacts of your project";
+        return "Publishes to the local maven repository";
     }
 
     public String getDescription(String topic) {
         return StringUtils.replace("""
-            Publishes the artifacts of the project to the publication
-            repository.
-            The standard publish command will automatically also execute
+            Publishes the artifacts of the project to local maven repository,
+            regardless of the repositories that are set up in your publish
+            operation.
+            
+            The standard publish-local command will automatically also execute
             the jar, jar-sources and jar-javadoc commands beforehand.
                         
             Usage : ${topic}""", "${topic}", topic);

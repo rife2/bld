@@ -4,6 +4,7 @@
  */
 package rife.bld;
 
+import rife.bld.dependencies.Repository;
 import rife.bld.help.*;
 import rife.bld.operations.*;
 
@@ -191,5 +192,23 @@ public class Project extends BaseProject {
         jarSources();
         jarJavadoc();
         publishOperation().executeOnce(() -> publishOperation().fromProject(this));
+    }
+
+    /**
+     * Standard publish-local command, transfers artifacts to the local maven repository.
+     *
+     * @since 17
+     */
+    @BuildCommand(value = "publish-local" ,help = PublishLocalHelp.class)
+    public void publishLocal()
+    throws Exception {
+        jar();
+        jarSources();
+        jarJavadoc();
+        publishOperation().executeOnce(() ->  {
+            var repositories = publishOperation().fromProject(this).repositories();
+            repositories.clear();
+            repositories.add(Repository.MAVEN_LOCAL);
+        });
     }
 }
