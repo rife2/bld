@@ -4,12 +4,12 @@ embedded_dbs
 .DS_Store
 build
 lib/bld/**
-lib/compile/**
-lib/runtime/**
-lib/standalone/**
-lib/test/**
-!bld-wrapper.jar
-!bld-wrapper.properties
+!lib/bld/bld-wrapper.jar
+!lib/bld/bld-wrapper.properties
+lib/compile/
+lib/runtime/
+lib/standalone/
+lib/test/
 
 # IDEA ignores
 
