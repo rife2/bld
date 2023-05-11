@@ -50,7 +50,7 @@ public class CreateRife2Operation extends AbstractCreateOperation<CreateRife2Ope
 
     @Override
     protected void executePopulateProjectStructure()
-    throws FileUtilsErrorException, IOException {
+    throws IOException {
         super.executePopulateProjectStructure();
 
         // project site uber

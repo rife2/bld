@@ -60,7 +60,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
      * @since 1.5
      */
     public void execute()
-    throws FileUtilsErrorException, IOException {
+    throws IOException {
         if (packageName() == null || projectName() == null) {
             System.err.println("ERROR: Missing package or project name.");
             return;
@@ -179,7 +179,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
      * @since 1.5
      */
     protected void executePopulateProjectStructure()
-    throws FileUtilsErrorException, IOException {
+    throws IOException {
         // project gitignore
         FileUtils.writeString(
             TemplateFactory.TXT.get(templateBase_ + "project_gitignore").getContent(),

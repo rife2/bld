@@ -367,7 +367,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * @since 1.5.18
      */
     protected void executeTransferArtifact(Repository repository, File file, String path)
-    throws FileUtilsErrorException, IOException {
+    throws IOException {
         if (repository.isLocal()) {
             executeStoreArtifact(repository, file, path);
         } else {
@@ -384,7 +384,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * @since 1.5.18
      */
     protected void executeTransferArtifact(Repository repository, String content, String path)
-    throws FileUtilsErrorException, IOException {
+    throws IOException {
         if (repository.isLocal()) {
             executeStoreArtifact(repository, content, path);
         } else {
