@@ -15,6 +15,7 @@ import rife.bld.operations.*;
  * @since 1.5
  */
 public class Cli extends BuildExecutor {
+    private final CreateOperation createOperation_ = new CreateOperation();
     private final CreateBaseOperation createBaseOperation_ = new CreateBaseOperation();
     private final CreateBlankOperation createBlankOperation_ = new CreateBlankOperation();
     private final CreateLibOperation createLibOperation_ = new CreateLibOperation();
@@ -26,12 +27,12 @@ public class Cli extends BuildExecutor {
      * The standard {@code create} command.
      *
      * @throws Exception when an error occurred during the creation process
-     * @since 1.5
+     * @since 1.7
      */
-    @BuildCommand(help = CreateRife2Help.class)
+    @BuildCommand(help = CreateHelp.class)
     public void create()
     throws Exception {
-        createRife2Operation_.executeOnce(() -> createRife2Operation_.fromArguments(arguments()));
+        createOperation_.fromArguments(arguments()).execute();
     }
 
     /**
@@ -68,6 +69,18 @@ public class Cli extends BuildExecutor {
     public void createLib()
     throws Exception {
         createLibOperation_.executeOnce(() -> createLibOperation_.fromArguments(arguments()));
+    }
+
+    /**
+     * The standard {@code create-rife2} command.
+     *
+     * @throws Exception when an error occurred during the creation process
+     * @since 1.5
+     */
+    @BuildCommand(value = "create-rife2", help = CreateRife2Help.class)
+    public void createRife2()
+    throws Exception {
+        createRife2Operation_.executeOnce(() -> createRife2Operation_.fromArguments(arguments()));
     }
 
     /**
