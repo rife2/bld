@@ -5,17 +5,13 @@
 package rife;
 
 import rife.bld.BuildCommand;
-import rife.bld.Project;
 import rife.bld.dependencies.VersionNumber;
-import rife.bld.extension.Antlr4Operation;
-import rife.bld.extension.TestsBadgeOperation;
 import rife.bld.extension.ZipOperation;
 import rife.bld.operations.*;
 import rife.bld.publish.*;
 import rife.bld.wrapper.Wrapper;
 import rife.tools.DirBuilder;
 import rife.tools.FileUtils;
-import rife.tools.StringUtils;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -25,43 +21,19 @@ import java.util.regex.Pattern;
 
 import static rife.bld.dependencies.Repository.*;
 import static rife.bld.dependencies.Scope.*;
-import static rife.bld.operations.JavadocOptions.DocLinkOption.NO_MISSING;
 import static rife.bld.operations.TemplateType.*;
 import static rife.tools.FileUtils.path;
 
-public class BldBuild extends Project {
+public class BldBuild extends AbstractRife2Build {
     public BldBuild()
     throws Exception {
-        pkg = "rife";
         name = "bld";
         mainClass = "rife.bld.Cli";
         version = version(FileUtils.readString(new File(srcMainResourcesDirectory(), "BLD_VERSION")));
 
-        javaRelease = 17;
-        downloadSources = true;
-        autoDownloadPurge = true;
-
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
         scope(test)
-            .include(dependency("org.slf4j", "slf4j-simple", version(2,0,7)))
-            .include(dependency("net.imagej", "ij", version("1.54d")))
-            .include(dependency("org.junit.jupiter", "junit-jupiter", version(5,9,3)))
-            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1,9,3)))
-            .include(dependency("com.h2database", "h2", version(2,1,214)))
-            .include(dependency("net.sourceforge.htmlunit", "htmlunit", version(2,70,0)))
-            .include(dependency("org.postgresql", "postgresql", version(42,6,0)))
-            .include(dependency("com.mysql", "mysql-connector-j", version(8,0,33)))
-            .include(dependency("org.mariadb.jdbc", "mariadb-java-client", version(3,1,4)))
-            .include(dependency("org.hsqldb", "hsqldb", version(2,7,1)))
-            .include(dependency("org.apache.derby", "derby", version("10.16.1.1")))
-            .include(dependency("org.apache.derby", "derbytools", version("10.16.1.1")))
-            .include(dependency("com.oracle.database.jdbc", "ojdbc11", version("23.2.0.0")))
             .include(dependency("org.json", "json", version(20230227)));
-
-        cleanOperation()
-            .directories(
-                new File(workDirectory(), "embedded_dbs"),
-                new File(workDirectory(), "logs"));
 
         var core_directory = new File(workDirectory(), "core");
         var core_src_directory = new File(core_directory, "src");
@@ -75,9 +47,7 @@ public class BldBuild extends Project {
 
         antlr4Operation
             .sourceDirectories(List.of(new File(core_src_main_directory, "antlr")))
-            .outputDirectory(new File(buildDirectory(), "generated/rife/template/antlr"))
-            .visitor()
-            .longMessages();
+            .outputDirectory(new File(buildDirectory(), "generated/rife/template/antlr"));
 
         precompileOperation()
             .sourceDirectories(core_src_main_resources_templates_directory)
@@ -101,35 +71,11 @@ public class BldBuild extends Project {
         testsBadgeOperation
             .classpath(core_src_main_resources_directory.getAbsolutePath())
             .classpath(core_src_test_resources_directory.getAbsolutePath());
-        propagateJavaProperties(testsBadgeOperation.javaOptions(),
-            "test.postgres",
-            "test.mysql",
-            "test.mariadb",
-            "test.oracle",
-            "test.oracle-free",
-            "test.derby",
-            "test.hsqldb",
-            "test.h2");
 
         javadocOperation()
             .sourceFiles(FileUtils.getJavaFileList(core_src_main_java_directory))
-            .excluded(
-                "rife/antlr/",
-                "rife/asm/",
-                "rife/.*/databasedrivers/",
-                "rife/.*/imagestoredrivers/",
-                "rife/.*/rawstoredrivers/",
-                "rife/.*/textstoredrivers/",
-                "rife/database/capabilities/"
-            )
             .javadocOptions()
                 .docTitle("<a href=\"https://rife2.com/bld\">bld</a> " + version())
-                .docLint(NO_MISSING)
-                .keywords()
-                .splitIndex()
-                .tag("apiNote", "a", "API Note:")
-                .link("https://jakarta.ee/specifications/servlet/5.0/apidocs/")
-                .link("https://jsoup.org/apidocs/")
                 .overview(new File(srcMainJavaDirectory(), "overview.html"));
 
         publishOperation()
@@ -159,35 +105,6 @@ public class BldBuild extends Project {
                 new PublishArtifact(zipBldOperation.destinationFile(), "", "zip"));
     }
 
-    void propagateJavaProperties(JavaOptions options, String... names) {
-        for (var name : names) {
-            if (properties().contains(name)) {
-                options.property(name, properties().getValueString(name));
-            }
-        }
-    }
-
-    final Antlr4Operation antlr4Operation = new Antlr4Operation() {
-        @Override
-        public void execute()
-        throws Exception {
-            super.execute();
-            // replace the package name so that it becomes part of RIFE2
-            FileUtils.transformFiles(outputDirectory(), FileUtils.JAVA_FILE_PATTERN, null, s ->
-                StringUtils.replace(s, "org.antlr.v4.runtime", "rife.antlr.v4.runtime"));
-        }
-    };
-    @BuildCommand(summary = "Generates the grammar Java sources")
-    public void generateGrammar()
-    throws Exception {
-        antlr4Operation.executeOnce();
-    }
-
-    public void compile()
-    throws Exception {
-        generateGrammar();
-        super.compile();
-    }
 
     final ZipOperation zipBldOperation = new ZipOperation();
     @BuildCommand(value = "zip-bld", summary = "Creates the bld zip archive")
@@ -222,15 +139,6 @@ public class BldBuild extends Project {
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
-    }
-
-    private final TestsBadgeOperation testsBadgeOperation = new TestsBadgeOperation();
-    public void test()
-    throws Exception {
-        testsBadgeOperation.executeOnce(() -> testsBadgeOperation
-            .url(property("testsBadgeUrl"))
-            .apiKey(property("testsBadgeApiKey"))
-            .fromProject(this));
     }
 
     @BuildCommand(summary = "Creates all the distribution artifacts")

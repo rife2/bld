@@ -49,6 +49,7 @@ public class Wrapper {
     static final String PROPERTY_EXTENSIONS = "bld.extensions";
     static final String PROPERTY_DOWNLOAD_EXTENSION_SOURCES = "bld.downloadExtensionSources";
     static final String PROPERTY_DOWNLOAD_EXTENSION_JAVADOC = "bld.downloadExtensionJavadoc";
+    static final String PROPERTY_SOURCE_DIRECTORIES = "bld.sourceDirectories";
     static final File BLD_USER_DIR = new File(System.getProperty("user.home"), ".bld");
     static final File DISTRIBUTIONS_DIR = new File(BLD_USER_DIR, "dist");
     static final Pattern META_DATA_SNAPSHOT_VERSION = Pattern.compile("<snapshotVersion>.*?<value>([^<]+)</value>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
@@ -164,6 +165,7 @@ public class Wrapper {
                 bld.extensions=
                 bld.repositories=MAVEN_CENTRAL,RIFE2
                 bld.downloadLocation=
+                bld.sourceDirectories=
                 bld.version=${version}
                 """
                 .replace("${version}", version);
@@ -513,7 +515,7 @@ public class Wrapper {
     }
 
     private int launchMainBuild(File jarFile, List<String> arguments)
-    throws FileUtilsErrorException, IOException, InterruptedException {
+    throws IOException, InterruptedException {
         resolveExtensions();
 
         arguments.remove(0);
@@ -582,9 +584,26 @@ public class Wrapper {
     }
 
     public List<File> bldSourceFiles() {
+        var source_directories = new ArrayList<File>();
+        source_directories.add(srcBldJavaDirectory().getAbsoluteFile());
+
+        // extract wrapper source directories specifications
+        if (wrapperProperties_.containsKey(PROPERTY_SOURCE_DIRECTORIES)) {
+            var source_directories_property = wrapperProperties_.get(PROPERTY_SOURCE_DIRECTORIES).toString();
+            for (var source_directory : source_directories_property.split(",")) {
+                source_directory = source_directory.trim();
+                if (!source_directory.isBlank()) {
+                    source_directories.add(new File(source_directory).getAbsoluteFile());
+                }
+            }
+        }
+
         // get all the bld java sources
-        var src_main_java_dir_abs = srcBldJavaDirectory().getAbsoluteFile();
-        return FileUtils.getFileList(src_main_java_dir_abs, JAVA_FILE_PATTERN, null)
-            .stream().map(file -> new File(src_main_java_dir_abs, file)).toList();
+        var source_files = new ArrayList<File>();
+        for (var source_directory : source_directories) {
+            source_files.addAll(FileUtils.getFileList(source_directory, JAVA_FILE_PATTERN, null)
+                .stream().map(file -> new File(source_directory, file)).toList());
+        }
+        return source_files;
     }
 }
