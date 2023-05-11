@@ -4,6 +4,7 @@
  */
 package rife.bld.dependencies;
 
+import rife.bld.BldVersion;
 import rife.tools.FileUtils;
 import rife.tools.exceptions.FileUtilsErrorException;
 
@@ -100,6 +101,7 @@ public abstract class ArtifactRetriever {
             try {
                 var connection = new URL(artifact.location()).openConnection();
                 connection.setUseCaches(false);
+                connection.setRequestProperty("User-Agent", "bld " + BldVersion.getVersion());
                 if (artifact.repository().username() != null && artifact.repository().password() != null) {
                     connection.setRequestProperty(
                         HEADER_AUTHORIZATION,

@@ -31,7 +31,9 @@ import static rife.tools.FileUtils.JAVA_FILE_PATTERN;
  */
 public class Wrapper {
     static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2/";
+    static final String SONATYPE_SNAPSHOTS = "https://s01.oss.sonatype.org/content/repositories/snapshots/";
     static final String DOWNLOAD_LOCATION = MAVEN_CENTRAL + "com/uwyn/rife2/bld/${version}/";
+    static final String DOWNLOAD_LOCATION_SNAPSHOT = SONATYPE_SNAPSHOTS + "com/uwyn/rife2/bld/${version}/";
     static final String BLD_FILENAME = "bld-${version}.jar";
     static final String BLD_SOURCES_FILENAME = "bld-${version}-sources.jar";
     static final String BLD_VERSION = "BLD_VERSION";
@@ -49,6 +51,7 @@ public class Wrapper {
     static final String PROPERTY_DOWNLOAD_EXTENSION_JAVADOC = "bld.downloadExtensionJavadoc";
     static final File BLD_USER_DIR = new File(System.getProperty("user.home"), ".bld");
     static final File DISTRIBUTIONS_DIR = new File(BLD_USER_DIR, "dist");
+    static final Pattern META_DATA_SNAPSHOT_VERSION = Pattern.compile("<snapshotVersion>.*?<value>([^<]+)</value>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     private File currentDir_ = new File(System.getProperty("user.dir"));
 
@@ -340,16 +343,24 @@ public class Wrapper {
         return wrapperProperties_.getProperty(BLD_PROPERTY_VERSION, getVersion());
     }
 
-    private String getWrapperDownloadLocation() {
-        var location = wrapperProperties_.getProperty(BLD_PROPERTY_DOWNLOAD_LOCATION, DOWNLOAD_LOCATION);
-        if (location.trim().isBlank()) {
-            return DOWNLOAD_LOCATION;
+    private boolean isSnapshot(String version) {
+        return version.endsWith("-SNAPSHOT");
+    }
+
+    private String getWrapperDownloadLocation(String version) {
+        var default_location = DOWNLOAD_LOCATION;
+        if (isSnapshot(version)) {
+            default_location = DOWNLOAD_LOCATION_SNAPSHOT;
         }
-        return location;
+        var location = wrapperProperties_.getProperty(BLD_PROPERTY_DOWNLOAD_LOCATION, default_location);
+        if (location.trim().isBlank()) {
+            location = default_location;
+        }
+        return replaceVersion(location, version);
     }
 
     private String downloadUrl(String version, String fileName) {
-        var location = replaceVersion(getWrapperDownloadLocation(), version);
+        var location = getWrapperDownloadLocation(version);
         var result = new StringBuilder(location);
         if (!location.endsWith("/")) {
             result.append("/");
@@ -386,16 +397,33 @@ public class Wrapper {
             System.err.println("Failed to retrieve wrapper version number.");
             throw e;
         }
-        var filename = bldFileName(version);
-        var distribution_file = new File(DISTRIBUTIONS_DIR, filename);
-        if (!distribution_file.exists()) {
-            downloadDistribution(distribution_file, downloadUrl(version, filename));
+
+        var download_version = version;
+        if (isSnapshot(version)) {
+            var mata_data_url = downloadUrl(version, "maven-metadata.xml");
+
+            String meta_data;
+            var meta_data_connection = new URL(mata_data_url).openConnection();
+            meta_data_connection.setUseCaches(false);
+            meta_data_connection.setRequestProperty("User-Agent", "bld " + version);
+            try (var in = meta_data_connection.getInputStream()) {
+                meta_data = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            }
+
+            var matcher = META_DATA_SNAPSHOT_VERSION.matcher(meta_data);
+            if (matcher.find()) {
+                download_version = matcher.group(1);
+            }
         }
-        var sources_filename = bldSourcesFileName(version);
-        var distribution_sources_file = new File(DISTRIBUTIONS_DIR, sources_filename);
+
+        var distribution_file = new File(DISTRIBUTIONS_DIR, bldFileName(version));
+        if (!distribution_file.exists()) {
+            downloadDistribution(distribution_file, downloadUrl(version, bldFileName(download_version)));
+        }
+        var distribution_sources_file = new File(DISTRIBUTIONS_DIR, bldSourcesFileName(version));
         if (!distribution_sources_file.exists()) {
             try {
-                downloadDistribution(distribution_sources_file, downloadUrl(version, sources_filename));
+                downloadDistribution(distribution_sources_file, downloadUrl(version, bldSourcesFileName(download_version)));
             } catch (IOException e) {
                 // this is not critical, ignore
             }
