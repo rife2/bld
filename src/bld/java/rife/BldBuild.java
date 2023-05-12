@@ -5,11 +5,10 @@
 package rife;
 
 import rife.bld.BuildCommand;
-import rife.bld.dependencies.VersionNumber;
+import rife.bld.Cli;
 import rife.bld.extension.ZipOperation;
 import rife.bld.operations.*;
 import rife.bld.publish.*;
-import rife.bld.wrapper.Wrapper;
 import rife.tools.DirBuilder;
 import rife.tools.FileUtils;
 
@@ -113,7 +112,14 @@ public class BldBuild extends AbstractRife2Build {
         jar();
         var tmp = Files.createTempDirectory("bld").toFile();
         try {
-            new Wrapper().createWrapperFiles(path(tmp, "lib").toFile(), VersionNumber.UNKNOWN.toString());
+            new RunOperation()
+                .workDirectory(tmp)
+                .mainClass(Cli.class.getName())
+                .classpath(runClasspath())
+                .runOptions("upgrade")
+                .outputProcessor(s -> true)
+                .execute();
+
             new DirBuilder(tmp, t -> {
                 t.dir("bld", b -> {
                     b.dir("bin", i -> {
@@ -127,7 +133,7 @@ public class BldBuild extends AbstractRife2Build {
                         });
                     });
                     b.dir("lib", l -> {
-                        l.file("bld-wrapper.jar", f -> f.move(path(tmp, "lib", "bld-wrapper.jar")));
+                        l.file("bld-wrapper.jar", f -> f.move(path(tmp, "lib", "bld", "bld-wrapper.jar")));
                     });
                 });
                 t.dir("lib", l -> l.delete());
