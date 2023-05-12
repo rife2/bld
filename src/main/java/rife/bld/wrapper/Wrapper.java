@@ -14,6 +14,8 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.jar.*;
 import java.util.regex.Pattern;
@@ -401,17 +403,9 @@ public class Wrapper {
         }
 
         var download_version = version;
-        if (isSnapshot(version)) {
-            var mata_data_url = downloadUrl(version, "maven-metadata.xml");
-
-            String meta_data;
-            var meta_data_connection = new URL(mata_data_url).openConnection();
-            meta_data_connection.setUseCaches(false);
-            meta_data_connection.setRequestProperty("User-Agent", "bld " + version);
-            try (var in = meta_data_connection.getInputStream()) {
-                meta_data = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-            }
-
+        var is_snapshot = isSnapshot(version);
+        if (is_snapshot) {
+            var meta_data = readString(version, new URL(downloadUrl(version, "maven-metadata.xml")));
             var matcher = META_DATA_SNAPSHOT_VERSION.matcher(meta_data);
             if (matcher.find()) {
                 download_version = matcher.group(1);
@@ -419,10 +413,26 @@ public class Wrapper {
         }
 
         var distribution_file = new File(DISTRIBUTIONS_DIR, bldFileName(version));
+        var distribution_sources_file = new File(DISTRIBUTIONS_DIR, bldSourcesFileName(version));
+
+        if (distribution_file.exists()) {
+            if (is_snapshot) {
+                var download_md5 = readString(version, new URL(downloadUrl(version, bldFileName(download_version)) + ".md5"));
+                try {
+                    var digest = MessageDigest.getInstance("MD5");
+                    digest.update(FileUtils.readBytes(distribution_file));
+                    if (!download_md5.equals(encodeHexLower(digest.digest()))) {
+                        distribution_file.delete();
+                        distribution_sources_file.delete();
+                    }
+                } catch (NoSuchAlgorithmException ignore) {
+                }
+            }
+        }
+
         if (!distribution_file.exists()) {
             downloadDistribution(distribution_file, downloadUrl(version, bldFileName(download_version)));
         }
-        var distribution_sources_file = new File(DISTRIBUTIONS_DIR, bldSourcesFileName(version));
         if (!distribution_sources_file.exists()) {
             try {
                 downloadDistribution(distribution_sources_file, downloadUrl(version, bldSourcesFileName(download_version)));
@@ -605,5 +615,33 @@ public class Wrapper {
                 .stream().map(file -> new File(source_directory, file)).toList());
         }
         return source_files;
+    }
+
+    private String readString(String version, URL url)
+    throws IOException {
+        var connection = url.openConnection();
+        connection.setUseCaches(false);
+        connection.setRequestProperty("User-Agent", "bld " + version);
+        try (var in = connection.getInputStream()) {
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    public static final char[] HEX_DIGITS_LOWER = "0123456789abcdef".toCharArray();
+
+    public static void appendHexDigitLower(StringBuilder out, int number) {
+        out.append(HEX_DIGITS_LOWER[number & 0x0F]);
+    }
+
+    public static String encodeHexLower(byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+        var out = new StringBuilder();
+        for (var b : bytes) {
+            appendHexDigitLower(out, b >> 4);
+            appendHexDigitLower(out, b);
+        }
+        return out.toString();
     }
 }
