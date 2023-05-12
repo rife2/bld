@@ -300,9 +300,6 @@ public class Wrapper {
         // ensure required properties are available
         wrapperProperties_.put(PROPERTY_REPOSITORIES, MAVEN_CENTRAL);
         wrapperProperties_.put(BLD_PROPERTY_VERSION, version);
-        if (wrapperProperties_.getProperty(DOWNLOAD_LOCATION) == null) {
-            wrapperProperties_.put(BLD_PROPERTY_DOWNLOAD_LOCATION, DOWNLOAD_LOCATION);
-        }
 
         // retrieve properties from possible locations
         var config = libBldDirectory(WRAPPER_PROPERTIES);
@@ -357,7 +354,7 @@ public class Wrapper {
             default_location = DOWNLOAD_LOCATION_SNAPSHOT;
         }
         var location = wrapperProperties_.getProperty(BLD_PROPERTY_DOWNLOAD_LOCATION, default_location);
-        if (location.trim().isBlank()) {
+        if (location == null || location.trim().isBlank()) {
             location = default_location;
         }
         return replaceVersion(location, version);
