@@ -415,21 +415,22 @@ public class Wrapper {
         var distribution_file = new File(DISTRIBUTIONS_DIR, bldFileName(version));
         var distribution_sources_file = new File(DISTRIBUTIONS_DIR, bldSourcesFileName(version));
 
-        if (distribution_file.exists()) {
-            if (is_snapshot) {
-                var download_md5 = readString(version, new URL(downloadUrl(version, bldFileName(download_version)) + ".md5"));
-                try {
-                    var digest = MessageDigest.getInstance("MD5");
-                    digest.update(FileUtils.readBytes(distribution_file));
-                    if (!download_md5.equals(encodeHexLower(digest.digest()))) {
-                        distribution_file.delete();
-                        distribution_sources_file.delete();
-                    }
-                } catch (NoSuchAlgorithmException ignore) {
+        // if this is a snapshot and the distribution file exists,
+        // ensure that it's the latest by comparing hashes
+        if (is_snapshot && distribution_file.exists()) {
+            var download_md5 = readString(version, new URL(downloadUrl(version, bldFileName(download_version)) + ".md5"));
+            try {
+                var digest = MessageDigest.getInstance("MD5");
+                digest.update(FileUtils.readBytes(distribution_file));
+                if (!download_md5.equals(encodeHexLower(digest.digest()))) {
+                    distribution_file.delete();
+                    distribution_sources_file.delete();
                 }
+            } catch (NoSuchAlgorithmException ignore) {
             }
         }
 
+        // download distribution jars if necessary
         if (!distribution_file.exists()) {
             downloadDistribution(distribution_file, downloadUrl(version, bldFileName(download_version)));
         }
