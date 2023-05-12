@@ -72,8 +72,8 @@ public class MyappBuild extends Project {
 
 
 > **NOTE:** `bld` supports different ways to describe dependencies,
-> `dependency("com.uwyn.rife2", "rife2", version(1,6,3))` can for instance also
-> be written as `dependency("com.uwyn.rife2:rife2:1.6.3")`. Which format you use,
+> `dependency("com.uwyn.rife2", "rife2", version(1,7,0))` can for instance also
+> be written as `dependency("com.uwyn.rife2:rife2:1.7.0")`. Which format you use,
 > is a matter of personal taste.
 
 # Where does `bld` fit?
