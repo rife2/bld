@@ -165,7 +165,7 @@ public class Wrapper {
                 bld.downloadExtensionJavadoc=false
                 bld.downloadExtensionSources=true
                 bld.extensions=
-                bld.repositories=MAVEN_CENTRAL,RIFE2
+                bld.repositories=MAVEN_CENTRAL,RIFE2_RELEASES
                 bld.downloadLocation=
                 bld.sourceDirectories=
                 bld.version=${version}
