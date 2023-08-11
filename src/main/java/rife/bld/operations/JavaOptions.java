@@ -225,7 +225,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions agentLib(String libName, String options) {
-        add("-agentlib:" + libName + (options == null ? "" : ":" + options));
+        add("-agentlib:" + libName + (options == null ? "" : "=" + options));
         return this;
     }
 
@@ -246,7 +246,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions agentPath(File pathName, String options) {
-        add("-agentpath:" + pathName + (options == null ? "" : ":" + options));
+        add("-agentpath:" + pathName + (options == null ? "" : "=" + options));
         return this;
     }
 
@@ -267,7 +267,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions javaAgent(File jarPath, String options) {
-        add("-javaagent:" + jarPath + (options == null ? "" : ":" + options));
+        add("-javaagent:" + jarPath + (options == null ? "" : "=" + options));
         return this;
     }
 
