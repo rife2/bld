@@ -40,7 +40,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions modulePath(File... modules) {
-        return modulePath(Arrays.asList(modules));
+        return modulePath(List.of(modules));
     }
 
     /**
@@ -63,7 +63,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions upgradeModulePath(File... modulePath) {
-        return upgradeModulePath(Arrays.asList(modulePath));
+        return upgradeModulePath(List.of(modulePath));
     }
 
     /**
@@ -88,7 +88,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions addModules(String... modules) {
-        return addModules(Arrays.asList(modules));
+        return addModules(List.of(modules));
     }
 
     /**
@@ -112,8 +112,8 @@ public class JavaOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavaOptions enableNativeAccess(List... modules) {
-        return enableNativeAccess(Arrays.asList(modules));
+    public JavaOptions enableNativeAccess(String... modules) {
+        return enableNativeAccess(List.of(modules));
     }
 
     /**
@@ -215,7 +215,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions agentLib(String libName) {
-        return agentLib(libName, null);
+        return agentLib(libName, (String)null);
     }
 
     /**
@@ -230,13 +230,34 @@ public class JavaOptions extends ArrayList<String> {
     }
 
     /**
+     * Load native agent library.
+     *
+     * @return this list of options
+     * @since 1.7.1
+     */
+    public JavaOptions agentLib(String libName, String... options) {
+        return agentLib(libName, List.of(options));
+    }
+
+    /**
+     * Load native agent library.
+     *
+     * @return this list of options
+     * @since 1.7.1
+     */
+    public JavaOptions agentLib(String libName, List<String> options) {
+        add("-agentlib:" + libName + (options == null || options.isEmpty() ? "" : "=" + StringUtils.join(options, ",")));
+        return this;
+    }
+
+    /**
      * Load native agent library by full pathname.
      *
      * @return this list of options
      * @since 1.5.18
      */
     public JavaOptions agentPath(File pathName) {
-        return agentPath(pathName, null);
+        return agentPath(pathName, (String)null);
     }
 
     /**
@@ -251,13 +272,34 @@ public class JavaOptions extends ArrayList<String> {
     }
 
     /**
+     * Load native agent library by full pathname.
+     *
+     * @return this list of options
+     * @since 1.7.1
+     */
+    public JavaOptions agentPath(File pathName, String... options) {
+        return agentPath(pathName, List.of(options));
+    }
+
+    /**
+     * Load native agent library by full pathname.
+     *
+     * @return this list of options
+     * @since 1.7.1
+     */
+    public JavaOptions agentPath(File pathName, List<String> options) {
+        add("-agentpath:" + pathName + (options == null || options.isEmpty() ? "" : "=" + StringUtils.join(options, ",")));
+        return this;
+    }
+
+    /**
      * Load Java programming language agent.
      *
      * @return this list of options
      * @since 1.5.18
      */
     public JavaOptions javaAgent(File jarPath) {
-        return javaAgent(jarPath, null);
+        return javaAgent(jarPath, (String)null);
     }
 
     /**
@@ -268,6 +310,27 @@ public class JavaOptions extends ArrayList<String> {
      */
     public JavaOptions javaAgent(File jarPath, String options) {
         add("-javaagent:" + jarPath + (options == null ? "" : "=" + options));
+        return this;
+    }
+
+    /**
+     * Load Java programming language agent.
+     *
+     * @return this list of options
+     * @since 1.7.1
+     */
+    public JavaOptions javaAgent(File jarPath, String... options) {
+        return javaAgent(jarPath, List.of(options));
+    }
+
+    /**
+     * Load Java programming language agent.
+     *
+     * @return this list of options
+     * @since 1.7.1
+     */
+    public JavaOptions javaAgent(File jarPath, List<String> options) {
+        add("-javaagent:" + jarPath + (options == null || options.isEmpty() ? "" : "=" + StringUtils.join(options, ",")));
         return this;
     }
 
