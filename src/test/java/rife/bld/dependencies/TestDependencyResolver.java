@@ -257,10 +257,10 @@ public class TestDependencyResolver {
         assertNotNull(dependencies);
         assertEquals(4, dependencies.size());
         assertEquals("""
-            org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20
-            com.squareup.okhttp3:okhttp:4.10.0
-            com.squareup.okhttp3:logging-interceptor:4.10.0
-            org.json:json:20230227""", StringUtils.join(dependencies, "\n"));
+            org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22
+            com.squareup.okhttp3:okhttp:4.11.0
+            com.squareup.okhttp3:logging-interceptor:4.11.0
+            org.json:json:20230618""", StringUtils.join(dependencies, "\n"));
     }
 
     @Test
@@ -626,18 +626,19 @@ public class TestDependencyResolver {
         var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(0, 9, 4, "SNAPSHOT")));
         var dependencies = resolver.getAllDependencies(compile, runtime);
         assertNotNull(dependencies);
-        assertEquals(10, dependencies.size());
+        assertEquals(11, dependencies.size());
         assertEquals("""
             net.thauvin.erik:bitly-shorten:0.9.4-SNAPSHOT
-            org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20
-            com.squareup.okhttp3:okhttp:4.10.0
-            com.squareup.okhttp3:logging-interceptor:4.10.0
-            org.json:json:20230227
-            org.jetbrains.kotlin:kotlin-stdlib:1.8.20
-            org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20
-            com.squareup.okio:okio-jvm:3.0.0
-            org.jetbrains.kotlin:kotlin-stdlib-common:1.8.20
-            org.jetbrains:annotations:13.0""", StringUtils.join(dependencies, "\n"));
+            org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22
+            com.squareup.okhttp3:okhttp:4.11.0
+            com.squareup.okhttp3:logging-interceptor:4.11.0
+            org.json:json:20230618
+            org.jetbrains.kotlin:kotlin-stdlib:1.8.22
+            org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22
+            com.squareup.okio:okio:3.2.0
+            org.jetbrains.kotlin:kotlin-stdlib-common:1.8.22
+            org.jetbrains:annotations:13.0
+            com.squareup.okio:okio-jvm:3.2.0""", StringUtils.join(dependencies, "\n"));
     }
 
     @Test

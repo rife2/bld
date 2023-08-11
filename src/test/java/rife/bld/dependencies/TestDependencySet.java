@@ -361,15 +361,16 @@ public class TestDependencySet {
             .include(new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(0, 9, 4, "SNAPSHOT")));
         assertEquals("""
             └─ net.thauvin.erik:bitly-shorten:0.9.4-SNAPSHOT
-               ├─ org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20
-               │  ├─ org.jetbrains.kotlin:kotlin-stdlib:1.8.20
-               │  │  ├─ org.jetbrains.kotlin:kotlin-stdlib-common:1.8.20
+               ├─ org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22
+               │  ├─ org.jetbrains.kotlin:kotlin-stdlib:1.8.22
+               │  │  ├─ org.jetbrains.kotlin:kotlin-stdlib-common:1.8.22
                │  │  └─ org.jetbrains:annotations:13.0
-               │  └─ org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20
-               ├─ com.squareup.okhttp3:okhttp:4.10.0
-               │  └─ com.squareup.okio:okio-jvm:3.0.0
-               ├─ com.squareup.okhttp3:logging-interceptor:4.10.0
-               └─ org.json:json:20230227
+               │  └─ org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22
+               ├─ com.squareup.okhttp3:okhttp:4.11.0
+               │  └─ com.squareup.okio:okio:3.2.0
+               │     └─ com.squareup.okio:okio-jvm:3.2.0
+               ├─ com.squareup.okhttp3:logging-interceptor:4.11.0
+               └─ org.json:json:20230618
             """, dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), compile, runtime));
     }
 }
