@@ -22,6 +22,6 @@ public class RunHelp implements CommandHelp {
         return StringUtils.replace("""
             Runs the project.
                         
-            Usage : ${topic}""", "${topic}", topic);
+            Usage : ${topic} [--args=ARGUMENT...]""", "${topic}", topic);
     }
 }
