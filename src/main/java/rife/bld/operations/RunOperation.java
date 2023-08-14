@@ -18,6 +18,7 @@ import java.util.List;
  * @since 1.5
  */
 public class RunOperation extends AbstractProcessOperation<RunOperation> {
+    public static final String ARGS_OPTION = "--args=";
     protected final List<String> runOptions_ = new ArrayList<>();
 
     /**
@@ -60,8 +61,8 @@ public class RunOperation extends AbstractProcessOperation<RunOperation> {
             var arg = args.get(0);
             if (arg.startsWith("-")) {
                 args.remove(0);
-                if (arg.startsWith("--args=")) {
-                    var runArgs = arg.substring(7);
+                if (arg.startsWith(ARGS_OPTION)) {
+                    var runArgs = arg.substring(ARGS_OPTION.length());
                     if (!runArgs.isBlank()) {
                         runOptions_.addAll(0, Arrays.asList(runArgs.split(" ")));
                     }

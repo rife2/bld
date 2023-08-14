@@ -5,7 +5,7 @@
 package rife.bld.help;
 
 import rife.bld.CommandHelp;
-import rife.tools.StringUtils;
+import rife.bld.operations.RunOperation;
 
 /**
  * Provides help for the run command.
@@ -19,9 +19,9 @@ public class RunHelp implements CommandHelp {
     }
 
     public String getDescription(String topic) {
-        return StringUtils.replace("""
-            Runs the project.
-                        
-            Usage : ${topic} [--args=ARGUMENT...]""", "${topic}", topic);
+        return String.format("""
+                Runs the project.
+                            
+                Usage : %s [%s=ARG...]""", topic, RunOperation.ARGS_OPTION);
     }
 }
