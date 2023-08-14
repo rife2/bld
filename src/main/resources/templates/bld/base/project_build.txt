@@ -11,6 +11,9 @@ public class {{v projectBuild/}} extends BaseProject {
         mainClass = "{{v package/}}.{{v projectMain/}}";
         version = version(0,1,0);
 
+        downloadSources = true;
+        repositories = List.of(MAVEN_CENTRAL);
+
         testOperation().mainClass("{{v package/}}.{{v projectTest/}}");
     }
 
