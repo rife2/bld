@@ -36,7 +36,6 @@ public class RunOperation extends AbstractProcessOperation<RunOperation> {
         }
         args.add(mainClass());
         args.addAll(runOptions());
-        System.out.println(args);
         return args;
     }
 
