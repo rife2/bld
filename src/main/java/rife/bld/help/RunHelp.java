@@ -15,7 +15,7 @@ import rife.bld.operations.RunOperation;
  */
 public class RunHelp implements CommandHelp {
     public String getSummary() {
-        return "Runs the project";
+        return "Runs the project (take option)";
     }
 
     public String getDescription(String topic) {
