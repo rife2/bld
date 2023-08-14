@@ -21,7 +21,7 @@ public class RunHelp implements CommandHelp {
     public String getDescription(String topic) {
         return String.format("""
                 Runs the project.
-                            
-                Usage : %s [%s=ARG...]""", topic, RunOperation.ARGS_OPTION);
+   
+                Usage : %s [%sARG...]""", topic, RunOperation.ARGS_OPTION);
     }
 }
