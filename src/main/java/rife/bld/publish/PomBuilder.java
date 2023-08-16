@@ -131,9 +131,7 @@ public class PomBuilder {
      */
     public static void generateInto(PublishInfo info, DependencyScopes dependencies, File file)
             throws FileUtilsErrorException {
-        var pomBuilder = new PomBuilder();
-        pomBuilder.info_ = info;
-        pomBuilder.dependencies_ = dependencies;
+        var pomBuilder = new PomBuilder().info(info).dependencies(dependencies);
         FileUtils.writeString(pomBuilder.build(), file);
     }
 
