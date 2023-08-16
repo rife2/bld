@@ -106,7 +106,7 @@ public class TestPomBuilder {
         var deps = new DependencyScopes();
         deps.scope(Scope.compile).include(new Dependency("com.uwyn.rife2", "rife2"));
 
-        new PomBuilder().generateInto(new PublishInfo().name("the thing"), deps, temp);
+        PomBuilder.generateInto(new PublishInfo().name("the thing"), deps, temp);
 
         assertEquals("""
                 <?xml version="1.0" encoding="UTF-8"?>

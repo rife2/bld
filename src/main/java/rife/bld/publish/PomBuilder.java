@@ -129,11 +129,12 @@ public class PomBuilder {
      *
      * @since 1.7.1
      */
-    public void generateInto(PublishInfo info, DependencyScopes dependencies, File file)
+    public static void generateInto(PublishInfo info, DependencyScopes dependencies, File file)
             throws FileUtilsErrorException {
-        info_ = info;
-        dependencies_ = dependencies;
-        FileUtils.writeString(build(), file);
+        var pomBuilder = new PomBuilder();
+        pomBuilder.info_ = info;
+        pomBuilder.dependencies_ = dependencies;
+        FileUtils.writeString(pomBuilder.build(), file);
     }
 
     private void addDependencies(Template t, Scope scope) {
