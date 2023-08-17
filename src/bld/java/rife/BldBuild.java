@@ -32,7 +32,7 @@ public class BldBuild extends AbstractRife2Build {
 
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
         scope(test)
-            .include(dependency("org.json", "json", version(20230227)));
+            .include(dependency("org.json", "json", version(20230618)));
 
         var core_directory = new File(workDirectory(), "core");
         var core_src_directory = new File(core_directory, "src");
