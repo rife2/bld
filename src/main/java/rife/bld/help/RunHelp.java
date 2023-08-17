@@ -5,7 +5,7 @@
 package rife.bld.help;
 
 import rife.bld.CommandHelp;
-import rife.tools.StringUtils;
+import rife.bld.operations.RunOperation;
 
 /**
  * Provides help for the run command.
@@ -15,13 +15,13 @@ import rife.tools.StringUtils;
  */
 public class RunHelp implements CommandHelp {
     public String getSummary() {
-        return "Runs the project";
+        return "Runs the project (take option)";
     }
 
     public String getDescription(String topic) {
-        return StringUtils.replace("""
-            Runs the project.
-                        
-            Usage : ${topic}""", "${topic}", topic);
+        return String.format("""
+                Runs the project.
+   
+                Usage : %s [%sARG...]""", topic, RunOperation.ARGS_OPTION);
     }
 }

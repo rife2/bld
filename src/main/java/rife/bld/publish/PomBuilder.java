@@ -7,8 +7,11 @@ package rife.bld.publish;
 import rife.bld.dependencies.*;
 import rife.template.Template;
 import rife.template.TemplateFactory;
+import rife.tools.FileUtils;
 import rife.tools.StringUtils;
+import rife.tools.exceptions.FileUtilsErrorException;
 
+import java.io.File;
 import java.util.Objects;
 
 /**
@@ -119,6 +122,17 @@ public class PomBuilder {
         }
 
         return StringUtils.stripBlankLines(t.getContent());
+    }
+
+    /**
+     * Generates a POM into the given file.
+     *
+     * @since 1.7.1
+     */
+    public static void generateInto(PublishInfo info, DependencyScopes dependencies, File file)
+            throws FileUtilsErrorException {
+        var pomBuilder = new PomBuilder().info(info).dependencies(dependencies);
+        FileUtils.writeString(pomBuilder.build(), file);
     }
 
     private void addDependencies(Template t, Scope scope) {

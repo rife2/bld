@@ -8,6 +8,7 @@ import rife.bld.BaseProject;
 import rife.tools.FileUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -17,6 +18,7 @@ import java.util.List;
  * @since 1.5
  */
 public class RunOperation extends AbstractProcessOperation<RunOperation> {
+    public static final String ARGS_OPTION = "--args=";
     protected final List<String> runOptions_ = new ArrayList<>();
 
     /**
@@ -52,6 +54,22 @@ public class RunOperation extends AbstractProcessOperation<RunOperation> {
         if (project.usesRife2Agent()) {
             operation.javaOptions().javaAgent(project.getRife2AgentFile());
         }
+
+        // parse the run arguments if any
+        var args = project.arguments();
+        while (!args.isEmpty()) {
+            var arg = args.get(0);
+            if (arg.startsWith("-")) {
+                args.remove(0);
+                if (arg.startsWith(ARGS_OPTION)) {
+                    var runArgs = arg.substring(ARGS_OPTION.length());
+                    if (!runArgs.isBlank()) {
+                        runOptions_.addAll(0, Arrays.asList(runArgs.split(" ")));
+                    }
+                }
+            }
+        }
+
         return operation;
     }
 
