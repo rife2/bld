@@ -101,9 +101,8 @@ reason about your build.
 applications.
 
 If you have any questions, suggestions, ideas or just want to chat, feel free
-to post on the [forums](https://github.com/rife2/bld/discussions), to join
-me on [Discord](https://discord.gg/zDG6anEXQX) or to connect with me on
-[Mastodon](https://uwyn.net/@gbevin).
+to post on the [forums](https://forum.uwyn.com) or to join
+us on [Discord](https://discord.gg/zDG6anEXQX).
 
 **Read more in the [full documentation](https://github.com/rife2/bld/wiki)
 and [bld Javadocs](https://rife2.github.io/bld/).**
