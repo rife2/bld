@@ -48,24 +48,22 @@ public class RunOperation extends AbstractProcessOperation<RunOperation> {
      */
     public RunOperation fromProject(BaseProject project) {
         var operation = workDirectory(project.workDirectory())
-            .javaTool(project.javaTool())
-            .classpath(project.runClasspath())
-            .mainClass(project.mainClass());
+                .javaTool(project.javaTool())
+                .classpath(project.runClasspath())
+                .mainClass(project.mainClass());
         if (project.usesRife2Agent()) {
             operation.javaOptions().javaAgent(project.getRife2AgentFile());
         }
 
         // parse the run arguments if any
         var args = project.arguments();
-        while (!args.isEmpty()) {
+        if (!args.isEmpty()) {
             var arg = args.get(0);
-            if (arg.startsWith("-")) {
+            if (arg.startsWith(ARGS_OPTION)) {
                 args.remove(0);
-                if (arg.startsWith(ARGS_OPTION)) {
-                    var runArgs = arg.substring(ARGS_OPTION.length());
-                    if (!runArgs.isBlank()) {
-                        runOptions_.addAll(0, Arrays.asList(runArgs.split(" ")));
-                    }
+                var runArgs = arg.substring(ARGS_OPTION.length());
+                if (!runArgs.isBlank()) {
+                    runOptions_.addAll(0, Arrays.asList(runArgs.split(" ")));
                 }
             }
         }
