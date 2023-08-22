@@ -21,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public record Repository(String location, String username, String password) {
     public static Repository MAVEN_LOCAL = null;
+    public static final Repository GOOGLE = new Repository("https://maven.google.com");
     public static final Repository MAVEN_CENTRAL = new Repository("https://repo1.maven.org/maven2/");
     public static final Repository SONATYPE_RELEASES = new Repository("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/");
     public static final Repository SONATYPE_SNAPSHOTS = new Repository("https://s01.oss.sonatype.org/content/repositories/snapshots/");
