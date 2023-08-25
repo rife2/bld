@@ -98,7 +98,9 @@ public class UberJarOperation extends AbstractOperation<UberJarOperation> {
             .sourceDirectories(stagingDirectory)
             .destinationDirectory(destinationDirectory())
             .destinationFileName(destinationFileName())
-            .excluded(List.of(Pattern.compile("(?:(?:^.*[/\\\\])|^)\\.DS_Store$")))
+            .excluded(List.of(
+                Pattern.compile("(?:(?:^.*[/\\\\])|^)\\.DS_Store$"),
+                Pattern.compile("(?:(?:^.*[/\\\\])|^).+\\.(DSA|RSA|SF)$")))
             .silent(true)
             .execute();
     }
