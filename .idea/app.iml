@@ -10,8 +10,8 @@
       <sourceFolder url="file://$MODULE_DIR$/build/generated" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/core/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/core/src/test/java" isTestSource="true" />
-      <excludeFolder url="file://$MODULE_DIR$/core/src/main/resources/templates" />
-      <excludeFolder url="file://$MODULE_DIR$/src/main/resources/templates" />
+      <sourceFolder url="file://$MODULE_DIR$/core/src/main/resources" type="java-resource" relativeOutputPath="resources" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" relativeOutputPath="resources" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
