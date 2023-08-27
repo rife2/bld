@@ -10,8 +10,7 @@ import rife.bld.dependencies.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static rife.bld.dependencies.Scope.compile;
-import static rife.bld.dependencies.Scope.runtime;
+import static rife.bld.dependencies.Scope.*;
 
 /**
  * Transitively generates a hierarchical tree of dependencies.
@@ -32,15 +31,23 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      */
     public void execute() {
         var compile_tree = executeGenerateCompileDependencies();
+        var provided_tree = executeGenerateProvidedDependencies();
         var runtime_tree = executeGenerateRuntimeDependencies();
+        var test_tree = executeGenerateTestDependencies();
         dependencyTree_.setLength(0);
         dependencyTree_.append(compile_tree);
         dependencyTree_.append(System.lineSeparator());
+        dependencyTree_.append(provided_tree);
+        dependencyTree_.append(System.lineSeparator());
         dependencyTree_.append(runtime_tree);
+        dependencyTree_.append(System.lineSeparator());
+        dependencyTree_.append(test_tree);
         dependencyTree_.append(System.lineSeparator());
 
         System.out.println(compile_tree);
+        System.out.println(provided_tree);
         System.out.println(runtime_tree);
+        System.out.println(test_tree);
     }
 
     /**
@@ -57,6 +64,19 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
     }
 
     /**
+     * Part of the {@link #execute} operation, generates the tree for the provided scope.
+     *
+     * @since 1.7.3
+     */
+    protected String executeGenerateProvidedDependencies() {
+        var provided_tree = dependencies().scope(provided).generateTransitiveDependencyTree(artifactRetriever(), repositories(), compile, runtime);
+        if (provided_tree.isEmpty()) {
+            provided_tree = "no dependencies" + System.lineSeparator();
+        }
+        return "provided:" + System.lineSeparator() + provided_tree;
+    }
+
+    /**
      * Part of the {@link #execute} operation, generates the tree for the runtime scope.
      *
      * @since 1.5.21
@@ -67,6 +87,19 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
             runtime_tree = "no dependencies" + System.lineSeparator();
         }
         return "runtime:" + System.lineSeparator() + runtime_tree;
+    }
+
+    /**
+     * Part of the {@link #execute} operation, generates the tree for the test scope.
+     *
+     * @since 1.7.3
+     */
+    protected String executeGenerateTestDependencies() {
+        var test_tree = dependencies().scope(test).generateTransitiveDependencyTree(artifactRetriever(), repositories(), compile, runtime);
+        if (test_tree.isEmpty()) {
+            test_tree = "no dependencies" + System.lineSeparator();
+        }
+        return "test:" + System.lineSeparator() + test_tree;
     }
 
 

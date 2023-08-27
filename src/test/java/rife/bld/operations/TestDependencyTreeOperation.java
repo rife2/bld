@@ -109,11 +109,85 @@ public class TestDependencyTreeOperation {
                 └─ com.google.zxing:javase:3.5.1
                    ├─ com.google.zxing:core:3.5.1
                    └─ com.beust:jcommander:1.82
+                
+                provided:
+                no dependencies
                                 
                 runtime:
                 └─ org.postgresql:postgresql:42.6.0
                    └─ org.checkerframework:checker-qual:3.31.0
+                
+                test:
+                no dependencies
                                 
+                """, tree);
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testExecutionProvidedTest()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var operation = new DependencyTreeOperation()
+                .repositories(List.of(Repository.MAVEN_CENTRAL));
+            operation.dependencies().scope(Scope.provided)
+                .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
+                .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
+                .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-core", new VersionNumber(10,1,12)))
+                .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-jasper", new VersionNumber(10,1,12)))
+                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+            operation.dependencies().scope(Scope.test)
+                .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
+                .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
+                .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+
+            operation.execute();
+
+            var tree = operation.dependencyTree();
+
+            assertEquals("""
+                compile:
+                no dependencies
+                                
+                provided:
+                ├─ org.jsoup:jsoup:1.16.1
+                ├─ jakarta.servlet:jakarta.servlet-api:5.0.0
+                ├─ org.eclipse.jetty:jetty-server:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-http:11.0.15
+                │  │  └─ org.eclipse.jetty:jetty-util:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-io:11.0.15
+                │  └─ org.slf4j:slf4j-api:2.0.5
+                ├─ org.eclipse.jetty:jetty-servlet:11.0.15
+                │  └─ org.eclipse.jetty:jetty-security:11.0.15
+                ├─ org.apache.tomcat.embed:tomcat-embed-core:10.1.12
+                │  └─ org.apache.tomcat:tomcat-annotations-api:10.1.12
+                ├─ org.apache.tomcat.embed:tomcat-embed-jasper:10.1.12
+                │  ├─ org.apache.tomcat.embed:tomcat-embed-el:10.1.12
+                │  └─ org.eclipse.jdt:ecj:3.33.0
+                └─ net.imagej:ij:1.54d
+                                
+                runtime:
+                no dependencies
+                                
+                test:
+                ├─ org.jsoup:jsoup:1.16.1
+                ├─ jakarta.servlet:jakarta.servlet-api:5.0.0
+                ├─ org.eclipse.jetty:jetty-server:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-http:11.0.15
+                │  │  └─ org.eclipse.jetty:jetty-util:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-io:11.0.15
+                │  └─ org.slf4j:slf4j-api:2.0.5
+                ├─ org.eclipse.jetty:jetty-servlet:11.0.15
+                │  └─ org.eclipse.jetty:jetty-security:11.0.15
+                └─ net.imagej:ij:1.54d
+                
                 """, tree);
         } finally {
             FileUtils.deleteDirectory(tmp);
@@ -184,11 +258,89 @@ public class TestDependencyTreeOperation {
                 └─ com.google.zxing:javase:3.5.1
                    ├─ com.google.zxing:core:3.5.1
                    └─ com.beust:jcommander:1.82
+                
+                provided:
+                no dependencies
                                 
                 runtime:
                 └─ org.postgresql:postgresql:42.6.0
                    └─ org.checkerframework:checker-qual:3.31.0
+                
+                test:
+                no dependencies
                                 
+                """, tree);
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testFromProjectProvidedTest()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var project = new TestProject(tmp);
+            project.createProjectStructure();
+            project.repositories().add(Repository.MAVEN_CENTRAL);
+            project.dependencies().scope(Scope.provided)
+                .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
+                .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
+                .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-core", new VersionNumber(10,1,12)))
+                .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-jasper", new VersionNumber(10,1,12)))
+                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+            project.dependencies().scope(Scope.test)
+                .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
+                .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
+                .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+
+            var operation = new DependencyTreeOperation()
+                .fromProject(project);
+
+            operation.execute();
+
+            var tree = operation.dependencyTree();
+
+            assertEquals("""
+                compile:
+                no dependencies
+                                
+                provided:
+                ├─ org.jsoup:jsoup:1.16.1
+                ├─ jakarta.servlet:jakarta.servlet-api:5.0.0
+                ├─ org.eclipse.jetty:jetty-server:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-http:11.0.15
+                │  │  └─ org.eclipse.jetty:jetty-util:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-io:11.0.15
+                │  └─ org.slf4j:slf4j-api:2.0.5
+                ├─ org.eclipse.jetty:jetty-servlet:11.0.15
+                │  └─ org.eclipse.jetty:jetty-security:11.0.15
+                ├─ org.apache.tomcat.embed:tomcat-embed-core:10.1.12
+                │  └─ org.apache.tomcat:tomcat-annotations-api:10.1.12
+                ├─ org.apache.tomcat.embed:tomcat-embed-jasper:10.1.12
+                │  ├─ org.apache.tomcat.embed:tomcat-embed-el:10.1.12
+                │  └─ org.eclipse.jdt:ecj:3.33.0
+                └─ net.imagej:ij:1.54d
+                                
+                runtime:
+                no dependencies
+                                
+                test:
+                ├─ org.jsoup:jsoup:1.16.1
+                ├─ jakarta.servlet:jakarta.servlet-api:5.0.0
+                ├─ org.eclipse.jetty:jetty-server:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-http:11.0.15
+                │  │  └─ org.eclipse.jetty:jetty-util:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-io:11.0.15
+                │  └─ org.slf4j:slf4j-api:2.0.5
+                ├─ org.eclipse.jetty:jetty-servlet:11.0.15
+                │  └─ org.eclipse.jetty:jetty-security:11.0.15
+                └─ net.imagej:ij:1.54d
+                
                 """, tree);
         } finally {
             FileUtils.deleteDirectory(tmp);
