@@ -20,6 +20,14 @@ public class VersionOperation extends AbstractOperation<VersionOperation> {
      */
     public void execute() {
         if (!silent()) {
+            System.out.println("""
+                     _     _     _
+                    | |   | |   | |
+                    | |__ | | __| |
+                    | '_ \\| |/ _` |
+                    | |_) | | (_| |
+                    |_.__/|_|\\__,_|
+                    """);
             System.out.println("bld " + BldVersion.getVersion());
         }
     }
