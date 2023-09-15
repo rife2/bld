@@ -147,7 +147,7 @@ public record Dependency(String groupId, String artifactId, VersionNumber versio
         if (!classifier.isEmpty()) {
             result.append(":").append(classifier);
         }
-        if (!type.isEmpty() && !type.equals("jar")) {
+        if (!type.isEmpty() && !"jar".equals(type)) {
             result.append("@").append(type);
         }
         return result.toString();

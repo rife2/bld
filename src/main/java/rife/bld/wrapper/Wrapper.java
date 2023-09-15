@@ -496,7 +496,7 @@ public class Wrapper {
 
     private int launchMain(File jarFile, List<String> arguments)
     throws IOException, InterruptedException, FileUtilsErrorException {
-        if (arguments.isEmpty() || !arguments.get(0).equals("--build")) {
+        if (arguments.isEmpty() || !"--build".equals(arguments.get(0))) {
             return launchMainCli(jarFile, arguments);
         }
         return launchMainBuild(jarFile, arguments);

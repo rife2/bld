@@ -34,7 +34,7 @@ public class JUnitOperation extends TestOperation<JUnitOperation, JUnitOptions> 
         }
 
         // add the default JUnit options if none were specified
-        if (testToolOptions().isEmpty() && mainClass().equals(DEFAULT_TEST_TOOL_JUNIT5)) {
+        if (testToolOptions().isEmpty() && DEFAULT_TEST_TOOL_JUNIT5.equals(mainClass())) {
             testToolOptions().defaultOptions();
         }
 
@@ -45,9 +45,9 @@ public class JUnitOperation extends TestOperation<JUnitOperation, JUnitOptions> 
             var argument = arguments.get(0);
             if (argument.startsWith("-")) {
                 arguments.remove(0);
-                if (argument.equals("--junit-help")) {
+                if ("--junit-help".equals(argument)) {
                     testToolOptions().add("--help");
-                } else if (argument.equals("--junit-clear")) {
+                } else if ("--junit-clear".equals(argument)) {
                     testToolOptions().clear();
                 } else {
                     testToolOptions().add(argument);

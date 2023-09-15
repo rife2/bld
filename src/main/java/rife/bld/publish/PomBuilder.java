@@ -151,7 +151,7 @@ public class PomBuilder {
 
                 t.blankValue("dependency-type");
                 t.blankValue("dependency-type-tag");
-                if (!dependency.type().equals("jar")) {
+                if (!"jar".equals(dependency.type())) {
                     t.setValueEncoded("dependency-type", dependency.type());
                     t.setBlock("dependency-type-tag");
                 }
