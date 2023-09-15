@@ -5,7 +5,6 @@
 package rife.bld.operations;
 
 import rife.bld.BaseProject;
-import rife.bld.Project;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.tools.FileUtils;
 import rife.tools.StringUtils;

@@ -5,16 +5,9 @@
 package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
-import rife.bld.dependencies.LocalDependency;
-import rife.bld.dependencies.Scope;
-import rife.bld.operations.exceptions.ExitStatusException;
 import rife.tools.FileUtils;
 
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaFileObject;
-import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;

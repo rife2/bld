@@ -4,8 +4,6 @@
  */
 package rife.bld.operations.exceptions;
 
-import rife.tools.HttpUtils;
-
 import java.io.File;
 import java.io.Serial;
 
