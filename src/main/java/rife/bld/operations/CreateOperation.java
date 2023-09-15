@@ -27,13 +27,13 @@ public class CreateOperation {
         String type = null;
         String package_name = null;
         String project_name = null;
-        if (arguments.size() > 0) {
+        if (!arguments.isEmpty()) {
             type = arguments.remove(0);
         }
-        if (arguments.size() > 0) {
+        if (!arguments.isEmpty()) {
             package_name = arguments.remove(0);
         }
-        if (arguments.size() > 0) {
+        if (!arguments.isEmpty()) {
             project_name = arguments.remove(0);
         }
         if ((type == null || package_name == null || project_name == null) && System.console() == null) {

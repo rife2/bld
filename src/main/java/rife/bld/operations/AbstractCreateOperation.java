@@ -364,10 +364,10 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
     public T fromArguments(List<String> arguments) {
         String package_name = null;
         String project_name = null;
-        if (arguments.size() > 0) {
+        if (!arguments.isEmpty()) {
             package_name = arguments.remove(0);
         }
-        if (arguments.size() > 0) {
+        if (!arguments.isEmpty()) {
             project_name = arguments.remove(0);
         }
         if ((package_name == null || project_name == null) && System.console() == null) {
