@@ -1558,10 +1558,10 @@ public class BaseProject extends BuildExecutor {
                 }
             }
         }
-        finger_print.append(downloadSources());
-        finger_print.append('\n');
-        finger_print.append(downloadJavadoc());
-        finger_print.append('\n');
+        finger_print.append(downloadSources())
+                .append('\n')
+                .append(downloadJavadoc())
+                .append('\n');
 
         try {
             var digest = MessageDigest.getInstance("SHA-1");
