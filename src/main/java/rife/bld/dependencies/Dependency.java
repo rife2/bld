@@ -134,13 +134,13 @@ public record Dependency(String groupId, String artifactId, VersionNumber versio
         if (!classifier().isEmpty()) {
             result.append('-').append(classifier());
         }
-        result.append(".").append(type());
+        result.append('.').append(type());
         return result.toString();
 
     }
 
     public String toString() {
-        var result = new StringBuilder(groupId).append(":").append(artifactId);
+        var result = new StringBuilder(groupId).append(':').append(artifactId);
         if (!version.equals(VersionNumber.UNKNOWN)) {
             result.append(':').append(version);
         }

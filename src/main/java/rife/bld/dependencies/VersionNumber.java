@@ -219,7 +219,7 @@ public record VersionNumber(Integer major, Integer minor, Integer revision, Stri
         var version = new StringBuilder();
         version.append(majorInt());
         if (minor != null || revision != null) {
-            version.append(".");
+            version.append('.');
             version.append(minorInt());
         }
         if (revision != null) {
