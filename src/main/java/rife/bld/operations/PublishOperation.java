@@ -348,12 +348,12 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
         try {
             process.waitFor();
         } catch (InterruptedException e) {
-            throw new SignException(file, e.getMessage());
+            throw new SignException(file, e);
         }
 
         if (process.exitValue() != 0) {
             var error = FileUtils.readString(process.getErrorStream());
-            throw new SignException(file, error);
+            throw new SignException(file);
         }
         return FileUtils.readString(process.getInputStream());
     }

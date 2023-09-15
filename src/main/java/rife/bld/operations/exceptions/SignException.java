@@ -19,10 +19,16 @@ public class SignException extends RuntimeException {
     private final File file_;
     private final String reason_;
 
-    public SignException(File file, String reason) {
-        super("An error occurred while signing '" + file + "':\n" + reason);
+    public SignException(File file) {
+        this(file, null);
+    }
+
+    public SignException(File file, Throwable reason) {
+        super("An error occurred while signing '" + file, reason);
         file_ = file;
-        reason_ = reason;
+        if (reason.getCause() != null && reason.getCause().getMessage() != null)
+            reason_ = reason.getCause().getMessage();
+        else reason_ = "";
     }
 
     public File getFile() {
