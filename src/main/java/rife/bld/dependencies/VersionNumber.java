@@ -223,7 +223,7 @@ public record VersionNumber(Integer major, Integer minor, Integer revision, Stri
             version.append(minorInt());
         }
         if (revision != null) {
-            version.append(".");
+            version.append('.');
             version.append(revisionInt());
         }
         if (qualifier != null && !qualifier.isEmpty()) {

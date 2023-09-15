@@ -364,7 +364,7 @@ public class Wrapper {
         var location = getWrapperDownloadLocation(version);
         var result = new StringBuilder(location);
         if (!location.endsWith("/")) {
-            result.append("/");
+            result.append('/');
         }
         result.append(fileName);
         return result.toString();

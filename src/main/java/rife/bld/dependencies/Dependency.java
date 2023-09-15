@@ -130,9 +130,9 @@ public record Dependency(String groupId, String artifactId, VersionNumber versio
      */
     public String toFileName() {
         var result = new StringBuilder(artifactId());
-        result.append("-").append(version());
+        result.append('-').append(version());
         if (!classifier().isEmpty()) {
-            result.append("-").append(classifier());
+            result.append('-').append(classifier());
         }
         result.append(".").append(type());
         return result.toString();
@@ -142,13 +142,13 @@ public record Dependency(String groupId, String artifactId, VersionNumber versio
     public String toString() {
         var result = new StringBuilder(groupId).append(":").append(artifactId);
         if (!version.equals(VersionNumber.UNKNOWN)) {
-            result.append(":").append(version);
+            result.append(':').append(version);
         }
         if (!classifier.isEmpty()) {
-            result.append(":").append(classifier);
+            result.append(':').append(classifier);
         }
         if (!type.isEmpty() && !"jar".equals(type)) {
-            result.append("@").append(type);
+            result.append('@').append(type);
         }
         return result.toString();
     }

@@ -134,7 +134,7 @@ public class WrapperExtensionResolver {
             contents.append(fingerPrintHash_);
             for (var file : localArtifacts_) {
                 if (file.exists() && file.canRead()) {
-                    contents.append("\n").append(file.lastModified()).append(":").append(file.getAbsolutePath());
+                    contents.append("\n").append(file.lastModified()).append(':').append(file.getAbsolutePath());
                 }
             }
 

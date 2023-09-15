@@ -159,9 +159,9 @@ public record Repository(String location, String username, String password) {
             result.append(location());
         }
         if (!location().endsWith("/")) {
-            result.append("/");
+            result.append('/');
         }
-        return result.append(group_path).append("/").append(artifactId).append("/").toString();
+        return result.append(group_path).append('/').append(artifactId).append('/').toString();
     }
 
     /**
@@ -181,11 +181,11 @@ public record Repository(String location, String username, String password) {
     public String toString() {
         var result = new StringBuilder(location);
         if (username() != null) {
-            result.append(":");
+            result.append(':');
             try {
                 result.append(StringEncryptor.MD5HLO.performEncryption(username(), null));
                 if (password() != null) {
-                    result.append(":");
+                    result.append(':');
                     result.append(StringEncryptor.MD5HLO.performEncryption(password(), null));
                 }
             } catch (NoSuchAlgorithmException e) {

@@ -399,7 +399,7 @@ public class BuildExecutor {
                     fuzzy_regexp.append(ch);
                     fuzzy_regexp.append("\\E.*");
                 }
-                fuzzy_regexp.append("$");
+                fuzzy_regexp.append('$');
                 var fuzzy_pattern = Pattern.compile(fuzzy_regexp.toString());
                 matches.addAll(buildCommands().keySet().stream()
                     .filter(c -> fuzzy_pattern.matcher(c.toLowerCase()).matches())
