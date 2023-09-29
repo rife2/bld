@@ -19,10 +19,6 @@ public class SignException extends RuntimeException {
     private final File file_;
     private final String reason_;
 
-    public SignException(File file) {
-        this(file, null);
-    }
-
     public SignException(File file, Throwable reason) {
         super("An error occurred while signing '" + file, reason);
         file_ = file;
