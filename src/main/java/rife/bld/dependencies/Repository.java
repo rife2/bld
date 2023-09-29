@@ -82,9 +82,11 @@ public record Repository(String location, String username, String password) {
         }
 
         return switch (locationOrName) {
+            case "GOOGLE" -> Repository.GOOGLE;
             case "MAVEN_LOCAL" -> Repository.MAVEN_LOCAL;
             case "MAVEN_CENTRAL" -> Repository.MAVEN_CENTRAL;
             case "SONATYPE_RELEASES" -> Repository.SONATYPE_RELEASES;
+            case "SONATYPE_RELEASES_LEGACY" -> Repository.SONATYPE_RELEASES_LEGACY;
             case "SONATYPE_SNAPSHOTS" -> Repository.SONATYPE_SNAPSHOTS;
             case "SONATYPE_SNAPSHOTS_LEGACY" -> Repository.SONATYPE_SNAPSHOTS_LEGACY;
             case "APACHE" -> Repository.APACHE;
