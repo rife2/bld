@@ -546,7 +546,7 @@ public class TestCreateRife2Operation {
             executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
 
-            assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"));
+            assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"), check_result.toString());
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
