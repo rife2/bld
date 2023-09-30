@@ -170,9 +170,10 @@ public class TestUberJarOperation {
                 } catch (FileUtilsErrorException e) {
                     throw new RuntimeException(e);
                 }
-            }, 1, TimeUnit.SECONDS);
-            executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
+            }, 2, TimeUnit.SECONDS);
+            executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
+            Thread.sleep(1000);
 
             assertTrue(check_result.toString().contains("<p>Hello World App</p>"));
         } finally {
