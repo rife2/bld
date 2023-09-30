@@ -92,8 +92,8 @@ jobs:
     steps:
       - name: Checkout source repository
         uses: actions/checkout@v4
-        clean: true
         with:
+          clean: true
           submodules: 'true'
           fetch-depth: 0
 
