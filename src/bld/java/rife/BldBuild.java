@@ -132,9 +132,11 @@ public class BldBuild extends AbstractRife2Build {
                             f.perms(0755);
                         });
                     });
-                    b.dir("lib", l -> l.file("bld-wrapper.jar", f -> f.move(path(tmp, "lib", "bld", "bld-wrapper.jar"))));
+                    b.dir("lib", l -> {
+                        l.file("bld-wrapper.jar", f -> f.move(path(tmp, "lib", "bld", "bld-wrapper.jar")));
+                    });
                 });
-                t.dir("lib", DirBuilder::delete);
+                t.dir("lib", l -> l.delete());
             });
 
             zipBldOperation
