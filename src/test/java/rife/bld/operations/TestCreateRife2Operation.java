@@ -283,19 +283,17 @@ public class TestCreateRife2Operation {
                     /myapp/src/test/resources""").matcher(FileUtils.generateDirectoryListing(tmp)).matches());
 
             var run_operation = new RunOperation().fromProject(create_operation.project());
-            StringBuilder check_result;
-            try (var executor = Executors.newSingleThreadScheduledExecutor()) {
-                var checked_url = new URL("http://localhost:8080");
-                check_result = new StringBuilder();
-                executor.schedule(() -> {
-                    try {
-                        check_result.append(FileUtils.readString(checked_url));
-                    } catch (FileUtilsErrorException e) {
-                        throw new RuntimeException(e);
-                    }
-                }, 1, TimeUnit.SECONDS);
-                executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
-            }
+            var executor = Executors.newSingleThreadScheduledExecutor();
+            var checked_url = new URL("http://localhost:8080");
+            var check_result = new StringBuilder();
+            executor.schedule(() -> {
+                try {
+                    check_result.append(FileUtils.readString(checked_url));
+                } catch (FileUtilsErrorException e) {
+                    throw new RuntimeException(e);
+                }
+            }, 1, TimeUnit.SECONDS);
+            executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
 
             assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"));
@@ -535,19 +533,17 @@ public class TestCreateRife2Operation {
                 /myapp/src/test/resources""").matcher(FileUtils.generateDirectoryListing(tmp)).matches());
 
             var run_operation = new RunOperation().fromProject(create_operation.project());
-            StringBuilder check_result;
-            try (var executor = Executors.newSingleThreadScheduledExecutor()) {
-                var checked_url = new URL("http://localhost:8080");
-                check_result = new StringBuilder();
-                executor.schedule(() -> {
-                    try {
-                        check_result.append(FileUtils.readString(checked_url));
-                    } catch (FileUtilsErrorException e) {
-                        throw new RuntimeException(e);
-                    }
-                }, 1, TimeUnit.SECONDS);
-                executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
-            }
+            var executor = Executors.newSingleThreadScheduledExecutor();
+            var checked_url = new URL("http://localhost:8080");
+            var check_result = new StringBuilder();
+            executor.schedule(() -> {
+                try {
+                    check_result.append(FileUtils.readString(checked_url));
+                } catch (FileUtilsErrorException e) {
+                    throw new RuntimeException(e);
+                }
+            }, 1, TimeUnit.SECONDS);
+            executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
 
             assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"), check_result.toString());
@@ -703,19 +699,17 @@ public class TestCreateRife2Operation {
                 /myapp/src/test/resources""").matcher(FileUtils.generateDirectoryListing(tmp)).matches());
 
             var run_operation = new RunOperation().fromProject(create_operation.project());
-            StringBuilder check_result;
-            try (var executor = Executors.newSingleThreadScheduledExecutor()) {
-                var checked_url = new URL("http://localhost:8080");
-                check_result = new StringBuilder();
-                executor.schedule(() -> {
-                    try {
-                        check_result.append(FileUtils.readString(checked_url));
-                    } catch (FileUtilsErrorException e) {
-                        throw new RuntimeException(e);
-                    }
-                }, 1, TimeUnit.SECONDS);
-                executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
-            }
+            var executor = Executors.newSingleThreadScheduledExecutor();
+            var checked_url = new URL("http://localhost:8080");
+            var check_result = new StringBuilder();
+            executor.schedule(() -> {
+                try {
+                    check_result.append(FileUtils.readString(checked_url));
+                } catch (FileUtilsErrorException e) {
+                    throw new RuntimeException(e);
+                }
+            }, 1, TimeUnit.SECONDS);
+            executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
 
             assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"));
