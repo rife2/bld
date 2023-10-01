@@ -56,7 +56,8 @@ public class BldBuild extends AbstractRife2Build {
             .mainSourceDirectories(antlr4Operation.outputDirectory(), core_src_main_java_directory)
             .testSourceDirectories(core_src_test_java_directory)
             .compileOptions()
-                .debuggingInfo(JavacOptions.DebuggingInfo.ALL);
+                .debuggingInfo(JavacOptions.DebuggingInfo.ALL)
+                .addAll(List.of("-encoding", "UTF-8"));
 
         jarOperation()
             .sourceDirectories(core_src_main_resources_directory)

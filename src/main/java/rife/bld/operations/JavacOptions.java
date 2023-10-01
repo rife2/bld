@@ -78,7 +78,7 @@ public class JavacOptions extends ArrayList<String> {
      */
     public JavacOptions encoding(String name) {
         add("-encoding");
-        add("name");
+        add(name);
         return this;
     }
 

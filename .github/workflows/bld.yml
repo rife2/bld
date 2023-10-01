@@ -110,3 +110,29 @@ jobs:
           -Dtest.postgres=true -Dtest.mysql=true -Dtest.mariadb=true -Dtest.oracle=true -Dtest.oracle-free=true
           -DtestsBadgeUrl=https://rife2.com/tests-badge/update/com.uwyn.rife2/bld
           -DtestsBadgeApiKey=${{ secrets.TESTS_BADGE_API_KEY }}
+
+  build-bld-project-macos:
+    runs-on: macos-latest
+
+    strategy:
+      matrix:
+        java-version: [ 17, 20 ]
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          submodules: 'true'
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: ${{ matrix.java-version }}
+          check-latest: true
+
+      - name: Run tests
+        run: >-
+          ./bld clean download compile test
