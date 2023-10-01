@@ -189,7 +189,13 @@ public abstract class ArtifactRetriever {
     }
 
     private static URLConnection openUrlConnection(RepositoryArtifact artifact) throws IOException {
-        var connection = new URL(artifact.location()).openConnection();
+        String location;
+        if (artifact.location().matches("[a-z][a-z0-9+\\-.]*://.*")) {
+            location = artifact.location();
+        } else {
+            location = new File(artifact.location()).toURI().toString();
+        }
+        var connection = new URL(location).openConnection();
         connection.setUseCaches(false);
         connection.setRequestProperty("User-Agent", "bld " + BldVersion.getVersion());
         return connection;

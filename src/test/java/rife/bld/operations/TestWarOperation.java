@@ -15,7 +15,6 @@ import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestWarOperation {
     @Test

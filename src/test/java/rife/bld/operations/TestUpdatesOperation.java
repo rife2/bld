@@ -5,7 +5,6 @@
 package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
-import rife.bld.dependencies.DependencyScopes;
 import rife.bld.WebProject;
 import rife.bld.dependencies.*;
 import rife.tools.FileUtils;
