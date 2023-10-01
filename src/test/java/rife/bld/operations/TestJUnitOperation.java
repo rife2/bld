@@ -6,6 +6,7 @@ package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
 import rife.tools.FileUtils;
+import rife.tools.StringUtils;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -190,7 +191,7 @@ public class TestJUnitOperation {
                     return true;
                 })
                 .execute();
-            assertTrue(check_result.toString().contains("""
+            assertTrue(check_result.toString().contains(StringUtils.convertLineSeparator("""
                 [         2 containers found      ]
                 [         0 containers skipped    ]
                 [         2 containers started    ]
@@ -203,7 +204,7 @@ public class TestJUnitOperation {
                 [         0 tests aborted         ]
                 [         1 tests successful      ]
                 [         0 tests failed          ]
-                """));
+                """)));
 
         } finally {
             FileUtils.deleteDirectory(tmp);

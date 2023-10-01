@@ -354,7 +354,7 @@ public class TestJavadocOperation {
 
             var diagnostic1 = operation.diagnostics().get(0);
 
-            assertEquals("/Source1.java", diagnostic1.getSource().toUri().getPath().substring(tmp.getAbsolutePath().length()));
+            assertEquals("Source1.java", diagnostic1.getSource().toUri().getPath().substring(tmp.toURI().getPath().length()));
 
             assertFalse(build_html1.exists());
             assertFalse(build_html2.exists());

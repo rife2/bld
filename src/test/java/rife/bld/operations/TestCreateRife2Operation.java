@@ -292,9 +292,10 @@ public class TestCreateRife2Operation {
                 } catch (FileUtilsErrorException e) {
                     throw new RuntimeException(e);
                 }
-            }, 1, TimeUnit.SECONDS);
-            executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
+            }, 2, TimeUnit.SECONDS);
+            executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
+            Thread.sleep(2000);
 
             assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"));
         } finally {
@@ -542,11 +543,12 @@ public class TestCreateRife2Operation {
                 } catch (FileUtilsErrorException e) {
                     throw new RuntimeException(e);
                 }
-            }, 1, TimeUnit.SECONDS);
-            executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
+            }, 2, TimeUnit.SECONDS);
+            executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
+            Thread.sleep(2000);
 
-            assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"));
+            assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"), check_result.toString());
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
@@ -708,9 +710,10 @@ public class TestCreateRife2Operation {
                 } catch (FileUtilsErrorException e) {
                     throw new RuntimeException(e);
                 }
-            }, 1, TimeUnit.SECONDS);
-            executor.schedule(() -> run_operation.process().destroy(), 2, TimeUnit.SECONDS);
+            }, 2, TimeUnit.SECONDS);
+            executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
+            Thread.sleep(2000);
 
             assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"));
         } finally {

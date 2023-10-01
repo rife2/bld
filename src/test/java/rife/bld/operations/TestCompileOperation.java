@@ -11,6 +11,7 @@ import rife.tools.FileUtils;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -305,11 +306,11 @@ public class TestCompileOperation {
             var diagnostic4 = operation.diagnostics().get(3);
             var diagnostic5 = operation.diagnostics().get(4);
 
-            assertEquals("/Source1.java", diagnostic1.getSource().toUri().getPath().substring(tmp.getAbsolutePath().length()));
-            assertEquals("/Source3.java", diagnostic2.getSource().toUri().getPath().substring(tmp.getAbsolutePath().length()));
-            assertEquals("/Source3.java", diagnostic3.getSource().toUri().getPath().substring(tmp.getAbsolutePath().length()));
-            assertEquals("/Source3.java", diagnostic4.getSource().toUri().getPath().substring(tmp.getAbsolutePath().length()));
-            assertEquals("/Source3.java", diagnostic5.getSource().toUri().getPath().substring(tmp.getAbsolutePath().length()));
+            assertEquals("Source1.java", diagnostic1.getSource().toUri().getPath().substring(tmp.toURI().getPath().length()));
+            assertEquals("Source3.java", diagnostic2.getSource().toUri().getPath().substring(tmp.toURI().getPath().length()));
+            assertEquals("Source3.java", diagnostic3.getSource().toUri().getPath().substring(tmp.toURI().getPath().length()));
+            assertEquals("Source3.java", diagnostic4.getSource().toUri().getPath().substring(tmp.toURI().getPath().length()));
+            assertEquals("Source3.java", diagnostic5.getSource().toUri().getPath().substring(tmp.toURI().getPath().length()));
 
             assertFalse(build_main_class1.exists());
             assertFalse(build_main_class2.exists());

@@ -7,8 +7,10 @@ package rife.bld.dependencies;
 import rife.ioc.HierarchicalProperties;
 import rife.tools.StringEncryptor;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.regex.Pattern;
 
 /**
  * Contains the information required to locate a Maven-compatible repository.
@@ -106,6 +108,12 @@ public record Repository(String location, String username, String password) {
         this(location, null, null);
     }
 
+    private final static Pattern WINDOWS_ABSOLUTE_PATH = Pattern.compile("^\\p{L}:\\\\");
+
+    private boolean isWindowsLocation() {
+        return WINDOWS_ABSOLUTE_PATH.matcher(location()).find();
+    }
+
     /**
      * Indicates whether this repository is local.
      *
@@ -114,7 +122,7 @@ public record Repository(String location, String username, String password) {
      * @since 1.5.10
      */
     public boolean isLocal() {
-        return location().startsWith("/") || location().startsWith("file:");
+        return location().startsWith("/") || location().startsWith("file:") || isWindowsLocation();
     }
 
     /**
@@ -150,9 +158,10 @@ public record Repository(String location, String username, String password) {
      * @since 1.5.10
      */
     public String getArtifactLocation(String groupId, String artifactId) {
-        var group_path = groupId.replace(".", "/");
+        var separator = "/";
         var result = new StringBuilder();
         if (isLocal()) {
+            separator = File.separator;
             if (location().startsWith("file://")) {
                 result.append(location().substring("file://".length()));
             } else {
@@ -161,10 +170,11 @@ public record Repository(String location, String username, String password) {
         } else {
             result.append(location());
         }
-        if (!location().endsWith("/")) {
-            result.append('/');
+        if (!location().endsWith(separator)) {
+            result.append(separator);
         }
-        return result.append(group_path).append('/').append(artifactId).append('/').toString();
+        var group_path = groupId.replace(".", separator);
+        return result.append(group_path).append(separator).append(artifactId).append(separator).toString();
     }
 
     /**

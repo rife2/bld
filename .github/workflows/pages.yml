@@ -30,29 +30,30 @@ jobs:
 
     steps:
       - name: Checkout source repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
+          clean: true
           submodules: 'true'
           fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'
+          distribution: 'corretto'
           java-version: 17
 
       - name: Build Javadocs
-        run: ./bld download clean compile javadoc
+        run: ./bld clean download clean compile javadoc
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
           # Upload generated Javadocs repository
           path: 'build/javadoc/'
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
