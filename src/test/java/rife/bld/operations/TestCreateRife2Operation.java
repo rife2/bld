@@ -295,7 +295,7 @@ public class TestCreateRife2Operation {
             }, 2, TimeUnit.SECONDS);
             executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
-            Thread.sleep(1000);
+            Thread.sleep(2000);
 
             assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"));
         } finally {
@@ -546,7 +546,7 @@ public class TestCreateRife2Operation {
             }, 2, TimeUnit.SECONDS);
             executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
-            Thread.sleep(1000);
+            Thread.sleep(2000);
 
             assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"), check_result.toString());
         } finally {
@@ -713,7 +713,7 @@ public class TestCreateRife2Operation {
             }, 2, TimeUnit.SECONDS);
             executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
             assertThrows(ExitStatusException.class, run_operation::execute);
-            Thread.sleep(1000);
+            Thread.sleep(2000);
 
             assertTrue(check_result.toString().contains("<p>Hello World Myapp</p>"));
         } finally {
