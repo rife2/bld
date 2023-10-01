@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import rife.bld.WebProject;
 import rife.bld.dependencies.*;
 import rife.tools.FileUtils;
+import rife.tools.StringUtils;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -80,7 +81,7 @@ public class TestDependencyTreeOperation {
 
             var tree = operation.dependencyTree();
 
-            assertEquals("""
+            assertEquals(StringUtils.convertLineSeparator("""
                 compile:
                 ├─ com.uwyn.rife2:rife2:1.5.20
                 ├─ com.stripe:stripe-java:20.136.0
@@ -120,7 +121,7 @@ public class TestDependencyTreeOperation {
                 test:
                 no dependencies
                                 
-                """, tree);
+                """), tree);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
@@ -152,7 +153,7 @@ public class TestDependencyTreeOperation {
 
             var tree = operation.dependencyTree();
 
-            assertEquals("""
+            assertEquals(StringUtils.convertLineSeparator("""
                 compile:
                 no dependencies
                                 
@@ -188,7 +189,7 @@ public class TestDependencyTreeOperation {
                 │  └─ org.eclipse.jetty:jetty-security:11.0.15
                 └─ net.imagej:ij:1.54d
                 
-                """, tree);
+                """), tree);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
@@ -229,7 +230,7 @@ public class TestDependencyTreeOperation {
 
             var tree = operation.dependencyTree();
 
-            assertEquals("""
+            assertEquals(StringUtils.convertLineSeparator("""
                 compile:
                 ├─ com.uwyn.rife2:rife2:1.5.20
                 ├─ com.stripe:stripe-java:20.136.0
@@ -269,7 +270,7 @@ public class TestDependencyTreeOperation {
                 test:
                 no dependencies
                                 
-                """, tree);
+                """), tree);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
@@ -305,7 +306,7 @@ public class TestDependencyTreeOperation {
 
             var tree = operation.dependencyTree();
 
-            assertEquals("""
+            assertEquals(StringUtils.convertLineSeparator("""
                 compile:
                 no dependencies
                                 
@@ -341,7 +342,7 @@ public class TestDependencyTreeOperation {
                 │  └─ org.eclipse.jetty:jetty-security:11.0.15
                 └─ net.imagej:ij:1.54d
                 
-                """, tree);
+                """), tree);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }

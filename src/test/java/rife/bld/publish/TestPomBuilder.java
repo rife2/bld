@@ -9,6 +9,7 @@ import rife.bld.dependencies.Dependency;
 import rife.bld.dependencies.DependencyScopes;
 import rife.bld.dependencies.Scope;
 import rife.bld.dependencies.VersionNumber;
+import rife.tools.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -108,7 +109,7 @@ public class TestPomBuilder {
 
         PomBuilder.generateInto(new PublishInfo().name("the thing"), deps, temp);
 
-        assertEquals("""
+        assertEquals(StringUtils.convertLineSeparator("""
                 <?xml version="1.0" encoding="UTF-8"?>
                 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -126,7 +127,7 @@ public class TestPomBuilder {
                       <scope>compile</scope>
                     </dependency>
                   </dependencies>
-                </project>""", String.join(System.lineSeparator(), Files.readAllLines(temp.toPath())));
+                </project>"""), String.join(System.lineSeparator(), Files.readAllLines(temp.toPath())));
     }
 
     @Test

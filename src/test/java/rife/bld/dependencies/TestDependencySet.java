@@ -57,25 +57,25 @@ public class TestDependencySet {
 
         var set_union1 = new DependencySet(set1);
         set_union1.addAll(set2);
-        assertEquals("""
+        assertEquals(StringUtils.convertLineSeparator("""
             org.eclipse.jetty:jetty-server:11.0.14
             org.eclipse.jetty.toolchain:jetty-jakarta-servlet-api:5.0.2
             org.eclipse.jetty:jetty-http:11.0.14
             org.eclipse.jetty:jetty-io:11.0.14
             org.eclipse.jetty:jetty-util:11.0.14
             org.slf4j:slf4j-simple:2.0.6
-            org.slf4j:slf4j-api:2.0.6""", StringUtils.join(set_union1, "\n"));
+            org.slf4j:slf4j-api:2.0.6"""), StringUtils.join(set_union1, System.lineSeparator()));
 
         var set_union2 = new DependencySet(set2);
         set_union2.addAll(set1);
-        assertEquals("""
+        assertEquals(StringUtils.convertLineSeparator("""
             org.slf4j:slf4j-simple:2.0.6
             org.slf4j:slf4j-api:2.0.6
             org.eclipse.jetty:jetty-server:11.0.14
             org.eclipse.jetty.toolchain:jetty-jakarta-servlet-api:5.0.2
             org.eclipse.jetty:jetty-http:11.0.14
             org.eclipse.jetty:jetty-io:11.0.14
-            org.eclipse.jetty:jetty-util:11.0.14""", StringUtils.join(set_union2, "\n"));
+            org.eclipse.jetty:jetty-util:11.0.14"""), StringUtils.join(set_union2, System.lineSeparator()));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class TestDependencySet {
         var dependencies = new DependencySet()
             .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)))
             .include(new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2, 0, 6)));
-        assertEquals("""
+        assertEquals(StringUtils.convertLineSeparator("""
             ├─ org.eclipse.jetty:jetty-server:11.0.14
             │  ├─ org.eclipse.jetty.toolchain:jetty-jakarta-servlet-api:5.0.2
             │  ├─ org.eclipse.jetty:jetty-http:11.0.14
@@ -91,14 +91,14 @@ public class TestDependencySet {
             │  └─ org.eclipse.jetty:jetty-io:11.0.14
             └─ org.slf4j:slf4j-simple:2.0.6
                └─ org.slf4j:slf4j-api:2.0.6
-            """, dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
     void testGenerateDependencyTreeSpringBoot() {
         var dependencies = new DependencySet()
             .include(new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
-        assertEquals("""
+        assertEquals(StringUtils.convertLineSeparator("""
             └─ org.springframework.boot:spring-boot-starter:3.0.4
                ├─ org.springframework.boot:spring-boot:3.0.4
                │  └─ org.springframework:spring-context:6.0.6
@@ -117,14 +117,14 @@ public class TestDependencySet {
                ├─ org.springframework:spring-core:6.0.6
                │  └─ org.springframework:spring-jcl:6.0.6
                └─ org.yaml:snakeyaml:1.33
-            """, dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
     void testGenerateDependencyTreeMaven() {
         var dependencies = new DependencySet()
             .include(new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
-        assertEquals("""
+        assertEquals(StringUtils.convertLineSeparator("""
             └─ org.apache.maven:maven-core:3.9.0
                ├─ org.apache.maven:maven-model:3.9.0
                ├─ org.apache.maven:maven-settings:3.9.0
@@ -157,14 +157,14 @@ public class TestDependencySet {
                ├─ org.codehaus.plexus:plexus-component-annotations:2.1.0
                ├─ org.apache.commons:commons-lang3:3.8.1
                └─ org.slf4j:slf4j-api:1.7.36
-            """, dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
     void testGenerateDependencyTreePlay() {
         var dependencies = new DependencySet()
             .include(new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
-        assertEquals("""
+        assertEquals(StringUtils.convertLineSeparator("""
             └─ com.typesafe.play:play_2.13:2.8.19
                ├─ org.scala-lang:scala-library:2.13.10
                ├─ com.typesafe.play:build-link:2.8.19
@@ -213,14 +213,14 @@ public class TestDependencySet {
                ├─ org.scala-lang.modules:scala-java8-compat_2.13:1.0.2
                ├─ com.typesafe:ssl-config-core_2.13:0.4.3
                └─ org.scala-lang.modules:scala-parser-combinators_2.13:1.1.2
-            """, dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
     void testGenerateDependencyTreeVaadin() {
         var dependencies = new DependencySet()
             .include(new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
-        assertEquals("""
+        assertEquals(StringUtils.convertLineSeparator("""
             └─ com.vaadin:vaadin:23.3.7
                ├─ com.vaadin:vaadin-core:23.3.7
                │  ├─ com.vaadin:flow-server:23.3.4
@@ -309,7 +309,7 @@ public class TestDependencySet {
                      │  ├─ net.java.dev.jna:jna:5.11.0
                      │  └─ net.java.dev.jna:jna-platform:5.11.0
                      └─ com.auth0:java-jwt:3.19.2
-            """, dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
@@ -324,7 +324,7 @@ public class TestDependencySet {
             .include(new Dependency("commons-codec", "commons-codec", new VersionNumber(1,15)))
             .include(new Dependency("org.apache.httpcomponents", "httpcore", new VersionNumber(4,4,16)))
             .include(new Dependency("com.google.zxing", "javase", new VersionNumber(3,5,1)));
-        assertEquals("""
+        assertEquals(StringUtils.convertLineSeparator("""
             ├─ com.uwyn.rife2:rife2:1.5.20
             ├─ com.stripe:stripe-java:20.136.0
             ├─ org.json:json:20230227
@@ -352,14 +352,14 @@ public class TestDependencySet {
             └─ com.google.zxing:javase:3.5.1
                ├─ com.google.zxing:core:3.5.1
                └─ com.beust:jcommander:1.82
-            """, dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
     void testGenerateDependencyTreeCompileRuntime() {
         var dependencies = new DependencySet()
             .include(new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(0, 9, 4, "SNAPSHOT")));
-        assertEquals("""
+        assertEquals(StringUtils.convertLineSeparator("""
             └─ net.thauvin.erik:bitly-shorten:0.9.4-SNAPSHOT
                ├─ org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22
                │  ├─ org.jetbrains.kotlin:kotlin-stdlib:1.8.22
@@ -371,6 +371,6 @@ public class TestDependencySet {
                │     └─ com.squareup.okio:okio-jvm:3.2.0
                ├─ com.squareup.okhttp3:logging-interceptor:4.11.0
                └─ org.json:json:20230618
-            """, dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), compile, runtime));
+            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), compile, runtime));
     }
 }
