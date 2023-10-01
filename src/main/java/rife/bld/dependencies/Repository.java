@@ -161,7 +161,9 @@ public record Repository(String location, String username, String password) {
         var separator = "/";
         var result = new StringBuilder();
         if (isLocal()) {
-            separator = File.separator;
+            if (isWindowsLocation()) {
+                separator = File.separator;
+            }
             if (location().startsWith("file://")) {
                 result.append(location().substring("file://".length()));
             } else {

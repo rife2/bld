@@ -5,6 +5,8 @@
 package rife.bld.dependencies;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import rife.ioc.HierarchicalProperties;
 
 import java.nio.file.Path;
@@ -79,10 +81,24 @@ public class TestRepository {
     }
 
     @Test
+    @EnabledOnOs(OS.WINDOWS)
+    void testArtifactLocationWindows() {
+        var repository1 = new Repository("c:\\local\\repo");
+        assertNotNull(repository1);
+        assertEquals("c:\\local\\repo\\groupId1\\artifactId1\\", repository1.getArtifactLocation("groupId1", "artifactId1"));
+
+        var repository2 = new Repository("E:\\local\\repo");
+        assertNotNull(repository2);
+        assertEquals("E:\\local\\repo\\groupId2\\artifactId2\\", repository2.getArtifactLocation("groupId2", "artifactId2"));
+    }
+
+    @Test
     void testIsLocal() {
         assertFalse(new Repository("http://my.repo").isLocal());
         assertTrue(new Repository("file:///local/repo").isLocal());
         assertTrue(new Repository("//local/repo").isLocal());
+        assertTrue(new Repository("c:\\local\\repo").isLocal());
+        assertTrue(new Repository("E:\\local\\repo").isLocal());
     }
 
     @Test
