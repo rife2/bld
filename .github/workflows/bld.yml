@@ -3,7 +3,7 @@ name: bld-ci
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  build-bld-project:
+  build-linux:
     runs-on: ubuntu-latest
 
     services:
@@ -111,7 +111,7 @@ jobs:
           -DtestsBadgeUrl=https://rife2.com/tests-badge/update/com.uwyn.rife2/bld
           -DtestsBadgeApiKey=${{ secrets.TESTS_BADGE_API_KEY }}
 
-  build-bld-project-macos:
+  build-macos:
     runs-on: macos-latest
 
     strategy:
