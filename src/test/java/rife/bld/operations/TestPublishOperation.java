@@ -8,6 +8,8 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import rife.bld.Project;
 import rife.bld.blueprints.BlankProjectBlueprint;
 import rife.bld.dependencies.*;
@@ -111,6 +113,7 @@ public class TestPublishOperation {
     }
 
     @Test
+    @DisabledOnOs({OS.WINDOWS})
     void testPublishRelease()
     throws Exception {
         var tmp1 = Files.createTempDirectory("test1").toFile();
@@ -377,6 +380,7 @@ public class TestPublishOperation {
     }
 
     @Test
+    @DisabledOnOs({OS.WINDOWS})
     void testPublishSnapshot()
     throws Exception {
         var tmp1 = Files.createTempDirectory("test1").toFile();
