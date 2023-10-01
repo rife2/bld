@@ -161,7 +161,7 @@ public class TestJarOperation {
                 while (e.hasMoreElements()) {
                     var jar_entry = e.nextElement();
                     content.append(jar_entry.getName());
-                    content.append("\n");
+                    content.append('\n');
                 }
             }
 
@@ -203,7 +203,7 @@ public class TestJarOperation {
                 while (e.hasMoreElements()) {
                     var jar_entry = e.nextElement();
                     content.append(jar_entry.getName());
-                    content.append("\n");
+                    content.append('\n');
                 }
             }
 

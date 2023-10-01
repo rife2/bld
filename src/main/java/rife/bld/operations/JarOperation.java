@@ -6,7 +6,6 @@ package rife.bld.operations;
 
 import rife.bld.BaseProject;
 import rife.bld.NamedFile;
-import rife.bld.Project;
 import rife.tools.FileUtils;
 import rife.tools.StringUtils;
 
@@ -95,6 +94,7 @@ public class JarOperation extends AbstractOperation<JarOperation> {
             // don't use putAll since Attributes does an instanceof check
             // on the map being passed in, causing it to fail if it's not
             // and instance of Attributes
+            //noinspection UseBulkOperation
             attributes.put(entry.getKey(), entry.getValue());
             // ^^^ READ above, don't use putAll
         }

@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestUberJarOperation {
     @Test

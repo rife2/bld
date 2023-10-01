@@ -26,6 +26,7 @@ public record Repository(String location, String username, String password) {
     public static final Repository GOOGLE = new Repository("https://maven.google.com/");
     public static final Repository MAVEN_CENTRAL = new Repository("https://repo1.maven.org/maven2/");
     public static final Repository SONATYPE_RELEASES = new Repository("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/");
+    public static final Repository SONATYPE_RELEASES_LEGACY = new Repository("https://oss.sonatype.org/service/local/staging/deploy/maven2/");
     public static final Repository SONATYPE_SNAPSHOTS = new Repository("https://s01.oss.sonatype.org/content/repositories/snapshots/");
     public static final Repository SONATYPE_SNAPSHOTS_LEGACY = new Repository("https://oss.sonatype.org/content/repositories/snapshots/");
     public static final Repository APACHE = new Repository("https://repo.maven.apache.org/maven2/");
@@ -83,9 +84,11 @@ public record Repository(String location, String username, String password) {
         }
 
         return switch (locationOrName) {
+            case "GOOGLE" -> Repository.GOOGLE;
             case "MAVEN_LOCAL" -> Repository.MAVEN_LOCAL;
             case "MAVEN_CENTRAL" -> Repository.MAVEN_CENTRAL;
             case "SONATYPE_RELEASES" -> Repository.SONATYPE_RELEASES;
+            case "SONATYPE_RELEASES_LEGACY" -> Repository.SONATYPE_RELEASES_LEGACY;
             case "SONATYPE_SNAPSHOTS" -> Repository.SONATYPE_SNAPSHOTS;
             case "SONATYPE_SNAPSHOTS_LEGACY" -> Repository.SONATYPE_SNAPSHOTS_LEGACY;
             case "APACHE" -> Repository.APACHE;
@@ -191,11 +194,11 @@ public record Repository(String location, String username, String password) {
     public String toString() {
         var result = new StringBuilder(location);
         if (username() != null) {
-            result.append(":");
+            result.append(':');
             try {
                 result.append(StringEncryptor.MD5HLO.performEncryption(username(), null));
                 if (password() != null) {
-                    result.append(":");
+                    result.append(':');
                     result.append(StringEncryptor.MD5HLO.performEncryption(password(), null));
                 }
             } catch (NoSuchAlgorithmException e) {

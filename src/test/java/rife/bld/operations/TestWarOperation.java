@@ -15,7 +15,6 @@ import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestWarOperation {
     @Test
@@ -138,7 +137,7 @@ public class TestWarOperation {
                 while (e.hasMoreElements()) {
                     var jar_entry = e.nextElement();
                     content.append(jar_entry.getName());
-                    content.append("\n");
+                    content.append('\n');
                 }
             }
 

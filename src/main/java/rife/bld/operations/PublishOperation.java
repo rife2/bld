@@ -165,15 +165,15 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
     protected void executePublishArtifacts(Repository repository, VersionNumber actualVersion) {
         // upload artifacts
         for (var artifact : artifacts()) {
-            var artifact_name = new StringBuilder(info().artifactId()).append("-").append(actualVersion);
+            var artifact_name = new StringBuilder(info().artifactId()).append('-').append(actualVersion);
             if (!artifact.classifier().isEmpty()) {
-                artifact_name.append("-").append(artifact.classifier());
+                artifact_name.append('-').append(artifact.classifier());
             }
             var type = artifact.type();
             if (type == null) {
                 type = "jar";
             }
-            artifact_name.append(".").append(type);
+            artifact_name.append('.').append(type);
 
             executePublishFileArtifact(repository, artifact.file(), info().version() + "/" + artifact_name);
         }

@@ -220,13 +220,17 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
         for (var entry : project_.dependencies().entrySet()) {
             build_template.blankValue("dependencies");
 
+            var version_string = new StringBuilder(0);
             for (var dependency : entry.getValue()) {
                 build_template.setValue("groupId", dependency.groupId());
                 build_template.setValue("artifactId", dependency.artifactId());
                 var version = dependency.version();
-                var version_string = version.major() + "," + version.minor() + "," + version.revision();
+                version_string.setLength(0);
+                version_string.append(version.major()).append(',')
+                        .append(version.minor()).append(',')
+                        .append(version.revision());
                 if (!version.qualifier().isEmpty()) {
-                    version_string += ",\"" + version.qualifier() + "\"";
+                    version_string.append(",\"" ).append(version.qualifier()).append('"');
                 }
                 build_template.setValue("version", version_string);
                 build_template.appendBlock("dependencies", "dependency");
@@ -364,10 +368,10 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
     public T fromArguments(List<String> arguments) {
         String package_name = null;
         String project_name = null;
-        if (arguments.size() > 0) {
+        if (!arguments.isEmpty()) {
             package_name = arguments.remove(0);
         }
-        if (arguments.size() > 0) {
+        if (!arguments.isEmpty()) {
             project_name = arguments.remove(0);
         }
         if ((package_name == null || project_name == null) && System.console() == null) {

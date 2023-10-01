@@ -89,20 +89,19 @@ public class Xml2MavenMetadata extends Xml2Data implements MavenMetadata {
     public void endDocument()
     throws SAXException {
         // determine latest stable version by removing pre-release qualifiers
-        var filtered_versions = new TreeSet<VersionNumber>();
-        filtered_versions.addAll(versions_.stream()
-            .filter(v -> {
-                if (v.qualifier() == null) return true;
-                var q = v.qualifier().toLowerCase();
-                return !q.startsWith("rc") &&
-                       !q.startsWith("cr") &&
-                       !q.contains("milestone") &&
-                       !MILESTONE.matcher(q).matches() &&
-                       !q.contains("beta") &&
-                       !BETA.matcher(q).matches() &&
-                       !q.contains("alpha") &&
-                       !ALPHA.matcher(q).matches();
-            }).toList());
+        var filtered_versions = new TreeSet<>(versions_.stream()
+                .filter(v -> {
+                    if (v.qualifier() == null) return true;
+                    var q = v.qualifier().toLowerCase();
+                    return !q.startsWith("rc") &&
+                            !q.startsWith("cr") &&
+                            !q.contains("milestone") &&
+                            !MILESTONE.matcher(q).matches() &&
+                            !q.contains("beta") &&
+                            !BETA.matcher(q).matches() &&
+                            !q.contains("alpha") &&
+                            !ALPHA.matcher(q).matches();
+                }).toList());
 
         // only replace the stable version from the metadata when
         // something remained from the filtering, then use the

@@ -315,15 +315,15 @@ public class DependencyResolver {
 
         return getArtifactLocations().stream().map(a -> {
             var result = new StringBuilder();
-            result.append(version).append("/").append(dependency_.artifactId()).append("-").append(pom_version);
+            result.append(version).append('/').append(dependency_.artifactId()).append('-').append(pom_version);
             if (!dependency_.classifier().isEmpty()) {
-                result.append("-").append(dependency_.classifier());
+                result.append('-').append(dependency_.classifier());
             }
             var type = dependency_.type();
             if (type == null) {
                 type = "jar";
             }
-            result.append(".").append(type);
+            result.append('.').append(type);
 
             return a.appendPath(result.toString());
         }).toList();

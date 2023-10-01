@@ -5,7 +5,6 @@
 package rife.bld.operations;
 
 import rife.bld.Project;
-import rife.bld.blueprints.BaseProjectBlueprint;
 import rife.bld.blueprints.LibProjectBlueprint;
 
 import java.io.File;

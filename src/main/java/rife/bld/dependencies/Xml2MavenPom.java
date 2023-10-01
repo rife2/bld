@@ -287,19 +287,19 @@ class Xml2MavenPom extends Xml2Data {
     }
 
     private boolean isChildOfProject() {
-        return elementStack_.peek().equals("project");
+        return "project".equals(elementStack_.peek());
     }
 
     private boolean isChildOfParent() {
-        return elementStack_.peek().equals("parent");
+        return "parent".equals(elementStack_.peek());
     }
 
     private boolean isChildOfDependency() {
-        return elementStack_.peek().equals("dependency");
+        return "dependency".equals(elementStack_.peek());
     }
 
     private boolean isChildOfExclusion() {
-        return elementStack_.peek().equals("exclusion");
+        return "exclusion".equals(elementStack_.peek());
     }
 
     private void addProjectProperty(String name) {

@@ -25,10 +25,10 @@ public record DependencyExclusion(String groupId, String artifactId) {
     }
 
     boolean matches(PomDependency dependency) {
-        return (groupId().equals("*") && artifactId().equals("*")) ||
-               (groupId().equals("*") && artifactId().equals(dependency.artifactId())) ||
-               (groupId().equals(dependency.groupId()) && artifactId().equals("*")) ||
-               (groupId().equals(dependency.groupId()) && artifactId().equals(dependency.artifactId()));
+        return ("*".equals(groupId()) && "*".equals(artifactId())) ||
+               ("*".equals(groupId()) && artifactId().equals(dependency.artifactId())) ||
+               (groupId().equals(dependency.groupId()) && "*".equals(artifactId())) ||
+               (groupId().equals(dependency.groupId()) && dependency.artifactId().equals(artifactId()));
 
     }
 }

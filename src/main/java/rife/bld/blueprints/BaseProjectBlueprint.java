@@ -13,7 +13,6 @@ import java.util.List;
 
 import static rife.bld.dependencies.Repository.MAVEN_CENTRAL;
 import static rife.bld.dependencies.Repository.SONATYPE_SNAPSHOTS;
-import static rife.bld.dependencies.Scope.test;
 
 /**
  * Provides the dependency information required to create a new base project.

@@ -1546,22 +1546,22 @@ public class BaseProject extends BuildExecutor {
         var finger_print = new StringBuilder();
         for (var repository : repositories()) {
             finger_print.append(repository.toString());
-            finger_print.append("\n");
+            finger_print.append('\n');
         }
         for (var entry : dependencies().entrySet()) {
             finger_print.append(entry.getKey());
-            finger_print.append("\n");
+            finger_print.append('\n');
             if (entry.getValue() != null) {
                 for (var dependency : entry.getValue()) {
                     finger_print.append(dependency.toString());
-                    finger_print.append("\n");
+                    finger_print.append('\n');
                 }
             }
         }
-        finger_print.append(downloadSources());
-        finger_print.append("\n");
-        finger_print.append(downloadJavadoc());
-        finger_print.append("\n");
+        finger_print.append(downloadSources())
+                .append('\n')
+                .append(downloadJavadoc())
+                .append('\n');
 
         try {
             var digest = MessageDigest.getInstance("SHA-1");
