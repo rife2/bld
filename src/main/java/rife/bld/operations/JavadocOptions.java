@@ -100,7 +100,7 @@ public class JavadocOptions extends ArrayList<String> {
      */
     public JavadocOptions doclet(String className) {
         add("-doclet");
-        add("className");
+        add(className);
         return this;
     }
 
@@ -112,7 +112,7 @@ public class JavadocOptions extends ArrayList<String> {
      */
     public JavadocOptions docletPath(String path) {
         add("-docletpath");
-        add("path");
+        add(path);
         return this;
     }
 
@@ -135,7 +135,7 @@ public class JavadocOptions extends ArrayList<String> {
      */
     public JavadocOptions encoding(String name) {
         add("-encoding");
-        add("name");
+        add(name);
         return this;
     }
 
@@ -213,7 +213,7 @@ public class JavadocOptions extends ArrayList<String> {
      */
     public JavadocOptions locale(String name) {
         add("-locale");
-        add("name");
+        add(name);
         return this;
     }
 
