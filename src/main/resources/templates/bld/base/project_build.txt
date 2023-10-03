@@ -4,6 +4,8 @@ import rife.bld.BaseProject;
 
 import java.util.List;
 
+import static rife.bld.dependencies.Repository.MAVEN_CENTRAL;
+
 public class {{v projectBuild/}} extends BaseProject {
     public {{v projectBuild/}}() {
         pkg = "{{v package/}}";
