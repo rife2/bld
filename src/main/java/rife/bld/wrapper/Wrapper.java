@@ -138,8 +138,8 @@ public class Wrapper {
         if (file.exists()) {
             try {
                 var content = FileUtils.readString(file);
-                content = BLD_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + ".jar");
-                content = RIFE2_JAR_PATTERN.matcher(content).replaceAll("bld-" + version + ".jar");
+                content = BLD_JAR_PATTERN.matcher(content).replaceAll("/.bld/dist/bld-" + version + ".jar");
+                content = RIFE2_JAR_PATTERN.matcher(content).replaceAll("/.bld/dist/bld-" + version + ".jar");
                 FileUtils.writeString(content, file);
             } catch (FileUtilsErrorException e) {
                 throw new IOException(e);
