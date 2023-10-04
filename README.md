@@ -59,10 +59,10 @@ public class MyappBuild extends Project {
         scope(test)
             .include(dependency("org.junit.jupiter",
                                 "junit-jupiter",
-                                version(5,10,0)))
+                                version(1,9,3)))
             .include(dependency("org.junit.platform",
                                 "junit-platform-console-standalone",
-                                version(1,10,0)));
+                                version(1,9,3)));
     }
 
     public static void main(String[] args) {
@@ -73,8 +73,8 @@ public class MyappBuild extends Project {
 
 
 > **NOTE:** `bld` supports different ways to describe dependencies,
-> `dependency("com.uwyn.rife2", "rife2", version(1,7,0))` can for instance also
-> be written as `dependency("com.uwyn.rife2:rife2:1.7.0")`. Which format you use,
+> `dependency("org.junit.jupiter", "junit-jupiter", version(1,9,3))` can for instance also
+> be written as `dependency("org.junit.jupiter:junit-jupiter:1.9.3")`. Which format you use,
 > is a matter of personal taste.
 
 # Where does `bld` fit?
