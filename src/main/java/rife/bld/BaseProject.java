@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static rife.bld.dependencies.Scope.runtime;
+import static rife.bld.dependencies.VersionNumber.SNAPSHOT_QUALIFIER;
 import static rife.tools.FileUtils.JAR_FILE_PATTERN;
 
 /**
@@ -682,6 +683,42 @@ public class BaseProject extends BuildExecutor {
      */
     public VersionNumber version(String description) {
         return VersionNumber.parse(description);
+    }
+
+    /**
+     * Creates a new snapshot version instance.
+     *
+     * @param major the major component of the snapshot version number
+     * @return a newly created snapshot {@code VersionNumber} instance
+     * @since 1.7.4
+     */
+    public VersionNumber snapshot(int major) {
+        return new VersionNumber(major, null, null, SNAPSHOT_QUALIFIER);
+    }
+
+    /**
+     * Creates a new snapshot version instance.
+     *
+     * @param major the major component of the snapshot version number
+     * @param minor the minor component of the snapshot version number
+     * @return a newly created snapshot {@code VersionNumber} instance
+     * @since 1.7.4
+     */
+    public VersionNumber snapshot(int major, int minor) {
+        return new VersionNumber(major, minor, null, SNAPSHOT_QUALIFIER);
+    }
+
+    /**
+     * Creates a new snapshot version instance.
+     *
+     * @param major    the major component of the snapshot version number
+     * @param minor    the minor component of the snapshot version number
+     * @param revision the revision component of the snapshot version number
+     * @return a newly created snapshot {@code VersionNumber} instance
+     * @since 1.7.4
+     */
+    public VersionNumber snapshot(int major, int minor, int revision) {
+        return new VersionNumber(major, minor, revision, SNAPSHOT_QUALIFIER);
     }
 
     /**
