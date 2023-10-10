@@ -220,17 +220,13 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
         for (var entry : project_.dependencies().entrySet()) {
             build_template.blankValue("dependencies");
 
-            var version_string = new StringBuilder(0);
             for (var dependency : entry.getValue()) {
                 build_template.setValue("groupId", dependency.groupId());
                 build_template.setValue("artifactId", dependency.artifactId());
                 var version = dependency.version();
-                version_string.setLength(0);
-                version_string.append(version.major()).append(',')
-                        .append(version.minor()).append(',')
-                        .append(version.revision());
+                var version_string = version.major() + "," + version.minor() + "," + version.revision();
                 if (!version.qualifier().isEmpty()) {
-                    version_string.append(",\"" ).append(version.qualifier()).append('"');
+                    version_string += ",\"" + version.qualifier() + "\"";
                 }
                 build_template.setValue("version", version_string);
                 build_template.appendBlock("dependencies", "dependency");
