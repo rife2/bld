@@ -25,6 +25,7 @@ public class Xml2MavenMetadata extends Xml2Data implements MavenMetadata {
 
     private StringBuilder characterData_ = null;
 
+    private boolean isSnapshot_ = false;
     private String snapshotTimestamp_ = null;
     private Integer snapshotBuildNumber_ = null;
 
@@ -67,16 +68,7 @@ public class Xml2MavenMetadata extends Xml2Data implements MavenMetadata {
             case "version" -> versions_.add(VersionNumber.parse(characterData_.toString()));
             case "timestamp" -> snapshotTimestamp_ = characterData_.toString();
             case "buildNumber" -> snapshotBuildNumber_ = Integer.parseInt(characterData_.toString());
-            case "snapshot" -> {
-                if (!versions_.isEmpty()) {
-                    var version = versions_.get(0);
-                    var qualifier = VersionNumber.SNAPSHOT_QUALIFIER;
-                    if (snapshotTimestamp_ != null && snapshotBuildNumber_ != null) {
-                        qualifier = snapshotTimestamp_ + "-" + snapshotBuildNumber_;
-                    }
-                    snapshot_ = new VersionNumber(version.major(), version.minor(), version.revision(), qualifier);
-                }
-            }
+            case "snapshot" -> isSnapshot_ = true;
         }
 
         characterData_ = null;
@@ -88,6 +80,17 @@ public class Xml2MavenMetadata extends Xml2Data implements MavenMetadata {
 
     public void endDocument()
     throws SAXException {
+        if (isSnapshot_) {
+            if (!versions_.isEmpty()) {
+                var version = versions_.get(0);
+                var qualifier = VersionNumber.SNAPSHOT_QUALIFIER;
+                if (snapshotTimestamp_ != null && snapshotBuildNumber_ != null) {
+                    qualifier = snapshotTimestamp_ + "-" + snapshotBuildNumber_;
+                }
+                snapshot_ = new VersionNumber(version.major(), version.minor(), version.revision(), qualifier);
+            }
+        }
+
         // determine latest stable version by removing pre-release qualifiers
         var filtered_versions = new TreeSet<>(versions_.stream()
                 .filter(v -> {
