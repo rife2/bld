@@ -99,22 +99,22 @@ public class TestCreateBlankOperation {
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
-                    /myapp/lib/test/junit-jupiter-5\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-5\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-jupiter-api-5\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-api-5\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-jupiter-engine-5\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-engine-5\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-jupiter-params-5\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-params-5\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-platform-commons-1\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-platform-commons-1\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-platform-console-standalone-1\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-platform-console-standalone-1\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-platform-engine-1\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-platform-engine-1\\.9\\.3\\.jar
-                    /myapp/lib/test/opentest4j-1\\.2\\.0-sources\\.jar
-                    /myapp/lib/test/opentest4j-1\\.2\\.0\\.jar
+                    /myapp/lib/test/junit-jupiter-5\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-5\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-platform-commons-1\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-platform-commons-1\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-platform-engine-1\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-platform-engine-1\\.10\\.0\\.jar
+                    /myapp/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
+                    /myapp/lib/test/opentest4j-1\\.3\\.0\\.jar
                     /myapp/src
                     /myapp/src/bld
                     /myapp/src/bld/java
@@ -178,22 +178,22 @@ public class TestCreateBlankOperation {
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
-                    /myapp/lib/test/junit-jupiter-5\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-5\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-jupiter-api-5\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-api-5\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-jupiter-engine-5\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-engine-5\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-jupiter-params-5\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-params-5\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-platform-commons-1\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-platform-commons-1\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-platform-console-standalone-1\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-platform-console-standalone-1\\.9\\.3\\.jar
-                    /myapp/lib/test/junit-platform-engine-1\\.9\\.3-sources\\.jar
-                    /myapp/lib/test/junit-platform-engine-1\\.9\\.3\\.jar
-                    /myapp/lib/test/opentest4j-1\\.2\\.0-sources\\.jar
-                    /myapp/lib/test/opentest4j-1\\.2\\.0\\.jar
+                    /myapp/lib/test/junit-jupiter-5\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-5\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-platform-commons-1\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-platform-commons-1\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-platform-engine-1\\.10\\.0-sources\\.jar
+                    /myapp/lib/test/junit-platform-engine-1\\.10\\.0\\.jar
+                    /myapp/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
+                    /myapp/lib/test/opentest4j-1\\.3\\.0\\.jar
                     /myapp/src
                     /myapp/src/bld
                     /myapp/src/bld/java
@@ -374,22 +374,22 @@ public class TestCreateBlankOperation {
                 /myapp/lib/local
                 /myapp/lib/local/apiguardian-api-1\\.1\\.2-sources\\.jar
                 /myapp/lib/local/apiguardian-api-1\\.1\\.2\\.jar
-                /myapp/lib/local/junit-jupiter-5\\.9\\.3-sources\\.jar
-                /myapp/lib/local/junit-jupiter-5\\.9\\.3\\.jar
-                /myapp/lib/local/junit-jupiter-api-5\\.9\\.3-sources\\.jar
-                /myapp/lib/local/junit-jupiter-api-5\\.9\\.3\\.jar
-                /myapp/lib/local/junit-jupiter-engine-5\\.9\\.3-sources\\.jar
-                /myapp/lib/local/junit-jupiter-engine-5\\.9\\.3\\.jar
-                /myapp/lib/local/junit-jupiter-params-5\\.9\\.3-sources\\.jar
-                /myapp/lib/local/junit-jupiter-params-5\\.9\\.3\\.jar
-                /myapp/lib/local/junit-platform-commons-1\\.9\\.3-sources\\.jar
-                /myapp/lib/local/junit-platform-commons-1\\.9\\.3\\.jar
-                /myapp/lib/local/junit-platform-console-standalone-1\\.9\\.3-sources\\.jar
-                /myapp/lib/local/junit-platform-console-standalone-1\\.9\\.3\\.jar
-                /myapp/lib/local/junit-platform-engine-1\\.9\\.3-sources\\.jar
-                /myapp/lib/local/junit-platform-engine-1\\.9\\.3\\.jar
-                /myapp/lib/local/opentest4j-1\\.2\\.0-sources\\.jar
-                /myapp/lib/local/opentest4j-1\\.2\\.0\\.jar
+                /myapp/lib/local/junit-jupiter-5\\.10\\.0-sources\\.jar
+                /myapp/lib/local/junit-jupiter-5\\.10\\.0\\.jar
+                /myapp/lib/local/junit-jupiter-api-5\\.10\\.0-sources\\.jar
+                /myapp/lib/local/junit-jupiter-api-5\\.10\\.0\\.jar
+                /myapp/lib/local/junit-jupiter-engine-5\\.10\\.0-sources\\.jar
+                /myapp/lib/local/junit-jupiter-engine-5\\.10\\.0\\.jar
+                /myapp/lib/local/junit-jupiter-params-5\\.10\\.0-sources\\.jar
+                /myapp/lib/local/junit-jupiter-params-5\\.10\\.0\\.jar
+                /myapp/lib/local/junit-platform-commons-1\\.10\\.0-sources\\.jar
+                /myapp/lib/local/junit-platform-commons-1\\.10\\.0\\.jar
+                /myapp/lib/local/junit-platform-console-standalone-1\\.10\\.0-sources\\.jar
+                /myapp/lib/local/junit-platform-console-standalone-1\\.10\\.0\\.jar
+                /myapp/lib/local/junit-platform-engine-1\\.10\\.0-sources\\.jar
+                /myapp/lib/local/junit-platform-engine-1\\.10\\.0\\.jar
+                /myapp/lib/local/opentest4j-1\\.3\\.0-sources\\.jar
+                /myapp/lib/local/opentest4j-1\\.3\\.0\\.jar
                 /myapp/lib/runtime
                 /myapp/lib/test
                 /myapp/src
@@ -495,22 +495,22 @@ public class TestCreateBlankOperation {
                 /myapp/lib/local_test
                 /myapp/lib/local_test/apiguardian-api-1\\.1\\.2-sources\\.jar
                 /myapp/lib/local_test/apiguardian-api-1\\.1\\.2\\.jar
-                /myapp/lib/local_test/junit-jupiter-5\\.9\\.3-sources\\.jar
-                /myapp/lib/local_test/junit-jupiter-5\\.9\\.3\\.jar
-                /myapp/lib/local_test/junit-jupiter-api-5\\.9\\.3-sources\\.jar
-                /myapp/lib/local_test/junit-jupiter-api-5\\.9\\.3\\.jar
-                /myapp/lib/local_test/junit-jupiter-engine-5\\.9\\.3-sources\\.jar
-                /myapp/lib/local_test/junit-jupiter-engine-5\\.9\\.3\\.jar
-                /myapp/lib/local_test/junit-jupiter-params-5\\.9\\.3-sources\\.jar
-                /myapp/lib/local_test/junit-jupiter-params-5\\.9\\.3\\.jar
-                /myapp/lib/local_test/junit-platform-commons-1\\.9\\.3-sources\\.jar
-                /myapp/lib/local_test/junit-platform-commons-1\\.9\\.3\\.jar
-                /myapp/lib/local_test/junit-platform-console-standalone-1\\.9\\.3-sources\\.jar
-                /myapp/lib/local_test/junit-platform-console-standalone-1\\.9\\.3\\.jar
-                /myapp/lib/local_test/junit-platform-engine-1\\.9\\.3-sources\\.jar
-                /myapp/lib/local_test/junit-platform-engine-1\\.9\\.3\\.jar
-                /myapp/lib/local_test/opentest4j-1\\.2\\.0-sources\\.jar
-                /myapp/lib/local_test/opentest4j-1\\.2\\.0\\.jar
+                /myapp/lib/local_test/junit-jupiter-5\\.10\\.0-sources\\.jar
+                /myapp/lib/local_test/junit-jupiter-5\\.10\\.0\\.jar
+                /myapp/lib/local_test/junit-jupiter-api-5\\.10\\.0-sources\\.jar
+                /myapp/lib/local_test/junit-jupiter-api-5\\.10\\.0\\.jar
+                /myapp/lib/local_test/junit-jupiter-engine-5\\.10\\.0-sources\\.jar
+                /myapp/lib/local_test/junit-jupiter-engine-5\\.10\\.0\\.jar
+                /myapp/lib/local_test/junit-jupiter-params-5\\.10\\.0-sources\\.jar
+                /myapp/lib/local_test/junit-jupiter-params-5\\.10\\.0\\.jar
+                /myapp/lib/local_test/junit-platform-commons-1\\.10\\.0-sources\\.jar
+                /myapp/lib/local_test/junit-platform-commons-1\\.10\\.0\\.jar
+                /myapp/lib/local_test/junit-platform-console-standalone-1\\.10\\.0-sources\\.jar
+                /myapp/lib/local_test/junit-platform-console-standalone-1\\.10\\.0\\.jar
+                /myapp/lib/local_test/junit-platform-engine-1\\.10\\.0-sources\\.jar
+                /myapp/lib/local_test/junit-platform-engine-1\\.10\\.0\\.jar
+                /myapp/lib/local_test/opentest4j-1\\.3\\.0-sources\\.jar
+                /myapp/lib/local_test/opentest4j-1\\.3\\.0\\.jar
                 /myapp/lib/runtime
                 /myapp/lib/test
                 /myapp/src

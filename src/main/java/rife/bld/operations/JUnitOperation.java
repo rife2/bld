@@ -5,6 +5,11 @@
 package rife.bld.operations;
 
 import rife.bld.BaseProject;
+import rife.tools.FileUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Tests a Java application with JUnit.
@@ -22,6 +27,39 @@ public class JUnitOperation extends TestOperation<JUnitOperation, JUnitOptions> 
     @Override
     protected JUnitOptions createTestToolOptions() {
         return new JUnitOptions();
+    }
+
+    @Override
+    protected List<String> executeConstructProcessCommandList() {
+        if (mainClass() == null) {
+            throw new IllegalArgumentException("ERROR: Missing main class for test execution.");
+        }
+
+        var args = new ArrayList<String>();
+        args.add(javaTool());
+        args.addAll(javaOptions());
+        args.add("-cp");
+        var classpath = FileUtils.joinPaths(classpath());
+        args.add(classpath);
+        args.add(mainClass());
+        // the JUnit console launcher syntax changed in v1.10.x,
+        // this logic defaults to the new syntax but if it finds an older
+        // JUnit jar in the classpath, uses the old syntax
+        var junit_version_1_10_and_later = true;
+        var junit_version_pattern = Pattern.compile("junit-platform-console-standalone-(\\d+)\\.(\\d+)\\.");
+        var junit_version_matcher = junit_version_pattern.matcher(classpath);
+        if (junit_version_matcher.find() &&
+            (Integer.parseInt(junit_version_matcher.group(1)) < 1 ||
+             (Integer.parseInt(junit_version_matcher.group(1)) == 1 &&
+              Integer.parseInt(junit_version_matcher.group(2)) < 10))) {
+            junit_version_1_10_and_later = false;
+        }
+        if (junit_version_1_10_and_later) {
+            args.add("execute");
+        }
+        args.addAll(testToolOptions());
+
+        return args;
     }
 
     @Override

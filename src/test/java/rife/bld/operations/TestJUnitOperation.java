@@ -5,6 +5,8 @@
 package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
+import rife.bld.Project;
+import rife.bld.dependencies.Scope;
 import rife.tools.FileUtils;
 import rife.tools.StringUtils;
 
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static rife.bld.dependencies.Scope.test;
 
 public class TestJUnitOperation {
     @Test
@@ -178,6 +181,60 @@ public class TestJUnitOperation {
                 .packageName("com.example")
                 .projectName("myapp")
                 .downloadDependencies(true);
+            create_operation.execute();
+
+            new CompileOperation()
+                .fromProject(create_operation.project()).execute();
+
+            var check_result = new StringBuilder();
+            new JUnitOperation()
+                .fromProject(create_operation.project())
+                .outputProcessor(s -> {
+                    check_result.append(s).append(System.lineSeparator());
+                    return true;
+                })
+                .execute();
+            assertTrue(check_result.toString().contains(StringUtils.convertLineSeparator("""
+                [         2 containers found      ]
+                [         0 containers skipped    ]
+                [         2 containers started    ]
+                [         0 containers aborted    ]
+                [         2 containers successful ]
+                [         0 containers failed     ]
+                [         1 tests found           ]
+                [         0 tests skipped         ]
+                [         1 tests started         ]
+                [         0 tests aborted         ]
+                [         1 tests successful      ]
+                [         0 tests failed          ]
+                """)));
+
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testFromOldProject()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var create_operation = new CreateBlankOperation() {
+                @Override
+                protected Project createProjectBlueprint() {
+                    var project = super.createProjectBlueprint();
+                    project.scope(Scope.test).clear();
+                    project.scope(Scope.test)
+                        .include(project.dependency("org.junit.jupiter", "junit-jupiter", project.version(5,9,3)))
+                        .include(project.dependency("org.junit.platform", "junit-platform-console-standalone", project.version(1,9,3)));
+                    return project;
+                }
+            }
+                .workDirectory(tmp)
+                .packageName("com.example")
+                .projectName("myapp")
+                .downloadDependencies(true);
+
             create_operation.execute();
 
             new CompileOperation()
