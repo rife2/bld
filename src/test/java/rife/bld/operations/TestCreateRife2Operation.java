@@ -104,20 +104,22 @@ public class TestCreateRife2Operation {
                     /myapp/lib/compile/rife2-.+\\.jar
                     /myapp/lib/runtime
                     /myapp/lib/standalone
-                    /myapp/lib/standalone/jetty-http-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-http-11\\.0\\.15\\.jar
-                    /myapp/lib/standalone/jetty-io-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-io-11\\.0\\.15\\.jar
-                    /myapp/lib/standalone/jetty-jakarta-servlet-api-5\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-jakarta-servlet-api-5\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-security-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-security-11\\.0\\.15\\.jar
-                    /myapp/lib/standalone/jetty-server-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-server-11\\.0\\.15\\.jar
-                    /myapp/lib/standalone/jetty-servlet-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-servlet-11\\.0\\.15\\.jar
-                    /myapp/lib/standalone/jetty-util-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-util-11\\.0\\.15\\.jar
+                    /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
+                    /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0\\.jar
+                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-http-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-http-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-io-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-io-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-security-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-security-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-server-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-server-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-session-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-session-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-util-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-util-12\\.0\\.2\\.jar
                     /myapp/lib/standalone/slf4j-api-2\\.0\\.9-sources\\.jar
                     /myapp/lib/standalone/slf4j-api-2\\.0\\.9\\.jar
                     /myapp/lib/standalone/slf4j-simple-2\\.0\\.9-sources\\.jar
@@ -215,20 +217,22 @@ public class TestCreateRife2Operation {
                     /myapp/lib/compile/rife2-.+\\.jar
                     /myapp/lib/runtime
                     /myapp/lib/standalone
-                    /myapp/lib/standalone/jetty-http-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-http-11\\.0\\.15\\.jar
-                    /myapp/lib/standalone/jetty-io-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-io-11\\.0\\.15\\.jar
-                    /myapp/lib/standalone/jetty-jakarta-servlet-api-5\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-jakarta-servlet-api-5\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-security-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-security-11\\.0\\.15\\.jar
-                    /myapp/lib/standalone/jetty-server-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-server-11\\.0\\.15\\.jar
-                    /myapp/lib/standalone/jetty-servlet-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-servlet-11\\.0\\.15\\.jar
-                    /myapp/lib/standalone/jetty-util-11\\.0\\.15-sources\\.jar
-                    /myapp/lib/standalone/jetty-util-11\\.0\\.15\\.jar
+                    /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
+                    /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0\\.jar
+                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-http-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-http-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-io-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-io-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-security-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-security-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-server-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-server-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-session-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-session-12\\.0\\.2\\.jar
+                    /myapp/lib/standalone/jetty-util-12\\.0\\.2-sources\\.jar
+                    /myapp/lib/standalone/jetty-util-12\\.0\\.2\\.jar
                     /myapp/lib/standalone/slf4j-api-2\\.0\\.9-sources\\.jar
                     /myapp/lib/standalone/slf4j-api-2\\.0\\.9\\.jar
                     /myapp/lib/standalone/slf4j-simple-2\\.0\\.9-sources\\.jar
@@ -464,20 +468,22 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local
                 /myapp/lib/local/apiguardian-api-1\\.1\\.2-sources\\.jar
                 /myapp/lib/local/apiguardian-api-1\\.1\\.2\\.jar
-                /myapp/lib/local/jetty-http-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local/jetty-http-11\\.0\\.15\\.jar
-                /myapp/lib/local/jetty-io-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local/jetty-io-11\\.0\\.15\\.jar
-                /myapp/lib/local/jetty-jakarta-servlet-api-5\\.0\\.2-sources\\.jar
-                /myapp/lib/local/jetty-jakarta-servlet-api-5\\.0\\.2\\.jar
-                /myapp/lib/local/jetty-security-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local/jetty-security-11\\.0\\.15\\.jar
-                /myapp/lib/local/jetty-server-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local/jetty-server-11\\.0\\.15\\.jar
-                /myapp/lib/local/jetty-servlet-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local/jetty-servlet-11\\.0\\.15\\.jar
-                /myapp/lib/local/jetty-util-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local/jetty-util-11\\.0\\.15\\.jar
+                /myapp/lib/local/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
+                /myapp/lib/local/jakarta\\.servlet-api-6\\.0\\.0\\.jar
+                /myapp/lib/local/jetty-ee10-servlet-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local/jetty-ee10-servlet-12\\.0\\.2\\.jar
+                /myapp/lib/local/jetty-http-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local/jetty-http-12\\.0\\.2\\.jar
+                /myapp/lib/local/jetty-io-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local/jetty-io-12\\.0\\.2\\.jar
+                /myapp/lib/local/jetty-security-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local/jetty-security-12\\.0\\.2\\.jar
+                /myapp/lib/local/jetty-server-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local/jetty-server-12\\.0\\.2\\.jar
+                /myapp/lib/local/jetty-session-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local/jetty-session-12\\.0\\.2\\.jar
+                /myapp/lib/local/jetty-util-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local/jetty-util-12\\.0\\.2\\.jar
                 /myapp/lib/local/jsoup-1\\.16\\.2-sources\\.jar
                 /myapp/lib/local/jsoup-1\\.16\\.2\\.jar
                 /myapp/lib/local/junit-jupiter-5\\.10\\.0-sources\\.jar
@@ -630,20 +636,22 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local_compile/rife2-.*-sources\\.jar
                 /myapp/lib/local_compile/rife2-.*\\.jar
                 /myapp/lib/local_standalone
-                /myapp/lib/local_standalone/jetty-http-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local_standalone/jetty-http-11\\.0\\.15\\.jar
-                /myapp/lib/local_standalone/jetty-io-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local_standalone/jetty-io-11\\.0\\.15\\.jar
-                /myapp/lib/local_standalone/jetty-jakarta-servlet-api-5\\.0\\.2-sources\\.jar
-                /myapp/lib/local_standalone/jetty-jakarta-servlet-api-5\\.0\\.2\\.jar
-                /myapp/lib/local_standalone/jetty-security-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local_standalone/jetty-security-11\\.0\\.15\\.jar
-                /myapp/lib/local_standalone/jetty-server-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local_standalone/jetty-server-11\\.0\\.15\\.jar
-                /myapp/lib/local_standalone/jetty-servlet-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local_standalone/jetty-servlet-11\\.0\\.15\\.jar
-                /myapp/lib/local_standalone/jetty-util-11\\.0\\.15-sources\\.jar
-                /myapp/lib/local_standalone/jetty-util-11\\.0\\.15\\.jar
+                /myapp/lib/local_standalone/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
+                /myapp/lib/local_standalone/jakarta\\.servlet-api-6\\.0\\.0\\.jar
+                /myapp/lib/local_standalone/jetty-ee10-servlet-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local_standalone/jetty-ee10-servlet-12\\.0\\.2\\.jar
+                /myapp/lib/local_standalone/jetty-http-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local_standalone/jetty-http-12\\.0\\.2\\.jar
+                /myapp/lib/local_standalone/jetty-io-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local_standalone/jetty-io-12\\.0\\.2\\.jar
+                /myapp/lib/local_standalone/jetty-security-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local_standalone/jetty-security-12\\.0\\.2\\.jar
+                /myapp/lib/local_standalone/jetty-server-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local_standalone/jetty-server-12\\.0\\.2\\.jar
+                /myapp/lib/local_standalone/jetty-session-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local_standalone/jetty-session-12\\.0\\.2\\.jar
+                /myapp/lib/local_standalone/jetty-util-12\\.0\\.2-sources\\.jar
+                /myapp/lib/local_standalone/jetty-util-12\\.0\\.2\\.jar
                 /myapp/lib/local_standalone/slf4j-api-2\\.0\\.9-sources\\.jar
                 /myapp/lib/local_standalone/slf4j-api-2\\.0\\.9\\.jar
                 /myapp/lib/local_standalone/slf4j-simple-2\\.0\\.9-sources\\.jar

@@ -38,14 +38,14 @@ public class Rife2ProjectBlueprint extends WebProject {
         downloadSources = true;
         repositories = List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS);
         scope(compile)
-            .include(dependency("com.uwyn.rife2", "rife2", version(1,7,2)));
+            .include(dependency("com.uwyn.rife2", "rife2", version(1,7,3)));
         scope(test)
             .include(dependency("org.jsoup", "jsoup", version(1,16,2)))
             .include(dependency("org.junit.jupiter", "junit-jupiter", version(5,10,0)))
             .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1,10,0)));
         scope(standalone)
-            .include(dependency("org.eclipse.jetty", "jetty-server", version(11,0,15)))
-            .include(dependency("org.eclipse.jetty", "jetty-servlet", version(11,0,15)))
+            .include(dependency("org.eclipse.jetty.ee10", "jetty-ee10", version(12,0,2)))
+            .include(dependency("org.eclipse.jetty.ee10", "jetty-ee10-servlet", version(12,0,2)))
             .include(dependency("org.slf4j", "slf4j-simple", version(2,0,9)));
 
         precompileOperation().templateTypes(TemplateType.HTML);
