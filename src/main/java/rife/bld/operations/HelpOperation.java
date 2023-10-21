@@ -81,7 +81,7 @@ public class HelpOperation {
             perform specific tasks. The help command provides more information about
             the other commands.
                         
-            Usage : help [command]
+            Usage: help [command]
 
             The following commands are supported.
             """);
