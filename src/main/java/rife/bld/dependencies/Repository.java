@@ -23,13 +23,15 @@ import java.util.regex.Pattern;
  */
 public record Repository(String location, String username, String password) {
     public static Repository MAVEN_LOCAL = null;
+    public static final Repository APACHE = new Repository("https://repo.maven.apache.org/maven2/");
     public static final Repository GOOGLE = new Repository("https://maven.google.com/");
     public static final Repository MAVEN_CENTRAL = new Repository("https://repo1.maven.org/maven2/");
+    public static final Repository SECURECHAIN_REBUILT = new Repository("https://nexus-repo.corp.cloudlinux.com/repository/tuxcare_rebuilt");
+    public static final Repository SECURECHAIN_VETTED = new Repository("https://nexus-repo.corp.cloudlinux.com/repository/tuxcare_vetted");
     public static final Repository SONATYPE_RELEASES = new Repository("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/");
     public static final Repository SONATYPE_RELEASES_LEGACY = new Repository("https://oss.sonatype.org/service/local/staging/deploy/maven2/");
     public static final Repository SONATYPE_SNAPSHOTS = new Repository("https://s01.oss.sonatype.org/content/repositories/snapshots/");
     public static final Repository SONATYPE_SNAPSHOTS_LEGACY = new Repository("https://oss.sonatype.org/content/repositories/snapshots/");
-    public static final Repository APACHE = new Repository("https://repo.maven.apache.org/maven2/");
     public static final Repository RIFE2_RELEASES = new Repository("https://repo.rife2.com/releases/");
     public static final Repository RIFE2_SNAPSHOTS = new Repository("https://repo.rife2.com/snapshots/");
 
@@ -84,16 +86,18 @@ public record Repository(String location, String username, String password) {
         }
 
         return switch (locationOrName) {
+            case "APACHE" -> Repository.APACHE;
             case "GOOGLE" -> Repository.GOOGLE;
-            case "MAVEN_LOCAL" -> Repository.MAVEN_LOCAL;
             case "MAVEN_CENTRAL" -> Repository.MAVEN_CENTRAL;
+            case "MAVEN_LOCAL" -> Repository.MAVEN_LOCAL;
+            case "RIFE2_RELEASES" -> Repository.RIFE2_RELEASES;
+            case "RIFE2_SNAPSHOTS" -> Repository.RIFE2_SNAPSHOTS;
+            case "SECURECHAIN_REBUILT" -> SECURECHAIN_REBUILT;
+            case "SECURECHAIN_VETTED" -> SECURECHAIN_VETTED;
             case "SONATYPE_RELEASES" -> Repository.SONATYPE_RELEASES;
             case "SONATYPE_RELEASES_LEGACY" -> Repository.SONATYPE_RELEASES_LEGACY;
             case "SONATYPE_SNAPSHOTS" -> Repository.SONATYPE_SNAPSHOTS;
             case "SONATYPE_SNAPSHOTS_LEGACY" -> Repository.SONATYPE_SNAPSHOTS_LEGACY;
-            case "APACHE" -> Repository.APACHE;
-            case "RIFE2_RELEASES" -> Repository.RIFE2_RELEASES;
-            case "RIFE2_SNAPSHOTS" -> Repository.RIFE2_SNAPSHOTS;
             default -> new Repository(locationOrName);
         };
     }
