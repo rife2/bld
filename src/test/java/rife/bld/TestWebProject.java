@@ -96,6 +96,7 @@ public class TestWebProject {
         assertNotNull(project.mainSourceFiles());
         assertNotNull(project.testSourceFiles());
         assertNotNull(project.compileClasspathJars());
+        assertNotNull(project.providedClasspathJars());
         assertNotNull(project.runtimeClasspathJars());
         assertNotNull(project.standaloneClasspathJars());
         assertNotNull(project.testClasspathJars());

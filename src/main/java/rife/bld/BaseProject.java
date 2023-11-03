@@ -1404,6 +1404,22 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns all the jar files that are in the provided scope classpath.
+     *
+     * @since 1.7.6
+     */
+    public List<File> providedClasspathJars() {
+        // detect the jar files in the compile lib directory
+        var dir_abs = libCompileDirectory().getAbsoluteFile();
+        var jar_files = FileUtils.getFileList(dir_abs, INCLUDED_JARS, EXCLUDED_JARS);
+
+        // build the provided classpath
+        var classpath = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
+        addLocalDependencies(classpath, Scope.provided);
+        return classpath;
+    }
+
+    /**
      * Returns all the jar files that are in the runtime scope classpath.
      * <p>
      * By default, this collects all the jar files in the {@link #libRuntimeDirectory()}
