@@ -1409,12 +1409,8 @@ public class BaseProject extends BuildExecutor {
      * @since 1.7.6
      */
     public List<File> providedClasspathJars() {
-        // detect the jar files in the compile lib directory
-        var dir_abs = libCompileDirectory().getAbsoluteFile();
-        var jar_files = FileUtils.getFileList(dir_abs, INCLUDED_JARS, EXCLUDED_JARS);
-
         // build the provided classpath
-        var classpath = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
+        var classpath = new ArrayList<File>();
         addLocalDependencies(classpath, Scope.provided);
         return classpath;
     }
