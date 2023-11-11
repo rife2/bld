@@ -6,6 +6,7 @@
     </CLASSES>
     <JAVADOC />
     <SOURCES>
+      <root url="file://$PROJECT_DIR$/lib/bld" />
       <root url="jar://$USER_HOME$/.bld/dist/bld-1.7.5-sources.jar!/" />
     </SOURCES>
     <excluded>
