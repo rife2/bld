@@ -73,8 +73,23 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      */
     public DependencySet resolveCompileDependencies(ArtifactRetriever retriever, List<Repository> repositories) {
         return resolveScopedDependencies(retriever, repositories,
-            new Scope[]{Scope.provided, Scope.compile},
             new Scope[]{Scope.compile},
+            new Scope[]{Scope.compile},
+            null);
+    }
+
+    /**
+     * Returns the transitive set of dependencies that would be used for the provided scope in a project.
+     *
+     * @param retriever    the retriever to use to get artifacts
+     * @param repositories the repositories to use for the resolution
+     * @return the provided scope dependency set
+     * @since 1.8
+     */
+    public DependencySet resolveProvidedDependencies(ArtifactRetriever retriever, List<Repository> repositories) {
+        return resolveScopedDependencies(retriever, repositories,
+            new Scope[]{Scope.provided},
+            new Scope[]{Scope.compile, Scope.runtime},
             null);
     }
 
@@ -88,7 +103,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      */
     public DependencySet resolveRuntimeDependencies(ArtifactRetriever retriever, List<Repository> repositories) {
         return resolveScopedDependencies(retriever, repositories,
-            new Scope[]{Scope.provided, Scope.compile, Scope.runtime},
+            new Scope[]{Scope.compile, Scope.runtime},
             new Scope[]{Scope.compile, Scope.runtime},
             resolveCompileDependencies(retriever, repositories));
     }

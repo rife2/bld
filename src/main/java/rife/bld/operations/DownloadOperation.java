@@ -28,6 +28,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
     private File libCompileDirectory_;
+    private File libProvidedDirectory_;
     private File libRuntimeDirectory_;
     private File libStandaloneDirectory_;
     private File libTestDirectory_;
@@ -41,6 +42,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      */
     public void execute() {
         executeDownloadCompileDependencies();
+        executeDownloadProvidedDependencies();
         executeDownloadRuntimeDependencies();
         executeDownloadStandaloneDependencies();
         executeDownloadTestDependencies();
@@ -56,6 +58,15 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      */
     protected void executeDownloadCompileDependencies() {
         executeDownloadDependencies(libCompileDirectory(), dependencies().resolveCompileDependencies(artifactRetriever(), repositories()));
+    }
+
+    /**
+     * Part of the {@link #execute} operation, download the {@code provided} scope artifacts.
+     *
+     * @since 1.8
+     */
+    protected void executeDownloadProvidedDependencies() {
+        executeDownloadDependencies(libProvidedDirectory(), dependencies().resolveProvidedDependencies(artifactRetriever(), repositories()));
     }
 
     /**
@@ -123,6 +134,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
             .repositories(project.repositories())
             .dependencies(project.dependencies())
             .libCompileDirectory(project.libCompileDirectory())
+            .libProvidedDirectory(project.libProvidedDirectory())
             .libRuntimeDirectory(project.libRuntimeDirectory())
             .libStandaloneDirectory(project.libStandaloneDirectory())
             .libTestDirectory(project.libTestDirectory())
@@ -177,6 +189,18 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      */
     public DownloadOperation libCompileDirectory(File directory) {
         libCompileDirectory_ = directory;
+        return this;
+    }
+
+    /**
+     * Provides the {@code provided} scope download directory.
+     *
+     * @param directory the directory to download the {@code provided} scope artifacts into
+     * @return this operation instance
+     * @since 1.8
+     */
+    public DownloadOperation libProvidedDirectory(File directory) {
+        libProvidedDirectory_ = directory;
         return this;
     }
 
@@ -286,6 +310,16 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      */
     public File libCompileDirectory() {
         return libCompileDirectory_;
+    }
+
+    /**
+     * Retrieves the {@code provided} scope download directory.
+     *
+     * @return the {@code provided} scope download directory
+     * @since 1.8
+     */
+    public File libProvidedDirectory() {
+        return libProvidedDirectory_;
     }
 
     /**

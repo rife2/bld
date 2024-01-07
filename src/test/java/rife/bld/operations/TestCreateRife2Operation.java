@@ -102,6 +102,7 @@ public class TestCreateRife2Operation {
                     /myapp/lib/compile
                     /myapp/lib/compile/rife2-.+-sources\\.jar
                     /myapp/lib/compile/rife2-.+\\.jar
+                    /myapp/lib/provided
                     /myapp/lib/runtime
                     /myapp/lib/standalone
                     /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
@@ -215,6 +216,7 @@ public class TestCreateRife2Operation {
                     /myapp/lib/compile
                     /myapp/lib/compile/rife2-.+-sources\\.jar
                     /myapp/lib/compile/rife2-.+\\.jar
+                    /myapp/lib/provided
                     /myapp/lib/runtime
                     /myapp/lib/standalone
                     /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
@@ -345,6 +347,7 @@ public class TestCreateRife2Operation {
                     /yourthing/lib/bld/bld-wrapper.jar
                     /yourthing/lib/bld/bld-wrapper.properties
                     /yourthing/lib/compile
+                    /yourthing/lib/provided
                     /yourthing/lib/runtime
                     /yourthing/lib/standalone
                     /yourthing/lib/test
@@ -508,6 +511,7 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local/slf4j-api-2\\.0\\.9\\.jar
                 /myapp/lib/local/slf4j-simple-2\\.0\\.9-sources\\.jar
                 /myapp/lib/local/slf4j-simple-2\\.0\\.9\\.jar
+                /myapp/lib/provided
                 /myapp/lib/runtime
                 /myapp/lib/standalone
                 /myapp/lib/test
@@ -677,6 +681,7 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local_test/junit-platform-engine-1\\.10\\.0\\.jar
                 /myapp/lib/local_test/opentest4j-1\\.3\\.0-sources\\.jar
                 /myapp/lib/local_test/opentest4j-1\\.3\\.0\\.jar
+                /myapp/lib/provided
                 /myapp/lib/runtime
                 /myapp/lib/standalone
                 /myapp/lib/test

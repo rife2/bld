@@ -88,6 +88,7 @@ public class TestCreateBaseOperation {
                     /myapp/lib/bld/bld-wrapper\\.jar
                     /myapp/lib/bld/bld-wrapper\\.properties
                     /myapp/lib/compile
+                    /myapp/lib/provided
                     /myapp/lib/runtime
                     /myapp/lib/test
                     /myapp/src
@@ -149,6 +150,7 @@ public class TestCreateBaseOperation {
                     /myapp/lib/bld/bld-wrapper\\.jar
                     /myapp/lib/bld/bld-wrapper\\.properties
                     /myapp/lib/compile
+                    /myapp/lib/provided
                     /myapp/lib/runtime
                     /myapp/lib/test
                     /myapp/src
@@ -223,6 +225,7 @@ public class TestCreateBaseOperation {
                     /yourthing/lib/bld/bld-wrapper.jar
                     /yourthing/lib/bld/bld-wrapper.properties
                     /yourthing/lib/compile
+                    /yourthing/lib/provided
                     /yourthing/lib/runtime
                     /yourthing/lib/test
                     /yourthing/src
@@ -285,6 +288,7 @@ public class TestCreateBaseOperation {
                     /yourthing/lib/bld/bld-wrapper.jar
                     /yourthing/lib/bld/bld-wrapper.properties
                     /yourthing/lib/compile
+                    /yourthing/lib/provided
                     /yourthing/lib/runtime
                     /yourthing/lib/test
                     /yourthing/src

@@ -307,6 +307,7 @@ public class TestProject {
                 /lib/bld/bld-build.hash
                 /lib/compile
                 /lib/compile/rife2-1.5.11.jar
+                /lib/provided
                 /lib/runtime
                 /lib/test
                 /lib/test/apiguardian-api-1.1.2.jar
@@ -321,6 +322,7 @@ public class TestProject {
                 /lib/test/opentest4j-1.2.0.jar""", FileUtils.generateDirectoryListing(tmp));
 
             FileUtils.deleteDirectory(new File(tmp, "lib/compile"));
+            FileUtils.deleteDirectory(new File(tmp, "lib/provided"));
             FileUtils.deleteDirectory(new File(tmp, "lib/runtime"));
             FileUtils.deleteDirectory(new File(tmp, "lib/test"));
             assertEquals("""
@@ -346,6 +348,7 @@ public class TestProject {
                 /lib/bld/bld-build.hash
                 /lib/compile
                 /lib/compile/rife2-1.5.12.jar
+                /lib/provided
                 /lib/runtime
                 /lib/test
                 /lib/test/apiguardian-api-1.1.2.jar
@@ -369,6 +372,7 @@ public class TestProject {
                 /lib/bld/bld-build.hash
                 /lib/compile
                 /lib/compile/rife2-1.5.15.jar
+                /lib/provided
                 /lib/runtime
                 /lib/test
                 /lib/test/apiguardian-api-1.1.2.jar

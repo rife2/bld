@@ -22,6 +22,7 @@ public class TestDownloadOperation {
         assertTrue(operation.dependencies().isEmpty());
         assertTrue(operation.repositories().isEmpty());
         assertNull(operation.libCompileDirectory());
+        assertNull(operation.libProvidedDirectory());
         assertNull(operation.libRuntimeDirectory());
         assertNull(operation.libStandaloneDirectory());
         assertNull(operation.libTestDirectory());
@@ -37,13 +38,15 @@ public class TestDownloadOperation {
         var dir2 = new File("dir2");
         var dir3 = new File("dir3");
         var dir4 = new File("dir4");
+        var dir5 = new File("dir5");
 
         var operation1 = new DownloadOperation()
             .repositories(List.of(repository1, repository2))
             .libCompileDirectory(dir1)
-            .libRuntimeDirectory(dir2)
-            .libStandaloneDirectory(dir3)
-            .libTestDirectory(dir4);
+            .libProvidedDirectory(dir2)
+            .libRuntimeDirectory(dir3)
+            .libStandaloneDirectory(dir4)
+            .libTestDirectory(dir5);
         var dependency_scopes = new DependencyScopes();
         dependency_scopes.scope(Scope.compile).include(dependency1).include(dependency2);
         operation1.dependencies(dependency_scopes);
@@ -52,15 +55,17 @@ public class TestDownloadOperation {
         assertTrue(operation1.dependencies().scope(Scope.compile).contains(dependency1));
         assertTrue(operation1.dependencies().scope(Scope.compile).contains(dependency2));
         assertEquals(dir1, operation1.libCompileDirectory());
-        assertEquals(dir2, operation1.libRuntimeDirectory());
-        assertEquals(dir3, operation1.libStandaloneDirectory());
-        assertEquals(dir4, operation1.libTestDirectory());
+        assertEquals(dir2, operation1.libProvidedDirectory());
+        assertEquals(dir3, operation1.libRuntimeDirectory());
+        assertEquals(dir4, operation1.libStandaloneDirectory());
+        assertEquals(dir5, operation1.libTestDirectory());
 
         var operation2 = new DownloadOperation()
             .libCompileDirectory(dir1)
-            .libRuntimeDirectory(dir2)
-            .libStandaloneDirectory(dir3)
-            .libTestDirectory(dir4);
+            .libProvidedDirectory(dir2)
+            .libRuntimeDirectory(dir3)
+            .libStandaloneDirectory(dir4)
+            .libTestDirectory(dir5);
         operation2.repositories().add(repository1);
         operation2.repositories().add(repository2);
         operation2.dependencies().scope(Scope.compile).include(dependency1).include(dependency2);
@@ -70,9 +75,10 @@ public class TestDownloadOperation {
         assertTrue(operation2.dependencies().scope(Scope.compile).contains(dependency1));
         assertTrue(operation2.dependencies().scope(Scope.compile).contains(dependency2));
         assertEquals(dir1, operation2.libCompileDirectory());
-        assertEquals(dir2, operation2.libRuntimeDirectory());
-        assertEquals(dir3, operation2.libStandaloneDirectory());
-        assertEquals(dir4, operation2.libTestDirectory());
+        assertEquals(dir2, operation2.libProvidedDirectory());
+        assertEquals(dir3, operation2.libRuntimeDirectory());
+        assertEquals(dir4, operation2.libStandaloneDirectory());
+        assertEquals(dir5, operation2.libTestDirectory());
 
         var operation3 = new DownloadOperation()
             .repositories(repository1, repository2);
@@ -89,19 +95,24 @@ public class TestDownloadOperation {
             var dir2 = new File(tmp, "dir2");
             var dir3 = new File(tmp, "dir3");
             var dir4 = new File(tmp, "dir4");
+            var dir5 = new File(tmp, "dir5");
             dir1.mkdirs();
             dir2.mkdirs();
             dir3.mkdirs();
             dir4.mkdirs();
+            dir5.mkdirs();
 
             var operation = new DownloadOperation()
                 .repositories(List.of(Repository.MAVEN_CENTRAL))
                 .libCompileDirectory(dir1)
-                .libRuntimeDirectory(dir2)
-                .libStandaloneDirectory(dir3)
-                .libTestDirectory(dir4);
+                .libProvidedDirectory(dir2)
+                .libRuntimeDirectory(dir3)
+                .libStandaloneDirectory(dir4)
+                .libTestDirectory(dir5);
             operation.dependencies().scope(Scope.compile)
                 .include(new Dependency("org.apache.commons", "commons-lang3", new VersionNumber(3, 12, 0)));
+            operation.dependencies().scope(Scope.provided)
+                .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(6, 0, 0)));
             operation.dependencies().scope(Scope.runtime)
                 .include(new Dependency("org.apache.commons", "commons-collections4", new VersionNumber(4, 4)));
             operation.dependencies().scope(Scope.standalone)
@@ -115,15 +126,17 @@ public class TestDownloadOperation {
                     /dir1
                     /dir1/commons-lang3-3.12.0.jar
                     /dir2
-                    /dir2/commons-collections4-4.4.jar
+                    /dir2/jakarta.servlet-api-6.0.0.jar
                     /dir3
-                    /dir3/slf4j-api-2.0.6.jar
-                    /dir3/slf4j-simple-2.0.6.jar
+                    /dir3/commons-collections4-4.4.jar
                     /dir4
-                    /dir4/httpclient5-5.2.1.jar
-                    /dir4/httpcore5-5.2.jar
-                    /dir4/httpcore5-h2-5.2.jar
-                    /dir4/slf4j-api-1.7.36.jar""",
+                    /dir4/slf4j-api-2.0.6.jar
+                    /dir4/slf4j-simple-2.0.6.jar
+                    /dir5
+                    /dir5/httpclient5-5.2.1.jar
+                    /dir5/httpcore5-5.2.jar
+                    /dir5/httpcore5-h2-5.2.jar
+                    /dir5/slf4j-api-1.7.36.jar""",
                 FileUtils.generateDirectoryListing(tmp));
         } finally {
             FileUtils.deleteDirectory(tmp);
@@ -139,21 +152,26 @@ public class TestDownloadOperation {
             var dir2 = new File(tmp, "dir2");
             var dir3 = new File(tmp, "dir3");
             var dir4 = new File(tmp, "dir4");
+            var dir5 = new File(tmp, "dir5");
             dir1.mkdirs();
             dir2.mkdirs();
             dir3.mkdirs();
             dir4.mkdirs();
+            dir5.mkdirs();
 
             var operation = new DownloadOperation()
                 .repositories(List.of(Repository.MAVEN_CENTRAL))
                 .libCompileDirectory(dir1)
-                .libRuntimeDirectory(dir2)
-                .libStandaloneDirectory(dir3)
-                .libTestDirectory(dir4)
+                .libProvidedDirectory(dir2)
+                .libRuntimeDirectory(dir3)
+                .libStandaloneDirectory(dir4)
+                .libTestDirectory(dir5)
                 .downloadJavadoc(true)
                 .downloadSources(true);
             operation.dependencies().scope(Scope.compile)
                 .include(new Dependency("org.apache.commons", "commons-lang3", new VersionNumber(3, 12, 0)));
+            operation.dependencies().scope(Scope.provided)
+                .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(6, 0, 0)));
             operation.dependencies().scope(Scope.runtime)
                 .include(new Dependency("org.apache.commons", "commons-collections4", new VersionNumber(4, 4)));
             operation.dependencies().scope(Scope.standalone)
@@ -169,29 +187,33 @@ public class TestDownloadOperation {
                     /dir1/commons-lang3-3.12.0-sources.jar
                     /dir1/commons-lang3-3.12.0.jar
                     /dir2
-                    /dir2/commons-collections4-4.4-javadoc.jar
-                    /dir2/commons-collections4-4.4-sources.jar
-                    /dir2/commons-collections4-4.4.jar
+                    /dir2/jakarta.servlet-api-6.0.0-javadoc.jar
+                    /dir2/jakarta.servlet-api-6.0.0-sources.jar
+                    /dir2/jakarta.servlet-api-6.0.0.jar
                     /dir3
-                    /dir3/slf4j-api-2.0.6-javadoc.jar
-                    /dir3/slf4j-api-2.0.6-sources.jar
-                    /dir3/slf4j-api-2.0.6.jar
-                    /dir3/slf4j-simple-2.0.6-javadoc.jar
-                    /dir3/slf4j-simple-2.0.6-sources.jar
-                    /dir3/slf4j-simple-2.0.6.jar
+                    /dir3/commons-collections4-4.4-javadoc.jar
+                    /dir3/commons-collections4-4.4-sources.jar
+                    /dir3/commons-collections4-4.4.jar
                     /dir4
-                    /dir4/httpclient5-5.2.1-javadoc.jar
-                    /dir4/httpclient5-5.2.1-sources.jar
-                    /dir4/httpclient5-5.2.1.jar
-                    /dir4/httpcore5-5.2-javadoc.jar
-                    /dir4/httpcore5-5.2-sources.jar
-                    /dir4/httpcore5-5.2.jar
-                    /dir4/httpcore5-h2-5.2-javadoc.jar
-                    /dir4/httpcore5-h2-5.2-sources.jar
-                    /dir4/httpcore5-h2-5.2.jar
-                    /dir4/slf4j-api-1.7.36-javadoc.jar
-                    /dir4/slf4j-api-1.7.36-sources.jar
-                    /dir4/slf4j-api-1.7.36.jar""",
+                    /dir4/slf4j-api-2.0.6-javadoc.jar
+                    /dir4/slf4j-api-2.0.6-sources.jar
+                    /dir4/slf4j-api-2.0.6.jar
+                    /dir4/slf4j-simple-2.0.6-javadoc.jar
+                    /dir4/slf4j-simple-2.0.6-sources.jar
+                    /dir4/slf4j-simple-2.0.6.jar
+                    /dir5
+                    /dir5/httpclient5-5.2.1-javadoc.jar
+                    /dir5/httpclient5-5.2.1-sources.jar
+                    /dir5/httpclient5-5.2.1.jar
+                    /dir5/httpcore5-5.2-javadoc.jar
+                    /dir5/httpcore5-5.2-sources.jar
+                    /dir5/httpcore5-5.2.jar
+                    /dir5/httpcore5-h2-5.2-javadoc.jar
+                    /dir5/httpcore5-h2-5.2-sources.jar
+                    /dir5/httpcore5-h2-5.2.jar
+                    /dir5/slf4j-api-1.7.36-javadoc.jar
+                    /dir5/slf4j-api-1.7.36-sources.jar
+                    /dir5/slf4j-api-1.7.36.jar""",
                 FileUtils.generateDirectoryListing(tmp));
         } finally {
             FileUtils.deleteDirectory(tmp);
@@ -216,6 +238,8 @@ public class TestDownloadOperation {
             project.repositories().add(Repository.MAVEN_CENTRAL);
             project.dependencies().scope(Scope.compile)
                 .include(new Dependency("org.apache.commons", "commons-lang3", new VersionNumber(3, 12, 0)));
+            project.dependencies().scope(Scope.provided)
+                .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(6, 0, 0)));
             project.dependencies().scope(Scope.runtime)
                 .include(new Dependency("org.apache.commons", "commons-collections4", new VersionNumber(4, 4)));
             project.dependencies().scope(Scope.standalone)
@@ -234,6 +258,9 @@ public class TestDownloadOperation {
                     /lib/compile
                     /lib/compile/commons-lang3-3.12.0-sources.jar
                     /lib/compile/commons-lang3-3.12.0.jar
+                    /lib/provided
+                    /lib/provided/jakarta.servlet-api-6.0.0-sources.jar
+                    /lib/provided/jakarta.servlet-api-6.0.0.jar
                     /lib/runtime
                     /lib/runtime/commons-collections4-4.4-sources.jar
                     /lib/runtime/commons-collections4-4.4.jar
@@ -290,6 +317,7 @@ public class TestDownloadOperation {
                     /lib/compile
                     /lib/compile/stripe-java-20.136.0-sources.jar
                     /lib/compile/stripe-java-20.136.0.jar
+                    /lib/provided
                     /lib/runtime
                     /lib/runtime/gson-2.9.0-sources.jar
                     /lib/runtime/gson-2.9.0.jar

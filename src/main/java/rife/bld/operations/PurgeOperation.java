@@ -28,6 +28,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
     private File libCompileDirectory_;
+    private File libProvidedDirectory_;
     private File libRuntimeDirectory_;
     private File libStandaloneDirectory_;
     private File libTestDirectory_;
@@ -41,6 +42,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      */
     public void execute() {
         executePurgeCompileDependencies();
+        executePurgeProvidedDependencies();
         executePurgeRuntimeDependencies();
         executePurgeStandaloneDependencies();
         executePurgeTestDependencies();
@@ -56,6 +58,15 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      */
     protected void executePurgeCompileDependencies() {
         executePurgeDependencies(libCompileDirectory(), dependencies().resolveCompileDependencies(artifactRetriever(), repositories()));
+    }
+
+    /**
+     * Part of the {@link #execute} operation, purge the {@code provided} scope artifacts.
+     *
+     * @since 1.8
+     */
+    protected void executePurgeProvidedDependencies() {
+        executePurgeDependencies(libProvidedDirectory(), dependencies().resolveProvidedDependencies(artifactRetriever(), repositories()));
     }
 
     /**
@@ -137,6 +148,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
             .repositories(project.repositories())
             .dependencies(project.dependencies())
             .libCompileDirectory(project.libCompileDirectory())
+            .libProvidedDirectory(project.libProvidedDirectory())
             .libRuntimeDirectory(project.libRuntimeDirectory())
             .libStandaloneDirectory(project.libStandaloneDirectory())
             .libTestDirectory(project.libTestDirectory())
@@ -221,6 +233,18 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     }
 
     /**
+     * Provides the {@code provided} scope purge directory.
+     *
+     * @param directory the directory to purge the {@code provided} scope artifacts from
+     * @return this operation instance
+     * @since 1.8
+     */
+    public PurgeOperation libProvidedDirectory(File directory) {
+        libProvidedDirectory_ = directory;
+        return this;
+    }
+
+    /**
      * Provides the {@code runtime} scope purge directory.
      *
      * @param directory the directory to purge the {@code runtime} scope artifacts from
@@ -300,6 +324,16 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      */
     public File libCompileDirectory() {
         return libCompileDirectory_;
+    }
+
+    /**
+     * Retrieves the {@code provided} scope purge directory.
+     *
+     * @return the {@code provided} scope purge directory
+     * @since 1.8
+     */
+    public File libProvidedDirectory() {
+        return libProvidedDirectory_;
     }
 
     /**

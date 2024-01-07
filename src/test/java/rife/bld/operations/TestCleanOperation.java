@@ -116,6 +116,7 @@ public class TestCleanOperation {
                     /lib
                     /lib/bld
                     /lib/compile
+                    /lib/provided
                     /lib/runtime
                     /lib/standalone
                     /lib/test
@@ -139,6 +140,7 @@ public class TestCleanOperation {
                     /lib
                     /lib/bld
                     /lib/compile
+                    /lib/provided
                     /lib/runtime
                     /lib/standalone
                     /lib/test

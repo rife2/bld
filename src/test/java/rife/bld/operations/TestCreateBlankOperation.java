@@ -95,6 +95,7 @@ public class TestCreateBlankOperation {
                     /myapp/lib/bld/bld-wrapper\\.jar
                     /myapp/lib/bld/bld-wrapper\\.properties
                     /myapp/lib/compile
+                    /myapp/lib/provided
                     /myapp/lib/runtime
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
@@ -174,6 +175,7 @@ public class TestCreateBlankOperation {
                     /myapp/lib/bld/bld-wrapper\\.jar
                     /myapp/lib/bld/bld-wrapper\\.properties
                     /myapp/lib/compile
+                    /myapp/lib/provided
                     /myapp/lib/runtime
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
@@ -266,6 +268,7 @@ public class TestCreateBlankOperation {
                     /yourthing/lib/bld/bld-wrapper.jar
                     /yourthing/lib/bld/bld-wrapper.properties
                     /yourthing/lib/compile
+                    /yourthing/lib/provided
                     /yourthing/lib/runtime
                     /yourthing/lib/test
                     /yourthing/src
@@ -390,6 +393,7 @@ public class TestCreateBlankOperation {
                 /myapp/lib/local/junit-platform-engine-1\\.10\\.0\\.jar
                 /myapp/lib/local/opentest4j-1\\.3\\.0-sources\\.jar
                 /myapp/lib/local/opentest4j-1\\.3\\.0\\.jar
+                /myapp/lib/provided
                 /myapp/lib/runtime
                 /myapp/lib/test
                 /myapp/src
@@ -511,6 +515,7 @@ public class TestCreateBlankOperation {
                 /myapp/lib/local_test/junit-platform-engine-1\\.10\\.0\\.jar
                 /myapp/lib/local_test/opentest4j-1\\.3\\.0-sources\\.jar
                 /myapp/lib/local_test/opentest4j-1\\.3\\.0\\.jar
+                /myapp/lib/provided
                 /myapp/lib/runtime
                 /myapp/lib/test
                 /myapp/src

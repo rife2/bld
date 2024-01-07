@@ -251,6 +251,13 @@ public class BaseProject extends BuildExecutor {
      */
     protected File libCompileDirectory = null;
     /**
+     * The provided scope lib directory.
+     *
+     * @see #libProvidedDirectory()
+     * @since 1.8
+     */
+    protected File libProvidedDirectory = null;
+    /**
      * The runtime scope lib directory.
      *
      * @see #libRuntimeDirectory()
@@ -1011,6 +1018,16 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns the project provided scope lib directory.
+     * Defaults to {@code "provided"} relative to {@link #libDirectory()}.
+     *
+     * @since 1.8
+     */
+    public File libProvidedDirectory() {
+        return Objects.requireNonNullElseGet(libProvidedDirectory, () -> new File(libDirectory(), "provided"));
+    }
+
+    /**
      * Returns the project runtime scope lib directory.
      * Defaults to {@code "runtime"} relative to {@link #libDirectory()}.
      *
@@ -1130,6 +1147,7 @@ public class BaseProject extends BuildExecutor {
         libDirectory().mkdirs();
         libBldDirectory().mkdirs();
         libCompileDirectory().mkdirs();
+        libProvidedDirectory().mkdirs();
         libRuntimeDirectory().mkdirs();
         if (libStandaloneDirectory() != null) {
             libStandaloneDirectory().mkdirs();
@@ -1399,6 +1417,24 @@ public class BaseProject extends BuildExecutor {
         // build the compilation classpath
         var classpath = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
         addLocalDependencies(classpath, Scope.compile);
+        return classpath;
+    }
+
+    /**
+     * Returns all the jar files that are in the provided scope classpath.
+     * <p>
+     * By default, this collects all the jar files in the {@link #libProvidedDirectory()}
+     * and adds all the jar files from the provided scope local dependencies.
+     *
+     * @since 1.8
+     */
+    public List<File> providedClasspathJars() {
+        // detect the jar files in the provided lib directory
+        var dir_abs = libProvidedDirectory().getAbsoluteFile();
+        var jar_files = FileUtils.getFileList(dir_abs, INCLUDED_JARS, EXCLUDED_JARS);
+
+        // build the compilation classpath
+        var classpath = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
         addLocalDependencies(classpath, Scope.provided);
         return classpath;
     }
@@ -1491,7 +1527,7 @@ public class BaseProject extends BuildExecutor {
      * @since 1.5
      */
     public List<String> compileMainClasspath() {
-        return FileUtils.combineToAbsolutePaths(compileClasspathJars());
+        return FileUtils.combineToAbsolutePaths(compileClasspathJars(), providedClasspathJars());
     }
 
     /**
@@ -1505,7 +1541,7 @@ public class BaseProject extends BuildExecutor {
     public List<String> compileTestClasspath() {
         var paths = new ArrayList<String>();
         paths.add(buildMainDirectory().getAbsolutePath());
-        paths.addAll(FileUtils.combineToAbsolutePaths(compileClasspathJars(), testClasspathJars()));
+        paths.addAll(FileUtils.combineToAbsolutePaths(compileClasspathJars(), providedClasspathJars(), testClasspathJars()));
         return paths;
     }
 
@@ -1542,7 +1578,7 @@ public class BaseProject extends BuildExecutor {
         paths.add(srcTestResourcesDirectory().getAbsolutePath());
         paths.add(buildMainDirectory().getAbsolutePath());
         paths.add(buildTestDirectory().getAbsolutePath());
-        paths.addAll(FileUtils.combineToAbsolutePaths(compileClasspathJars(), runtimeClasspathJars(), standaloneClasspathJars(), testClasspathJars()));
+        paths.addAll(FileUtils.combineToAbsolutePaths(compileClasspathJars(), providedClasspathJars(), runtimeClasspathJars(), standaloneClasspathJars(), testClasspathJars()));
         return paths;
     }
 

@@ -9,6 +9,7 @@
     "java.project.referencedLibraries": [
         "${HOME}/.bld/dist/bld-{{v version/}}.jar",
         "lib/compile/*.jar",
+        "lib/provided/*.jar",
         "lib/runtime/*.jar",
         "lib/test/*.jar"
     ]
