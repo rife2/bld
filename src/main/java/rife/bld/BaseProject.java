@@ -1433,7 +1433,7 @@ public class BaseProject extends BuildExecutor {
         var dir_abs = libProvidedDirectory().getAbsoluteFile();
         var jar_files = FileUtils.getFileList(dir_abs, INCLUDED_JARS, EXCLUDED_JARS);
 
-        // build the compilation classpath
+        // build the provided classpath
         var classpath = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
         addLocalDependencies(classpath, Scope.provided);
         return classpath;
