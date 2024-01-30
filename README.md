@@ -100,8 +100,8 @@ reason about your build.
 `bld` lets your build logic get out of the way so that you can focus on writing
 applications.
 
-Get started immediately by [installing](https://github.com/rife2/bld/wiki/Installation) `bld` through Homebrew, SDKMAN, JBang,
-zip archive, or run it directly from its jar file.
+Get started immediately by [installing](https://github.com/rife2/bld/wiki/Installation) `bld`
+through Homebrew, SDKMAN!, JBang, zip archive, or run it directly from its jar file.
 
 If you have any questions, suggestions, ideas or just want to chat, feel free
 to post on the [forums](https://forum.uwyn.com) or to join  us on [Discord](https://discord.gg/zDG6anEXQX).
