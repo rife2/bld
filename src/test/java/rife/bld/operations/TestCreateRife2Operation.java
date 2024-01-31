@@ -107,43 +107,43 @@ public class TestCreateRife2Operation {
                     /myapp/lib/standalone
                     /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
                     /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0\\.jar
-                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-http-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-http-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-io-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-io-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-security-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-security-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-server-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-server-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-session-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-session-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-util-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-util-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/slf4j-api-2\\.0\\.9-sources\\.jar
-                    /myapp/lib/standalone/slf4j-api-2\\.0\\.9\\.jar
-                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.9-sources\\.jar
-                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.9\\.jar
+                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-http-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-http-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-io-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-io-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-security-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-security-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-server-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-server-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-session-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-session-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-util-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-util-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/slf4j-api-2\\.0\\.11-sources\\.jar
+                    /myapp/lib/standalone/slf4j-api-2\\.0\\.11\\.jar
+                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.11-sources\\.jar
+                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.11\\.jar
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
                     /myapp/lib/test/jsoup-1\\.16\\.2-sources\\.jar
                     /myapp/lib/test/jsoup-1\\.16\\.2\\.jar
-                    /myapp/lib/test/junit-jupiter-5\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-5\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-platform-commons-1\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-platform-commons-1\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-platform-engine-1\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-platform-engine-1\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-jupiter-5\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-5\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-platform-commons-1\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-platform-commons-1\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-platform-engine-1\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-platform-engine-1\\.10\\.1\\.jar
                     /myapp/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
                     /myapp/lib/test/opentest4j-1\\.3\\.0\\.jar
                     /myapp/src
@@ -221,43 +221,43 @@ public class TestCreateRife2Operation {
                     /myapp/lib/standalone
                     /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
                     /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0\\.jar
-                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-http-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-http-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-io-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-io-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-security-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-security-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-server-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-server-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-session-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-session-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/jetty-util-12\\.0\\.2-sources\\.jar
-                    /myapp/lib/standalone/jetty-util-12\\.0\\.2\\.jar
-                    /myapp/lib/standalone/slf4j-api-2\\.0\\.9-sources\\.jar
-                    /myapp/lib/standalone/slf4j-api-2\\.0\\.9\\.jar
-                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.9-sources\\.jar
-                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.9\\.jar
+                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-ee10-servlet-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-http-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-http-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-io-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-io-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-security-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-security-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-server-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-server-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-session-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-session-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/jetty-util-12\\.0\\.5-sources\\.jar
+                    /myapp/lib/standalone/jetty-util-12\\.0\\.5\\.jar
+                    /myapp/lib/standalone/slf4j-api-2\\.0\\.11-sources\\.jar
+                    /myapp/lib/standalone/slf4j-api-2\\.0\\.11\\.jar
+                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.11-sources\\.jar
+                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.11\\.jar
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
                     /myapp/lib/test/jsoup-1\\.16\\.2-sources\\.jar
                     /myapp/lib/test/jsoup-1\\.16\\.2\\.jar
-                    /myapp/lib/test/junit-jupiter-5\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-5\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-platform-commons-1\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-platform-commons-1\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.0\\.jar
-                    /myapp/lib/test/junit-platform-engine-1\\.10\\.0-sources\\.jar
-                    /myapp/lib/test/junit-platform-engine-1\\.10\\.0\\.jar
+                    /myapp/lib/test/junit-jupiter-5\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-5\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-api-5\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-engine-5\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-jupiter-params-5\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-platform-commons-1\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-platform-commons-1\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.1\\.jar
+                    /myapp/lib/test/junit-platform-engine-1\\.10\\.1-sources\\.jar
+                    /myapp/lib/test/junit-platform-engine-1\\.10\\.1\\.jar
                     /myapp/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
                     /myapp/lib/test/opentest4j-1\\.3\\.0\\.jar
                     /myapp/src
@@ -473,44 +473,44 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local/apiguardian-api-1\\.1\\.2\\.jar
                 /myapp/lib/local/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
                 /myapp/lib/local/jakarta\\.servlet-api-6\\.0\\.0\\.jar
-                /myapp/lib/local/jetty-ee10-servlet-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local/jetty-ee10-servlet-12\\.0\\.2\\.jar
-                /myapp/lib/local/jetty-http-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local/jetty-http-12\\.0\\.2\\.jar
-                /myapp/lib/local/jetty-io-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local/jetty-io-12\\.0\\.2\\.jar
-                /myapp/lib/local/jetty-security-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local/jetty-security-12\\.0\\.2\\.jar
-                /myapp/lib/local/jetty-server-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local/jetty-server-12\\.0\\.2\\.jar
-                /myapp/lib/local/jetty-session-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local/jetty-session-12\\.0\\.2\\.jar
-                /myapp/lib/local/jetty-util-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local/jetty-util-12\\.0\\.2\\.jar
+                /myapp/lib/local/jetty-ee10-servlet-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local/jetty-ee10-servlet-12\\.0\\.5\\.jar
+                /myapp/lib/local/jetty-http-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local/jetty-http-12\\.0\\.5\\.jar
+                /myapp/lib/local/jetty-io-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local/jetty-io-12\\.0\\.5\\.jar
+                /myapp/lib/local/jetty-security-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local/jetty-security-12\\.0\\.5\\.jar
+                /myapp/lib/local/jetty-server-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local/jetty-server-12\\.0\\.5\\.jar
+                /myapp/lib/local/jetty-session-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local/jetty-session-12\\.0\\.5\\.jar
+                /myapp/lib/local/jetty-util-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local/jetty-util-12\\.0\\.5\\.jar
                 /myapp/lib/local/jsoup-1\\.16\\.2-sources\\.jar
                 /myapp/lib/local/jsoup-1\\.16\\.2\\.jar
-                /myapp/lib/local/junit-jupiter-5\\.10\\.0-sources\\.jar
-                /myapp/lib/local/junit-jupiter-5\\.10\\.0\\.jar
-                /myapp/lib/local/junit-jupiter-api-5\\.10\\.0-sources\\.jar
-                /myapp/lib/local/junit-jupiter-api-5\\.10\\.0\\.jar
-                /myapp/lib/local/junit-jupiter-engine-5\\.10\\.0-sources\\.jar
-                /myapp/lib/local/junit-jupiter-engine-5\\.10\\.0\\.jar
-                /myapp/lib/local/junit-jupiter-params-5\\.10\\.0-sources\\.jar
-                /myapp/lib/local/junit-jupiter-params-5\\.10\\.0\\.jar
-                /myapp/lib/local/junit-platform-commons-1\\.10\\.0-sources\\.jar
-                /myapp/lib/local/junit-platform-commons-1\\.10\\.0\\.jar
-                /myapp/lib/local/junit-platform-console-standalone-1\\.10\\.0-sources\\.jar
-                /myapp/lib/local/junit-platform-console-standalone-1\\.10\\.0\\.jar
-                /myapp/lib/local/junit-platform-engine-1\\.10\\.0-sources\\.jar
-                /myapp/lib/local/junit-platform-engine-1\\.10\\.0\\.jar
+                /myapp/lib/local/junit-jupiter-5\\.10\\.1-sources\\.jar
+                /myapp/lib/local/junit-jupiter-5\\.10\\.1\\.jar
+                /myapp/lib/local/junit-jupiter-api-5\\.10\\.1-sources\\.jar
+                /myapp/lib/local/junit-jupiter-api-5\\.10\\.1\\.jar
+                /myapp/lib/local/junit-jupiter-engine-5\\.10\\.1-sources\\.jar
+                /myapp/lib/local/junit-jupiter-engine-5\\.10\\.1\\.jar
+                /myapp/lib/local/junit-jupiter-params-5\\.10\\.1-sources\\.jar
+                /myapp/lib/local/junit-jupiter-params-5\\.10\\.1\\.jar
+                /myapp/lib/local/junit-platform-commons-1\\.10\\.1-sources\\.jar
+                /myapp/lib/local/junit-platform-commons-1\\.10\\.1\\.jar
+                /myapp/lib/local/junit-platform-console-standalone-1\\.10\\.1-sources\\.jar
+                /myapp/lib/local/junit-platform-console-standalone-1\\.10\\.1\\.jar
+                /myapp/lib/local/junit-platform-engine-1\\.10\\.1-sources\\.jar
+                /myapp/lib/local/junit-platform-engine-1\\.10\\.1\\.jar
                 /myapp/lib/local/opentest4j-1\\.3\\.0-sources\\.jar
                 /myapp/lib/local/opentest4j-1\\.3\\.0\\.jar
                 /myapp/lib/local/rife2-.*-sources\\.jar
                 /myapp/lib/local/rife2-.*\\.jar
-                /myapp/lib/local/slf4j-api-2\\.0\\.9-sources\\.jar
-                /myapp/lib/local/slf4j-api-2\\.0\\.9\\.jar
-                /myapp/lib/local/slf4j-simple-2\\.0\\.9-sources\\.jar
-                /myapp/lib/local/slf4j-simple-2\\.0\\.9\\.jar
+                /myapp/lib/local/slf4j-api-2\\.0\\.11-sources\\.jar
+                /myapp/lib/local/slf4j-api-2\\.0\\.11\\.jar
+                /myapp/lib/local/slf4j-simple-2\\.0\\.11-sources\\.jar
+                /myapp/lib/local/slf4j-simple-2\\.0\\.11\\.jar
                 /myapp/lib/provided
                 /myapp/lib/runtime
                 /myapp/lib/standalone
@@ -642,43 +642,43 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local_standalone
                 /myapp/lib/local_standalone/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
                 /myapp/lib/local_standalone/jakarta\\.servlet-api-6\\.0\\.0\\.jar
-                /myapp/lib/local_standalone/jetty-ee10-servlet-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local_standalone/jetty-ee10-servlet-12\\.0\\.2\\.jar
-                /myapp/lib/local_standalone/jetty-http-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local_standalone/jetty-http-12\\.0\\.2\\.jar
-                /myapp/lib/local_standalone/jetty-io-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local_standalone/jetty-io-12\\.0\\.2\\.jar
-                /myapp/lib/local_standalone/jetty-security-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local_standalone/jetty-security-12\\.0\\.2\\.jar
-                /myapp/lib/local_standalone/jetty-server-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local_standalone/jetty-server-12\\.0\\.2\\.jar
-                /myapp/lib/local_standalone/jetty-session-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local_standalone/jetty-session-12\\.0\\.2\\.jar
-                /myapp/lib/local_standalone/jetty-util-12\\.0\\.2-sources\\.jar
-                /myapp/lib/local_standalone/jetty-util-12\\.0\\.2\\.jar
-                /myapp/lib/local_standalone/slf4j-api-2\\.0\\.9-sources\\.jar
-                /myapp/lib/local_standalone/slf4j-api-2\\.0\\.9\\.jar
-                /myapp/lib/local_standalone/slf4j-simple-2\\.0\\.9-sources\\.jar
-                /myapp/lib/local_standalone/slf4j-simple-2\\.0\\.9\\.jar
+                /myapp/lib/local_standalone/jetty-ee10-servlet-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local_standalone/jetty-ee10-servlet-12\\.0\\.5\\.jar
+                /myapp/lib/local_standalone/jetty-http-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local_standalone/jetty-http-12\\.0\\.5\\.jar
+                /myapp/lib/local_standalone/jetty-io-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local_standalone/jetty-io-12\\.0\\.5\\.jar
+                /myapp/lib/local_standalone/jetty-security-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local_standalone/jetty-security-12\\.0\\.5\\.jar
+                /myapp/lib/local_standalone/jetty-server-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local_standalone/jetty-server-12\\.0\\.5\\.jar
+                /myapp/lib/local_standalone/jetty-session-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local_standalone/jetty-session-12\\.0\\.5\\.jar
+                /myapp/lib/local_standalone/jetty-util-12\\.0\\.5-sources\\.jar
+                /myapp/lib/local_standalone/jetty-util-12\\.0\\.5\\.jar
+                /myapp/lib/local_standalone/slf4j-api-2\\.0\\.11-sources\\.jar
+                /myapp/lib/local_standalone/slf4j-api-2\\.0\\.11\\.jar
+                /myapp/lib/local_standalone/slf4j-simple-2\\.0\\.11-sources\\.jar
+                /myapp/lib/local_standalone/slf4j-simple-2\\.0\\.11\\.jar
                 /myapp/lib/local_test
                 /myapp/lib/local_test/apiguardian-api-1\\.1\\.2-sources\\.jar
                 /myapp/lib/local_test/apiguardian-api-1\\.1\\.2\\.jar
                 /myapp/lib/local_test/jsoup-1\\.16\\.2-sources\\.jar
                 /myapp/lib/local_test/jsoup-1\\.16\\.2\\.jar
-                /myapp/lib/local_test/junit-jupiter-5\\.10\\.0-sources\\.jar
-                /myapp/lib/local_test/junit-jupiter-5\\.10\\.0\\.jar
-                /myapp/lib/local_test/junit-jupiter-api-5\\.10\\.0-sources\\.jar
-                /myapp/lib/local_test/junit-jupiter-api-5\\.10\\.0\\.jar
-                /myapp/lib/local_test/junit-jupiter-engine-5\\.10\\.0-sources\\.jar
-                /myapp/lib/local_test/junit-jupiter-engine-5\\.10\\.0\\.jar
-                /myapp/lib/local_test/junit-jupiter-params-5\\.10\\.0-sources\\.jar
-                /myapp/lib/local_test/junit-jupiter-params-5\\.10\\.0\\.jar
-                /myapp/lib/local_test/junit-platform-commons-1\\.10\\.0-sources\\.jar
-                /myapp/lib/local_test/junit-platform-commons-1\\.10\\.0\\.jar
-                /myapp/lib/local_test/junit-platform-console-standalone-1\\.10\\.0-sources\\.jar
-                /myapp/lib/local_test/junit-platform-console-standalone-1\\.10\\.0\\.jar
-                /myapp/lib/local_test/junit-platform-engine-1\\.10\\.0-sources\\.jar
-                /myapp/lib/local_test/junit-platform-engine-1\\.10\\.0\\.jar
+                /myapp/lib/local_test/junit-jupiter-5\\.10\\.1-sources\\.jar
+                /myapp/lib/local_test/junit-jupiter-5\\.10\\.1\\.jar
+                /myapp/lib/local_test/junit-jupiter-api-5\\.10\\.1-sources\\.jar
+                /myapp/lib/local_test/junit-jupiter-api-5\\.10\\.1\\.jar
+                /myapp/lib/local_test/junit-jupiter-engine-5\\.10\\.1-sources\\.jar
+                /myapp/lib/local_test/junit-jupiter-engine-5\\.10\\.1\\.jar
+                /myapp/lib/local_test/junit-jupiter-params-5\\.10\\.1-sources\\.jar
+                /myapp/lib/local_test/junit-jupiter-params-5\\.10\\.1\\.jar
+                /myapp/lib/local_test/junit-platform-commons-1\\.10\\.1-sources\\.jar
+                /myapp/lib/local_test/junit-platform-commons-1\\.10\\.1\\.jar
+                /myapp/lib/local_test/junit-platform-console-standalone-1\\.10\\.1-sources\\.jar
+                /myapp/lib/local_test/junit-platform-console-standalone-1\\.10\\.1\\.jar
+                /myapp/lib/local_test/junit-platform-engine-1\\.10\\.1-sources\\.jar
+                /myapp/lib/local_test/junit-platform-engine-1\\.10\\.1\\.jar
                 /myapp/lib/local_test/opentest4j-1\\.3\\.0-sources\\.jar
                 /myapp/lib/local_test/opentest4j-1\\.3\\.0\\.jar
                 /myapp/lib/provided
