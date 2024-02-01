@@ -113,7 +113,7 @@ Read more in the [full documentation](https://github.com/rife2/bld/wiki) and [bl
 If you want to contribute to `bld` or customize it, all you have to do is clone the GitHub
 repository and update the [RIFE2/core](https://github.com/rife2/rife2-core) submodule:
 
-```bash
+```console
 git clone git@github.com:rife2/bld.git
 cd bld
 git submodule init
@@ -122,7 +122,7 @@ git submodule update
 
 Then use `bld` to build itself:
 
-```bash
+```console
 ./bld compile
 ```
 
