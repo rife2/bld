@@ -59,10 +59,10 @@ public class MyappBuild extends Project {
         scope(test)
             .include(dependency("org.junit.jupiter",
                                 "junit-jupiter",
-                                version(5,10,0)))
+                                version(5,10,1)))
             .include(dependency("org.junit.platform",
                                 "junit-platform-console-standalone",
-                                version(1,10,0)));
+                                version(1,10,1)));
     }
 
     public static void main(String[] args) {
@@ -126,5 +126,5 @@ Then use `bld` to build itself:
 ./bld compile
 ```
 
-The project has an Intellij IDEA project structure. You can just open it after all
+The project has an IntelliJ IDEA project structure. You can just open it after all
 the dependencies were downloaded and peruse the code.
