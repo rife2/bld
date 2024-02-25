@@ -13,7 +13,7 @@ import java.io.File;
  * Creates a new app project structure.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 1.8
+ * @since 1.9
  */
 public class CreateAppOperation extends AbstractCreateOperation<CreateAppOperation, Project> {
     public CreateAppOperation() {
