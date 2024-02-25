@@ -7,7 +7,7 @@ filepath=$(mktemp -u -t "bld-$version.jar")
 echo "Downloading bld v$version..."
 echo
 
-curl -L -s "https://github.com/rife2/bld/releases/download/$version/bld-$version.jar" -o "$filepath"
+curl -L -s "https://github.com/rife2/bld/releases/download/$version/bld-$version.jar" > "$filepath"
 
 echo "Welcome to bld v$version."
 java -jar "$filepath" upgrade
