@@ -16,6 +16,12 @@ import java.util.List;
  * @since 1.7
  */
 public class CreateOperation {
+
+    private static final String BASE = "base";
+    private static final String BLANK = "blank";
+    private static final String LIB = "lib";
+    private static final String RIFE2 = "rife2";
+
     /**
      * Configures a creation operation from command-line arguments.
      *
@@ -42,16 +48,16 @@ public class CreateOperation {
 
         if (type == null || type.isEmpty()) {
             System.out.println("Please enter a number for the project type:");
-            System.out.println("  1: base");
-            System.out.println("  2: blank");
-            System.out.println("  3: lib");
-            System.out.println("  4: rife2");
+            System.out.printf("  1: %s%n", BASE);
+            System.out.printf("  2: %s%n", BLANK);
+            System.out.printf("  3: %s%n", LIB);
+            System.out.printf("  4: %s%n", RIFE2);
             var number = System.console().readLine();
             switch (Integer.parseInt(number)) {
-                case 1 -> type = "base";
-                case 2 -> type = "blank";
-                case 3 -> type = "lib";
-                case 4 -> type = "rife2";
+                case 1 -> type = BASE;
+                case 2 -> type = BLANK;
+                case 3 -> type = LIB;
+                case 4 -> type = RIFE2;
             }
         } else {
             System.out.println("Using project type: " + type);
@@ -62,10 +68,10 @@ public class CreateOperation {
 
         AbstractCreateOperation<?, ?> create_operation = null;
         switch (type) {
-            case "base" -> create_operation = new CreateBaseOperation();
-            case "blank" -> create_operation = new CreateBlankOperation();
-            case "lib" -> create_operation = new CreateLibOperation();
-            case "rife2" -> create_operation = new CreateRife2Operation();
+            case BASE -> create_operation = new CreateBaseOperation();
+            case BLANK -> create_operation = new CreateBlankOperation();
+            case LIB -> create_operation = new CreateLibOperation();
+            case RIFE2 -> create_operation = new CreateRife2Operation();
         }
         if (create_operation == null) {
             throw new OperationOptionException("ERROR: Unsupported project type.");
@@ -79,7 +85,15 @@ public class CreateOperation {
         }
 
         if (project_name == null || project_name.isEmpty()) {
-            System.out.println("Please enter a project name (for instance: myapp):");
+            String name_example;
+            if (LIB.equals(type)) {
+                name_example = "mylib";
+            } else if (RIFE2.equals(type)) {
+                name_example = "mywebapp";
+            } else {
+                name_example = "myapp";
+            }
+            System.out.printf("Please enter a project name (for instance: %s):%n", name_example);
             project_name = System.console().readLine();
         } else {
             System.out.println("Using project name: " + project_name);
