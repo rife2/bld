@@ -1,15 +1,12 @@
 package {{v package/}};
 
-public class {{v projectTest/}} {
-    void verifyHello() {
-        if (!"Hello World!".equals(new {{v projectMain/}}().getMessage())) {
-            throw new AssertionError();
-        } else {
-            System.out.println("Succeeded");
-        }
-    }
+import org.junit.jupiter.api.Test;
 
-    public static void main(String[] args) {
-        new {{v projectTest/}}().verifyHello();
+import static org.junit.jupiter.api.Assertions.*;
+
+public class {{v projectTest/}} {
+    @Test
+    void verifyHello() {
+        assertEquals("Hello World!", new {{v projectMain/}}().getMessage());
     }
 }

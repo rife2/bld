@@ -206,8 +206,12 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
         // project build
         var build_template = TemplateFactory.TXT.get(templateBase_ + "project_build");
         build_template.setValue("projectBuild", projectBuildName_);
-        build_template.setValue("package", project_.pkg());
-        build_template.setValue("project", projectClassName_);
+        if (build_template.hasValueId("package")) {
+            build_template.setValue("package", project_.pkg());
+        }
+        if (build_template.hasValueId("project")) {
+            build_template.setValue("project", projectClassName_);
+        }
         if (build_template.hasValueId("projectMain")) {
             build_template.setValue("projectMain", projectMainName_);
         }
@@ -326,17 +330,6 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
      */
     protected void executePopulateVscodeProject()
     throws FileUtilsErrorException {
-        var launch_template = TemplateFactory.JSON.get(templateBase_ + "vscode.launch");
-        launch_template.setValue("package", project_.pkg());
-        if (launch_template.hasValueId("projectMain")) {
-            launch_template.setValue("projectMain", projectMainName_);
-        }
-        if (launch_template.hasValueId("projectTest")) {
-            launch_template.setValue("projectTest", projectTestName_);
-        }
-        var launch_file = new File(vscodeDirectory_, "launch.json");
-        FileUtils.writeString(launch_template.getContent(), launch_file);
-
         var settings_template = TemplateFactory.JSON.get(templateBase_ + "vscode.settings");
         if (settings_template.hasValueId("version")) {
             settings_template.setValue("version", BldVersion.getVersion());

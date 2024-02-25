@@ -8,6 +8,7 @@
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.project.referencedLibraries": [
         "${HOME}/.bld/dist/bld-{{v version/}}.jar",
+        "lib/bld/*.jar",
         "lib/compile/*.jar",
         "lib/provided/*.jar",
         "lib/runtime/*.jar",

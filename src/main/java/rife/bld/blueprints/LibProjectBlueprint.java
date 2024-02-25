@@ -13,6 +13,7 @@ import java.util.List;
 
 import static rife.bld.dependencies.Repository.MAVEN_CENTRAL;
 import static rife.bld.dependencies.Repository.SONATYPE_SNAPSHOTS;
+import static rife.bld.dependencies.Scope.test;
 
 /**
  * Provides the dependency information required to create a new lib project.
@@ -35,5 +36,8 @@ public class LibProjectBlueprint extends Project {
 
         downloadSources = true;
         repositories = List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS);
+        scope(test)
+            .include(dependency("org.junit.jupiter", "junit-jupiter", version(5,10,2)))
+            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1,10,2)));
     }
 }

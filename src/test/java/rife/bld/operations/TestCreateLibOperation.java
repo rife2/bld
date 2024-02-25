@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import rife.tools.FileUtils;
 
 import java.nio.file.Files;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,264 +62,161 @@ public class TestCreateLibOperation {
                 .downloadDependencies(true);
             create_operation.execute();
 
-            assertEquals("""
+            assertTrue(Pattern.compile("""
                 /myapp
-                /myapp/.gitignore
-                /myapp/.idea
-                /myapp/.idea/app.iml
-                /myapp/.idea/bld.iml
-                /myapp/.idea/libraries
-                /myapp/.idea/libraries/bld.xml
-                /myapp/.idea/libraries/compile.xml
-                /myapp/.idea/libraries/runtime.xml
-                /myapp/.idea/libraries/test.xml
-                /myapp/.idea/misc.xml
-                /myapp/.idea/modules.xml
-                /myapp/.idea/runConfigurations
-                /myapp/.idea/runConfigurations/Run Tests.xml
-                /myapp/.vscode
-                /myapp/.vscode/launch.json
-                /myapp/.vscode/settings.json
+                /myapp/\\.gitignore
+                /myapp/\\.idea
+                /myapp/\\.idea/app\\.iml
+                /myapp/\\.idea/bld\\.iml
+                /myapp/\\.idea/libraries
+                /myapp/\\.idea/libraries/bld\\.xml
+                /myapp/\\.idea/libraries/compile\\.xml
+                /myapp/\\.idea/libraries/runtime\\.xml
+                /myapp/\\.idea/libraries/test\\.xml
+                /myapp/\\.idea/misc\\.xml
+                /myapp/\\.idea/modules\\.xml
+                /myapp/\\.idea/runConfigurations
+                /myapp/\\.idea/runConfigurations/Run Tests\\.xml
+                /myapp/\\.vscode
+                /myapp/\\.vscode/settings\\.json
                 /myapp/bld
-                /myapp/bld.bat
+                /myapp/bld\\.bat
                 /myapp/lib
                 /myapp/lib/bld
-                /myapp/lib/bld/bld-wrapper.jar
-                /myapp/lib/bld/bld-wrapper.properties
+                /myapp/lib/bld/bld-wrapper\\.jar
+                /myapp/lib/bld/bld-wrapper\\.properties
                 /myapp/lib/compile
                 /myapp/lib/provided
                 /myapp/lib/runtime
                 /myapp/lib/test
+                /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
+                /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
+                /myapp/lib/test/junit-jupiter-5\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-jupiter-5\\.10\\.2\\.jar
+                /myapp/lib/test/junit-jupiter-api-5\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-jupiter-api-5\\.10\\.2\\.jar
+                /myapp/lib/test/junit-jupiter-engine-5\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-jupiter-engine-5\\.10\\.2\\.jar
+                /myapp/lib/test/junit-jupiter-params-5\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-jupiter-params-5\\.10\\.2\\.jar
+                /myapp/lib/test/junit-platform-commons-1\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-platform-commons-1\\.10\\.2\\.jar
+                /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.2\\.jar
+                /myapp/lib/test/junit-platform-engine-1\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-platform-engine-1\\.10\\.2\\.jar
+                /myapp/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
+                /myapp/lib/test/opentest4j-1\\.3\\.0\\.jar
                 /myapp/src
                 /myapp/src/bld
                 /myapp/src/bld/java
                 /myapp/src/bld/java/com
                 /myapp/src/bld/java/com/example
-                /myapp/src/bld/java/com/example/MyappBuild.java
+                /myapp/src/bld/java/com/example/MyappBuild\\.java
                 /myapp/src/bld/resources
                 /myapp/src/main
                 /myapp/src/main/java
                 /myapp/src/main/java/com
                 /myapp/src/main/java/com/example
-                /myapp/src/main/java/com/example/MyappLib.java
+                /myapp/src/main/java/com/example/MyappLib\\.java
                 /myapp/src/main/resources
                 /myapp/src/main/resources/templates
                 /myapp/src/test
                 /myapp/src/test/java
                 /myapp/src/test/java/com
                 /myapp/src/test/java/com/example
-                /myapp/src/test/java/com/example/MyappTest.java
-                /myapp/src/test/resources""", FileUtils.generateDirectoryListing(tmp));
+                /myapp/src/test/java/com/example/MyappTest\\.java
+                /myapp/src/test/resources""").matcher(FileUtils.generateDirectoryListing(tmp)).matches());
 
             var compile_operation = new CompileOperation().fromProject(create_operation.project());
             compile_operation.execute();
             assertTrue(compile_operation.diagnostics().isEmpty());
-            assertEquals("""
+            assertTrue(Pattern.compile("""
                 /myapp
-                /myapp/.gitignore
-                /myapp/.idea
-                /myapp/.idea/app.iml
-                /myapp/.idea/bld.iml
-                /myapp/.idea/libraries
-                /myapp/.idea/libraries/bld.xml
-                /myapp/.idea/libraries/compile.xml
-                /myapp/.idea/libraries/runtime.xml
-                /myapp/.idea/libraries/test.xml
-                /myapp/.idea/misc.xml
-                /myapp/.idea/modules.xml
-                /myapp/.idea/runConfigurations
-                /myapp/.idea/runConfigurations/Run Tests.xml
-                /myapp/.vscode
-                /myapp/.vscode/launch.json
-                /myapp/.vscode/settings.json
+                /myapp/\\.gitignore
+                /myapp/\\.idea
+                /myapp/\\.idea/app\\.iml
+                /myapp/\\.idea/bld\\.iml
+                /myapp/\\.idea/libraries
+                /myapp/\\.idea/libraries/bld\\.xml
+                /myapp/\\.idea/libraries/compile\\.xml
+                /myapp/\\.idea/libraries/runtime\\.xml
+                /myapp/\\.idea/libraries/test\\.xml
+                /myapp/\\.idea/misc\\.xml
+                /myapp/\\.idea/modules\\.xml
+                /myapp/\\.idea/runConfigurations
+                /myapp/\\.idea/runConfigurations/Run Tests\\.xml
+                /myapp/\\.vscode
+                /myapp/\\.vscode/settings\\.json
                 /myapp/bld
-                /myapp/bld.bat
+                /myapp/bld\\.bat
                 /myapp/build
                 /myapp/build/main
                 /myapp/build/main/com
                 /myapp/build/main/com/example
-                /myapp/build/main/com/example/MyappLib.class
+                /myapp/build/main/com/example/MyappLib\\.class
                 /myapp/build/test
                 /myapp/build/test/com
                 /myapp/build/test/com/example
-                /myapp/build/test/com/example/MyappTest.class
+                /myapp/build/test/com/example/MyappTest\\.class
                 /myapp/lib
                 /myapp/lib/bld
-                /myapp/lib/bld/bld-wrapper.jar
-                /myapp/lib/bld/bld-wrapper.properties
+                /myapp/lib/bld/bld-wrapper\\.jar
+                /myapp/lib/bld/bld-wrapper\\.properties
                 /myapp/lib/compile
                 /myapp/lib/provided
                 /myapp/lib/runtime
                 /myapp/lib/test
+                /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
+                /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
+                /myapp/lib/test/junit-jupiter-5\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-jupiter-5\\.10\\.2\\.jar
+                /myapp/lib/test/junit-jupiter-api-5\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-jupiter-api-5\\.10\\.2\\.jar
+                /myapp/lib/test/junit-jupiter-engine-5\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-jupiter-engine-5\\.10\\.2\\.jar
+                /myapp/lib/test/junit-jupiter-params-5\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-jupiter-params-5\\.10\\.2\\.jar
+                /myapp/lib/test/junit-platform-commons-1\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-platform-commons-1\\.10\\.2\\.jar
+                /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.2\\.jar
+                /myapp/lib/test/junit-platform-engine-1\\.10\\.2-sources\\.jar
+                /myapp/lib/test/junit-platform-engine-1\\.10\\.2\\.jar
+                /myapp/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
+                /myapp/lib/test/opentest4j-1\\.3\\.0\\.jar
                 /myapp/src
                 /myapp/src/bld
                 /myapp/src/bld/java
                 /myapp/src/bld/java/com
                 /myapp/src/bld/java/com/example
-                /myapp/src/bld/java/com/example/MyappBuild.java
+                /myapp/src/bld/java/com/example/MyappBuild\\.java
                 /myapp/src/bld/resources
                 /myapp/src/main
                 /myapp/src/main/java
                 /myapp/src/main/java/com
                 /myapp/src/main/java/com/example
-                /myapp/src/main/java/com/example/MyappLib.java
+                /myapp/src/main/java/com/example/MyappLib\\.java
                 /myapp/src/main/resources
                 /myapp/src/main/resources/templates
                 /myapp/src/test
                 /myapp/src/test/java
                 /myapp/src/test/java/com
                 /myapp/src/test/java/com/example
-                /myapp/src/test/java/com/example/MyappTest.java
-                /myapp/src/test/resources""", FileUtils.generateDirectoryListing(tmp));
+                /myapp/src/test/java/com/example/MyappTest\\.java
+                /myapp/src/test/resources""").matcher(FileUtils.generateDirectoryListing(tmp)).matches());
 
             var check_result = new StringBuilder();
-            new TestOperation<>()
+            new JUnitOperation()
                 .fromProject(create_operation.project())
                 .outputProcessor(s -> {
                     check_result.append(s);
                     return true;
                 })
-                .mainClass("com.example.MyappTest")
+                .testToolOptions("--details=summary")
                 .execute();
-            assertEquals("Succeeded", check_result.toString());
-        } finally {
-            FileUtils.deleteDirectory(tmp);
-        }
-    }
-
-    @Test
-    void testExecuteNoDownload()
-    throws Exception {
-        var tmp = Files.createTempDirectory("test").toFile();
-        try {
-            var create_operation = new CreateLibOperation()
-                .workDirectory(tmp)
-                .packageName("org.stuff")
-                .projectName("yourthing");
-            create_operation.execute();
-
-            assertEquals("""
-                    /yourthing
-                    /yourthing/.gitignore
-                    /yourthing/.idea
-                    /yourthing/.idea/app.iml
-                    /yourthing/.idea/bld.iml
-                    /yourthing/.idea/libraries
-                    /yourthing/.idea/libraries/bld.xml
-                    /yourthing/.idea/libraries/compile.xml
-                    /yourthing/.idea/libraries/runtime.xml
-                    /yourthing/.idea/libraries/test.xml
-                    /yourthing/.idea/misc.xml
-                    /yourthing/.idea/modules.xml
-                    /yourthing/.idea/runConfigurations
-                    /yourthing/.idea/runConfigurations/Run Tests.xml
-                    /yourthing/.vscode
-                    /yourthing/.vscode/launch.json
-                    /yourthing/.vscode/settings.json
-                    /yourthing/bld
-                    /yourthing/bld.bat
-                    /yourthing/lib
-                    /yourthing/lib/bld
-                    /yourthing/lib/bld/bld-wrapper.jar
-                    /yourthing/lib/bld/bld-wrapper.properties
-                    /yourthing/lib/compile
-                    /yourthing/lib/provided
-                    /yourthing/lib/runtime
-                    /yourthing/lib/test
-                    /yourthing/src
-                    /yourthing/src/bld
-                    /yourthing/src/bld/java
-                    /yourthing/src/bld/java/org
-                    /yourthing/src/bld/java/org/stuff
-                    /yourthing/src/bld/java/org/stuff/YourthingBuild.java
-                    /yourthing/src/bld/resources
-                    /yourthing/src/main
-                    /yourthing/src/main/java
-                    /yourthing/src/main/java/org
-                    /yourthing/src/main/java/org/stuff
-                    /yourthing/src/main/java/org/stuff/YourthingLib.java
-                    /yourthing/src/main/resources
-                    /yourthing/src/main/resources/templates
-                    /yourthing/src/test
-                    /yourthing/src/test/java
-                    /yourthing/src/test/java/org
-                    /yourthing/src/test/java/org/stuff
-                    /yourthing/src/test/java/org/stuff/YourthingTest.java
-                    /yourthing/src/test/resources""",
-                FileUtils.generateDirectoryListing(tmp));
-
-            var compile_operation = new CompileOperation().fromProject(create_operation.project());
-            compile_operation.execute();
-            assertTrue(compile_operation.diagnostics().isEmpty());
-            assertEquals("""
-                    /yourthing
-                    /yourthing/.gitignore
-                    /yourthing/.idea
-                    /yourthing/.idea/app.iml
-                    /yourthing/.idea/bld.iml
-                    /yourthing/.idea/libraries
-                    /yourthing/.idea/libraries/bld.xml
-                    /yourthing/.idea/libraries/compile.xml
-                    /yourthing/.idea/libraries/runtime.xml
-                    /yourthing/.idea/libraries/test.xml
-                    /yourthing/.idea/misc.xml
-                    /yourthing/.idea/modules.xml
-                    /yourthing/.idea/runConfigurations
-                    /yourthing/.idea/runConfigurations/Run Tests.xml
-                    /yourthing/.vscode
-                    /yourthing/.vscode/launch.json
-                    /yourthing/.vscode/settings.json
-                    /yourthing/bld
-                    /yourthing/bld.bat
-                    /yourthing/build
-                    /yourthing/build/main
-                    /yourthing/build/main/org
-                    /yourthing/build/main/org/stuff
-                    /yourthing/build/main/org/stuff/YourthingLib.class
-                    /yourthing/build/test
-                    /yourthing/build/test/org
-                    /yourthing/build/test/org/stuff
-                    /yourthing/build/test/org/stuff/YourthingTest.class
-                    /yourthing/lib
-                    /yourthing/lib/bld
-                    /yourthing/lib/bld/bld-wrapper.jar
-                    /yourthing/lib/bld/bld-wrapper.properties
-                    /yourthing/lib/compile
-                    /yourthing/lib/provided
-                    /yourthing/lib/runtime
-                    /yourthing/lib/test
-                    /yourthing/src
-                    /yourthing/src/bld
-                    /yourthing/src/bld/java
-                    /yourthing/src/bld/java/org
-                    /yourthing/src/bld/java/org/stuff
-                    /yourthing/src/bld/java/org/stuff/YourthingBuild.java
-                    /yourthing/src/bld/resources
-                    /yourthing/src/main
-                    /yourthing/src/main/java
-                    /yourthing/src/main/java/org
-                    /yourthing/src/main/java/org/stuff
-                    /yourthing/src/main/java/org/stuff/YourthingLib.java
-                    /yourthing/src/main/resources
-                    /yourthing/src/main/resources/templates
-                    /yourthing/src/test
-                    /yourthing/src/test/java
-                    /yourthing/src/test/java/org
-                    /yourthing/src/test/java/org/stuff
-                    /yourthing/src/test/java/org/stuff/YourthingTest.java
-                    /yourthing/src/test/resources""",
-                FileUtils.generateDirectoryListing(tmp));
-
-            var check_result = new StringBuilder();
-            new TestOperation<>()
-                .fromProject(create_operation.project())
-                .outputProcessor(s -> {
-                    check_result.append(s);
-                    return true;
-                })
-                .mainClass("org.stuff.YourthingTest")
-                .execute();
-            assertEquals("Succeeded", check_result.toString());
+            assertTrue(check_result.toString().contains("1 tests successful"));
+            assertTrue(check_result.toString().contains("0 tests failed"));
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
