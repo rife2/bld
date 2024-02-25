@@ -2,7 +2,7 @@
 
 version=$(curl -Ls -o /dev/null -w "%{url_effective}" https://github.com/rife2/bld/releases/latest)
 version=${version##*/}
-filepath=$(mktemp -u -t "bld-$version.jar")
+filepath=$(mktemp -u -t "bld-$version-XXXXXX.jar")
 
 echo "Downloading bld v$version..."
 echo
