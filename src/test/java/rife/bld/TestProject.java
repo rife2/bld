@@ -157,6 +157,61 @@ public class TestProject {
         }
     }
 
+    static class CustomProjectRenamedCommand extends Project {
+        StringBuilder result_;
+
+        CustomProjectRenamedCommand(File tmp, StringBuilder result) {
+            result_ = result;
+            workDirectory = tmp;
+            pkg = "test.pkg";
+            name = "my_project";
+            version = new VersionNumber(0, 0, 1);
+        }
+
+        @BuildCommand(value = "renamed", alias = "alias")
+        public void newcommand() {
+            assertEquals("renamed", getCurrentCommandName());
+            assertNotNull(getCurrentCommandDefinition());
+            result_.append("renamed");
+        }
+    }
+
+    @Test
+    void testRenamedCustomCommand()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var result = new StringBuilder();
+            var project = new CustomProjectRenamedCommand(tmp, result);
+
+            assertNull(project.getCurrentCommandName());
+            assertNull(project.getCurrentCommandDefinition());
+
+            project.execute(new String[]{"renamed"});
+
+            assertNull(project.getCurrentCommandName());
+            assertNull(project.getCurrentCommandDefinition());
+
+            assertEquals("renamed", result.toString());
+
+            // test alias
+            result = new StringBuilder();
+            project = new CustomProjectRenamedCommand(tmp, result);
+
+            assertNull(project.getCurrentCommandName());
+            assertNull(project.getCurrentCommandDefinition());
+
+            project.execute(new String[]{"alias"});
+
+            assertNull(project.getCurrentCommandName());
+            assertNull(project.getCurrentCommandDefinition());
+
+            assertEquals("renamed", result.toString());
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
     static class CustomProjectInlineHelp extends Project {
         CustomProjectInlineHelp(File tmp) {
             workDirectory = tmp;

@@ -17,7 +17,7 @@ import rife.bld.operations.*;
 public class Cli extends BuildExecutor {
     private final CreateOperation createOperation_ = new CreateOperation();
     private final CreateBaseOperation createBaseOperation_ = new CreateBaseOperation();
-    private final CreateBlankOperation createBlankOperation_ = new CreateBlankOperation();
+    private final CreateAppOperation createAppOperation_ = new CreateAppOperation();
     private final CreateLibOperation createLibOperation_ = new CreateLibOperation();
     private final CreateRife2Operation createRife2Operation_ = new CreateRife2Operation();
     private final UpgradeOperation upgradeOperation_ = new UpgradeOperation();
@@ -36,15 +36,15 @@ public class Cli extends BuildExecutor {
     }
 
     /**
-     * The standard {@code create-blank} command.
+     * The standard {@code create-app} command.
      *
      * @throws Exception when an error occurred during the creation process
-     * @since 1.5
+     * @since 1.9
      */
-    @BuildCommand(value = "create-blank", help = CreateBlankHelp.class)
-    public void createBlank()
+    @BuildCommand(value = "create-app", alias = "create-blank", help = CreateAppHelp.class)
+    public void createApp()
     throws Exception {
-        createBlankOperation_.executeOnce(() -> createBlankOperation_.fromArguments(arguments()));
+        createAppOperation_.executeOnce(() -> createAppOperation_.fromArguments(arguments()));
     }
 
     /**

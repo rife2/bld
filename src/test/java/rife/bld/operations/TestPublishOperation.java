@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import rife.bld.Project;
-import rife.bld.blueprints.BlankProjectBlueprint;
+import rife.bld.blueprints.AppProjectBlueprint;
 import rife.bld.dependencies.*;
 import rife.bld.publish.PublishArtifact;
 import rife.tools.FileUtils;
@@ -136,7 +136,7 @@ public class TestPublishOperation {
             assertThrows(FileUtilsErrorException.class, () -> FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/0.0.1")));
 
             // create a first publication
-            var create_operation1 = new CreateBlankOperation()
+            var create_operation1 = new CreateAppOperation()
                 .workDirectory(tmp1)
                 .packageName("test.pkg")
                 .projectName("myapp")
@@ -193,9 +193,9 @@ public class TestPublishOperation {
             assertEquals("myapp-0.0.1.pom", version_files_json1.getJSONObject(9).get("name"));
 
             // created an updated publication
-            var create_operation2 = new CreateBlankOperation() {
+            var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new BlankProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 0, 0));
+                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 0, 0));
                 }
             }
                 .workDirectory(tmp2)
@@ -286,7 +286,7 @@ public class TestPublishOperation {
         var tmp_local = Files.createTempDirectory("test").toFile();
         try {
             // create a first publication
-            var create_operation1 = new CreateBlankOperation()
+            var create_operation1 = new CreateAppOperation()
                 .workDirectory(tmp1)
                 .packageName("test.pkg")
                 .projectName("myapp")
@@ -326,9 +326,9 @@ public class TestPublishOperation {
             assertTrue(maven_metadata1.getVersions().contains(create_operation1.project().version()));
 
             // created an updated publication
-            var create_operation2 = new CreateBlankOperation() {
+            var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new BlankProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 0, 0));
+                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 0, 0));
                 }
             }
                 .workDirectory(tmp2)
@@ -403,9 +403,9 @@ public class TestPublishOperation {
             assertThrows(FileUtilsErrorException.class, () -> FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/1.2.3-SNAPSHOT")));
 
             // create a first publication
-            var create_operation1 = new CreateBlankOperation() {
+            var create_operation1 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new BlankProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp1)
@@ -480,9 +480,9 @@ public class TestPublishOperation {
             assertTrue(maven_snapshot_metadata1.getVersions().contains(create_operation1.project().version()));
 
             // created an updated publication
-            var create_operation2 = new CreateBlankOperation() {
+            var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new BlankProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp2)
@@ -573,9 +573,9 @@ public class TestPublishOperation {
         var tmp_local = Files.createTempDirectory("test").toFile();
         try {
             // create a first publication
-            var create_operation1 = new CreateBlankOperation() {
+            var create_operation1 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new BlankProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp1)
@@ -629,9 +629,9 @@ public class TestPublishOperation {
             assertTrue(maven_snapshot_metadata1.getVersions().contains(create_operation1.project().version()));
 
             // created an updated publication
-            var create_operation2 = new CreateBlankOperation() {
+            var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new BlankProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp2)

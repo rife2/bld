@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static rife.bld.dependencies.Scope.test;
 
 public class TestJUnitOperation {
     @Test
@@ -176,7 +175,7 @@ public class TestJUnitOperation {
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
-            var create_operation = new CreateBlankOperation()
+            var create_operation = new CreateAppOperation()
                 .workDirectory(tmp)
                 .packageName("com.example")
                 .projectName("myapp")
@@ -219,7 +218,7 @@ public class TestJUnitOperation {
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
-            var create_operation = new CreateBlankOperation() {
+            var create_operation = new CreateAppOperation() {
                 @Override
                 protected Project createProjectBlueprint() {
                     var project = super.createProjectBlueprint();

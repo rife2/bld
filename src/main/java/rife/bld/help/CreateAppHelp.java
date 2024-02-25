@@ -8,19 +8,19 @@ import rife.bld.CommandHelp;
 import rife.tools.StringUtils;
 
 /**
- * Provides help for the create-blank command.
+ * Provides help for the create-app command.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 1.5
+ * @since 1.9
  */
-public class CreateBlankHelp implements CommandHelp {
+public class CreateAppHelp implements CommandHelp {
     public String getSummary() {
-        return "Creates a new blank Java project with standard commands";
+        return "Creates a new Java application project";
     }
 
     public String getDescription(String topic) {
         return StringUtils.replace("""
-            Creates a new blank Java project with standard commands.
+            Creates a new Java application project.
                         
             Usage : ${topic} <package> <name>
               package  The package of the project to create

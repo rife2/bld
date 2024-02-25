@@ -160,7 +160,7 @@ public class TestRunOperation {
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
-            var create_operation = new CreateBlankOperation()
+            var create_operation = new CreateAppOperation()
                 .workDirectory(tmp)
                 .packageName("com.example")
                 .projectName("myapp")

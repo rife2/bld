@@ -42,6 +42,7 @@ public class BuildExecutor {
     private final HierarchicalProperties properties_;
     private List<String> arguments_ = Collections.emptyList();
     private Map<String, CommandDefinition> buildCommands_ = null;
+    private Map<String, String> buildAliases_ = null;
     private final AtomicReference<String> currentCommandName_ = new AtomicReference<>();
     private final AtomicReference<CommandDefinition> currentCommandDefinition_ = new AtomicReference<>();
     private int exitStatus_ = 0;
@@ -294,6 +295,7 @@ public class BuildExecutor {
     public Map<String, CommandDefinition> buildCommands() {
         if (buildCommands_ == null) {
             var build_commands = new TreeMap<String, CommandDefinition>();
+            var build_aliases = new HashMap<String, String>();
 
             Class<?> klass = getClass();
 
@@ -309,6 +311,11 @@ public class BuildExecutor {
                             var annotation_name = annotation.value();
                             if (annotation_name != null && !annotation_name.isEmpty()) {
                                 name = annotation_name;
+                            }
+
+                            var annotation_alias = annotation.alias();
+                            if (annotation_alias != null && !annotation_alias.isEmpty()) {
+                                build_aliases.put(annotation_alias, name);
                             }
 
                             if (!build_commands.containsKey(name)) {
@@ -343,9 +350,25 @@ public class BuildExecutor {
             }
 
             buildCommands_ = build_commands;
+            buildAliases_ = build_aliases;
         }
 
         return buildCommands_;
+    }
+
+    /**
+     * Retrieves the command aliases that can be executed by this {@code BuildExecutor}.
+     *
+     * @return a map containing the alias and the associated name of the build command
+     * @see BuildCommand
+     * @since 1.9
+     */
+    public Map<String, String> buildAliases() {
+        if (buildAliases_ == null) {
+            buildCommands();
+        }
+
+        return buildAliases_;
     }
 
     private static class AnnotatedCommandHelp implements CommandHelp {
@@ -382,6 +405,15 @@ public class BuildExecutor {
     throws Throwable {
         var matched_command = command;
         var definition = buildCommands().get(command);
+
+        // try to find an alias
+        if (definition == null) {
+            var aliased_command = buildAliases().get(command);
+            if (aliased_command != null) {
+                matched_command = aliased_command;
+                definition = buildCommands().get(aliased_command);
+            }
+        }
 
         // try to find a match for the provided command amongst
         // the ones that are known

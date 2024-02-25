@@ -19,10 +19,10 @@ import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestCreateBlankOperation {
+public class TestCreateAppOperation {
     @Test
     void testInstantiation() {
-        var operation = new CreateBlankOperation();
+        var operation = new CreateAppOperation();
         assertNotNull(operation.workDirectory());
         assertTrue(operation.workDirectory().exists());
         assertTrue(operation.workDirectory().isDirectory());
@@ -41,7 +41,7 @@ public class TestCreateBlankOperation {
             var package_name = "packageName";
             var project_name = "projectName";
 
-            var operation = new CreateBlankOperation();
+            var operation = new CreateAppOperation();
             operation
                 .workDirectory(work_directory)
                 .downloadDependencies(download_dependencies)
@@ -62,7 +62,7 @@ public class TestCreateBlankOperation {
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
-            var create_operation = new CreateBlankOperation()
+            var create_operation = new CreateAppOperation()
                 .workDirectory(tmp)
                 .packageName("com.example")
                 .projectName("myapp")
@@ -236,7 +236,7 @@ public class TestCreateBlankOperation {
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
-            var create_operation = new CreateBlankOperation()
+            var create_operation = new CreateAppOperation()
                 .workDirectory(tmp)
                 .packageName("org.stuff")
                 .projectName("yourthing");
@@ -312,7 +312,7 @@ public class TestCreateBlankOperation {
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
-            var create_operation = new CreateBlankOperation()
+            var create_operation = new CreateAppOperation()
                 .workDirectory(tmp)
                 .packageName("com.example")
                 .projectName("myapp")
@@ -436,7 +436,7 @@ public class TestCreateBlankOperation {
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
-            var create_operation = new CreateBlankOperation()
+            var create_operation = new CreateAppOperation()
                 .workDirectory(tmp)
                 .packageName("com.example")
                 .projectName("myapp")

@@ -263,7 +263,7 @@ public class TestJavadocOperation {
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
-            var create_operation = new CreateBlankOperation()
+            var create_operation = new CreateAppOperation()
                 .workDirectory(tmp)
                 .packageName("tst")
                 .projectName("app")

@@ -16,17 +16,17 @@ import static rife.bld.dependencies.Repository.SONATYPE_SNAPSHOTS;
 import static rife.bld.dependencies.Scope.test;
 
 /**
- * Provides the dependency information required to create a new blank project.
+ * Provides the dependency information required to create a new app project.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 1.5
+ * @since 1.9
  */
-public class BlankProjectBlueprint extends Project {
-    public BlankProjectBlueprint(File work, String packageName, String projectName) {
+public class AppProjectBlueprint extends Project {
+    public AppProjectBlueprint(File work, String packageName, String projectName) {
         this(work, packageName, projectName, new VersionNumber(0,0,1));
     }
 
-    public BlankProjectBlueprint(File work, String packageName, String projectName, VersionNumber versionNumber) {
+    public AppProjectBlueprint(File work, String packageName, String projectName, VersionNumber versionNumber) {
         workDirectory = work;
 
         pkg = packageName;

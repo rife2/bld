@@ -26,6 +26,15 @@ public @interface BuildCommand {
     String value() default "";
 
     /**
+     * When provided, specifies an alias for the build command that can be
+     * different from the method name.
+     *
+     * @return a string representing an alias for the build command
+     * @since 1.9
+     */
+    String alias() default "";
+
+    /**
      * When provided, specifies a short description about the command.
      *
      * @return the short summary, defaults to {@code ""}

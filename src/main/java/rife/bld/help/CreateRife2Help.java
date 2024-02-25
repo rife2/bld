@@ -15,12 +15,12 @@ import rife.tools.StringUtils;
  */
 public class CreateRife2Help implements CommandHelp {
     public String getSummary() {
-        return "Creates a new RIFE2 project";
+        return "Creates a new RIFE2 web application project";
     }
 
     public String getDescription(String topic) {
         return StringUtils.replace("""
-            Creates a new RIFE2 project.
+            Creates a new RIFE2 web application project.
                         
             Usage : ${topic} <package> <name>
               package  The package of the project to create

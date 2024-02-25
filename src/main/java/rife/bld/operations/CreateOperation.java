@@ -18,7 +18,7 @@ import java.util.List;
 public class CreateOperation {
 
     private static final String BASE = "base";
-    private static final String BLANK = "blank";
+    private static final String APP = "app";
     private static final String LIB = "lib";
     private static final String RIFE2 = "rife2";
 
@@ -48,14 +48,14 @@ public class CreateOperation {
 
         if (type == null || type.isEmpty()) {
             System.out.println("Please enter a number for the project type:");
-            System.out.printf("  1: %s%n", BASE);
-            System.out.printf("  2: %s%n", BLANK);
-            System.out.printf("  3: %s%n", LIB);
-            System.out.printf("  4: %s%n", RIFE2);
+            System.out.printf("  1: %s   (Java baseline project)%n", BASE);
+            System.out.printf("  2: %s    (Java application project)%n", APP);
+            System.out.printf("  3: %s    (Java library project)%n", LIB);
+            System.out.printf("  4: %s  (RIFE2 web application)%n", RIFE2);
             var number = System.console().readLine();
             switch (Integer.parseInt(number)) {
                 case 1 -> type = BASE;
-                case 2 -> type = BLANK;
+                case 2 -> type = APP;
                 case 3 -> type = LIB;
                 case 4 -> type = RIFE2;
             }
@@ -69,7 +69,7 @@ public class CreateOperation {
         AbstractCreateOperation<?, ?> create_operation = null;
         switch (type) {
             case BASE -> create_operation = new CreateBaseOperation();
-            case BLANK -> create_operation = new CreateBlankOperation();
+            case APP -> create_operation = new CreateAppOperation();
             case LIB -> create_operation = new CreateLibOperation();
             case RIFE2 -> create_operation = new CreateRife2Operation();
         }

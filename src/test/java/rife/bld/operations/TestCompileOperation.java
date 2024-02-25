@@ -11,7 +11,6 @@ import rife.tools.FileUtils;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 import java.io.File;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -214,7 +213,7 @@ public class TestCompileOperation {
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
-            var create_operation = new CreateBlankOperation()
+            var create_operation = new CreateAppOperation()
                 .workDirectory(tmp)
                 .packageName("tst")
                 .projectName("app")

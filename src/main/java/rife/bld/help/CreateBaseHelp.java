@@ -8,19 +8,19 @@ import rife.bld.CommandHelp;
 import rife.tools.StringUtils;
 
 /**
- * Provides help for the create-blank command.
+ * Provides help for the create-base command.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
  * @since 1.5.20
  */
 public class CreateBaseHelp implements CommandHelp {
     public String getSummary() {
-        return "Creates a new baseline Java project with minimal commands";
+        return "Creates a new Java baseline project";
     }
 
     public String getDescription(String topic) {
         return StringUtils.replace("""
-            Creates a new baseline Java project with minimal commands.
+            Creates a new Java baseline project.
                         
             Usage : ${topic} <package> <name>
               package  The package of the project to create

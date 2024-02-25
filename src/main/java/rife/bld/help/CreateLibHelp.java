@@ -15,12 +15,12 @@ import rife.tools.StringUtils;
  */
 public class CreateLibHelp implements CommandHelp {
     public String getSummary() {
-        return "Creates a new Java library with minimal commands";
+        return "Creates a new Java library project";
     }
 
     public String getDescription(String topic) {
         return StringUtils.replace("""
-            Creates a new library Java project with minimal commands.
+            Creates a new Java library project.
                         
             Usage : ${topic} <package> <name>
               package  The package of the project to create
