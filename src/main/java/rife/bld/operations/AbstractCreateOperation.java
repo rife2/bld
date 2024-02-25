@@ -330,6 +330,17 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
      */
     protected void executePopulateVscodeProject()
     throws FileUtilsErrorException {
+        var launch_template = TemplateFactory.JSON.get(templateBase_ + "vscode.launch");
+        launch_template.setValue("package", project_.pkg());
+        if (launch_template.hasValueId("projectMain")) {
+            launch_template.setValue("projectMain", projectMainName_);
+        }
+        if (launch_template.hasValueId("projectTest")) {
+            launch_template.setValue("projectTest", projectTestName_);
+        }
+        var launch_file = new File(vscodeDirectory_, "launch.json");
+        FileUtils.writeString(launch_template.getContent(), launch_file);
+
         var settings_template = TemplateFactory.JSON.get(templateBase_ + "vscode.settings");
         if (settings_template.hasValueId("version")) {
             settings_template.setValue("version", BldVersion.getVersion());

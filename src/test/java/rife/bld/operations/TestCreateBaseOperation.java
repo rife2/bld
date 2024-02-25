@@ -79,6 +79,7 @@ public class TestCreateBaseOperation {
                     /myapp/\\.idea/runConfigurations/Run Main\\.xml
                     /myapp/\\.idea/runConfigurations/Run Tests\\.xml
                     /myapp/\\.vscode
+                    /myapp/\\.vscode/launch\\.json
                     /myapp/\\.vscode/settings\\.json
                     /myapp/bld
                     /myapp/bld\\.bat
@@ -131,6 +132,7 @@ public class TestCreateBaseOperation {
                     /myapp/\\.idea/runConfigurations/Run Main\\.xml
                     /myapp/\\.idea/runConfigurations/Run Tests\\.xml
                     /myapp/\\.vscode
+                    /myapp/\\.vscode/launch\\.json
                     /myapp/\\.vscode/settings\\.json
                     /myapp/bld
                     /myapp/bld\\.bat
@@ -214,6 +216,7 @@ public class TestCreateBaseOperation {
                     /yourthing/.idea/runConfigurations/Run Main.xml
                     /yourthing/.idea/runConfigurations/Run Tests.xml
                     /yourthing/.vscode
+                    /yourthing/.vscode/launch.json
                     /yourthing/.vscode/settings.json
                     /yourthing/bld
                     /yourthing/bld.bat
@@ -267,6 +270,7 @@ public class TestCreateBaseOperation {
                     /yourthing/.idea/runConfigurations/Run Main.xml
                     /yourthing/.idea/runConfigurations/Run Tests.xml
                     /yourthing/.vscode
+                    /yourthing/.vscode/launch.json
                     /yourthing/.vscode/settings.json
                     /yourthing/bld
                     /yourthing/bld.bat

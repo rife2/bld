@@ -78,6 +78,7 @@ public class TestCreateLibOperation {
                 /myapp/\\.idea/runConfigurations
                 /myapp/\\.idea/runConfigurations/Run Tests\\.xml
                 /myapp/\\.vscode
+                /myapp/\\.vscode/launch\\.json
                 /myapp/\\.vscode/settings\\.json
                 /myapp/bld
                 /myapp/bld\\.bat
@@ -147,6 +148,7 @@ public class TestCreateLibOperation {
                 /myapp/\\.idea/runConfigurations
                 /myapp/\\.idea/runConfigurations/Run Tests\\.xml
                 /myapp/\\.vscode
+                /myapp/\\.vscode/launch\\.json
                 /myapp/\\.vscode/settings\\.json
                 /myapp/bld
                 /myapp/bld\\.bat

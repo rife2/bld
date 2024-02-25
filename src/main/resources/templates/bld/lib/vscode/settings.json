@@ -3,15 +3,12 @@
         "src/main/java",
         "src/main/resources",
         "src/test/java",
-        "src/bld/java"
+        "src/bld/java",
+        "src/bld/resources"
     ],
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.project.referencedLibraries": [
         "${HOME}/.bld/dist/bld-{{v version/}}.jar",
-        "lib/bld/*.jar",
-        "lib/compile/*.jar",
-        "lib/provided/*.jar",
-        "lib/runtime/*.jar",
-        "lib/test/*.jar"
+        "lib/**/*.jar",
     ]
 }
