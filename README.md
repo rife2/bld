@@ -34,7 +34,8 @@ bld relies on Java 17 and leverages many of the features that this version of
 Java provides. Thanks to the modern language constructs, your Java build logic
 ends up looking very concise, is easily readable and understood by any IDE.
 You automatically get support for auto-completion and javadoc documentation,
-and you can split your build logic into multiple files and classes when you outgrow a single file.
+and you can split your build logic into multiple files and classes when you
+outgrow a single file.
 
 Here is a complete bld file for a Java application using JUnit 5 for its tests.
 Nothing else is needed to be able to run it, test it and distribute it:
@@ -71,10 +72,9 @@ public class MyappBuild extends Project {
 }
 ```
 
-
 > **NOTE:** `bld` supports different ways to describe dependencies,
-> `dependency("org.junit.jupiter", "junit-jupiter", version(5,10,0))` can for instance also
-> be written as `dependency("org.junit.jupiter:junit-jupiter:5.10.0")`. Which format you use,
+> `dependency("org.junit.jupiter", "junit-jupiter", version(5,10,2))` can for instance also
+> be written as `dependency("org.junit.jupiter:junit-jupiter:5.10.2")`. Which format you use,
 > is a matter of personal taste.
 
 # Where does `bld` fit?
@@ -102,6 +102,12 @@ applications.
 
 Get started immediately by [installing](https://github.com/rife2/bld/wiki/Installation) `bld`
 through Homebrew, SDKMAN!, JBang, zip archive, or run it directly from its jar file.
+
+If you merely want to create a new project, `bld` can also be used by executing this one-liner:
+
+```console
+bash -c "$(curl -fsSL https://rife2.com/bld/create.sh)"
+```
 
 If you have any questions, suggestions, ideas or just want to chat, feel free
 to post on the [forums](https://forum.uwyn.com) or to join  us on [Discord](https://discord.gg/zDG6anEXQX).
