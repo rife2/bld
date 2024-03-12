@@ -32,7 +32,7 @@ public class BldBuild extends AbstractRife2Build {
 
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
         scope(test)
-            .include(dependency("org.json", "json", version(20240205)));
+            .include(dependency("org.json", "json", version(20240303)));
 
         var core_directory = new File(workDirectory(), "core");
         var core_src_directory = new File(core_directory, "src");
@@ -104,7 +104,6 @@ public class BldBuild extends AbstractRife2Build {
             .artifacts(
                 new PublishArtifact(zipBldOperation.destinationFile(), "", "zip"));
     }
-
 
     final ZipOperation zipBldOperation = new ZipOperation();
     @BuildCommand(value = "zip-bld", summary = "Creates the bld zip archive")
