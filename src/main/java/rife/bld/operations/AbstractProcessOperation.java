@@ -85,6 +85,8 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
         var builder = new ProcessBuilder(executeConstructProcessCommandList());
         builder.directory(workDirectory());
 
+        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+
         final var output_processor = outputProcessor();
         if (output_processor == null) {
             builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
