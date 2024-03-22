@@ -87,7 +87,7 @@ jobs:
 
     strategy:
       matrix:
-        java-version: [ 17, 20 ]
+        java-version: [ 17, 20, 21, 22 ]
 
     steps:
       - name: Checkout source repository
@@ -116,7 +116,7 @@ jobs:
 
     strategy:
       matrix:
-        java-version: [ 17, 20 ]
+        java-version: [ 17, 20, 21, 22 ]
 
     steps:
       - name: Checkout source repository
@@ -142,7 +142,7 @@ jobs:
 
     strategy:
       matrix:
-        java-version: [ 17, 20 ]
+        java-version: [ 17, 20, 21, 22 ]
 
     steps:
       - name: Configure git line endings
