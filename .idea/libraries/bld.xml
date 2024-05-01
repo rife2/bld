@@ -2,12 +2,12 @@
   <library name="bld">
     <CLASSES>
       <root url="file://$PROJECT_DIR$/lib/bld" />
-      <root url="jar://$USER_HOME$/.bld/dist/bld-1.9.0.jar!/" />
+      <root url="jar://$USER_HOME$/.bld/dist/bld-1.9.1.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
       <root url="file://$PROJECT_DIR$/lib/bld" />
-      <root url="jar://$USER_HOME$/.bld/dist/bld-1.9.0-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.bld/dist/bld-1.9.1-sources.jar!/" />
     </SOURCES>
     <excluded>
       <root url="jar://$PROJECT_DIR$/lib/bld/bld-wrapper.jar!/" />
