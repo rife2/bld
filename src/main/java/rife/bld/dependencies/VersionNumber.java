@@ -32,7 +32,7 @@ public record VersionNumber(Integer major, Integer minor, Integer revision, Stri
      */
     public static final VersionNumber UNKNOWN = new VersionNumber(0, 0, 0, "");
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("^(?<major>\\d+)(?:\\.(?<minor>\\d+)(?:\\.(?<revision>\\d+))?)?(?:(?<separator>[.\\-])(?<qualifier>.*[^.\\-]))??$");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^(?<major>0|[1-9]\\d*)(?:\\.(?<minor>0|[1-9]\\d*)(?:\\.(?<revision>0|[1-9]\\d*))?)?(?:(?<separator>[.\\-])(?<qualifier>.*[^.\\-]))??$");
 
     /**
      * Parses a version number from a string representation.

@@ -47,6 +47,11 @@ public class TestVersionNumber {
 
         assertEquals(VersionNumber.parse("1.2.3_4"), new VersionNumber(1, 2, 0, "3_4"));
         assertEquals(VersionNumber.parse("1.54b"), new VersionNumber(1, 0, 0, "54b"));
+
+        assertEquals(VersionNumber.parse("2024-02"), new VersionNumber(2024, null, null, "02"));
+        assertEquals(VersionNumber.parse("2.0-05"), new VersionNumber(2, 0, null, "05"));
+        assertEquals(VersionNumber.parse("2024.02"), new VersionNumber(2024, null, null, "02", "."));
+        assertEquals(VersionNumber.parse("2.0.05"), new VersionNumber(2, 0, null, "05", "."));
     }
 
     @Test
