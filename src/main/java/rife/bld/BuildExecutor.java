@@ -463,6 +463,7 @@ public class BuildExecutor {
             new HelpOperation(this, arguments()).executePrintOverviewHelp();
             System.err.println();
             System.err.println("ERROR: unknown command '" + command + "'");
+            exitStatus(1);
             return false;
         }
         return true;
