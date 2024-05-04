@@ -292,14 +292,16 @@ public class TestProject {
         try {
             var result = new StringBuilder();
             var project = new CustomProjectLambda(tmp, result);
-            project.execute(new String[]{"ne2", "nc2", "n2"});
+            var status = project.execute(new String[]{"ne2", "nc2", "n2"});
             assertEquals("newcommand2" +
                 "newcommand2" +
                 "newcommand2", result.toString());
+            assertEquals(0, status, "Exit status should be 0");
 
             result = new StringBuilder();
-            project.execute(new String[]{"c"});
+            status = project.execute(new String[]{"c"});
             assertEquals("", result.toString());
+            assertEquals(1, status, "Exit status should be 1");
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
