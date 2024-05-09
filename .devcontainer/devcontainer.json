@@ -1,9 +1,12 @@
 {
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "features": {
-    "ghcr.io/devcontainers/features/java:1": {
-      "version" : "17",
-      "jdkDistro" : "tem"
-    }
-  }
+	"name": "Java",
+	"image": "mcr.microsoft.com/devcontainers/java:1-21",
+
+	"features": {
+		"ghcr.io/devcontainers/features/java:1": {
+			"version": "none",
+			"installMaven": "false",
+			"installGradle": "false"
+		}
+	}
 }
