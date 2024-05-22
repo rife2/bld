@@ -365,7 +365,16 @@ public class DependencyResolver {
         }
 
         if (metadata == null) {
-            throw new ArtifactNotFoundException(dependency_, artifacts.stream().map(RepositoryArtifact::location).collect(Collectors.joining(", ")));
+            var location = artifacts.stream().map(RepositoryArtifact::location).collect(Collectors.joining(", "));
+            if (location.isEmpty()) {
+                if (repositories_.isEmpty()) {
+                    location = "[no repositories defined]";
+                }
+                else {
+                    location = "[no metadata locations defined]";
+                }
+            }
+            throw new ArtifactNotFoundException(dependency_, location);
         }
 
         var xml = new Xml2MavenMetadata();
@@ -414,7 +423,16 @@ public class DependencyResolver {
         }
 
         if (pom == null) {
-            throw new ArtifactNotFoundException(dependency_, artifacts.stream().map(RepositoryArtifact::location).collect(Collectors.joining(", ")));
+            var location = artifacts.stream().map(RepositoryArtifact::location).collect(Collectors.joining(", "));
+            if (location.isEmpty()) {
+                if (repositories_.isEmpty()) {
+                    location = "[no repositories defined]";
+                }
+                else {
+                    location = "[no pom locations defined]";
+                }
+            }
+            throw new ArtifactNotFoundException(dependency_, location);
         }
 
         var xml = new Xml2MavenPom(parent, retriever_, repositories_);
