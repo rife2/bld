@@ -121,10 +121,10 @@ public class TestCreateRife2Operation {
                     /myapp/lib/standalone/jetty-session-12\\.0\\.6\\.jar
                     /myapp/lib/standalone/jetty-util-12\\.0\\.6-sources\\.jar
                     /myapp/lib/standalone/jetty-util-12\\.0\\.6\\.jar
-                    /myapp/lib/standalone/slf4j-api-2\\.0\\.11-sources\\.jar
-                    /myapp/lib/standalone/slf4j-api-2\\.0\\.11\\.jar
-                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.11-sources\\.jar
-                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.11\\.jar
+                    /myapp/lib/standalone/slf4j-api-2\\.0\\.13-sources\\.jar
+                    /myapp/lib/standalone/slf4j-api-2\\.0\\.13\\.jar
+                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.13-sources\\.jar
+                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.13\\.jar
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
@@ -235,10 +235,10 @@ public class TestCreateRife2Operation {
                     /myapp/lib/standalone/jetty-session-12\\.0\\.6\\.jar
                     /myapp/lib/standalone/jetty-util-12\\.0\\.6-sources\\.jar
                     /myapp/lib/standalone/jetty-util-12\\.0\\.6\\.jar
-                    /myapp/lib/standalone/slf4j-api-2\\.0\\.11-sources\\.jar
-                    /myapp/lib/standalone/slf4j-api-2\\.0\\.11\\.jar
-                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.11-sources\\.jar
-                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.11\\.jar
+                    /myapp/lib/standalone/slf4j-api-2\\.0\\.13-sources\\.jar
+                    /myapp/lib/standalone/slf4j-api-2\\.0\\.13\\.jar
+                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.13-sources\\.jar
+                    /myapp/lib/standalone/slf4j-simple-2\\.0\\.13\\.jar
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
@@ -507,10 +507,10 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local/opentest4j-1\\.3\\.0\\.jar
                 /myapp/lib/local/rife2-.*-sources\\.jar
                 /myapp/lib/local/rife2-.*\\.jar
-                /myapp/lib/local/slf4j-api-2\\.0\\.11-sources\\.jar
-                /myapp/lib/local/slf4j-api-2\\.0\\.11\\.jar
-                /myapp/lib/local/slf4j-simple-2\\.0\\.11-sources\\.jar
-                /myapp/lib/local/slf4j-simple-2\\.0\\.11\\.jar
+                /myapp/lib/local/slf4j-api-2\\.0\\.13-sources\\.jar
+                /myapp/lib/local/slf4j-api-2\\.0\\.13\\.jar
+                /myapp/lib/local/slf4j-simple-2\\.0\\.13-sources\\.jar
+                /myapp/lib/local/slf4j-simple-2\\.0\\.13\\.jar
                 /myapp/lib/provided
                 /myapp/lib/runtime
                 /myapp/lib/standalone
@@ -656,10 +656,10 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local_standalone/jetty-session-12\\.0\\.6\\.jar
                 /myapp/lib/local_standalone/jetty-util-12\\.0\\.6-sources\\.jar
                 /myapp/lib/local_standalone/jetty-util-12\\.0\\.6\\.jar
-                /myapp/lib/local_standalone/slf4j-api-2\\.0\\.11-sources\\.jar
-                /myapp/lib/local_standalone/slf4j-api-2\\.0\\.11\\.jar
-                /myapp/lib/local_standalone/slf4j-simple-2\\.0\\.11-sources\\.jar
-                /myapp/lib/local_standalone/slf4j-simple-2\\.0\\.11\\.jar
+                /myapp/lib/local_standalone/slf4j-api-2\\.0\\.13-sources\\.jar
+                /myapp/lib/local_standalone/slf4j-api-2\\.0\\.13\\.jar
+                /myapp/lib/local_standalone/slf4j-simple-2\\.0\\.13-sources\\.jar
+                /myapp/lib/local_standalone/slf4j-simple-2\\.0\\.13\\.jar
                 /myapp/lib/local_test
                 /myapp/lib/local_test/apiguardian-api-1\\.1\\.2-sources\\.jar
                 /myapp/lib/local_test/apiguardian-api-1\\.1\\.2\\.jar
