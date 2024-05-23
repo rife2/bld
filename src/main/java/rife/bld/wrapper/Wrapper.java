@@ -18,6 +18,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.jar.*;
+import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
 import static rife.tools.FileUtils.JAR_FILE_PATTERN;
@@ -52,9 +53,13 @@ public class Wrapper {
     static final String PROPERTY_DOWNLOAD_EXTENSION_SOURCES = "bld.downloadExtensionSources";
     static final String PROPERTY_DOWNLOAD_EXTENSION_JAVADOC = "bld.downloadExtensionJavadoc";
     static final String PROPERTY_SOURCE_DIRECTORIES = "bld.sourceDirectories";
+    static final String PROPERTY_JAVAC_OPTIONS = "bld.javacOptions";
+    static final String PROPERTY_JAVA_OPTIONS = "bld.javaOptions";
     static final File BLD_USER_DIR = new File(System.getProperty("user.home"), ".bld");
     static final File DISTRIBUTIONS_DIR = new File(BLD_USER_DIR, "dist");
     static final Pattern META_DATA_SNAPSHOT_VERSION = Pattern.compile("<snapshotVersion>.*?<value>([^<]+)</value>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    static final Pattern OPTIONS_PATTERN = Pattern.compile("\"[^\"]+\"|\\S+");
+
 
     private File currentDir_ = new File(System.getProperty("user.dir"));
 
@@ -164,9 +169,11 @@ public class Wrapper {
             var properties_blueprint = """
                 bld.downloadExtensionJavadoc=false
                 bld.downloadExtensionSources=true
-                bld.extensions=
-                bld.repositories=MAVEN_CENTRAL,RIFE2_RELEASES
                 bld.downloadLocation=
+                bld.extensions=
+                bld.javaOptions=
+                bld.javacOptions=
+                bld.repositories=MAVEN_CENTRAL,RIFE2_RELEASES
                 bld.sourceDirectories=
                 bld.version=${version}
                 """
@@ -514,6 +521,7 @@ public class Wrapper {
         args.add("-jar");
         args.add(jarFile.getAbsolutePath());
 
+        args.addAll(bldJavaOptions());
         args.addAll(arguments);
 
         var process_builder = new ProcessBuilder(args);
@@ -545,6 +553,7 @@ public class Wrapper {
             var compilation_units = file_manager.getJavaFileObjectsFromFiles(bldSourceFiles());
             var diagnostics = new DiagnosticCollector<JavaFileObject>();
             var options = new ArrayList<>(List.of("-d", buildBldDirectory().getAbsolutePath(), "-cp", classpath));
+            options.addAll(bldJavacOptions());
             var compilation_task = compiler.getTask(null, file_manager, diagnostics, options, null, compilation_units);
             if (!compilation_task.call()) {
                 if (!diagnostics.getDiagnostics().isEmpty()) {
@@ -560,9 +569,13 @@ public class Wrapper {
         var java_args = new ArrayList<String>();
         java_args.add("java");
         includeJvmParameters(arguments, java_args);
+
         java_args.add("-cp");
         java_args.add(classpath);
+
+        java_args.addAll(bldJavaOptions());
         java_args.addAll(arguments);
+
         var process_builder = new ProcessBuilder(java_args);
         process_builder.directory(currentDir_);
         process_builder.inheritIO();
@@ -613,6 +626,28 @@ public class Wrapper {
                 .stream().map(file -> new File(source_directory, file)).toList());
         }
         return source_files;
+    }
+
+    public List<String> bldJavacOptions() {
+        if (!wrapperProperties_.containsKey(PROPERTY_JAVAC_OPTIONS)) {
+            return Collections.emptyList();
+        }
+
+        return OPTIONS_PATTERN.matcher(wrapperProperties_.get(PROPERTY_JAVAC_OPTIONS).toString())
+            .results()
+            .map(MatchResult::group)
+            .toList();
+    }
+
+    public List<String> bldJavaOptions() {
+        if (!wrapperProperties_.containsKey(PROPERTY_JAVA_OPTIONS)) {
+            return Collections.emptyList();
+        }
+
+        return OPTIONS_PATTERN.matcher(wrapperProperties_.get(PROPERTY_JAVA_OPTIONS).toString())
+            .results()
+            .map(MatchResult::group)
+            .toList();
     }
 
     private String readString(String version, URL url)
