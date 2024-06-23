@@ -22,6 +22,16 @@
   </licenses>
   <!--/b-->
 
+  <!--v properties-tag--><!--/v-->
+  <!--b properties-tag-->
+  <properties>
+    <!--v properties--><!--/v-->
+    <!--b property-->
+    <{{v property-key/}}><!--v property-value--><!--/v--></{{v property-key/}}>
+    <!--/b-->
+  </properties>
+  <!--/b-->
+
   <!--v dependencies-tag--><!--/v-->
   <!--b dependencies-tag-->
   <dependencies>

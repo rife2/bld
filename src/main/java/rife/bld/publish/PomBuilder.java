@@ -22,6 +22,7 @@ import java.util.Objects;
  */
 public class PomBuilder {
     private PublishInfo info_ = null;
+    private PublishProperties properties_ = new PublishProperties();
     private DependencyScopes dependencies_ = new DependencyScopes();
 
     /**
@@ -44,6 +45,28 @@ public class PomBuilder {
      */
     public PublishInfo info() {
         return info_;
+    }
+
+    /**
+     * Provides the properties to build the POM with.
+     *
+     * @param properties the properties to use
+     * @return this {@code PomBuilder} instance
+     * @since 1.9.2
+     */
+    public PomBuilder properties(PublishProperties properties) {
+        properties_ = properties;
+        return this;
+    }
+
+    /**
+     * Retrieves the properties to build the POM with.
+     *
+     * @return the properties to use
+     * @since 1.9.2
+     */
+    public PublishProperties properties() {
+        return properties_;
     }
 
     /**
@@ -113,6 +136,17 @@ public class PomBuilder {
                 t.setValueEncoded("scm-url", Objects.requireNonNullElse(scm.url(), ""));
                 t.setBlock("scm-tag");
             }
+        }
+
+        if (properties() != null && !properties().isEmpty()) {
+            for (var entry : properties().entrySet()) {
+                if (entry.getKey() != null) {
+                    t.setValueEncoded("property-key", entry.getKey());
+                    t.setValueEncoded("property-value", Objects.requireNonNullElse(entry.getValue(), ""));
+                    t.appendBlock("properties", "property");
+                }
+            }
+            t.setBlock("properties-tag");
         }
 
         if (dependencies() != null && !dependencies().isEmpty()) {

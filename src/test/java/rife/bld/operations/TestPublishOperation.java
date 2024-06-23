@@ -50,12 +50,20 @@ public class TestPublishOperation {
         }
     }
 
+    static class PublishProject extends AppProjectBlueprint {
+        public PublishProject(File work, String packageName, String projectName, VersionNumber versionNumber) {
+            super(work, packageName, projectName, versionNumber);
+            javaRelease = 19;
+        }
+    }
+
     @Test
     void testInstantiation() {
         var operation = new PublishOperation();
         assertTrue(operation.repositories().isEmpty());
         assertNull(operation.moment());
         assertTrue(operation.dependencies().isEmpty());
+        assertTrue(operation.properties().isEmpty());
         assertNotNull(operation.info());
         assertNull(operation.info().groupId());
         assertNull(operation.info().artifactId());
@@ -105,6 +113,7 @@ public class TestPublishOperation {
             .repository(repository2)
             .moment(moment)
             .artifacts(List.of(artifact1, artifact2));
+        operation3.properties().mavenCompilerSource(17).mavenCompilerTarget(19);
         assertTrue(operation3.repositories().contains(repository1));
         assertTrue(operation3.repositories().contains(repository2));
         assertEquals(moment, operation3.moment());
@@ -195,7 +204,7 @@ public class TestPublishOperation {
             // created an updated publication
             var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 0, 0));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 0, 0));
                 }
             }
                 .workDirectory(tmp2)
@@ -328,7 +337,7 @@ public class TestPublishOperation {
             // created an updated publication
             var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 0, 0));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 0, 0));
                 }
             }
                 .workDirectory(tmp2)
@@ -405,7 +414,7 @@ public class TestPublishOperation {
             // create a first publication
             var create_operation1 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp1)
@@ -482,7 +491,7 @@ public class TestPublishOperation {
             // created an updated publication
             var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp2)
@@ -575,7 +584,7 @@ public class TestPublishOperation {
             // create a first publication
             var create_operation1 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp1)
@@ -631,7 +640,7 @@ public class TestPublishOperation {
             // created an updated publication
             var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp2)

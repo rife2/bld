@@ -45,6 +45,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
     private PublishInfo info_ = new PublishInfo();
+    private PublishProperties properties_ = new PublishProperties();
     private final List<PublishArtifact> artifacts_ = new ArrayList<>();
 
     /**
@@ -190,7 +191,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
         // generate and upload pom
         executePublishStringArtifact(
             repository,
-            new PomBuilder().info(info()).dependencies(dependencies()).build(),
+            new PomBuilder().properties(properties()).info(info()).dependencies(dependencies()).build(),
             info().version() + "/" + info().artifactId() + "-" + actualVersion + ".pom", true);
     }
 
@@ -496,6 +497,11 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * @since 1.5.7
      */
     public PublishOperation fromProject(BaseProject project) {
+        if (project.javaRelease() != null) {
+            properties()
+                .mavenCompilerSource(project.javaRelease())
+                .mavenCompilerTarget(project.javaRelease());
+        }
         artifactRetriever(project.artifactRetriever());
         dependencies().include(project.dependencies());
         artifacts(List.of(
@@ -594,6 +600,18 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
     }
 
     /**
+     * Provides the publication properties.
+     *
+     * @param properties the publication properties
+     * @return this operation instance
+     * @since 1.9.2
+     */
+    public PublishOperation properties(PublishProperties properties) {
+        properties_ = properties;
+        return this;
+    }
+
+    /**
      * Provides the publication info structure.
      *
      * @param info the publication info
@@ -665,6 +683,18 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      */
     public DependencyScopes dependencies() {
         return dependencies_;
+    }
+
+    /**
+     * Retrieves the publication properties.
+     * <p>
+     * This is a modifiable structure that can be retrieved and changed.
+     *
+     * @return the publication properties
+     * @since 1.9.2
+     */
+    public PublishProperties properties() {
+        return properties_;
     }
 
     /**

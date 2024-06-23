@@ -22,6 +22,7 @@ public class TestPomBuilder {
     void testInstantiation() {
         var builder = new PomBuilder();
         assertNull(builder.info());
+        assertTrue(builder.properties().isEmpty());
         assertTrue(builder.dependencies().isEmpty());
     }
 
@@ -193,6 +194,29 @@ public class TestPomBuilder {
                     <developerConnection>devconn1</developerConnection>
                     <url>url1</url>
                   </scm>
+                </project>
+                """, builder.build());
+    }
+
+    @Test
+    void testCompilerPropertiesBuild() {
+        var builder = new PomBuilder()
+                .properties(new PublishProperties().mavenCompilerSource(22).mavenCompilerTarget(19));
+        assertEquals("""
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId></groupId>
+                  <artifactId></artifactId>
+                  <version></version>
+                  <name></name>
+                  <description></description>
+                  <url></url>
+                  <properties>
+                    <maven.compiler.source>22</maven.compiler.source>
+                    <maven.compiler.target>19</maven.compiler.target>
+                  </properties>
                 </project>
                 """, builder.build());
     }
@@ -486,7 +510,8 @@ public class TestPomBuilder {
                         .developer(new PublishDeveloper().id("id1").name("name1").email("email1").url("url1"))
                         .developer(new PublishDeveloper().id("id2").name("name2"))
                         .developer(new PublishDeveloper().id("id3").name("name3").url("url3"))
-                        .scm(new PublishScm().connection("conn1").developerConnection("devconn1").url("url1")));
+                        .scm(new PublishScm().connection("conn1").developerConnection("devconn1").url("url1")))
+                .properties(new PublishProperties().mavenCompilerSource(22).mavenCompilerTarget(19));
         builder.dependencies().scope(Scope.compile)
                 .include(new Dependency("com.uwyn.rife2", "rife2"))
                 .include(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 5, 5), "bld", "zip"))
@@ -517,6 +542,10 @@ public class TestPomBuilder {
                       <url>https://license2.com</url>
                     </license>
                   </licenses>
+                  <properties>
+                    <maven.compiler.source>22</maven.compiler.source>
+                    <maven.compiler.target>19</maven.compiler.target>
+                  </properties>
                   <dependencies>
                     <dependency>
                       <groupId>com.uwyn.rife2</groupId>

@@ -163,7 +163,7 @@ public class PublishInfo {
     }
 
     /**
-     * Provides the custompath to the {@code gpg} executable used for signing.
+     * Provides the custom path to the {@code gpg} executable used for signing.
      * <p>
      * By default, {@code gpg} will be used.
      *
