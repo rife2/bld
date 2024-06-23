@@ -53,7 +53,7 @@ public class TestPublishOperation {
     static class PublishProject extends AppProjectBlueprint {
         public PublishProject(File work, String packageName, String projectName, VersionNumber versionNumber) {
             super(work, packageName, projectName, versionNumber);
-            javaRelease = 19;
+            javaRelease = 17;
         }
     }
 
@@ -119,6 +119,8 @@ public class TestPublishOperation {
         assertEquals(moment, operation3.moment());
         assertTrue(operation3.artifacts().contains(artifact1));
         assertTrue(operation3.artifacts().contains(artifact2));
+        assertEquals(17, operation3.properties().mavenCompilerSource());
+        assertEquals(19, operation3.properties().mavenCompilerTarget());
     }
 
     @Test
