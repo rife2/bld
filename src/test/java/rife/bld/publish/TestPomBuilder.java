@@ -420,6 +420,41 @@ public class TestPomBuilder {
     }
 
     @Test
+    void testDependenciesProvided() {
+        var builder = new PomBuilder();
+        builder.dependencies().scope(Scope.provided)
+            .include(new Dependency("org.eclipse.jetty.ee10", "jetty-ee10", new VersionNumber(12,0,7)))
+            .include(new Dependency("org.eclipse.jetty.ee10", "jetty-ee10-servlet", new VersionNumber(12,0,7)));
+        assertEquals("""
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId></groupId>
+                  <artifactId></artifactId>
+                  <version></version>
+                  <name></name>
+                  <description></description>
+                  <url></url>
+                  <dependencies>
+                    <dependency>
+                      <groupId>org.eclipse.jetty.ee10</groupId>
+                      <artifactId>jetty-ee10</artifactId>
+                      <version>12.0.7</version>
+                      <scope>provided</scope>
+                    </dependency>
+                    <dependency>
+                      <groupId>org.eclipse.jetty.ee10</groupId>
+                      <artifactId>jetty-ee10-servlet</artifactId>
+                      <version>12.0.7</version>
+                      <scope>provided</scope>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """, builder.build());
+    }
+
+    @Test
     void testDependencies() {
         var builder = new PomBuilder();
         builder.dependencies().scope(Scope.compile)
@@ -428,9 +463,10 @@ public class TestPomBuilder {
                 .include(new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4))
                         .exclude("*", "artifactId"));
         builder.dependencies().scope(Scope.runtime)
-                .include(new Dependency("com.uwyn.rife2", "rife2", VersionNumber.UNKNOWN, "agent"))
-                .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
-                        .exclude("*", "*").exclude("groupId", "artifactId"));
+                .include(new Dependency("com.uwyn.rife2", "rife2", VersionNumber.UNKNOWN, "agent"));
+        builder.dependencies().scope(Scope.provided)
+            .include(new Dependency("org.eclipse.jetty.ee10", "jetty-ee10", new VersionNumber(12,0,7)))
+            .include(new Dependency("org.eclipse.jetty.ee10", "jetty-ee10-servlet", new VersionNumber(12,0,7)));
         assertEquals("""
                 <?xml version="1.0" encoding="UTF-8"?>
                 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
@@ -475,20 +511,16 @@ public class TestPomBuilder {
                       <scope>runtime</scope>
                     </dependency>
                     <dependency>
-                      <groupId>org.eclipse.jetty</groupId>
-                      <artifactId>jetty-server</artifactId>
-                      <version>11.0.14</version>
-                      <scope>runtime</scope>
-                      <exclusions>
-                        <exclusion>
-                          <groupId>*</groupId>
-                          <artifactId>*</artifactId>
-                        </exclusion>
-                        <exclusion>
-                          <groupId>groupId</groupId>
-                          <artifactId>artifactId</artifactId>
-                        </exclusion>
-                      </exclusions>
+                      <groupId>org.eclipse.jetty.ee10</groupId>
+                      <artifactId>jetty-ee10</artifactId>
+                      <version>12.0.7</version>
+                      <scope>provided</scope>
+                    </dependency>
+                    <dependency>
+                      <groupId>org.eclipse.jetty.ee10</groupId>
+                      <artifactId>jetty-ee10-servlet</artifactId>
+                      <version>12.0.7</version>
+                      <scope>provided</scope>
                     </dependency>
                   </dependencies>
                 </project>

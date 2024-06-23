@@ -152,6 +152,7 @@ public class PomBuilder {
         if (dependencies() != null && !dependencies().isEmpty()) {
             addDependencies(t, Scope.compile);
             addDependencies(t, Scope.runtime);
+            addDependencies(t, Scope.provided);
             t.setBlock("dependencies-tag");
         }
 
