@@ -34,7 +34,6 @@ import static rife.tools.FileUtils.JAVA_FILE_PATTERN;
  */
 public class Wrapper {
     public static final String BUILD_ARGUMENT = "--build";
-    public static final String EMBEDDED_ARGUMENT = "--embedded";
 
     static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2/";
     static final String SONATYPE_SNAPSHOTS = "https://s01.oss.sonatype.org/content/repositories/snapshots/";
@@ -82,12 +81,7 @@ public class Wrapper {
      * @since 1.5
      */
     public static void main(String[] arguments) {
-        var arg_list = new ArrayList<>(Arrays.asList(arguments));
-        var embedded = arg_list.remove(EMBEDDED_ARGUMENT);
-        var status = new Wrapper().installAndLaunch(arg_list);
-        if (!embedded) {
-            System.exit(status);
-        }
+        System.exit(new Wrapper().installAndLaunch(new ArrayList<>(Arrays.asList(arguments))));
     }
 
     /**
