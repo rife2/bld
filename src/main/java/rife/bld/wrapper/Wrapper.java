@@ -33,6 +33,9 @@ import static rife.tools.FileUtils.JAVA_FILE_PATTERN;
  * @since 1.5
  */
 public class Wrapper {
+    public static final String BUILD_ARGUMENT = "--build";
+    public static final String EMBEDDED_ARGUMENT = "--embedded";
+
     static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2/";
     static final String SONATYPE_SNAPSHOTS = "https://s01.oss.sonatype.org/content/repositories/snapshots/";
     static final String DOWNLOAD_LOCATION = MAVEN_CENTRAL + "com/uwyn/rife2/bld/${version}/";
@@ -60,7 +63,6 @@ public class Wrapper {
     static final Pattern META_DATA_SNAPSHOT_VERSION = Pattern.compile("<snapshotVersion>.*?<value>([^<]+)</value>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     static final Pattern OPTIONS_PATTERN = Pattern.compile("\"[^\"]+\"|\\S+");
 
-
     private File currentDir_ = new File(System.getProperty("user.dir"));
 
     private final Properties wrapperProperties_ = new Properties();
@@ -73,6 +75,28 @@ public class Wrapper {
     private final byte[] buffer_ = new byte[1024];
     private WrapperClassLoader classloader_;
 
+    private final boolean embedded_;
+
+    /**
+     * Creates a new embedded wrapper.
+     *
+     * @since 1.0
+     */
+    public Wrapper() {
+        embedded_ = true;
+    }
+
+    /**
+     * Creates a new wrapper.
+     *
+     * @param embedded {@code true} if the wrapper should run in embedded mode;
+     *                 or {@code false} if it should run standalone and automatically exit
+     * @since 1.9.2
+     */
+    public Wrapper(boolean embedded) {
+        embedded_ = embedded;
+    }
+
     /**
      * Launches the wrapper.
      *
@@ -80,7 +104,12 @@ public class Wrapper {
      * @since 1.5
      */
     public static void main(String[] arguments) {
-        System.exit(new Wrapper().installAndLaunch(new ArrayList<>(Arrays.asList(arguments))));
+        var arg_list = new ArrayList<>(Arrays.asList(arguments));
+        var embedded = arg_list.remove(EMBEDDED_ARGUMENT);
+        var status = new Wrapper(embedded).installAndLaunch(arg_list);
+        if (!embedded) {
+            System.exit(status);
+        }
     }
 
     /**
@@ -503,7 +532,7 @@ public class Wrapper {
 
     private int launchMain(File jarFile, List<String> arguments)
     throws IOException, InterruptedException, FileUtilsErrorException {
-        if (arguments.isEmpty() || !"--build".equals(arguments.get(0))) {
+        if (arguments.isEmpty() || !BUILD_ARGUMENT.equals(arguments.get(0))) {
             return launchMainCli(jarFile, arguments);
         }
         return launchMainBuild(jarFile, arguments);
@@ -574,6 +603,9 @@ public class Wrapper {
         java_args.add(classpath);
 
         java_args.addAll(bldJavaOptions());
+        if (embedded_) {
+            java_args.add(EMBEDDED_ARGUMENT);
+        }
         java_args.addAll(arguments);
 
         var process_builder = new ProcessBuilder(java_args);

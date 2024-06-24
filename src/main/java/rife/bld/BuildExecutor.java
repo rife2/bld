@@ -8,6 +8,7 @@ import rife.bld.dependencies.Repository;
 import rife.bld.help.HelpHelp;
 import rife.bld.operations.HelpOperation;
 import rife.bld.operations.exceptions.ExitStatusException;
+import rife.bld.wrapper.Wrapper;
 import rife.ioc.HierarchicalProperties;
 import rife.tools.ExceptionUtils;
 
@@ -271,7 +272,18 @@ public class BuildExecutor {
      * @since 1.5.1
      */
     public void start(String[] arguments) {
-        System.exit(execute(arguments));
+        boolean embedded = false;
+        if (arguments != null) {
+            var arg_list = new ArrayList<>(Arrays.asList(arguments));
+            embedded = arg_list.remove(Wrapper.EMBEDDED_ARGUMENT);
+            if (embedded) {
+                arguments = arg_list.toArray(arguments);
+            }
+        }
+        var status = execute(arguments);
+        if (!embedded) {
+            System.exit(status);
+        }
     }
 
     /**
