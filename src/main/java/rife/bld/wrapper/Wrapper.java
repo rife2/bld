@@ -75,28 +75,6 @@ public class Wrapper {
     private final byte[] buffer_ = new byte[1024];
     private WrapperClassLoader classloader_;
 
-    private final boolean embedded_;
-
-    /**
-     * Creates a new embedded wrapper.
-     *
-     * @since 1.0
-     */
-    public Wrapper() {
-        embedded_ = true;
-    }
-
-    /**
-     * Creates a new wrapper.
-     *
-     * @param embedded {@code true} if the wrapper should run in embedded mode;
-     *                 or {@code false} if it should run standalone and automatically exit
-     * @since 1.9.2
-     */
-    public Wrapper(boolean embedded) {
-        embedded_ = embedded;
-    }
-
     /**
      * Launches the wrapper.
      *
@@ -106,7 +84,7 @@ public class Wrapper {
     public static void main(String[] arguments) {
         var arg_list = new ArrayList<>(Arrays.asList(arguments));
         var embedded = arg_list.remove(EMBEDDED_ARGUMENT);
-        var status = new Wrapper(embedded).installAndLaunch(arg_list);
+        var status = new Wrapper().installAndLaunch(arg_list);
         if (!embedded) {
             System.exit(status);
         }
@@ -603,9 +581,6 @@ public class Wrapper {
         java_args.add(classpath);
 
         java_args.addAll(bldJavaOptions());
-        if (embedded_) {
-            java_args.add(EMBEDDED_ARGUMENT);
-        }
         java_args.addAll(arguments);
 
         var process_builder = new ProcessBuilder(java_args);
