@@ -33,7 +33,14 @@ import static rife.tools.FileUtils.JAVA_FILE_PATTERN;
  * @since 1.5
  */
 public class Wrapper {
+    private enum LaunchMode {
+        Cli,
+        Build,
+        Json
+    }
+
     public static final String BUILD_ARGUMENT = "--build";
+    public static final String JSON_ARGUMENT = "--json";
 
     static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2/";
     static final String SONATYPE_SNAPSHOTS = "https://s01.oss.sonatype.org/content/repositories/snapshots/";
@@ -59,10 +66,12 @@ public class Wrapper {
     static final String PROPERTY_JAVA_OPTIONS = "bld.javaOptions";
     static final File BLD_USER_DIR = new File(System.getProperty("user.home"), ".bld");
     static final File DISTRIBUTIONS_DIR = new File(BLD_USER_DIR, "dist");
+    static final Pattern META_DATA_LOCAL_COPY = Pattern.compile("<localCopy>\\s*true\\s*</localCopy>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     static final Pattern META_DATA_SNAPSHOT_VERSION = Pattern.compile("<snapshotVersion>.*?<value>([^<]+)</value>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     static final Pattern OPTIONS_PATTERN = Pattern.compile("\"[^\"]+\"|\\S+");
 
     private File currentDir_ = new File(System.getProperty("user.dir"));
+    private LaunchMode launchMode_ = LaunchMode.Cli;
 
     private final Properties wrapperProperties_ = new Properties();
     private File wrapperPropertiesFile_ = null;
@@ -198,6 +207,7 @@ public class Wrapper {
 
         try (var jar = new JarOutputStream(new FileOutputStream(new File(destinationDirectory, WRAPPER_JAR)), manifest)) {
             addClassToJar(jar, Wrapper.class);
+            addClassToJar(jar, Wrapper.LaunchMode.class);
             addClassToJar(jar, WrapperClassLoader.class);
             addClassToJar(jar, FileUtils.class);
             addClassToJar(jar, FileUtilsErrorException.class);
@@ -264,7 +274,17 @@ public class Wrapper {
                 throw new RuntimeException(e);
             }
             currentDir_ = new File(current_file.getParent());
+
+            if (BUILD_ARGUMENT.equals(arguments.get(0))) {
+                launchMode_ = LaunchMode.Build;
+                arguments.remove(0);
+
+                if (arguments.size() >= 2 && JSON_ARGUMENT.equals(arguments.get(1))) {
+                    launchMode_ = LaunchMode.Json;
+                }
+            }
         }
+
         try {
             initWrapperProperties(getVersion());
             File distribution;
@@ -409,11 +429,27 @@ public class Wrapper {
 
         var download_version = version;
         var is_snapshot = isSnapshot(version);
+        var is_local = false;
         if (is_snapshot) {
-            var meta_data = readString(version, new URL(downloadUrl(version, "maven-metadata.xml")));
-            var matcher = META_DATA_SNAPSHOT_VERSION.matcher(meta_data);
-            if (matcher.find()) {
-                download_version = matcher.group(1);
+            var meta_data = "";
+            try {
+                meta_data = readString(version, new URL(downloadUrl(version, "maven-metadata.xml")));
+            }
+            catch (IOException e) {
+                try {
+                    meta_data = readString(version, new URL(downloadUrl(version, "maven-metadata-local.xml")));
+                }
+                catch (IOException e2) {
+                    throw e;
+                }
+            }
+            var local_matcher = META_DATA_LOCAL_COPY.matcher(meta_data);
+            is_local = local_matcher.find();
+            if (!is_local) {
+                var version_matcher = META_DATA_SNAPSHOT_VERSION.matcher(meta_data);
+                if (version_matcher.find()) {
+                    download_version = version_matcher.group(1);
+                }
             }
         }
 
@@ -423,16 +459,26 @@ public class Wrapper {
         // if this is a snapshot and the distribution file exists,
         // ensure that it's the latest by comparing hashes
         if (is_snapshot && distribution_file.exists()) {
-            var download_md5 = readString(version, new URL(downloadUrl(version, bldFileName(download_version)) + ".md5"));
-            try {
-                var digest = MessageDigest.getInstance("MD5");
-                digest.update(FileUtils.readBytes(distribution_file));
-                if (!download_md5.equals(encodeHexLower(digest.digest()))) {
-                    distribution_file.delete();
+            boolean delete_distribution_files = is_local;
+            if (!delete_distribution_files) {
+                var download_md5 = readString(version, new URL(downloadUrl(version, bldFileName(download_version)) + ".md5"));
+                try {
+                    var digest = MessageDigest.getInstance("MD5");
+                    digest.update(FileUtils.readBytes(distribution_file));
+                    if (!download_md5.equals(encodeHexLower(digest.digest()))) {
+                        delete_distribution_files = true;
+                    }
+                } catch (NoSuchAlgorithmException ignore) {
+                }
+            }
+
+            if (delete_distribution_files) {
+                distribution_file.delete();
+                if (distribution_sources_file.exists()) {
                     distribution_sources_file.delete();
                 }
-            } catch (NoSuchAlgorithmException ignore) {
             }
+
         }
 
         // download distribution jars if necessary
@@ -457,15 +503,19 @@ public class Wrapper {
     private void downloadDistribution(File file, String downloadUrl)
     throws IOException {
         try {
-            System.out.print("Downloading: " + downloadUrl + " ... ");
-            System.out.flush();
+            if (launchMode_ != LaunchMode.Json) {
+                System.out.print("Downloading: " + downloadUrl + " ... ");
+                System.out.flush();
+            }
             var url = new URL(downloadUrl);
             var readableByteChannel = Channels.newChannel(url.openStream());
             try (var fileOutputStream = new FileOutputStream(file)) {
                 var fileChannel = fileOutputStream.getChannel();
                 fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
-                System.out.print("done");
+                if (launchMode_ != LaunchMode.Json) {
+                    System.out.print("done");
+                }
             }
         } catch (FileNotFoundException e) {
             System.err.println("not found");
@@ -477,7 +527,9 @@ public class Wrapper {
             Files.deleteIfExists(file.toPath());
             throw e;
         } finally {
-            System.out.println();
+            if (launchMode_ != LaunchMode.Json) {
+                System.out.println();
+            }
         }
     }
 
@@ -504,7 +556,7 @@ public class Wrapper {
 
     private int launchMain(File jarFile, List<String> arguments)
     throws IOException, InterruptedException, FileUtilsErrorException {
-        if (arguments.isEmpty() || !BUILD_ARGUMENT.equals(arguments.get(0))) {
+        if (launchMode_ == LaunchMode.Cli) {
             return launchMainCli(jarFile, arguments);
         }
         return launchMainBuild(jarFile, arguments);
@@ -534,8 +586,6 @@ public class Wrapper {
     private int launchMainBuild(File jarFile, List<String> arguments)
     throws IOException, InterruptedException {
         resolveExtensions();
-
-        arguments.remove(0);
 
         var build_bld_dir = buildBldDirectory();
         if (build_bld_dir.exists()) {

@@ -604,7 +604,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      *
      * @param properties the publication properties
      * @return this operation instance
-     * @since 1.9.2
+     * @since 2.0.0
      */
     public PublishOperation properties(PublishProperties properties) {
         properties_ = properties;
@@ -691,7 +691,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * This is a modifiable structure that can be retrieved and changed.
      *
      * @return the publication properties
-     * @since 1.9.2
+     * @since 2.0.0
      */
     public PublishProperties properties() {
         return properties_;

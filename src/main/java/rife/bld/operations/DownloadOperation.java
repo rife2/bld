@@ -127,6 +127,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * Configures a compile operation from a {@link BaseProject}.
      *
      * @param project the project to configure the compile operation from
+     * @return this operation instance
      * @since 1.5
      */
     public DownloadOperation fromProject(BaseProject project) {

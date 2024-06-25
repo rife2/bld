@@ -6,6 +6,8 @@ package rife.bld.operations;
 
 import rife.bld.BldVersion;
 import rife.bld.BuildExecutor;
+import rife.template.TemplateFactory;
+import rife.tools.ExceptionUtils;
 
 import java.util.List;
 
@@ -44,26 +46,37 @@ public class HelpOperation {
             topic = arguments_.remove(0);
         }
 
-        System.err.println("Welcome to bld " + BldVersion.getVersion() + ".");
-        System.err.println();
+        if (!executor_.outputJson()) {
+            System.err.println("Welcome to bld " + BldVersion.getVersion() + ".");
+            System.err.println();
+        }
 
         boolean print_full_help = true;
+        Exception exception = null;
         try {
             var commands = executor_.buildCommands();
             if (commands.containsKey(topic)) {
                 var command = commands.get(topic);
                 var help = command.getHelp().getDescription(topic);
                 if (!help.isEmpty()) {
-                    System.err.println(help);
+                    if (executor_.outputJson()) {
+                        var t = TemplateFactory.JSON.get("bld.help_description");
+                        t.setValueEncoded("command", topic);
+                        t.setValueEncoded("description", help);
+                        System.out.print(t.getContent());
+                    }
+                    else {
+                        System.err.println(help);
+                    }
                     print_full_help = false;
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            exception = e;
         }
 
         if (print_full_help) {
-            executePrintOverviewHelp();
+            executePrintOverviewHelp(exception);
         }
     }
 
@@ -74,32 +87,67 @@ public class HelpOperation {
      * @since 1.5
      */
     public void executePrintOverviewHelp() {
+        executePrintOverviewHelp(null);
+    }
+
+    private void executePrintOverviewHelp(Exception exception) {
         var commands = executor_.buildCommands();
 
-        System.err.println("""
-            The bld CLI provides its features through a series of commands that
-            perform specific tasks. The help command provides more information about
-            the other commands.
-                        
-            Usage: help [command]
+        if (executor_.outputJson()) {
+            var t = TemplateFactory.JSON.get("bld.help_commands");
 
-            The following commands are supported.
-            """);
+            if (exception != null) {
+                t.setValueEncoded("error-message", ExceptionUtils.getExceptionStackTrace(exception));
+            }
 
-        var command_length = commands.keySet().stream().max(comparingInt(String::length)).get().length() + 2;
-        for (var command : commands.entrySet()) {
-            System.err.print("  ");
-            System.err.printf("%-" + command_length + "s", command.getKey());
-            var build_help = command.getValue().getHelp();
-            System.err.print(build_help.getSummary());
-            System.err.println();
+            boolean first = true;
+            for (var command : commands.entrySet()) {
+                if (first) {
+                    first = false;
+                    t.blankValue("separator");
+                }
+                else {
+                    t.setValue("separator", ", ");
+                }
+                t.setValueEncoded("command", command.getKey());
+                var build_help = command.getValue().getHelp();
+                t.setValueEncoded("summary", build_help.getSummary());
+                t.appendBlock("commands", "command");
+            }
+            System.out.print(t.getContent());
+
         }
+        else {
+            if (exception != null) {
+                exception.printStackTrace();
+            }
 
-        System.err.println("""
-              
-              -?, -h, --help    Shows this help message
-              -D<name>=<value>  Set a JVM system property
-              -s, --stacktrace  Print out the stacktrace for exceptions
-            """);
+            System.err.println("""
+                The bld CLI provides its features through a series of commands that
+                perform specific tasks. The help command provides more information about
+                the other commands.
+                
+                Usage: help [command]
+    
+                The following commands are supported.
+                """);
+
+            var command_length = commands.keySet().stream().max(comparingInt(String::length)).get().length() + 2;
+            for (var command : commands.entrySet()) {
+                System.err.print("  ");
+                System.err.printf("%-" + command_length + "s", command.getKey());
+                var build_help = command.getValue().getHelp();
+                System.err.print(build_help.getSummary());
+                System.err.println();
+            }
+
+            System.err.println("""
+                
+                  -?, -h, --help    Shows this help message
+                  -D<name>=<value>  Set a JVM system property
+                  -s, --stacktrace  Print out the stacktrace for exceptions
+                  --json            Output in JSON format (only as first argument)
+                """);
+        }
     }
 }

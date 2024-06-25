@@ -1,0 +1,6 @@
+{
+  {{v error}}{{/v}}{{b error}}"error": "{{v error-message/}}",
+  {{/b}}"commands": {{{v commands}}{{/v}}{{b command}}{{v separator/}}
+      "{{v command/}}": "{{v summary/}}"{{/b}}
+  }
+}
