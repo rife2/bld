@@ -100,14 +100,12 @@ public class HelpOperation {
                 t.setValueEncoded("error-message", ExceptionUtils.getExceptionStackTrace(exception));
             }
 
-            boolean first = true;
             for (var command : commands.entrySet()) {
-                if (first) {
-                    first = false;
-                    t.blankValue("separator");
+                if (t.isValueSet("commands")) {
+                    t.setValue("separator", ", ");
                 }
                 else {
-                    t.setValue("separator", ", ");
+                    t.blankValue("separator");
                 }
                 t.setValueEncoded("command", command.getKey());
                 var build_help = command.getValue().getHelp();

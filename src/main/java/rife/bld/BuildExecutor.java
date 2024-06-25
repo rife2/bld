@@ -241,49 +241,15 @@ public class BuildExecutor {
             return exitStatus_;
         }
 
-        var first_command = true;
         var json_template = TemplateFactory.JSON.get("bld.executor_execute");
-        var exception_caught = false;
         while (!arguments_.isEmpty()) {
             var command = arguments_.remove(0);
 
             try {
-                var orig_out = System.out;
-                var orig_err = System.err;
-                var out = new ByteArrayOutputStream();
-                var err = new ByteArrayOutputStream();
-                if (outputJson()) {
-                    System.setOut(new PrintStream(out, true, StandardCharsets.UTF_8));
-                    System.setErr(new PrintStream(err, true, StandardCharsets.UTF_8));
-                }
-
-                try {
-                    if (!executeCommand(command)) {
-                        break;
-                    }
-                }
-                finally {
-                    if (outputJson()) {
-                        if (first_command) {
-                            json_template.blankValue("separator");
-                        }
-                        else {
-                            json_template.setValue("separator", ", ");
-                        }
-                        json_template.setValueEncoded("command", command);
-                        json_template.setValueEncoded("out", out.toString(StandardCharsets.UTF_8));
-                        json_template.setValueEncoded("err", err.toString(StandardCharsets.UTF_8));
-                        json_template.appendBlock("commands", "command");
-
-                        System.setOut(orig_out);
-                        System.setErr(orig_err);
-                    }
-
-                    first_command = false;
+                if (!executeCommand(json_template, command)) {
+                    break;
                 }
             } catch (Throwable e) {
-                exception_caught = true;
-
                 exitStatus(1);
 
                 if (outputJson()) {
@@ -335,10 +301,8 @@ public class BuildExecutor {
             }
         }
 
-        if (!exception_caught) {
-            if (outputJson()) {
-                System.out.println(json_template.getContent());
-            }
+        if (outputJson() && exitStatus_ == ExitStatusException.EXIT_SUCCESS) {
+            System.out.println(json_template.getContent());
         }
 
         return exitStatus_;
@@ -485,6 +449,16 @@ public class BuildExecutor {
      */
     public boolean executeCommand(String command)
     throws Throwable {
+        var json_template = TemplateFactory.JSON.get("bld.executor_execute");
+        var result = executeCommand(json_template, command);
+        if (result && outputJson() && exitStatus_ == ExitStatusException.EXIT_SUCCESS) {
+            System.out.println(json_template.getContent());
+        }
+        return result;
+    }
+
+    private boolean executeCommand(Template jsonTemplate, String command)
+    throws Throwable {
         var matched_command = command;
         var definition = buildCommands().get(command);
 
@@ -532,9 +506,18 @@ public class BuildExecutor {
 
         // execute the command if we found one
         if (definition != null) {
+            var orig_out = System.out;
+            var orig_err = System.err;
+            var out = new ByteArrayOutputStream();
+            var err = new ByteArrayOutputStream();
+            if (outputJson()) {
+                System.setOut(new PrintStream(out, true, StandardCharsets.UTF_8));
+                System.setErr(new PrintStream(err, true, StandardCharsets.UTF_8));
+            }
+
+            currentCommandName_.set(matched_command);
+            currentCommandDefinition_.set(definition);
             try {
-                currentCommandName_.set(matched_command);
-                currentCommandDefinition_.set(definition);
                 definition.execute();
             } catch (ExitStatusException e) {
                 exitStatus(e.getExitStatus());
@@ -542,6 +525,22 @@ public class BuildExecutor {
             } finally {
                 currentCommandDefinition_.set(null);
                 currentCommandName_.set(null);
+
+                if (outputJson()) {
+                    if (jsonTemplate.isValueSet("commands")) {
+                        jsonTemplate.setValue("separator", ", ");
+                    }
+                    else {
+                        jsonTemplate.blankValue("separator");
+                    }
+                    jsonTemplate.setValueEncoded("command", matched_command);
+                    jsonTemplate.setValueEncoded("out", out.toString(StandardCharsets.UTF_8));
+                    jsonTemplate.setValueEncoded("err", err.toString(StandardCharsets.UTF_8));
+                    jsonTemplate.appendBlock("commands", "command");
+
+                    System.setOut(orig_out);
+                    System.setErr(orig_err);
+                }
             }
         } else {
             var message = "Unknown command '" + command + "'";
