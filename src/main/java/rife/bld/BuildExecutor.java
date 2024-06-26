@@ -250,54 +250,9 @@ public class BuildExecutor {
                     break;
                 }
             } catch (Throwable e) {
-                exitStatus(1);
-
-                if (outputJson()) {
-                    var t = TemplateFactory.JSON.get("bld.executor_error");
-                    if (showStacktrace) {
-                        t.setValueEncoded("error-message", ExceptionUtils.getExceptionStackTrace(e));
-                    }
-                    else {
-                        boolean first_exception = true;
-                        var e2 = e;
-                        while (e2 != null) {
-                            if (e2.getMessage() != null) {
-                                t.setValueEncoded("error-message", e2.getMessage());
-                                first_exception = false;
-                            }
-                            e2 = e2.getCause();
-                        }
-
-                        if (first_exception) {
-                            t.setValueEncoded("error-message", ExceptionUtils.getExceptionStackTrace(e));
-                        }
-                    }
-                    System.out.println(t.getContent());
-                }
-                else {
-                    System.err.println();
-
-                    if (showStacktrace) {
-                        System.err.println(ExceptionUtils.getExceptionStackTrace(e));
-                    } else {
-                        boolean first_exception = true;
-                        var e2 = e;
-                        while (e2 != null) {
-                            if (e2.getMessage() != null) {
-                                if (!first_exception) {
-                                    System.err.print("> ");
-                                }
-                                System.err.println(e2.getMessage());
-                                first_exception = false;
-                            }
-                            e2 = e2.getCause();
-                        }
-
-                        if (first_exception) {
-                            System.err.println(ExceptionUtils.getExceptionStackTrace(e));
-                        }
-                    }
-                }
+                exitStatus(ExitStatusException.EXIT_FAILURE);
+                outputCommandExecutionException(e);
+                break;
             }
         }
 
@@ -306,6 +261,55 @@ public class BuildExecutor {
         }
 
         return exitStatus_;
+    }
+
+    private void outputCommandExecutionException(Throwable e) {
+        if (outputJson()) {
+            var t = TemplateFactory.JSON.get("bld.executor_error");
+            if (showStacktrace) {
+                t.setValueEncoded("error-message", ExceptionUtils.getExceptionStackTrace(e));
+            }
+            else {
+                boolean first_exception = true;
+                var e2 = e;
+                while (e2 != null) {
+                    if (e2.getMessage() != null) {
+                        t.setValueEncoded("error-message", e2.getMessage());
+                        first_exception = false;
+                    }
+                    e2 = e2.getCause();
+                }
+
+                if (first_exception) {
+                    t.setValueEncoded("error-message", ExceptionUtils.getExceptionStackTrace(e));
+                }
+            }
+            System.out.println(t.getContent());
+        }
+        else {
+            System.err.println();
+
+            if (showStacktrace) {
+                System.err.println(ExceptionUtils.getExceptionStackTrace(e));
+            } else {
+                boolean first_exception = true;
+                var e2 = e;
+                while (e2 != null) {
+                    if (e2.getMessage() != null) {
+                        if (!first_exception) {
+                            System.err.print("> ");
+                        }
+                        System.err.println(e2.getMessage());
+                        first_exception = false;
+                    }
+                    e2 = e2.getCause();
+                }
+
+                if (first_exception) {
+                    System.err.println(ExceptionUtils.getExceptionStackTrace(e));
+                }
+            }
+        }
     }
 
     /**
@@ -554,7 +558,7 @@ public class BuildExecutor {
                 System.err.println();
                 System.err.println("ERROR: " + message);
             }
-            exitStatus(1);
+            exitStatus(ExitStatusException.EXIT_FAILURE);
             return false;
         }
         return true;
