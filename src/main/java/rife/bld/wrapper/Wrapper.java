@@ -70,6 +70,11 @@ public class Wrapper {
     static final Pattern META_DATA_SNAPSHOT_VERSION = Pattern.compile("<snapshotVersion>.*?<value>([^<]+)</value>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     static final Pattern OPTIONS_PATTERN = Pattern.compile("\"[^\"]+\"|\\S+");
 
+    private static final Pattern JAR_EXCLUDE_SOURCES_PATTERN = Pattern.compile("^.*-sources\\.jar$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern JAR_EXCLUDE_JAVADOC_PATTERN = Pattern.compile("^.*-javadoc\\.jar$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern[] CLASSPATH_INCLUDED_JARS = new Pattern[]{JAR_FILE_PATTERN};
+    private static final Pattern[] CLASSPATH_EXCLUDED_JARS = new Pattern[]{JAR_EXCLUDE_SOURCES_PATTERN, JAR_EXCLUDE_JAVADOC_PATTERN, Pattern.compile(WRAPPER_JAR)};
+
     private File currentDir_ = new File(System.getProperty("user.dir"));
     private LaunchMode launchMode_ = LaunchMode.Cli;
 
@@ -649,7 +654,7 @@ public class Wrapper {
     private List<File> bldClasspathJars() {
         // detect the jar files in the compile lib directory
         var dir_abs = libBldDirectory().getAbsoluteFile();
-        var jar_files = FileUtils.getFileList(dir_abs, JAR_FILE_PATTERN, Pattern.compile(WRAPPER_JAR));
+        var jar_files = FileUtils.getFileList(dir_abs, CLASSPATH_INCLUDED_JARS, CLASSPATH_EXCLUDED_JARS);
 
         // build the compilation classpath
         return new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
