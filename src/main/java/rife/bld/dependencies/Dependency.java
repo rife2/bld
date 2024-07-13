@@ -41,7 +41,7 @@ public record Dependency(String groupId, String artifactId, VersionNumber versio
     }
 
     public Dependency(String groupId, String artifactId, VersionNumber version, String classifier, String type, ExclusionSet exclusions) {
-        this(groupId, artifactId, version, classifier, type, null, null);
+        this(groupId, artifactId, version, classifier, type, exclusions, null);
     }
 
     public Dependency(String groupId, String artifactId, VersionNumber version, String classifier, String type, ExclusionSet exclusions, Dependency parent) {
