@@ -5,8 +5,11 @@
 package rife.bld.operations;
 
 import rife.bld.BaseProject;
+import rife.bld.BldVersion;
 import rife.bld.dependencies.*;
+import rife.bld.wrapper.Wrapper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +25,9 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
     private ArtifactRetriever retriever_ = null;
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
+    private final List<Repository> extensionRepositories_ = new ArrayList<>();
+    private final DependencyScopes extensionDependencies_ = new DependencyScopes();
+
     private final StringBuilder dependencyTree_ = new StringBuilder();
 
     /**
@@ -30,11 +36,14 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.5.21
      */
     public void execute() {
+        var extensions_tree = executeGenerateExtensionsDependencies();
         var compile_tree = executeGenerateCompileDependencies();
         var provided_tree = executeGenerateProvidedDependencies();
         var runtime_tree = executeGenerateRuntimeDependencies();
         var test_tree = executeGenerateTestDependencies();
         dependencyTree_.setLength(0);
+        dependencyTree_.append(extensions_tree);
+        dependencyTree_.append(System.lineSeparator());
         dependencyTree_.append(compile_tree);
         dependencyTree_.append(System.lineSeparator());
         dependencyTree_.append(provided_tree);
@@ -44,10 +53,24 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
         dependencyTree_.append(test_tree);
         dependencyTree_.append(System.lineSeparator());
 
+        System.out.println(extensions_tree);
         System.out.println(compile_tree);
         System.out.println(provided_tree);
         System.out.println(runtime_tree);
         System.out.println(test_tree);
+    }
+
+    /**
+     * Part of the {@link #execute} operation, generates the tree for the extensions.
+     *
+     * @since 2.0
+     */
+    protected String executeGenerateExtensionsDependencies() {
+        var extensions_tree = extensionDependencies().scope(compile).generateTransitiveDependencyTree(artifactRetriever(), extensionRepositories(), compile, runtime);
+        if (extensions_tree.isEmpty()) {
+            extensions_tree = "no dependencies" + System.lineSeparator();
+        }
+        return "extensions:" + System.lineSeparator() + extensions_tree;
     }
 
     /**
@@ -110,6 +133,20 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.5.21
      */
     public DependencyTreeOperation fromProject(BaseProject project) {
+        // add the repositories and dependencies from the extensions
+        var wrapper = new Wrapper();
+        wrapper.currentDir(project.workDirectory());
+        try {
+            wrapper.initWrapperProperties(BldVersion.getVersion());
+            for (var repository : wrapper.repositories()) {
+                extensionRepositories().add(Repository.resolveRepository(project.properties(), repository));
+            }
+            extensionDependencies().scope(compile).addAll(wrapper.extensions().stream().map(Dependency::parse).toList());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // add the repositories and the dependencies from the project
         return artifactRetriever(project.artifactRetriever())
             .repositories(project.repositories())
             .dependencies(project.dependencies());
@@ -154,6 +191,44 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
     }
 
     /**
+     * Provides extension repositories to resolve the extension dependencies against.
+     *
+     * @param repositories extension repositories against which extension dependencies will be resolved
+     * @return this operation instance
+     * @since 2.0
+     */
+    public DependencyTreeOperation extensionRepositories(Repository... repositories) {
+        extensionRepositories_.addAll(List.of(repositories));
+        return this;
+    }
+
+    /**
+     * Provides a list of extension repositories to resolve the extension dependencies against.
+     * <p>
+     * A copy will be created to allow this list to be independently modifiable.
+     *
+     * @param repositories a list of extension repositories against which extension dependencies will be resolved
+     * @return this operation instance
+     * @since 2.0
+     */
+    public DependencyTreeOperation extensionRepositories(List<Repository> repositories) {
+        extensionRepositories_.addAll(repositories);
+        return this;
+    }
+
+    /**
+     * Provides scoped extension dependencies to generate a tree for.
+     *
+     * @param dependencies the extension dependencies that will be resolved for tree generation
+     * @return this operation instance
+     * @since 2.0
+     */
+    public DependencyTreeOperation extensionDependencies(DependencyScopes dependencies) {
+        extensionDependencies_.include(dependencies);
+        return this;
+    }
+
+    /**
      * Provides the artifact retriever to use.
      *
      * @param retriever the artifact retriever
@@ -187,6 +262,30 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      */
     public DependencyScopes dependencies() {
         return dependencies_;
+    }
+
+    /**
+     * Retrieves the extension repositories in which the dependencies will be resolved.
+     * <p>
+     * This is a modifiable list that can be retrieved and changed.
+     *
+     * @return the extension repositories used for dependency resolution
+     * @since 2.0
+     */
+    public List<Repository> extensionRepositories() {
+        return extensionRepositories_;
+    }
+
+    /**
+     * Retrieves the scoped extension dependencies that will be used for tree generation.
+     * <p>
+     * This is a modifiable structure that can be retrieved and changed.
+     *
+     * @return the scoped extension dependencies
+     * @since 2.0
+     */
+    public DependencyScopes extensionDependencies() {
+        return extensionDependencies_;
     }
 
     /**

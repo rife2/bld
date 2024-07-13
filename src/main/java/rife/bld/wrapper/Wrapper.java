@@ -222,6 +222,91 @@ public class Wrapper {
         }
     }
 
+    /**
+     * Sets the current directory for the wrapper.
+     *
+     * @param dir the directory to set as the current directory
+     * @since 2.0
+     */
+    public void currentDir(File dir) {
+        currentDir_ = dir;
+    }
+
+    /**
+     * Initializes the properties set for the wrapper.
+     *
+     * @param version the bld version they should be using
+     * @throws IOException when an error occurred during the creation of the wrapper files
+     * @since 2.0
+     */
+    public void initWrapperProperties(String version)
+    throws IOException {
+        // ensure required properties are available
+        wrapperProperties_.put(PROPERTY_REPOSITORIES, MAVEN_CENTRAL);
+        wrapperProperties_.put(BLD_PROPERTY_VERSION, version);
+
+        // retrieve properties from possible locations
+        var config = libBldDirectory(WRAPPER_PROPERTIES);
+        if (config.exists()) {
+            wrapperPropertiesFile_ = config;
+            wrapperProperties_.load(new FileReader(config));
+        } else {
+            config = libDirectory(WRAPPER_PROPERTIES);
+            if (config.exists()) {
+                wrapperPropertiesFile_ = config;
+                wrapperProperties_.load(new FileReader(config));
+            }
+        }
+
+        // extract repositories
+        if (wrapperProperties_.containsKey(PROPERTY_REPOSITORIES)) {
+            for (var repository : wrapperProperties_.getProperty(PROPERTY_REPOSITORIES).split(",")) {
+                repository = repository.trim();
+                if (!repository.isBlank()) {
+                    repositories_.add(repository);
+                }
+            }
+        }
+        // extract wrapper extension specifications
+        for (var property : wrapperProperties_.entrySet()) {
+            if (property.getKey().toString().startsWith(PROPERTY_EXTENSION_PREFIX)) {
+                for (var extension : property.getValue().toString().split(",")) {
+                    extension = extension.trim();
+                    if (!extension.isBlank()) {
+                        extensions_.add(extension);
+                    }
+                }
+            }
+        }
+        // check whether extension sources or javadoc should be downloaded
+        downloadExtensionSources_ = Boolean.parseBoolean(wrapperProperties_.getProperty(PROPERTY_DOWNLOAD_EXTENSION_SOURCES, "false"));
+        downloadExtensionJavadoc_ = Boolean.parseBoolean(wrapperProperties_.getProperty(PROPERTY_DOWNLOAD_EXTENSION_JAVADOC, "false"));
+    }
+
+    /**
+     * Returns the set of extension repositories.
+     *
+     * @return the set of extension repositories
+     * @since 2.0
+     */
+    public Set<String> repositories() {
+        return repositories_;
+    }
+
+    /**
+     * Returns the set of extensions.
+     *
+     * @return the set of extensions
+     * @since 2.0
+     */
+    public Set<String> extensions() {
+        return extensions_;
+    }
+
+    public File wrapperPropertiesFile() {
+        return wrapperPropertiesFile_;
+    }
+
     private void addClassToJar(JarOutputStream jar, Class klass)
     throws IOException {
         addFileToJar(jar, klass.getName().replace('.', '/') + ".class");
@@ -326,50 +411,6 @@ public class Wrapper {
 
     private File libBldDirectory(String path) {
         return Path.of(currentDir_.getAbsolutePath(), "lib", "bld", path).toFile();
-    }
-
-    private void initWrapperProperties(String version)
-    throws IOException {
-        // ensure required properties are available
-        wrapperProperties_.put(PROPERTY_REPOSITORIES, MAVEN_CENTRAL);
-        wrapperProperties_.put(BLD_PROPERTY_VERSION, version);
-
-        // retrieve properties from possible locations
-        var config = libBldDirectory(WRAPPER_PROPERTIES);
-        if (config.exists()) {
-            wrapperPropertiesFile_ = config;
-            wrapperProperties_.load(new FileReader(config));
-        } else {
-            config = libDirectory(WRAPPER_PROPERTIES);
-            if (config.exists()) {
-                wrapperPropertiesFile_ = config;
-                wrapperProperties_.load(new FileReader(config));
-            }
-        }
-
-        // extract repositories
-        if (wrapperProperties_.containsKey(PROPERTY_REPOSITORIES)) {
-            for (var repository : wrapperProperties_.getProperty(PROPERTY_REPOSITORIES).split(",")) {
-                repository = repository.trim();
-                if (!repository.isBlank()) {
-                    repositories_.add(repository);
-                }
-            }
-        }
-        // extract wrapper extension specifications
-        for (var property : wrapperProperties_.entrySet()) {
-            if (property.getKey().toString().startsWith(PROPERTY_EXTENSION_PREFIX)) {
-                for (var extension : property.getValue().toString().split(",")) {
-                    extension = extension.trim();
-                    if (!extension.isBlank()) {
-                        extensions_.add(extension);
-                    }
-                }
-            }
-        }
-        // check whether extension sources or javadoc should be downloaded
-        downloadExtensionSources_ = Boolean.parseBoolean(wrapperProperties_.getProperty(PROPERTY_DOWNLOAD_EXTENSION_SOURCES, "false"));
-        downloadExtensionJavadoc_ = Boolean.parseBoolean(wrapperProperties_.getProperty(PROPERTY_DOWNLOAD_EXTENSION_JAVADOC, "false"));
     }
 
     private String getWrapperVersion()

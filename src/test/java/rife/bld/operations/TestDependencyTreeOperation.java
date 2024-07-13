@@ -5,8 +5,10 @@
 package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
+import rife.bld.BldVersion;
 import rife.bld.WebProject;
 import rife.bld.dependencies.*;
+import rife.bld.wrapper.Wrapper;
 import rife.tools.FileUtils;
 import rife.tools.StringUtils;
 
@@ -82,6 +84,9 @@ public class TestDependencyTreeOperation {
             var tree = operation.dependencyTree();
 
             assertEquals(StringUtils.convertLineSeparator("""
+                extensions:
+                no dependencies
+                
                 compile:
                 ├─ com.uwyn.rife2:rife2:1.5.20
                 ├─ com.stripe:stripe-java:20.136.0
@@ -154,6 +159,9 @@ public class TestDependencyTreeOperation {
             var tree = operation.dependencyTree();
 
             assertEquals(StringUtils.convertLineSeparator("""
+                extensions:
+                no dependencies
+                
                 compile:
                 no dependencies
                                 
@@ -231,6 +239,9 @@ public class TestDependencyTreeOperation {
             var tree = operation.dependencyTree();
 
             assertEquals(StringUtils.convertLineSeparator("""
+                extensions:
+                no dependencies
+                
                 compile:
                 ├─ com.uwyn.rife2:rife2:1.5.20
                 ├─ com.stripe:stripe-java:20.136.0
@@ -307,6 +318,9 @@ public class TestDependencyTreeOperation {
             var tree = operation.dependencyTree();
 
             assertEquals(StringUtils.convertLineSeparator("""
+                extensions:
+                no dependencies
+                
                 compile:
                 no dependencies
                                 
@@ -329,6 +343,146 @@ public class TestDependencyTreeOperation {
                                 
                 runtime:
                 no dependencies
+                                
+                test:
+                ├─ org.jsoup:jsoup:1.16.1
+                ├─ jakarta.servlet:jakarta.servlet-api:5.0.0
+                ├─ org.eclipse.jetty:jetty-server:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-http:11.0.15
+                │  │  └─ org.eclipse.jetty:jetty-util:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-io:11.0.15
+                │  └─ org.slf4j:slf4j-api:2.0.5
+                ├─ org.eclipse.jetty:jetty-servlet:11.0.15
+                │  └─ org.eclipse.jetty:jetty-security:11.0.15
+                └─ net.imagej:ij:1.54d
+                
+                """), tree);
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testFromProjectExtensions()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var project = new TestProject(tmp);
+            project.createProjectStructure();
+
+            var wrapper = new Wrapper();
+            wrapper.currentDir(tmp);
+            wrapper.createWrapperFiles(project.libBldDirectory(), BldVersion.getVersion());
+            wrapper.initWrapperProperties(BldVersion.getVersion());
+            var properties = FileUtils.readString(wrapper.wrapperPropertiesFile());
+            properties = StringUtils.replace(properties, "bld.extensions=", """
+                bld.extension-antlr=com.uwyn.rife2:bld-antlr4:1.2.8
+                bld.extension-archive=com.uwyn.rife2:bld-archive:0.4.8
+                bld.extension-tests=com.uwyn.rife2:bld-tests-badge:1.4.8""");
+            FileUtils.writeString(properties, wrapper.wrapperPropertiesFile());
+
+            project.repositories().add(Repository.MAVEN_CENTRAL);
+            project.dependencies().scope(Scope.compile)
+                .include(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1,5,20)))
+                .include(new Dependency("com.stripe", "stripe-java", new VersionNumber(20,136,0)))
+                .include(new Dependency("org.json", "json", new VersionNumber(20230227)))
+                .include(new Dependency("com.itextpdf", "itext7-core", new VersionNumber(7,2,5)))
+                .include(new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2,0,7)))
+                .include(new Dependency("org.apache.thrift", "libthrift", new VersionNumber(0,17,0)))
+                .include(new Dependency("commons-codec", "commons-codec", new VersionNumber(1,15)))
+                .include(new Dependency("org.apache.httpcomponents", "httpcore", new VersionNumber(4,4,16)))
+                .include(new Dependency("com.google.zxing", "javase", new VersionNumber(3,5,1)));
+            project.dependencies().scope(Scope.runtime)
+                .include(new Dependency("org.postgresql", "postgresql", new VersionNumber(42,6,0)));
+            project.dependencies().scope(Scope.provided)
+                .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
+                .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
+                .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-core", new VersionNumber(10,1,12)))
+                .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-jasper", new VersionNumber(10,1,12)))
+                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+            project.dependencies().scope(Scope.test)
+                .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
+                .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
+                .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+
+            var operation = new DependencyTreeOperation()
+                .fromProject(project);
+
+            operation.execute();
+
+            var tree = operation.dependencyTree();
+
+            assertEquals(StringUtils.convertLineSeparator("""
+                extensions:
+                ├─ com.uwyn.rife2:bld-antlr4:1.2.8
+                │  ├─ com.uwyn.rife2:bld:1.9.1
+                │  └─ org.antlr:antlr4:4.11.1
+                │     ├─ org.antlr:antlr4-runtime:4.11.1
+                │     ├─ org.antlr:antlr-runtime:3.5.3
+                │     ├─ org.antlr:ST4:4.3.4
+                │     ├─ org.abego.treelayout:org.abego.treelayout.core:1.0.3
+                │     ├─ org.glassfish:javax.json:1.1.4
+                │     └─ com.ibm.icu:icu4j:71.1
+                ├─ com.uwyn.rife2:bld-tests-badge:1.4.8
+                └─ com.uwyn.rife2:bld-archive:0.4.8
+                   └─ org.apache.commons:commons-compress:1.26.1
+                      ├─ commons-codec:commons-codec:1.16.1
+                      ├─ commons-io:commons-io:2.15.1
+                      └─ org.apache.commons:commons-lang3:3.14.0
+                
+                compile:
+                ├─ com.uwyn.rife2:rife2:1.5.20
+                ├─ com.stripe:stripe-java:20.136.0
+                ├─ org.json:json:20230227
+                ├─ com.itextpdf:itext7-core:7.2.5
+                │  ├─ com.itextpdf:barcodes:7.2.5
+                │  ├─ com.itextpdf:font-asian:7.2.5
+                │  ├─ com.itextpdf:forms:7.2.5
+                │  ├─ com.itextpdf:hyph:7.2.5
+                │  ├─ com.itextpdf:io:7.2.5
+                │  │  └─ com.itextpdf:commons:7.2.5
+                │  ├─ com.itextpdf:kernel:7.2.5
+                │  │  ├─ org.bouncycastle:bcpkix-jdk15on:1.70
+                │  │  │  └─ org.bouncycastle:bcutil-jdk15on:1.70
+                │  │  └─ org.bouncycastle:bcprov-jdk15on:1.70
+                │  ├─ com.itextpdf:layout:7.2.5
+                │  ├─ com.itextpdf:pdfa:7.2.5
+                │  ├─ com.itextpdf:sign:7.2.5
+                │  ├─ com.itextpdf:styled-xml-parser:7.2.5
+                │  └─ com.itextpdf:svg:7.2.5
+                ├─ org.slf4j:slf4j-simple:2.0.7
+                │  └─ org.slf4j:slf4j-api:2.0.7
+                ├─ org.apache.thrift:libthrift:0.17.0
+                ├─ commons-codec:commons-codec:1.15
+                ├─ org.apache.httpcomponents:httpcore:4.4.16
+                └─ com.google.zxing:javase:3.5.1
+                   ├─ com.google.zxing:core:3.5.1
+                   └─ com.beust:jcommander:1.82
+                                
+                provided:
+                ├─ org.jsoup:jsoup:1.16.1
+                ├─ jakarta.servlet:jakarta.servlet-api:5.0.0
+                ├─ org.eclipse.jetty:jetty-server:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-http:11.0.15
+                │  │  └─ org.eclipse.jetty:jetty-util:11.0.15
+                │  ├─ org.eclipse.jetty:jetty-io:11.0.15
+                │  └─ org.slf4j:slf4j-api:2.0.5
+                ├─ org.eclipse.jetty:jetty-servlet:11.0.15
+                │  └─ org.eclipse.jetty:jetty-security:11.0.15
+                ├─ org.apache.tomcat.embed:tomcat-embed-core:10.1.12
+                │  └─ org.apache.tomcat:tomcat-annotations-api:10.1.12
+                ├─ org.apache.tomcat.embed:tomcat-embed-jasper:10.1.12
+                │  ├─ org.apache.tomcat.embed:tomcat-embed-el:10.1.12
+                │  └─ org.eclipse.jdt:ecj:3.33.0
+                └─ net.imagej:ij:1.54d
+                                
+                runtime:
+                └─ org.postgresql:postgresql:42.6.0
+                   └─ org.checkerframework:checker-qual:3.31.0
                                 
                 test:
                 ├─ org.jsoup:jsoup:1.16.1
