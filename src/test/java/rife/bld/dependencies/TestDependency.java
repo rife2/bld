@@ -83,6 +83,14 @@ public class TestDependency {
     }
 
     @Test
+    void testToArtifactString() {
+        assertEquals("com.uwyn.rife2:rife2", new Dependency("com.uwyn.rife2", "rife2").toArtifactString());
+        assertEquals("com.uwyn.rife2:rife2", new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)).toArtifactString());
+        assertEquals("com.uwyn.rife2:rife2", new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0), "agent").toArtifactString());
+        assertEquals("com.uwyn.rife2:rife2", new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0), "bld", "zip").toArtifactString());
+    }
+
+    @Test
     void testToFileName() {
         assertEquals("rife2-0.0.0.jar", new Dependency("com.uwyn.rife2", "rife2").toFileName());
         assertEquals("rife2-1.4.0.jar", new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)).toFileName());

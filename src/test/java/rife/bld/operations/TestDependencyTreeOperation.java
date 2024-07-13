@@ -22,6 +22,7 @@ public class TestDependencyTreeOperation {
     @Test
     void testInstantiation() {
         var operation = new DependencyTreeOperation();
+        assertEquals(operation.properties().size(), 0);
         assertTrue(operation.dependencies().isEmpty());
         assertTrue(operation.repositories().isEmpty());
     }

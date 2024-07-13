@@ -84,15 +84,16 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * <p>
      * The destination directory must exist and be writable.
      *
+     * @param resolution   the version resolution state that can be cached
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the transfer
      * @param directory    the directory to transfer the artifacts into
      * @return the list of artifacts that were transferred successfully
      * @throws DependencyTransferException when an error occurred during the transfer
-     * @since 1.5.10
+     * @since 2.0
      */
-    public List<RepositoryArtifact> transferIntoDirectory(ArtifactRetriever retriever, List<Repository> repositories, File directory) {
-        return transferIntoDirectory(retriever, repositories, directory, (String[]) null);
+    public List<RepositoryArtifact> transferIntoDirectory(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, File directory) {
+        return transferIntoDirectory(resolution, retriever, repositories, directory, (String[]) null);
     }
 
     /**
@@ -101,18 +102,19 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * <p>
      * The destination directory must exist and be writable.
      *
+     * @param resolution   the version resolution state that can be cached
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the download
      * @param directory    the directory to download the artifacts into
      * @param classifiers  the additional classifiers to transfer
      * @return the list of artifacts that were transferred successfully
      * @throws DependencyTransferException when an error occurred during the transfer
-     * @since 1.5.10
+     * @since 2.0
      */
-    public List<RepositoryArtifact> transferIntoDirectory(ArtifactRetriever retriever, List<Repository> repositories, File directory, String... classifiers) {
+    public List<RepositoryArtifact> transferIntoDirectory(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, File directory, String... classifiers) {
         var result = new ArrayList<RepositoryArtifact>();
         for (var dependency : this) {
-            var artifact = new DependencyResolver(retriever, repositories, dependency).transferIntoDirectory(directory);
+            var artifact = new DependencyResolver(resolution, retriever, repositories, dependency).transferIntoDirectory(directory);
             if (artifact != null) {
                 result.add(artifact);
             }
@@ -120,7 +122,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
             if (classifiers != null) {
                 for (var classifier : classifiers) {
                     if (classifier != null) {
-                        var classifier_artifact = new DependencyResolver(retriever, repositories, dependency.withClassifier(classifier)).transferIntoDirectory(directory);
+                        var classifier_artifact = new DependencyResolver(resolution, retriever, repositories, dependency.withClassifier(classifier)).transferIntoDirectory(directory);
                         if (classifier_artifact != null) {
                             result.add(classifier_artifact);
                         }
@@ -150,17 +152,18 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * Generates the string description of the transitive hierarchical tree of
      * dependencies for a particular scope.
      *
+     * @param resolution   the version resolution state that can be cached
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to look for dependencies in
      * @param scopes       the scopes to return the transitive dependencies for
      * @return the generated tree description string; or an empty string if
      * there were no dependencies to describe
-     * @since 1.5.21
+     * @since 2.0
      */
-    public String generateTransitiveDependencyTree(ArtifactRetriever retriever, List<Repository> repositories, Scope... scopes) {
+    public String generateTransitiveDependencyTree(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, Scope... scopes) {
         var compile_dependencies = new DependencySet();
         for (var dependency : this) {
-            compile_dependencies.addAll(new DependencyResolver(retriever, repositories, dependency).getAllDependencies(scopes));
+            compile_dependencies.addAll(new DependencyResolver(resolution, retriever, repositories, dependency).getAllDependencies(scopes));
         }
         return compile_dependencies.generateDependencyTree();
     }

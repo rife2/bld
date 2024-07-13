@@ -8,6 +8,7 @@ import rife.bld.BaseProject;
 import rife.bld.BldVersion;
 import rife.bld.dependencies.*;
 import rife.bld.wrapper.Wrapper;
+import rife.ioc.HierarchicalProperties;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import static rife.bld.dependencies.Scope.*;
  * @since 1.5.21
  */
 public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOperation> {
+    private HierarchicalProperties properties_ = null;
     private ArtifactRetriever retriever_ = null;
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
@@ -66,7 +68,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 2.0
      */
     protected String executeGenerateExtensionsDependencies() {
-        var extensions_tree = extensionDependencies().scope(compile).generateTransitiveDependencyTree(artifactRetriever(), extensionRepositories(), compile, runtime);
+        var extensions_tree = extensionDependencies().scope(compile).generateTransitiveDependencyTree(new VersionResolution(properties()), artifactRetriever(), extensionRepositories(), compile, runtime);
         if (extensions_tree.isEmpty()) {
             extensions_tree = "no dependencies" + System.lineSeparator();
         }
@@ -79,7 +81,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.5.21
      */
     protected String executeGenerateCompileDependencies() {
-        var compile_tree = dependencies().scope(compile).generateTransitiveDependencyTree(artifactRetriever(), repositories(), compile);
+        var compile_tree = dependencies().scope(compile).generateTransitiveDependencyTree(new VersionResolution(properties()), artifactRetriever(), repositories(), compile);
         if (compile_tree.isEmpty()) {
             compile_tree = "no dependencies" + System.lineSeparator();
         }
@@ -92,7 +94,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.7.3
      */
     protected String executeGenerateProvidedDependencies() {
-        var provided_tree = dependencies().scope(provided).generateTransitiveDependencyTree(artifactRetriever(), repositories(), compile, runtime);
+        var provided_tree = dependencies().scope(provided).generateTransitiveDependencyTree(new VersionResolution(properties()), artifactRetriever(), repositories(), compile, runtime);
         if (provided_tree.isEmpty()) {
             provided_tree = "no dependencies" + System.lineSeparator();
         }
@@ -105,7 +107,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.5.21
      */
     protected String executeGenerateRuntimeDependencies() {
-        var runtime_tree = dependencies().scope(runtime).generateTransitiveDependencyTree(artifactRetriever(), repositories(), compile, runtime);
+        var runtime_tree = dependencies().scope(runtime).generateTransitiveDependencyTree(new VersionResolution(properties()), artifactRetriever(), repositories(), compile, runtime);
         if (runtime_tree.isEmpty()) {
             runtime_tree = "no dependencies" + System.lineSeparator();
         }
@@ -118,7 +120,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.7.3
      */
     protected String executeGenerateTestDependencies() {
-        var test_tree = dependencies().scope(test).generateTransitiveDependencyTree(artifactRetriever(), repositories(), compile, runtime);
+        var test_tree = dependencies().scope(test).generateTransitiveDependencyTree(new VersionResolution(properties()), artifactRetriever(), repositories(), compile, runtime);
         if (test_tree.isEmpty()) {
             test_tree = "no dependencies" + System.lineSeparator();
         }
@@ -147,7 +149,8 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
         }
 
         // add the repositories and the dependencies from the project
-        return artifactRetriever(project.artifactRetriever())
+        return properties(project.properties())
+            .artifactRetriever(project.artifactRetriever())
             .repositories(project.repositories())
             .dependencies(project.dependencies());
     }
@@ -241,6 +244,18 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
     }
 
     /**
+     * Provides the hierarchical properties to use.
+     *
+     * @param properties the hierarchical properties
+     * @return this operation instance
+     * @since 2.0
+     */
+    public DependencyTreeOperation properties(HierarchicalProperties properties) {
+        properties_ = properties;
+        return this;
+    }
+
+    /**
      * Retrieves the repositories in which the dependencies will be resolved.
      * <p>
      * This is a modifiable list that can be retrieved and changed.
@@ -309,5 +324,18 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      */
     public String dependencyTree() {
         return dependencyTree_.toString();
+    }
+
+    /**
+     * Returns the hierarchical properties that are used.
+     *
+     * @return the hierarchical properties
+     * @since 2.0
+     */
+    public HierarchicalProperties properties() {
+        if (properties_ == null) {
+            properties_ = new HierarchicalProperties();
+        }
+        return properties_;
     }
 }

@@ -6,6 +6,7 @@ package rife.bld.operations;
 
 import rife.bld.BaseProject;
 import rife.bld.dependencies.*;
+import rife.ioc.HierarchicalProperties;
 
 import java.io.File;
 import java.util.*;
@@ -24,6 +25,7 @@ import static rife.bld.dependencies.Dependency.CLASSIFIER_SOURCES;
  * @since 1.5
  */
 public class PurgeOperation extends AbstractOperation<PurgeOperation> {
+    private HierarchicalProperties properties_ = null;
     private ArtifactRetriever retriever_ = null;
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
@@ -57,7 +59,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     protected void executePurgeCompileDependencies() {
-        executePurgeDependencies(libCompileDirectory(), dependencies().resolveCompileDependencies(artifactRetriever(), repositories()));
+        executePurgeDependencies(libCompileDirectory(), dependencies().resolveCompileDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -66,7 +68,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.8
      */
     protected void executePurgeProvidedDependencies() {
-        executePurgeDependencies(libProvidedDirectory(), dependencies().resolveProvidedDependencies(artifactRetriever(), repositories()));
+        executePurgeDependencies(libProvidedDirectory(), dependencies().resolveProvidedDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -75,7 +77,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     protected void executePurgeRuntimeDependencies() {
-        executePurgeDependencies(libRuntimeDirectory(), dependencies().resolveRuntimeDependencies(artifactRetriever(), repositories()));
+        executePurgeDependencies(libRuntimeDirectory(), dependencies().resolveRuntimeDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -84,7 +86,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     protected void executePurgeStandaloneDependencies() {
-        executePurgeDependencies(libStandaloneDirectory(), dependencies().resolveStandaloneDependencies(artifactRetriever(), repositories()));
+        executePurgeDependencies(libStandaloneDirectory(), dependencies().resolveStandaloneDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -93,7 +95,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     protected void executePurgeTestDependencies() {
-        executePurgeDependencies(libTestDirectory(), dependencies().resolveTestDependencies(artifactRetriever(), repositories()));
+        executePurgeDependencies(libTestDirectory(), dependencies().resolveTestDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -132,7 +134,8 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     }
 
     private void addTransferLocations(HashSet<String> filenames, Dependency dependency) {
-        for (var location : new DependencyResolver(artifactRetriever(), repositories(), dependency).getTransferLocations()) {
+        var resolution = new VersionResolution(properties());
+        for (var location : new DependencyResolver(resolution, artifactRetriever(), repositories(), dependency).getTransferLocations()) {
             filenames.add(location.substring(location.lastIndexOf("/") + 1));
         }
     }
@@ -144,7 +147,8 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     public PurgeOperation fromProject(BaseProject project) {
-        return artifactRetriever(project.artifactRetriever())
+        return properties(project.properties())
+            .artifactRetriever(project.artifactRetriever())
             .repositories(project.repositories())
             .dependencies(project.dependencies())
             .libCompileDirectory(project.libCompileDirectory())
@@ -293,6 +297,18 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     }
 
     /**
+     * Provides the hierarchical properties to use.
+     *
+     * @param properties the hierarchical properties
+     * @return this operation instance
+     * @since 2.0
+     */
+    public PurgeOperation properties(HierarchicalProperties properties) {
+        properties_ = properties;
+        return this;
+    }
+
+    /**
      * Retrieves the repositories in which the dependencies will be resolved.
      * <p>
      * This is a modifiable list that can be retrieved and changed.
@@ -399,5 +415,18 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
             return ArtifactRetriever.instance();
         }
         return retriever_;
+    }
+
+    /**
+     * Returns the hierarchical properties that are used.
+     *
+     * @return the hierarchical properties
+     * @since 2.0
+     */
+    public HierarchicalProperties properties() {
+        if (properties_ == null) {
+            properties_ = new HierarchicalProperties();
+        }
+        return properties_;
     }
 }

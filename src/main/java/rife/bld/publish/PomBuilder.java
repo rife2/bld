@@ -52,7 +52,7 @@ public class PomBuilder {
      *
      * @param properties the properties to use
      * @return this {@code PomBuilder} instance
-     * @since 2.0.0
+     * @since 2.0
      */
     public PomBuilder properties(PublishProperties properties) {
         properties_ = properties;
@@ -63,7 +63,7 @@ public class PomBuilder {
      * Retrieves the properties to build the POM with.
      *
      * @return the properties to use
-     * @since 2.0.0
+     * @since 2.0
      */
     public PublishProperties properties() {
         return properties_;

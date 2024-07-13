@@ -6,6 +6,7 @@ package rife.bld.operations;
 
 import rife.bld.BaseProject;
 import rife.bld.dependencies.*;
+import rife.ioc.HierarchicalProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
  * @since 1.5
  */
 public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
+    private HierarchicalProperties properties_ = null;
     private ArtifactRetriever retriever_ = null;
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
@@ -28,11 +30,12 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
      * @since 1.5
      */
     public void execute() {
+        var resolution = new VersionResolution(properties());
         var result = new DependencyScopes();
         for (var entry : dependencies_.entrySet()) {
             var scope = entry.getKey();
             for (var dependency : entry.getValue()) {
-                var latest = new DependencyResolver(artifactRetriever(), repositories(), dependency).latestVersion();
+                var latest = new DependencyResolver(resolution, artifactRetriever(), repositories(), dependency).latestVersion();
                 if (latest.compareTo(dependency.version()) > 0) {
                     var latest_dependency = new Dependency(dependency.groupId(), dependency.artifactId(), latest,
                         dependency.classifier(), dependency.type());
@@ -65,7 +68,8 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
      * @since 1.5
      */
     public UpdatesOperation fromProject(BaseProject project) {
-        return artifactRetriever(project.artifactRetriever())
+        return properties(project.properties())
+            .artifactRetriever(project.artifactRetriever())
             .repositories(project.repositories())
             .dependencies(project.dependencies());
     }
@@ -121,6 +125,18 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
     }
 
     /**
+     * Provides the hierarchical properties to use.
+     *
+     * @param properties the hierarchical properties
+     * @return this operation instance
+     * @since 2.0
+     */
+    public UpdatesOperation properties(HierarchicalProperties properties) {
+        properties_ = properties;
+        return this;
+    }
+
+    /**
      * Retrieves the repositories in which the dependencies will be resolved.
      * <p>
      * This is a modifiable list that can be retrieved and changed.
@@ -165,5 +181,18 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
             return ArtifactRetriever.instance();
         }
         return retriever_;
+    }
+
+    /**
+     * Returns the hierarchical properties that are used.
+     *
+     * @return the hierarchical properties
+     * @since 2.0
+     */
+    public HierarchicalProperties properties() {
+        if (properties_ == null) {
+            properties_ = new HierarchicalProperties();
+        }
+        return properties_;
     }
 }

@@ -139,6 +139,16 @@ public record Dependency(String groupId, String artifactId, VersionNumber versio
 
     }
 
+    /**
+     * Returns a string representation of the dependency in the format "groupId:artifactId".
+     *
+     * @return the string representation of the dependency
+     * @since 2.0
+     */
+    public String toArtifactString() {
+        return groupId + ':' + artifactId;
+    }
+
     public String toString() {
         var result = new StringBuilder(groupId).append(':').append(artifactId);
         if (!version.equals(VersionNumber.UNKNOWN)) {

@@ -69,6 +69,7 @@ public class Wrapper {
     static final Pattern META_DATA_LOCAL_COPY = Pattern.compile("<localCopy>\\s*true\\s*</localCopy>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     static final Pattern META_DATA_SNAPSHOT_VERSION = Pattern.compile("<snapshotVersion>.*?<value>([^<]+)</value>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     static final Pattern OPTIONS_PATTERN = Pattern.compile("\"[^\"]+\"|\\S+");
+    static final Pattern JVM_PROPERTY_PATTERN = Pattern.compile("-D(.+?)=(.*)");
 
     private static final Pattern JAR_EXCLUDE_SOURCES_PATTERN = Pattern.compile("^.*-sources\\.jar$", Pattern.CASE_INSENSITIVE);
     private static final Pattern JAR_EXCLUDE_JAVADOC_PATTERN = Pattern.compile("^.*-javadoc\\.jar$", Pattern.CASE_INSENSITIVE);
@@ -78,6 +79,7 @@ public class Wrapper {
     private File currentDir_ = new File(System.getProperty("user.dir"));
     private LaunchMode launchMode_ = LaunchMode.Cli;
 
+    private final Properties jvmProperties_ = new Properties();
     private final Properties wrapperProperties_ = new Properties();
     private File wrapperPropertiesFile_ = null;
     private final Set<String> repositories_ = new LinkedHashSet<>();
@@ -376,6 +378,7 @@ public class Wrapper {
         }
 
         try {
+            extractJvmProperties(arguments);
             initWrapperProperties(getVersion());
             File distribution;
             try {
@@ -386,6 +389,15 @@ public class Wrapper {
             return launchMain(distribution, arguments);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void extractJvmProperties(List<String> arguments) {
+        for (var arg : arguments) {
+            var matcher = JVM_PROPERTY_PATTERN.matcher(arg);
+            if (matcher.matches()) {
+                jvmProperties_.put(matcher.group(1), matcher.group(2));
+            }
         }
     }
 
@@ -587,9 +599,10 @@ public class Wrapper {
 
         try {
             var resolver_class = classloader_.loadClass("rife.bld.wrapper.WrapperExtensionResolver");
-            var constructor = resolver_class.getConstructor(File.class, File.class, File.class, Collection.class, Collection.class, boolean.class, boolean.class);
+            var constructor = resolver_class.getConstructor(File.class, File.class, File.class, Properties.class, Properties.class, Collection.class, Collection.class, boolean.class, boolean.class);
             var update_method = resolver_class.getMethod("updateExtensions");
             var resolver = constructor.newInstance(currentDir_, new File(wrapperPropertiesFile_.getAbsolutePath() + ".hash"), libBldDirectory(),
+                jvmProperties_, wrapperProperties_,
                 repositories_, extensions_,
                 downloadExtensionSources_, downloadExtensionJavadoc_);
             update_method.invoke(resolver);
@@ -612,7 +625,7 @@ public class Wrapper {
     throws IOException, InterruptedException {
         var args = new ArrayList<String>();
         args.add("java");
-        includeJvmParameters(arguments, args);
+        includeJvmProperties(arguments, args);
 
         args.add("-cp");
         args.add(jarFile.getAbsolutePath());
@@ -665,7 +678,7 @@ public class Wrapper {
 
         var java_args = new ArrayList<String>();
         java_args.add("java");
-        includeJvmParameters(arguments, java_args);
+        includeJvmProperties(arguments, java_args);
 
         java_args.add("-cp");
         java_args.add(classpath);
@@ -681,11 +694,11 @@ public class Wrapper {
         return process.waitFor();
     }
 
-    private static void includeJvmParameters(List<String> arguments, List<String> javaArgs) {
+    private static void includeJvmProperties(List<String> arguments, List<String> javaArgs) {
         var i = arguments.iterator();
         while (i.hasNext()) {
             var arg = i.next();
-            if (arg.matches("-D(.+?)=(.*)")) {
+            if (JVM_PROPERTY_PATTERN.matcher(arg).matches()) {
                 javaArgs.add(arg);
                 i.remove();
             }

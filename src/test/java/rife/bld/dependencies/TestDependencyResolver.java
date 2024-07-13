@@ -5,6 +5,7 @@
 package rife.bld.dependencies;
 
 import org.junit.jupiter.api.Test;
+import rife.ioc.HierarchicalProperties;
 import rife.tools.FileUtils;
 import rife.tools.StringUtils;
 
@@ -16,6 +17,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static rife.bld.dependencies.Dependency.CLASSIFIER_JAVADOC;
 import static rife.bld.dependencies.Dependency.CLASSIFIER_SOURCES;
+import static rife.bld.dependencies.VersionResolution.PROPERTY_OVERRIDE_PREFIX;
 import static rife.bld.dependencies.Repository.*;
 import static rife.bld.dependencies.Scope.compile;
 import static rife.bld.dependencies.Scope.runtime;
@@ -23,8 +25,10 @@ import static rife.bld.dependencies.Scope.runtime;
 public class TestDependencyResolver {
     @Test
     void testInstantiation() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
+        var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "com.uwyn.rife2:rife2:1.8.0")),
+            ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
         assertNotNull(resolver);
+        assertEquals(new VersionNumber(1,8,0), resolver.resolution().overrideVersion(new Dependency("com.uwyn.rife2", "rife2")));
         assertTrue(resolver.repositories().contains(MAVEN_CENTRAL));
         assertTrue(resolver.repositories().contains(SONATYPE_SNAPSHOTS));
         assertEquals(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)), resolver.dependency());
@@ -32,31 +36,38 @@ public class TestDependencyResolver {
 
     @Test
     void testNotFound() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.org.unknown", "voidthing"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.org.unknown", "voidthing"));
         assertFalse(resolver.exists());
     }
 
     @Test
     void testCheckExistence() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
         assertTrue(resolver.exists());
     }
 
     @Test
     void testCheckExistenceVersion() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
         assertTrue(resolver.exists());
     }
 
     @Test
     void testCheckExistenceMissingVersion() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 3, 9)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 3, 9)));
         assertFalse(resolver.exists());
     }
 
     @Test
+    void testCheckVersionOverride() {
+        var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "com.uwyn.rife2:rife2:1.8.0")),
+            ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 3, 9)));
+        assertEquals(new VersionNumber(1, 8, 0), resolver.resolveVersion());
+    }
+
+    @Test
     void testListVersions() {
-        var resolver1 = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver1 = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
         var versions1 = resolver1.listVersions();
         assertNotNull(versions1);
         assertFalse(versions1.isEmpty());
@@ -64,7 +75,7 @@ public class TestDependencyResolver {
         assertTrue(versions1.contains(new VersionNumber(1, 0, 0)));
         assertTrue(versions1.contains(new VersionNumber(1, 2, 1)));
 
-        var resolver2 = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server"));
+        var resolver2 = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server"));
         var versions2 = resolver2.listVersions();
         assertNotNull(versions2);
         assertFalse(versions2.isEmpty());
@@ -75,7 +86,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetLatestVersion() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
         var version = resolver.latestVersion();
         assertNotNull(version);
         assertTrue(version.compareTo(new VersionNumber(1, 4)) >= 0);
@@ -83,7 +94,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetReleaseVersion() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
         var version = resolver.releaseVersion();
         assertNotNull(version);
         assertTrue(version.compareTo(new VersionNumber(1, 4)) >= 0);
@@ -91,7 +102,7 @@ public class TestDependencyResolver {
 
     @Test
     void testMetadata() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
         var metadata = resolver.getMavenMetadata();
         assertNotNull(metadata);
         assertTrue(metadata.getLatest().compareTo(resolver.dependency().version()) > 0);
@@ -100,7 +111,7 @@ public class TestDependencyResolver {
 
     @Test
     void testSnapshotMetadata() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
         var metadata = resolver.getSnapshotMavenMetadata();
         assertNotNull(metadata);
         assertEquals("20230303.130437", metadata.getSnapshotTimestamp());
@@ -109,7 +120,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesRIFE2() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(0, dependencies.size());
@@ -117,7 +128,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesRIFE2Snapshot() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(0, dependencies.size());
@@ -125,7 +136,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesJetty() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(4, dependencies.size());
@@ -137,8 +148,36 @@ public class TestDependencyResolver {
     }
 
     @Test
+    void testGetCompileDependenciesJettyOverride1() {
+        var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.13")),
+            ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var dependencies = resolver.getDirectDependencies(compile);
+        assertNotNull(dependencies);
+        assertEquals(4, dependencies.size());
+        assertEquals("""
+            org.eclipse.jetty.toolchain:jetty-jakarta-servlet-api:5.0.2
+            org.eclipse.jetty:jetty-http:11.0.14
+            org.eclipse.jetty:jetty-io:11.0.14
+            org.slf4j:slf4j-api:2.0.13""", StringUtils.join(dependencies, "\n"));
+    }
+
+    @Test
+    void testGetCompileDependenciesJettyOverride2() {
+        var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.11,org.eclipse.jetty:jetty-io:11.0.13,org.eclipse.jetty:jetty-server:11.0.15")),
+            ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var dependencies = resolver.getDirectDependencies(compile);
+        assertNotNull(dependencies);
+        assertEquals(4, dependencies.size());
+        assertEquals("""
+            org.eclipse.jetty.toolchain:jetty-jakarta-servlet-api:5.0.2
+            org.eclipse.jetty:jetty-http:11.0.15
+            org.eclipse.jetty:jetty-io:11.0.13
+            org.slf4j:slf4j-api:2.0.11""", StringUtils.join(dependencies, "\n"));
+    }
+
+    @Test
     void testGetCompileRuntimeDependenciesJunit() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
         var dependencies_compile = resolver.getDirectDependencies(compile, runtime);
         assertNotNull(dependencies_compile);
         assertEquals(3, dependencies_compile.size());
@@ -150,7 +189,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesSpringBoot() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(6, dependencies.size());
@@ -165,7 +204,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesMaven() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(26, dependencies.size());
@@ -200,7 +239,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesPlay() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(25, dependencies.size());
@@ -234,7 +273,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesVaadin() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(9, dependencies.size());
@@ -252,7 +291,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileRuntimeDependenciesBitly() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(0, 9, 4, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(0, 9, 4, "SNAPSHOT")));
         var dependencies = resolver.getDirectDependencies(compile, runtime);
         assertNotNull(dependencies);
         assertEquals(4, dependencies.size());
@@ -265,7 +304,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesRIFE2() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(1, dependencies.size());
@@ -275,7 +314,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesRIFE2Snapshot() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(1, dependencies.size());
@@ -285,7 +324,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJetty() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(6, dependencies.size());
@@ -300,7 +339,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJettyExclusion() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS),
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
                 .exclude("org.slf4j", "slf4j-api"));
         var dependencies = resolver.getAllDependencies(compile);
@@ -316,7 +355,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJettyFullGroupExclusion() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS),
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
                 .exclude("org.eclipse.jetty", "*"));
         var dependencies = resolver.getAllDependencies(compile);
@@ -330,7 +369,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJettyFullArtifactExclusion() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS),
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
                 .exclude("*", "jetty-http")
                 .exclude("*", "slf4j-api"));
@@ -346,7 +385,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJettyFullExclusion() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS),
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
                 .exclude("*", "*"));
         var dependencies = resolver.getAllDependencies(compile);
@@ -358,8 +397,8 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJettyAndSlfj() {
-        var dependencies = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))).getAllDependencies(compile);
-        var dependencies2 = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2, 0, 6))).getAllDependencies(compile, runtime);
+        var dependencies = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))).getAllDependencies(compile);
+        var dependencies2 = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2, 0, 6))).getAllDependencies(compile, runtime);
         assertNotNull(dependencies);
         assertNotNull(dependencies2);
         assertEquals(6, dependencies.size());
@@ -378,7 +417,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileRuntimeTransitiveDependenciesJunit() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
         var dependencies_compile = resolver.getAllDependencies(compile, runtime);
         assertNotNull(dependencies_compile);
         assertEquals(8, dependencies_compile.size());
@@ -401,7 +440,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesSpringBoot() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(18, dependencies.size());
@@ -428,7 +467,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesMaven() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(32, dependencies.size());
@@ -469,7 +508,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesPlay() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(48, dependencies.size());
@@ -526,7 +565,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesVaadin() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(88, dependencies.size());
@@ -623,7 +662,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileRuntimeTransitiveDependenciesBitly() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(0, 9, 4, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(0, 9, 4, "SNAPSHOT")));
         var dependencies = resolver.getAllDependencies(compile, runtime);
         assertNotNull(dependencies);
         assertEquals(11, dependencies.size());
@@ -643,7 +682,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileRuntimeTransitiveDependenciesMariaDb() {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.mariadb.jdbc", "mariadb-java-client", new VersionNumber(3, 1, 3)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.mariadb.jdbc", "mariadb-java-client", new VersionNumber(3, 1, 3)));
         var dependencies_compile = resolver.getAllDependencies(compile, runtime);
         assertNotNull(dependencies_compile);
         assertEquals(9, dependencies_compile.size());
@@ -667,10 +706,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependency()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             assertTrue(StringUtils.join(result, "\n").matches("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*.jar"""));
 
@@ -685,10 +724,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySources()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES);
             assertTrue(StringUtils.join(result, "\n").matches("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*-sources.jar"""));
@@ -704,10 +743,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySourcesJavadoc()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertTrue(StringUtils.join(result, "\n").matches("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*-sources.jar
@@ -724,10 +763,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySnapshot()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             assertEquals("""
                 https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4.jar""", StringUtils.join(result, "\n"));
 
@@ -742,10 +781,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySnapshotSources()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES);
             assertEquals("""
                 https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4.jar
                 https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4-sources.jar""", StringUtils.join(result, "\n"));
@@ -762,10 +801,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySnapshotSourcesJavadoc()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertEquals("""
                 https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4.jar
                 https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4-sources.jar
@@ -784,10 +823,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencyJetty()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
@@ -812,12 +851,46 @@ public class TestDependencyResolver {
     }
 
     @Test
-    void testTransferDependencyJettySources()
+    void testTransferDependencyJettyOverriddenVersions()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolution = new VersionResolution(new HierarchicalProperties()
+            .put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.11")
+            .put(PROPERTY_OVERRIDE_PREFIX + "1", "org.eclipse.jetty:jetty-io:11.0.13")
+            .put(PROPERTY_OVERRIDE_PREFIX + "2", "org.eclipse.jetty:jetty-server:11.0.15"));
+        var resolver = new DependencyResolver(resolution, ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            assertEquals("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.15/jetty-server-11.0.15.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/11.0.15/jetty-http-11.0.15.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/11.0.13/jetty-io-11.0.13.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.11/slf4j-api-2.0.11.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.15/jetty-util-11.0.15.jar""", StringUtils.join(result, "\n"));
+
+            var files = FileUtils.getFileList(tmp);
+            assertEquals(6, files.size());
+            Collections.sort(files);
+            assertEquals("""
+                jetty-http-11.0.15.jar
+                jetty-io-11.0.13.jar
+                jetty-jakarta-servlet-api-5.0.2.jar
+                jetty-server-11.0.15.jar
+                jetty-util-11.0.15.jar
+                slf4j-api-2.0.11.jar""", StringUtils.join(files, "\n"));
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testTransferDependencyJettySources()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var tmp = Files.createTempDirectory("transfers").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-sources.jar
@@ -856,10 +929,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencyJettySourcesJavadoc()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-sources.jar
@@ -910,10 +983,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependenciesJunit()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile, runtime).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile, runtime).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar
@@ -944,10 +1017,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySpringBoot()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-starter/3.0.4/spring-boot-starter-3.0.4.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/springframework/boot/spring-boot/3.0.4/spring-boot-3.0.4.jar
@@ -998,10 +1071,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencyMaven()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apache/maven/maven-core/3.9.0/maven-core-3.9.0.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apache/maven/maven-model/3.9.0/maven-model-3.9.0.jar
@@ -1080,10 +1153,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencyPlay()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/play/play_2.13/2.8.19/play_2.13-2.8.19.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.10/scala-library-2.13.10.jar
@@ -1192,12 +1265,128 @@ public class TestDependencyResolver {
     }
 
     @Test
-    void testTransferDependencyVaadin()
+    void testTransferDependencyPlayOverriddenVersions()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
+        var resolution = new VersionResolution(new HierarchicalProperties()
+            .put(PROPERTY_OVERRIDE_PREFIX, "org.scala-lang:scala-library:2.13.12,org.slf4j:slf4j-api:2.0.11,com.google.guava:guava:31.1-jre"));
+        var resolver = new DependencyResolver(resolution, ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            assertEquals("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/play/play_2.13/2.8.19/play_2.13-2.8.19.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.12/scala-library-2.13.12.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/play/build-link/2.8.19/build-link-2.8.19.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/play/play-streams_2.13/2.8.19/play-streams_2.13-2.8.19.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/play/twirl-api_2.13/1.5.1/twirl-api_2.13-1.5.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.11/slf4j-api-2.0.11.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/jul-to-slf4j/1.7.36/jul-to-slf4j-1.7.36.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/jcl-over-slf4j/1.7.36/jcl-over-slf4j-1.7.36.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor_2.13/2.6.20/akka-actor_2.13-2.6.20.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor-typed_2.13/2.6.20/akka-actor-typed_2.13-2.6.20.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/akka/akka-slf4j_2.13/2.6.20/akka-slf4j_2.13-2.6.20.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/akka/akka-serialization-jackson_2.13/2.6.20/akka-serialization-jackson_2.13-2.6.20.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.11.4/jackson-core-2.11.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.11.4/jackson-annotations-2.11.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.11.4/jackson-datatype-jdk8-2.11.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.11.4/jackson-datatype-jsr310-2.11.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.11.4/jackson-databind-2.11.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/play/play-json_2.13/2.8.2/play-json_2.13-2.8.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/jsonwebtoken/jjwt/0.9.1/jjwt-0.9.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api/2.3.3/jakarta.xml.bind-api-2.3.3.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/jakarta/transaction/jakarta.transaction-api/1.3.3/jakarta.transaction-api-1.3.3.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/scala-lang/modules/scala-java8-compat_2.13/1.0.2/scala-java8-compat_2.13-1.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/ssl-config-core_2.13/0.4.3/ssl-config-core_2.13-0.4.3.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/scala-lang/modules/scala-parser-combinators_2.13/1.1.2/scala-parser-combinators_2.13-1.1.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/play/play-exceptions/2.8.19/play-exceptions-2.8.19.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/reactivestreams/reactive-streams/1.0.3/reactive-streams-1.0.3.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/akka/akka-stream_2.13/2.6.20/akka-stream_2.13-2.6.20.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/scala-lang/modules/scala-xml_2.13/1.2.0/scala-xml_2.13-1.2.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/config/1.4.2/config-1.4.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-parameter-names/2.11.4/jackson-module-parameter-names-2.11.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-cbor/2.11.4/jackson-dataformat-cbor-2.11.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-scala_2.13/2.11.4/jackson-module-scala_2.13-2.11.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/lz4/lz4-java/1.8.0/lz4-java-1.8.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/play/play-functional_2.13/2.8.2/play-functional_2.13-2.8.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.13.1/scala-reflect-2.13.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/joda-time/joda-time/2.10.5/joda-time-2.10.5.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.11.0/error_prone_annotations-2.11.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api/1.2.2/jakarta.activation-api-1.2.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/akka/akka-protobuf-v3_2.13/2.6.20/akka-protobuf-v3_2.13-2.6.20.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-paranamer/2.11.4/jackson-module-paranamer-2.11.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.8/paranamer-2.8.jar""", StringUtils.join(result, "\n"));
+
+            var files = FileUtils.getFileList(tmp);
+            assertEquals(48, files.size());
+            Collections.sort(files);
+            assertEquals("""
+                akka-actor-typed_2.13-2.6.20.jar
+                akka-actor_2.13-2.6.20.jar
+                akka-protobuf-v3_2.13-2.6.20.jar
+                akka-serialization-jackson_2.13-2.6.20.jar
+                akka-slf4j_2.13-2.6.20.jar
+                akka-stream_2.13-2.6.20.jar
+                build-link-2.8.19.jar
+                checker-qual-3.12.0.jar
+                config-1.4.2.jar
+                error_prone_annotations-2.11.0.jar
+                failureaccess-1.0.1.jar
+                guava-31.1-jre.jar
+                j2objc-annotations-1.3.jar
+                jackson-annotations-2.11.4.jar
+                jackson-core-2.11.4.jar
+                jackson-databind-2.11.4.jar
+                jackson-dataformat-cbor-2.11.4.jar
+                jackson-datatype-jdk8-2.11.4.jar
+                jackson-datatype-jsr310-2.11.4.jar
+                jackson-module-parameter-names-2.11.4.jar
+                jackson-module-paranamer-2.11.4.jar
+                jackson-module-scala_2.13-2.11.4.jar
+                jakarta.activation-api-1.2.2.jar
+                jakarta.transaction-api-1.3.3.jar
+                jakarta.xml.bind-api-2.3.3.jar
+                javax.inject-1.jar
+                jcl-over-slf4j-1.7.36.jar
+                jjwt-0.9.1.jar
+                joda-time-2.10.5.jar
+                jsr305-3.0.2.jar
+                jul-to-slf4j-1.7.36.jar
+                listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
+                lz4-java-1.8.0.jar
+                paranamer-2.8.jar
+                play-exceptions-2.8.19.jar
+                play-functional_2.13-2.8.2.jar
+                play-json_2.13-2.8.2.jar
+                play-streams_2.13-2.8.19.jar
+                play_2.13-2.8.19.jar
+                reactive-streams-1.0.3.jar
+                scala-java8-compat_2.13-1.0.2.jar
+                scala-library-2.13.12.jar
+                scala-parser-combinators_2.13-1.1.2.jar
+                scala-reflect-2.13.1.jar
+                scala-xml_2.13-1.2.0.jar
+                slf4j-api-2.0.11.jar
+                ssl-config-core_2.13-0.4.3.jar
+                twirl-api_2.13-1.5.1.jar""", StringUtils.join(files, "\n"));
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testTransferDependencyVaadin()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
+        var tmp = Files.createTempDirectory("transfers").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/vaadin/vaadin/23.3.7/vaadin-23.3.7.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/vaadin/vaadin-core/23.3.7/vaadin-core-23.3.7.jar
@@ -1388,10 +1577,10 @@ public class TestDependencyResolver {
     @Test
     void testTransferCheckExisting()
     throws Exception {
-        var resolver = new DependencyResolver(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
 
             var modification_map = new HashMap<String, Long>();
             Files.walk(Path.of(tmp.getAbsolutePath()))
@@ -1400,7 +1589,7 @@ public class TestDependencyResolver {
                 .forEach(it -> modification_map.put(it, new File(it).lastModified()));
 
             // re-transfer and check the modification time didn't change
-            resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             Files.walk(Path.of(tmp.getAbsolutePath()))
                 .map(path -> path.toAbsolutePath().toString())
                 .filter(s -> !s.equals(tmp.getAbsolutePath()))
@@ -1410,7 +1599,7 @@ public class TestDependencyResolver {
             var first = modification_map.keySet().stream().findFirst().get();
             var first_file = new File(first);
             first_file.delete();
-            resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             assertNotEquals(first_file.lastModified(), modification_map.get(first));
             modification_map.put(first, first_file.lastModified());
             Files.walk(Path.of(tmp.getAbsolutePath()))
@@ -1421,7 +1610,7 @@ public class TestDependencyResolver {
             // change one file and check that this is transfered again
             FileUtils.writeString("stuff", first_file);
             var before_transfer_modified = first_file.lastModified();
-            resolver.getAllDependencies(compile).transferIntoDirectory(ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
             assertNotEquals(first_file.lastModified(), before_transfer_modified);
             modification_map.put(first, first_file.lastModified());
             Files.walk(Path.of(tmp.getAbsolutePath()))

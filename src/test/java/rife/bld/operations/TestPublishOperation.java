@@ -63,7 +63,7 @@ public class TestPublishOperation {
         assertTrue(operation.repositories().isEmpty());
         assertNull(operation.moment());
         assertTrue(operation.dependencies().isEmpty());
-        assertTrue(operation.properties().isEmpty());
+        assertTrue(operation.publishProperties().isEmpty());
         assertNotNull(operation.info());
         assertNull(operation.info().groupId());
         assertNull(operation.info().artifactId());
@@ -113,14 +113,14 @@ public class TestPublishOperation {
             .repository(repository2)
             .moment(moment)
             .artifacts(List.of(artifact1, artifact2));
-        operation3.properties().mavenCompilerSource(17).mavenCompilerTarget(19);
+        operation3.publishProperties().mavenCompilerSource(17).mavenCompilerTarget(19);
         assertTrue(operation3.repositories().contains(repository1));
         assertTrue(operation3.repositories().contains(repository2));
         assertEquals(moment, operation3.moment());
         assertTrue(operation3.artifacts().contains(artifact1));
         assertTrue(operation3.artifacts().contains(artifact2));
-        assertEquals(17, operation3.properties().mavenCompilerSource());
-        assertEquals(19, operation3.properties().mavenCompilerTarget());
+        assertEquals(17, operation3.publishProperties().mavenCompilerSource());
+        assertEquals(19, operation3.publishProperties().mavenCompilerTarget());
     }
 
     @Test

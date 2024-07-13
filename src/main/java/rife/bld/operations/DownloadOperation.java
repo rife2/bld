@@ -6,6 +6,7 @@ package rife.bld.operations;
 
 import rife.bld.BaseProject;
 import rife.bld.dependencies.*;
+import rife.ioc.HierarchicalProperties;
 
 import java.io.File;
 import java.util.*;
@@ -24,6 +25,7 @@ import static rife.bld.dependencies.Dependency.CLASSIFIER_SOURCES;
  * @since 1.5
  */
 public class DownloadOperation extends AbstractOperation<DownloadOperation> {
+    private HierarchicalProperties properties_ = null;
     private ArtifactRetriever retriever_ = null;
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
@@ -57,7 +59,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.5
      */
     protected void executeDownloadCompileDependencies() {
-        executeDownloadDependencies(libCompileDirectory(), dependencies().resolveCompileDependencies(artifactRetriever(), repositories()));
+        executeDownloadDependencies(libCompileDirectory(), dependencies().resolveCompileDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -66,7 +68,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.8
      */
     protected void executeDownloadProvidedDependencies() {
-        executeDownloadDependencies(libProvidedDirectory(), dependencies().resolveProvidedDependencies(artifactRetriever(), repositories()));
+        executeDownloadDependencies(libProvidedDirectory(), dependencies().resolveProvidedDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -75,7 +77,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.5
      */
     protected void executeDownloadRuntimeDependencies() {
-        executeDownloadDependencies(libRuntimeDirectory(), dependencies().resolveRuntimeDependencies(artifactRetriever(), repositories()));
+        executeDownloadDependencies(libRuntimeDirectory(), dependencies().resolveRuntimeDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -84,7 +86,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.5
      */
     protected void executeDownloadStandaloneDependencies() {
-        executeDownloadDependencies(libStandaloneDirectory(), dependencies().resolveStandaloneDependencies(artifactRetriever(), repositories()));
+        executeDownloadDependencies(libStandaloneDirectory(), dependencies().resolveStandaloneDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -93,7 +95,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.5
      */
     protected void executeDownloadTestDependencies() {
-        executeDownloadDependencies(libTestDirectory(), dependencies().resolveTestDependencies(artifactRetriever(), repositories()));
+        executeDownloadDependencies(libTestDirectory(), dependencies().resolveTestDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -120,7 +122,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
             additional_classifiers = classifiers.toArray(new String[0]);
         }
 
-        dependencies.transferIntoDirectory(artifactRetriever(), repositories(), destinationDirectory, additional_classifiers);
+        dependencies.transferIntoDirectory(new VersionResolution(properties()), artifactRetriever(), repositories(), destinationDirectory, additional_classifiers);
     }
 
     /**
@@ -131,7 +133,8 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.5
      */
     public DownloadOperation fromProject(BaseProject project) {
-        return artifactRetriever(project.artifactRetriever())
+        return properties(project.properties())
+            .artifactRetriever(project.artifactRetriever())
             .repositories(project.repositories())
             .dependencies(project.dependencies())
             .libCompileDirectory(project.libCompileDirectory())
@@ -280,6 +283,18 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     }
 
     /**
+     * Provides the hierarchical properties to use.
+     *
+     * @param properties the hierarchical properties
+     * @return this operation instance
+     * @since 2.0
+     */
+    public DownloadOperation properties(HierarchicalProperties properties) {
+        properties_ = properties;
+        return this;
+    }
+
+    /**
      * Retrieves the repositories in which the dependencies will be resolved.
      * <p>
      * This is a modifiable list that can be retrieved and changed.
@@ -386,5 +401,18 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
             return ArtifactRetriever.instance();
         }
         return retriever_;
+    }
+
+    /**
+     * Returns the hierarchical properties that are used.
+     *
+     * @return the hierarchical properties
+     * @since 2.0
+     */
+    public HierarchicalProperties properties() {
+        if (properties_ == null) {
+            properties_ = new HierarchicalProperties();
+        }
+        return properties_;
     }
 }

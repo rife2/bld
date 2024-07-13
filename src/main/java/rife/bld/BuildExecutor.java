@@ -132,7 +132,7 @@ public class BuildExecutor {
      *
      * @return {@code true} if JSON output is enabled;
      *         or {@code false} otherwise
-     * @since 2.0.0
+     * @since 2.0
      */
     public boolean outputJson() {
         return outputJson_;

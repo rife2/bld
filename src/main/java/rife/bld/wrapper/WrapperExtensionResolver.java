@@ -6,6 +6,7 @@ package rife.bld.wrapper;
 
 import rife.bld.BuildExecutor;
 import rife.bld.dependencies.*;
+import rife.ioc.HierarchicalProperties;
 import rife.tools.FileUtils;
 import rife.tools.StringUtils;
 import rife.tools.exceptions.FileUtilsErrorException;
@@ -28,7 +29,9 @@ import static rife.bld.dependencies.Dependency.CLASSIFIER_SOURCES;
  * @since 1.5.8
  */
 public class WrapperExtensionResolver {
-    private final ArtifactRetriever retriever_ = ArtifactRetriever.cachingInstance();
+    private final HierarchicalProperties properties_;
+    private final VersionResolution resolution_;
+    private final ArtifactRetriever retriever_;
     private final File hashFile_;
     private final String fingerPrintHash_;
     private final File destinationDirectory_;
@@ -41,20 +44,35 @@ public class WrapperExtensionResolver {
     private boolean headerPrinted_ = false;
 
     public WrapperExtensionResolver(File currentDir, File hashFile, File destinationDirectory,
+                                    Properties jvmProperties, Properties wrapperProperties,
                                     Collection<String> repositories, Collection<String> extensions,
                                     boolean downloadSources, boolean downloadJavadoc) {
         var properties = BuildExecutor.setupProperties(currentDir);
-        Repository.resolveMavenLocal(properties);
+        properties.getRoot().putAll(jvmProperties);
+        properties_ = new HierarchicalProperties().parent(properties);
+        properties_.putAll(wrapperProperties);
+
+        resolution_ = new VersionResolution(properties_);
+
+        retriever_ = ArtifactRetriever.cachingInstance();
+        Repository.resolveMavenLocal(properties_);
 
         hashFile_ = hashFile;
+
         destinationDirectory_ = destinationDirectory;
+
         for (var repository : repositories) {
-            repositories_.add(Repository.resolveRepository(properties, repository));
+            repositories_.add(Repository.resolveRepository(properties_, repository));
         }
-        dependencies_.addAll(extensions.stream().map(Dependency::parse).toList());
+
+        dependencies_.addAll(extensions.stream().map(d -> resolution_.overrideDependency(Dependency.parse(d))).toList());
+
         downloadSources_ = downloadSources;
         downloadJavadoc_ = downloadJavadoc;
-        fingerPrintHash_ = createHash(repositories_.stream().map(Objects::toString).toList(), extensions, downloadSources, downloadJavadoc);
+        fingerPrintHash_ = createHash(
+            repositories_.stream().map(Objects::toString).toList(),
+            dependencies_.stream().map(Objects::toString).toList(),
+            downloadSources, downloadJavadoc);
     }
 
     private String createHash(Collection<String> repositories, Collection<String> extensions, boolean downloadSources, boolean downloadJavadoc) {
@@ -149,7 +167,7 @@ public class WrapperExtensionResolver {
         var dependencies = new DependencySet();
         for (var d : dependencies_) {
             if (d != null) {
-                dependencies.addAll(new DependencyResolver(retriever_, repositories_, d).getAllDependencies(Scope.compile, Scope.runtime));
+                dependencies.addAll(new DependencyResolver(resolution_, retriever_, repositories_, d).getAllDependencies(Scope.compile, Scope.runtime));
             }
         }
         if (!dependencies.isEmpty()) {
@@ -166,7 +184,7 @@ public class WrapperExtensionResolver {
                 additional_classifiers = classifiers.toArray(new String[0]);
             }
 
-            var artifacts = dependencies.transferIntoDirectory(retriever_, repositories_, destinationDirectory_, additional_classifiers);
+            var artifacts = dependencies.transferIntoDirectory(resolution_, retriever_, repositories_, destinationDirectory_, additional_classifiers);
             for (var artifact : artifacts) {
                 var location = artifact.location();
 

@@ -4,6 +4,8 @@
  */
 package rife.bld.dependencies;
 
+import rife.ioc.HierarchicalProperties;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -66,13 +68,14 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
     /**
      * Returns the transitive set of dependencies that would be used for the compile scope in a project.
      *
+     * @param properties   the properties to use to get artifacts
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the resolution
      * @return the compile scope dependency set
-     * @since 1.6
+     * @since 2.0
      */
-    public DependencySet resolveCompileDependencies(ArtifactRetriever retriever, List<Repository> repositories) {
-        return resolveScopedDependencies(retriever, repositories,
+    public DependencySet resolveCompileDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
+        return resolveScopedDependencies(properties, retriever, repositories,
             new Scope[]{Scope.compile},
             new Scope[]{Scope.compile},
             null);
@@ -81,13 +84,14 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
     /**
      * Returns the transitive set of dependencies that would be used for the provided scope in a project.
      *
+     * @param properties   the properties to use to get artifacts
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the resolution
      * @return the provided scope dependency set
-     * @since 1.8
+     * @since 2.0
      */
-    public DependencySet resolveProvidedDependencies(ArtifactRetriever retriever, List<Repository> repositories) {
-        return resolveScopedDependencies(retriever, repositories,
+    public DependencySet resolveProvidedDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
+        return resolveScopedDependencies(properties, retriever, repositories,
             new Scope[]{Scope.provided},
             new Scope[]{Scope.compile, Scope.runtime},
             null);
@@ -96,28 +100,30 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
     /**
      * Returns the transitive set of dependencies that would be used for the runtime scope in a project.
      *
+     * @param properties   the properties to use to get artifacts
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the resolution
      * @return the runtime scope dependency set
-     * @since 1.6
+     * @since 2.0
      */
-    public DependencySet resolveRuntimeDependencies(ArtifactRetriever retriever, List<Repository> repositories) {
-        return resolveScopedDependencies(retriever, repositories,
+    public DependencySet resolveRuntimeDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
+        return resolveScopedDependencies(properties, retriever, repositories,
             new Scope[]{Scope.compile, Scope.runtime},
             new Scope[]{Scope.compile, Scope.runtime},
-            resolveCompileDependencies(retriever, repositories));
+            resolveCompileDependencies(properties, retriever, repositories));
     }
 
     /**
      * Returns the transitive set of dependencies that would be used for the standalone scope in a project.
      *
+     * @param properties   the properties to use to get artifacts
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the resolution
      * @return the standalone scope dependency set
-     * @since 1.6
+     * @since 2.0
      */
-    public DependencySet resolveStandaloneDependencies(ArtifactRetriever retriever, List<Repository> repositories) {
-        return resolveScopedDependencies(retriever, repositories,
+    public DependencySet resolveStandaloneDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
+        return resolveScopedDependencies(properties, retriever, repositories,
             new Scope[]{Scope.standalone},
             new Scope[]{Scope.compile, Scope.runtime},
             null);
@@ -126,25 +132,27 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
     /**
      * Returns the transitive set of dependencies that would be used for the test scope in a project.
      *
+     * @param properties   the properties to use to get artifacts
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the resolution
      * @return the test scope dependency set
-     * @since 1.6
+     * @since 2.0
      */
-    public DependencySet resolveTestDependencies(ArtifactRetriever retriever, List<Repository> repositories) {
-        return resolveScopedDependencies(retriever, repositories,
+    public DependencySet resolveTestDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
+        return resolveScopedDependencies(properties, retriever, repositories,
             new Scope[]{Scope.test},
             new Scope[]{Scope.compile, Scope.runtime},
             null);
     }
 
-    private DependencySet resolveScopedDependencies(ArtifactRetriever retriever, List<Repository> repositories, Scope[] resolvedScopes, Scope[] transitiveScopes, DependencySet excluded) {
+    private DependencySet resolveScopedDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories, Scope[] resolvedScopes, Scope[] transitiveScopes, DependencySet excluded) {
+        var resolution = new VersionResolution(properties);
         var dependencies = new DependencySet();
         for (var scope : resolvedScopes) {
             var scoped_dependencies = get(scope);
             if (scoped_dependencies != null) {
                 for (var dependency : scoped_dependencies) {
-                    dependencies.addAll(new DependencyResolver(retriever, repositories, dependency).getAllDependencies(transitiveScopes));
+                    dependencies.addAll(new DependencyResolver(resolution, retriever, repositories, dependency).getAllDependencies(transitiveScopes));
                 }
             }
         }

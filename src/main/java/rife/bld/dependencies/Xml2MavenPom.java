@@ -18,13 +18,14 @@ import java.util.regex.Pattern;
  */
 class Xml2MavenPom extends Xml2Data {
     private final Dependency parent_;
+    private final VersionResolution resolution_;
     private final ArtifactRetriever retriever_;
     private final List<Repository> repositories_;
     private Map<Scope, Set<PomDependency>> resolvedDependencies_ = null;
 
     private final Map<PomDependency, PomDependency> dependencyManagement_ = new LinkedHashMap<>();
     private final Set<PomDependency> dependencies_ = new LinkedHashSet<>();
-    private final Map<String, String> properties_ = new HashMap<>();
+    private final Map<String, String> mavenProperties_ = new HashMap<>();
     private final Stack<String> elementStack_ = new Stack<>();
     private ExclusionSet exclusions_ = null;
 
@@ -45,8 +46,9 @@ class Xml2MavenPom extends Xml2Data {
     private String lastExclusionGroupId_ = null;
     private String lastExclusionArtifactId_ = null;
 
-    Xml2MavenPom(Dependency parent, ArtifactRetriever retriever, List<Repository> repositories) {
+    Xml2MavenPom(Dependency parent, VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories) {
         parent_ = parent;
+        resolution_ = resolution;
         retriever_ = retriever;
         repositories_ = repositories;
     }
@@ -85,17 +87,17 @@ class Xml2MavenPom extends Xml2Data {
                     if (dep_scope == null) {
                         dep_scope = "compile";
                     }
-                    optional = resolveProperties(optional);
+                    optional = resolveMavenProperties(optional);
                     if ("true".equals(optional)) {
                         continue;
                     }
 
                     var resolved_dependency = new PomDependency(
-                        resolveProperties(dependency.groupId()),
-                        resolveProperties(dependency.artifactId()),
-                        resolveProperties(version),
-                        resolveProperties(dependency.classifier()),
-                        resolveProperties(dependency.type()),
+                        resolveMavenProperties(dependency.groupId()),
+                        resolveMavenProperties(dependency.artifactId()),
+                        resolveMavenProperties(version),
+                        resolveMavenProperties(dependency.classifier()),
+                        resolveMavenProperties(dependency.type()),
                         dep_scope,
                         "false",
                         exclusions,
@@ -126,13 +128,13 @@ class Xml2MavenPom extends Xml2Data {
 
     PomDependency resolveDependency(PomDependency dependency) {
         return new PomDependency(
-            resolveProperties(dependency.groupId()),
-            resolveProperties(dependency.artifactId()),
-            resolveProperties(dependency.version()),
-            resolveProperties(dependency.classifier()),
-            resolveProperties(dependency.type()),
+            resolveMavenProperties(dependency.groupId()),
+            resolveMavenProperties(dependency.artifactId()),
+            resolveMavenProperties(dependency.version()),
+            resolveMavenProperties(dependency.classifier()),
+            resolveMavenProperties(dependency.type()),
             dependency.scope(),
-            resolveProperties(dependency.optional()),
+            resolveMavenProperties(dependency.optional()),
             dependency.exclusions(),
             dependency.parent());
     }
@@ -178,11 +180,11 @@ class Xml2MavenPom extends Xml2Data {
         switch (qName) {
             case "parent" -> {
                 if (isChildOfProject()) {
-                    var parent_dependency = new Dependency(resolveProperties(lastGroupId_), resolveProperties(lastArtifactId_), VersionNumber.parse(resolveProperties(lastVersion_)));
-                    var parent = new DependencyResolver(retriever_, repositories_, parent_dependency).getMavenPom(parent_);
+                    var parent_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), VersionNumber.parse(resolveMavenProperties(lastVersion_)));
+                    var parent = new DependencyResolver(resolution_, retriever_, repositories_, parent_dependency).getMavenPom(parent_);
 
-                    parent.properties_.keySet().removeAll(properties_.keySet());
-                    properties_.putAll(parent.properties_);
+                    parent.mavenProperties_.keySet().removeAll(mavenProperties_.keySet());
+                    mavenProperties_.putAll(parent.mavenProperties_);
 
                     parent.dependencyManagement_.keySet().removeAll(dependencyManagement_.keySet());
                     dependencyManagement_.putAll(parent.dependencyManagement_);
@@ -206,8 +208,8 @@ class Xml2MavenPom extends Xml2Data {
                 var dependency = new PomDependency(lastGroupId_, lastArtifactId_, lastVersion_, lastClassifier_, lastType_, lastScope_, lastOptional_, exclusions_, parent_);
                 if (collectDependencyManagement_) {
                     if (dependency.isPomImport()) {
-                        var import_dependency = new Dependency(resolveProperties(lastGroupId_), resolveProperties(lastArtifactId_), VersionNumber.parse(resolveProperties(lastVersion_)));
-                        var imported_pom = new DependencyResolver(retriever_, repositories_, import_dependency).getMavenPom(parent_);
+                        var import_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), VersionNumber.parse(resolveMavenProperties(lastVersion_)));
+                        var imported_pom = new DependencyResolver(resolution_, retriever_, repositories_, import_dependency).getMavenPom(parent_);
                         imported_pom.dependencyManagement_.keySet().removeAll(dependencyManagement_.keySet());
                         var resolved_dependencies = new LinkedHashSet<PomDependency>();
                         for (var managed_dependency : imported_pom.dependencyManagement_.keySet()) {
@@ -278,7 +280,7 @@ class Xml2MavenPom extends Xml2Data {
             }
             default -> {
                 if (collectProperties_) {
-                    properties_.put(qName, getCharacterData());
+                    mavenProperties_.put(qName, getCharacterData());
                 }
             }
         }
@@ -303,7 +305,7 @@ class Xml2MavenPom extends Xml2Data {
     }
 
     private void addProjectProperty(String name) {
-        properties_.put("project." + name, getCharacterData());
+        mavenProperties_.put("project." + name, getCharacterData());
     }
 
     private String getCharacterData() {
@@ -320,7 +322,7 @@ class Xml2MavenPom extends Xml2Data {
 
     private static final Pattern MAVEN_PROPERTY = Pattern.compile("\\$\\{([^<>{}]+)}");
 
-    private String resolveProperties(String data) {
+    private String resolveMavenProperties(String data) {
         if (data == null) {
             return null;
         }
@@ -335,9 +337,9 @@ class Xml2MavenPom extends Xml2Data {
             while (matcher.find()) {
                 if (matcher.groupCount() == 1) {
                     var property = matcher.group(1);
-                    if (properties_.containsKey(property)) {
+                    if (mavenProperties_.containsKey(property)) {
                         processed_data.append(data, last_end, matcher.start());
-                        processed_data.append(properties_.get(property));
+                        processed_data.append(mavenProperties_.get(property));
                         last_end = matcher.end();
 
                         replaced = true;

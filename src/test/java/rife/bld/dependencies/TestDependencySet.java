@@ -5,6 +5,7 @@
 package rife.bld.dependencies;
 
 import org.junit.jupiter.api.Test;
+import rife.ioc.HierarchicalProperties;
 import rife.tools.StringUtils;
 
 import java.util.List;
@@ -91,7 +92,7 @@ public class TestDependencySet {
             │  └─ org.eclipse.jetty:jetty-io:11.0.14
             └─ org.slf4j:slf4j-simple:2.0.6
                └─ org.slf4j:slf4j-api:2.0.6
-            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
@@ -117,7 +118,7 @@ public class TestDependencySet {
                ├─ org.springframework:spring-core:6.0.6
                │  └─ org.springframework:spring-jcl:6.0.6
                └─ org.yaml:snakeyaml:1.33
-            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
@@ -157,7 +158,7 @@ public class TestDependencySet {
                ├─ org.codehaus.plexus:plexus-component-annotations:2.1.0
                ├─ org.apache.commons:commons-lang3:3.8.1
                └─ org.slf4j:slf4j-api:1.7.36
-            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
@@ -213,7 +214,7 @@ public class TestDependencySet {
                ├─ org.scala-lang.modules:scala-java8-compat_2.13:1.0.2
                ├─ com.typesafe:ssl-config-core_2.13:0.4.3
                └─ org.scala-lang.modules:scala-parser-combinators_2.13:1.1.2
-            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
@@ -309,7 +310,7 @@ public class TestDependencySet {
                      │  ├─ net.java.dev.jna:jna:5.11.0
                      │  └─ net.java.dev.jna:jna-platform:5.11.0
                      └─ com.auth0:java-jwt:3.19.2
-            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
@@ -352,7 +353,7 @@ public class TestDependencySet {
             └─ com.google.zxing:javase:3.5.1
                ├─ com.google.zxing:core:3.5.1
                └─ com.beust:jcommander:1.82
-            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
+            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL), compile));
     }
 
     @Test
@@ -371,6 +372,6 @@ public class TestDependencySet {
                │     └─ com.squareup.okio:okio-jvm:3.2.0
                ├─ com.squareup.okhttp3:logging-interceptor:4.11.0
                └─ org.json:json:20230618
-            """), dependencies.generateTransitiveDependencyTree(ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), compile, runtime));
+            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), compile, runtime));
     }
 }

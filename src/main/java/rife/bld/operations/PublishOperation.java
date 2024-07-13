@@ -12,6 +12,7 @@ import rife.bld.operations.exceptions.OperationOptionException;
 import rife.bld.operations.exceptions.SignException;
 import rife.bld.operations.exceptions.UploadException;
 import rife.bld.publish.*;
+import rife.ioc.HierarchicalProperties;
 import rife.tools.FileUtils;
 import rife.tools.exceptions.FileUtilsErrorException;
 
@@ -38,6 +39,7 @@ import static rife.tools.StringUtils.encodeHexLower;
  * @since 1.5.7
  */
 public class PublishOperation extends AbstractOperation<PublishOperation> {
+    private HierarchicalProperties properties_ = null;
     private ArtifactRetriever retriever_ = null;
     private final HttpClient client_ = HttpClient.newHttpClient();
 
@@ -45,7 +47,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
     private PublishInfo info_ = new PublishInfo();
-    private PublishProperties properties_ = new PublishProperties();
+    private PublishProperties publishProperties_ = new PublishProperties();
     private final List<PublishArtifact> artifacts_ = new ArrayList<>();
 
     /**
@@ -121,7 +123,8 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
             // determine which build number to use
             var snapshot_build_number = 1;
             try {
-                var resolver = new DependencyResolver(artifactRetriever(), List.of(repository), new Dependency(info().groupId(), info().artifactId(), info().version()));
+                var resolution = new VersionResolution(properties());
+                var resolver = new DependencyResolver(resolution, artifactRetriever(), List.of(repository), new Dependency(info().groupId(), info().artifactId(), info().version()));
                 var snapshot_meta = resolver.getSnapshotMavenMetadata();
                 snapshot_build_number = snapshot_meta.getSnapshotBuildNumber() + 1;
             } catch (DependencyException e) {
@@ -191,7 +194,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
         // generate and upload pom
         executePublishStringArtifact(
             repository,
-            new PomBuilder().properties(properties()).info(info()).dependencies(dependencies()).build(),
+            new PomBuilder().properties(publishProperties()).info(info()).dependencies(dependencies()).build(),
             info().version() + "/" + info().artifactId() + "-" + actualVersion + ".pom", true);
     }
 
@@ -204,7 +207,8 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      */
     protected void executePublishMetadata(Repository repository, ZonedDateTime moment) {
         var current_versions = new ArrayList<VersionNumber>();
-        var resolver = new DependencyResolver(artifactRetriever(), List.of(repository), new Dependency(info().groupId(), info().artifactId(), info().version()));
+        var resolution = new VersionResolution(properties());
+        var resolver = new DependencyResolver(resolution, artifactRetriever(), List.of(repository), new Dependency(info().groupId(), info().artifactId(), info().version()));
         try {
             current_versions.addAll(resolver.getMavenMetadata().getVersions());
         } catch (DependencyException e) {
@@ -498,10 +502,11 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      */
     public PublishOperation fromProject(BaseProject project) {
         if (project.javaRelease() != null) {
-            properties()
+            publishProperties()
                 .mavenCompilerSource(project.javaRelease())
                 .mavenCompilerTarget(project.javaRelease());
         }
+        properties(project.properties());
         artifactRetriever(project.artifactRetriever());
         dependencies().include(project.dependencies());
         artifacts(List.of(
@@ -604,10 +609,10 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      *
      * @param properties the publication properties
      * @return this operation instance
-     * @since 2.0.0
+     * @since 2.0
      */
-    public PublishOperation properties(PublishProperties properties) {
-        properties_ = properties;
+    public PublishOperation publishProperties(PublishProperties properties) {
+        publishProperties_ = properties;
         return this;
     }
 
@@ -662,6 +667,18 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
     }
 
     /**
+     * Provides the hierarchical properties to use.
+     *
+     * @param properties the hierarchical properties
+     * @return this operation instance
+     * @since 2.0
+     */
+    public PublishOperation properties(HierarchicalProperties properties) {
+        properties_ = properties;
+        return this;
+    }
+
+    /**
      * Retrieves the repositories to which will be published.
      * <p>
      * This is a modifiable list that can be retrieved and changed.
@@ -691,10 +708,10 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * This is a modifiable structure that can be retrieved and changed.
      *
      * @return the publication properties
-     * @since 2.0.0
+     * @since 2.0
      */
-    public PublishProperties properties() {
-        return properties_;
+    public PublishProperties publishProperties() {
+        return publishProperties_;
     }
 
     /**
@@ -732,5 +749,18 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
             return ArtifactRetriever.instance();
         }
         return retriever_;
+    }
+
+    /**
+     * Returns the hierarchical properties that are used.
+     *
+     * @return the hierarchical properties
+     * @since 2.0
+     */
+    public HierarchicalProperties properties() {
+        if (properties_ == null) {
+            properties_ = new HierarchicalProperties();
+        }
+        return properties_;
     }
 }

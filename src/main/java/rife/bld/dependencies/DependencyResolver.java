@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
  * @since 1.5
  */
 public class DependencyResolver {
+    private final VersionResolution resolution_;
     private final ArtifactRetriever retriever_;
     private final List<Repository> repositories_;
     private final Dependency dependency_;
@@ -30,12 +31,14 @@ public class DependencyResolver {
      * <p>
      * The repositories will be checked in the order they're listed.
      *
+     * @param resolution   the version resolution state that can be cached
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the resolution
      * @param dependency   the dependency to resolve
-     * @since 1.5.18
+     * @since 2.0
      */
-    public DependencyResolver(ArtifactRetriever retriever, List<Repository> repositories, Dependency dependency) {
+    public DependencyResolver(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, Dependency dependency) {
+        resolution_ = resolution;
         retriever_ = retriever;
         if (repositories == null) {
             repositories = Collections.emptyList();
@@ -64,7 +67,6 @@ public class DependencyResolver {
         }
     }
 
-
     /**
      * Resolves the dependency version in the provided repositories.
      * <p>
@@ -77,7 +79,7 @@ public class DependencyResolver {
      * @since 1.5
      */
     public VersionNumber resolveVersion() {
-        var version = dependency_.version();
+        var version = resolution_.overrideVersion(dependency_);
         if (version.equals(VersionNumber.UNKNOWN)) {
             return latestVersion();
         }
@@ -98,7 +100,7 @@ public class DependencyResolver {
         var pom_dependencies = getMavenPom(dependency_).getDependencies(scopes);
         var result = new DependencySet();
         for (var dependency : pom_dependencies) {
-            result.add(dependency.convertToDependency());
+            result.add(resolution_.overrideDependency(dependency.convertToDependency()));
         }
         return result;
     }
@@ -118,11 +120,12 @@ public class DependencyResolver {
      */
     public DependencySet getAllDependencies(Scope... scopes) {
         var result = new DependencySet();
-        result.add(dependency_);
+        var overridden = resolution_.overrideDependency(dependency_);
+        result.add(overridden);
 
         var dependency_queue = new ArrayList<PomDependency>();
 
-        var parent = dependency_;
+        var parent = overridden;
         var next_dependencies = getMavenPom(parent).getDependencies(scopes);
 
         while (parent != null && next_dependencies != null) {
@@ -142,7 +145,7 @@ public class DependencyResolver {
             // part of the results yet
             while (!dependency_queue.isEmpty()) {
                 var candidate = dependency_queue.remove(0);
-                var dependency = candidate.convertToDependency();
+                var dependency = resolution_.overrideDependency(candidate.convertToDependency());
                 if (!result.contains(dependency)) {
                     result.add(dependency);
 
@@ -150,7 +153,7 @@ public class DependencyResolver {
                     // dependencies so that they can be added to the queue after
                     // filtering
                     parent = dependency;
-                    next_dependencies = new DependencyResolver(retriever_, repositories_, dependency).getMavenPom(parent).getDependencies(scopes);
+                    next_dependencies = new DependencyResolver(resolution_, retriever_, repositories_, dependency).getMavenPom(parent).getDependencies(scopes);
                     break;
                 }
             }
@@ -256,6 +259,16 @@ public class DependencyResolver {
      */
     public Dependency dependency() {
         return dependency_;
+    }
+
+    /**
+     * Returns the version resolution state that can be cached.
+     *
+     * @return the version resolution state
+     * @since 2.0
+     */
+    public VersionResolution resolution() {
+        return resolution_;
     }
 
     /**
@@ -435,7 +448,7 @@ public class DependencyResolver {
             throw new ArtifactNotFoundException(dependency_, location);
         }
 
-        var xml = new Xml2MavenPom(parent, retriever_, repositories_);
+        var xml = new Xml2MavenPom(parent, resolution_, retriever_, repositories_);
         if (!xml.processXml(pom)) {
             throw new DependencyXmlParsingErrorException(dependency_, retrieved_artifact.location(), xml.getErrors());
         }
