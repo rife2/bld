@@ -41,6 +41,7 @@ public class Wrapper {
 
     public static final String BUILD_ARGUMENT = "--build";
     public static final String JSON_ARGUMENT = "--json";
+    public static final String HELP_COMMAND = "help";
 
     static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2/";
     static final String SONATYPE_SNAPSHOTS = "https://s01.oss.sonatype.org/content/repositories/snapshots/";
@@ -375,7 +376,7 @@ public class Wrapper {
 
     private int installAndLaunch(List<String> arguments) {
         if (!arguments.isEmpty()) {
-            File current_file = null;
+            File current_file;
             try {
                 current_file = new File(arguments.remove(0)).getCanonicalFile();
             } catch (IOException e) {
@@ -386,9 +387,17 @@ public class Wrapper {
             if (BUILD_ARGUMENT.equals(arguments.get(0))) {
                 launchMode_ = LaunchMode.Build;
                 arguments.remove(0);
+            }
 
-                if (arguments.size() >= 2 && JSON_ARGUMENT.equals(arguments.get(1))) {
-                    launchMode_ = LaunchMode.Json;
+            var help_index = arguments.indexOf(HELP_COMMAND);
+            if (help_index != -1) {
+                try {
+                    if (arguments.get(help_index + 1).equals(JSON_ARGUMENT) ||
+                        arguments.get(help_index + 2).equals(JSON_ARGUMENT)) {
+                        launchMode_ = LaunchMode.Json;
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    // no-op, there are no additional arguments, so definitely no json option
                 }
             }
         }

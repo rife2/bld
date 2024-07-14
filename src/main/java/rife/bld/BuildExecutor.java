@@ -39,7 +39,6 @@ public class BuildExecutor {
     private static final String ARG_HELP3 = "-?";
     private static final String ARG_STACKTRACE1 = "--stacktrace";
     private static final String ARG_STACKTRACE2 = "-s";
-    private static final String ARG_JSON = "--json";
 
     private final HierarchicalProperties properties_;
     private List<String> arguments_ = Collections.emptyList();
@@ -48,7 +47,6 @@ public class BuildExecutor {
     private final AtomicReference<String> currentCommandName_ = new AtomicReference<>();
     private final AtomicReference<CommandDefinition> currentCommandDefinition_ = new AtomicReference<>();
     private int exitStatus_ = 0;
-    private boolean outputJson_ = false;
 
     /**
      * Show the full Java stacktrace when exceptions occur, as opposed
@@ -125,17 +123,6 @@ public class BuildExecutor {
         final HierarchicalProperties properties = new HierarchicalProperties();
         properties.parent(java_properties);
         return properties;
-    }
-
-    /**
-     * Returns whether output should be in the JSON format.
-     *
-     * @return {@code true} if JSON output is enabled;
-     *         or {@code false} otherwise
-     * @since 2.0
-     */
-    public boolean outputJson() {
-        return outputJson_;
     }
 
     /**
@@ -227,10 +214,6 @@ public class BuildExecutor {
     public int execute(String[] arguments) {
         arguments_ = new ArrayList<>(Arrays.asList(arguments));
 
-        if (!arguments_.isEmpty() && arguments_.get(0).equals(ARG_JSON)) {
-            outputJson_ = true;
-            arguments_.remove(0);
-        }
         var show_help = false;
         show_help |= arguments_.removeAll(List.of(ARG_HELP1, ARG_HELP2, ARG_HELP3));
         showStacktrace = arguments_.removeAll(List.of(ARG_STACKTRACE1, ARG_STACKTRACE2));
@@ -241,12 +224,11 @@ public class BuildExecutor {
             return exitStatus_;
         }
 
-        var json_template = TemplateFactory.JSON.get("bld.executor_execute");
         while (!arguments_.isEmpty()) {
             var command = arguments_.remove(0);
 
             try {
-                if (!executeCommand(json_template, command)) {
+                if (!executeCommand(command)) {
                     break;
                 }
             } catch (Throwable e) {
@@ -256,58 +238,30 @@ public class BuildExecutor {
             }
         }
 
-        if (outputJson() && exitStatus_ == ExitStatusException.EXIT_SUCCESS) {
-            System.out.println(json_template.getContent());
-        }
-
         return exitStatus_;
     }
 
     private void outputCommandExecutionException(Throwable e) {
-        if (outputJson()) {
-            var t = TemplateFactory.JSON.get("bld.executor_error");
-            if (showStacktrace) {
-                t.setValueEncoded("error-message", ExceptionUtils.getExceptionStackTrace(e));
-            }
-            else {
-                boolean first_exception = true;
-                var e2 = e;
-                while (e2 != null) {
-                    if (e2.getMessage() != null) {
-                        t.setValueEncoded("error-message", e2.getMessage());
-                        first_exception = false;
+        System.err.println();
+
+        if (showStacktrace) {
+            System.err.println(ExceptionUtils.getExceptionStackTrace(e));
+        } else {
+            boolean first_exception = true;
+            var e2 = e;
+            while (e2 != null) {
+                if (e2.getMessage() != null) {
+                    if (!first_exception) {
+                        System.err.print("> ");
                     }
-                    e2 = e2.getCause();
+                    System.err.println(e2.getMessage());
+                    first_exception = false;
                 }
-
-                if (first_exception) {
-                    t.setValueEncoded("error-message", ExceptionUtils.getExceptionStackTrace(e));
-                }
+                e2 = e2.getCause();
             }
-            System.out.println(t.getContent());
-        }
-        else {
-            System.err.println();
 
-            if (showStacktrace) {
+            if (first_exception) {
                 System.err.println(ExceptionUtils.getExceptionStackTrace(e));
-            } else {
-                boolean first_exception = true;
-                var e2 = e;
-                while (e2 != null) {
-                    if (e2.getMessage() != null) {
-                        if (!first_exception) {
-                            System.err.print("> ");
-                        }
-                        System.err.println(e2.getMessage());
-                        first_exception = false;
-                    }
-                    e2 = e2.getCause();
-                }
-
-                if (first_exception) {
-                    System.err.println(ExceptionUtils.getExceptionStackTrace(e));
-                }
             }
         }
     }
@@ -453,16 +407,6 @@ public class BuildExecutor {
      */
     public boolean executeCommand(String command)
     throws Throwable {
-        var json_template = TemplateFactory.JSON.get("bld.executor_execute");
-        var result = executeCommand(json_template, command);
-        if (result && outputJson() && exitStatus_ == ExitStatusException.EXIT_SUCCESS) {
-            System.out.println(json_template.getContent());
-        }
-        return result;
-    }
-
-    private boolean executeCommand(Template jsonTemplate, String command)
-    throws Throwable {
         var matched_command = command;
         var definition = buildCommands().get(command);
 
@@ -501,24 +445,13 @@ public class BuildExecutor {
             // only proceed if exactly one match was found
             if (matches.size() == 1) {
                 matched_command = matches.get(0);
-                if (!outputJson()) {
-                    System.out.println("Executing matched command: " + matched_command);
-                }
+                System.out.println("Executing matched command: " + matched_command);
                 definition = buildCommands().get(matched_command);
             }
         }
 
         // execute the command if we found one
         if (definition != null) {
-            var orig_out = System.out;
-            var orig_err = System.err;
-            var out = new ByteArrayOutputStream();
-            var err = new ByteArrayOutputStream();
-            if (outputJson()) {
-                System.setOut(new PrintStream(out, true, StandardCharsets.UTF_8));
-                System.setErr(new PrintStream(err, true, StandardCharsets.UTF_8));
-            }
-
             currentCommandName_.set(matched_command);
             currentCommandDefinition_.set(definition);
             try {
@@ -529,35 +462,12 @@ public class BuildExecutor {
             } finally {
                 currentCommandDefinition_.set(null);
                 currentCommandName_.set(null);
-
-                if (outputJson()) {
-                    if (jsonTemplate.isValueSet("commands")) {
-                        jsonTemplate.setValue("separator", ", ");
-                    }
-                    else {
-                        jsonTemplate.blankValue("separator");
-                    }
-                    jsonTemplate.setValueEncoded("command", matched_command);
-                    jsonTemplate.setValueEncoded("out", out.toString(StandardCharsets.UTF_8));
-                    jsonTemplate.setValueEncoded("err", err.toString(StandardCharsets.UTF_8));
-                    jsonTemplate.appendBlock("commands", "command");
-
-                    System.setOut(orig_out);
-                    System.setErr(orig_err);
-                }
             }
         } else {
             var message = "Unknown command '" + command + "'";
-            if (outputJson()) {
-                var t = TemplateFactory.JSON.get("bld.executor_error");
-                t.setValueEncoded("error-message", message);
-                System.out.println(t.getContent());
-            }
-            else {
-                new HelpOperation(this, arguments()).executePrintOverviewHelp();
-                System.err.println();
-                System.err.println("ERROR: " + message);
-            }
+            new HelpOperation(this, arguments()).executePrintOverviewHelp();
+            System.err.println();
+            System.err.println("ERROR: " + message);
             exitStatus(ExitStatusException.EXIT_FAILURE);
             return false;
         }

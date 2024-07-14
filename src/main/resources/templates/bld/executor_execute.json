@@ -1,8 +1,0 @@
-{
-  "commands": {{{v commands}}{{/v}}{{b command}}{{v separator/}}
-    "{{v command/}}": {
-      "out": "{{v out/}}",
-      "err": "{{v err/}}"
-    }{{/b}}
-  }
-}

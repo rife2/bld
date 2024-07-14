@@ -20,8 +20,11 @@ import static java.util.Comparator.comparingInt;
  * @since 1.5
  */
 public class HelpOperation {
+    private static final String JSON_ARGUMENT = "--json";
+
     private final BuildExecutor executor_;
     private final List<String> arguments_;
+    private boolean outputJson_ = false;
 
     /**
      * Creates a new help operation.
@@ -43,15 +46,25 @@ public class HelpOperation {
     public void execute() {
         var topic = "";
         if (!arguments_.isEmpty()) {
-            topic = arguments_.remove(0);
+            if (arguments_.get(0).equals(JSON_ARGUMENT)) {
+                arguments_.remove(0);
+                outputJson_ = true;
+            }
+            else {
+                topic = arguments_.remove(0);
+            }
+        }
+        if (!arguments_.isEmpty() && arguments_.get(0).equals(JSON_ARGUMENT)) {
+            arguments_.remove(0);
+            outputJson_ = true;
         }
 
-        if (!executor_.outputJson()) {
+        if (!outputJson_) {
             System.err.println("Welcome to bld " + BldVersion.getVersion() + ".");
             System.err.println();
         }
 
-        boolean print_full_help = true;
+        var print_full_help = true;
         Exception exception = null;
         try {
             var commands = executor_.buildCommands();
@@ -59,7 +72,7 @@ public class HelpOperation {
                 var command = commands.get(topic);
                 var help = command.getHelp().getDescription(topic);
                 if (!help.isEmpty()) {
-                    if (executor_.outputJson()) {
+                    if (outputJson_) {
                         var t = TemplateFactory.JSON.get("bld.help_description");
                         t.setValueEncoded("command", topic);
                         t.setValueEncoded("description", help);
@@ -93,7 +106,7 @@ public class HelpOperation {
     private void executePrintOverviewHelp(Exception exception) {
         var commands = executor_.buildCommands();
 
-        if (executor_.outputJson()) {
+        if (outputJson_) {
             var t = TemplateFactory.JSON.get("bld.help_commands");
 
             if (exception != null) {
@@ -125,8 +138,9 @@ public class HelpOperation {
                 perform specific tasks. The help command provides more information about
                 the other commands.
                 
-                Usage: help [command]
-    
+                Usage: help [command] [""" + JSON_ARGUMENT + "]");
+            System.err.println("""
+
                 The following commands are supported.
                 """);
 
@@ -141,10 +155,10 @@ public class HelpOperation {
 
             System.err.println("""
                 
+                  --json            Output help in JSON format
                   -?, -h, --help    Shows this help message
                   -D<name>=<value>  Set a JVM system property
                   -s, --stacktrace  Print out the stacktrace for exceptions
-                  --json            Output in JSON format (only as first argument)
                 """);
         }
     }
