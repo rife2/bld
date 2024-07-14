@@ -6,6 +6,7 @@ package rife.bld.operations;
 
 import rife.bld.BaseProject;
 import rife.bld.BldVersion;
+import rife.bld.BuildExecutor;
 import rife.bld.dependencies.*;
 import rife.bld.wrapper.Wrapper;
 import rife.ioc.HierarchicalProperties;
@@ -24,6 +25,7 @@ import static rife.bld.dependencies.Scope.*;
  */
 public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOperation> {
     private HierarchicalProperties properties_ = null;
+    private HierarchicalProperties extensionProperties_ = null;
     private ArtifactRetriever retriever_ = null;
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
@@ -68,7 +70,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 2.0
      */
     protected String executeGenerateExtensionsDependencies() {
-        var extensions_tree = extensionDependencies().scope(compile).generateTransitiveDependencyTree(new VersionResolution(properties()), artifactRetriever(), extensionRepositories(), compile, runtime);
+        var extensions_tree = extensionDependencies().scope(compile).generateTransitiveDependencyTree(new VersionResolution(extensionProperties()), artifactRetriever(), extensionRepositories(), compile, runtime);
         if (extensions_tree.isEmpty()) {
             extensions_tree = "no dependencies" + System.lineSeparator();
         }
@@ -140,8 +142,14 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
         wrapper.currentDir(project.workDirectory());
         try {
             wrapper.initWrapperProperties(BldVersion.getVersion());
+
+            var extension_properties = BuildExecutor.setupProperties(project.workDirectory());
+            extension_properties = new HierarchicalProperties().parent(extension_properties);
+            extension_properties.putAll(wrapper.wrapperProperties());
+            extensionProperties(extension_properties);
+
             for (var repository : wrapper.repositories()) {
-                extensionRepositories().add(Repository.resolveRepository(project.properties(), repository));
+                extensionRepositories().add(Repository.resolveRepository(extensionProperties(), repository));
             }
             extensionDependencies().scope(compile).addAll(wrapper.extensions().stream().map(Dependency::parse).toList());
         } catch (IOException e) {
@@ -256,6 +264,18 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
     }
 
     /**
+     * Provides the extension hierarchical properties to use.
+     *
+     * @param properties the extension hierarchical properties
+     * @return this operation instance
+     * @since 2.0
+     */
+    public DependencyTreeOperation extensionProperties(HierarchicalProperties properties) {
+        extensionProperties_ = properties;
+        return this;
+    }
+
+    /**
      * Retrieves the repositories in which the dependencies will be resolved.
      * <p>
      * This is a modifiable list that can be retrieved and changed.
@@ -337,5 +357,18 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
             properties_ = new HierarchicalProperties();
         }
         return properties_;
+    }
+
+    /**
+     * Returns the extension hierarchical properties that are used.
+     *
+     * @return the extension hierarchical properties
+     * @since 2.0
+     */
+    public HierarchicalProperties extensionProperties() {
+        if (extensionProperties_ == null) {
+            extensionProperties_ = new HierarchicalProperties();
+        }
+        return extensionProperties_;
     }
 }

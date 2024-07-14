@@ -1618,6 +1618,7 @@ public class BaseProject extends BuildExecutor {
     private String createHash() {
         var resolution = new VersionResolution(properties());
         var finger_print = new StringBuilder();
+        finger_print.append(String.join("\n", resolution.versionOverrides().entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).toList()));
         for (var repository : repositories()) {
             finger_print.append(repository.toString());
             finger_print.append('\n');
@@ -1627,7 +1628,7 @@ public class BaseProject extends BuildExecutor {
             finger_print.append('\n');
             if (entry.getValue() != null) {
                 for (var dependency : entry.getValue()) {
-                    finger_print.append(resolution.overrideDependency(dependency).toString());
+                    finger_print.append(dependency.toString());
                     finger_print.append('\n');
                 }
             }

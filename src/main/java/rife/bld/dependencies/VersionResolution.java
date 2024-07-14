@@ -112,4 +112,14 @@ public class VersionResolution {
             original.exclusions(),
             original.parent());
     }
+
+    /**
+     * Returns the map of version overrides, where the key is the name of the dependency and the value is the overridden version.
+     *
+     * @return the map of version overrides
+     * @since 2.0
+     */
+    public Map<String, VersionNumber> versionOverrides() {
+        return versionOverrides_;
+    }
 }

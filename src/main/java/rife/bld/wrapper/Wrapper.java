@@ -305,6 +305,22 @@ public class Wrapper {
         return extensions_;
     }
 
+    /**
+     * Returns the wrapper properties.
+     *
+     * @return the wrapper properties
+     * @since 2.0
+     */
+    public Properties wrapperProperties() {
+        return wrapperProperties_;
+    }
+
+    /**
+     * Returns the wrapper properties file.
+     *
+     * @return the wrapper properties file
+     * @since 2.0
+     */
     public File wrapperPropertiesFile() {
         return wrapperPropertiesFile_;
     }

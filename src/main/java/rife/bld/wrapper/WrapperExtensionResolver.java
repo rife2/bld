@@ -29,7 +29,6 @@ import static rife.bld.dependencies.Dependency.CLASSIFIER_SOURCES;
  * @since 1.5.8
  */
 public class WrapperExtensionResolver {
-    private final HierarchicalProperties properties_;
     private final VersionResolution resolution_;
     private final ArtifactRetriever retriever_;
     private final File hashFile_;
@@ -49,20 +48,20 @@ public class WrapperExtensionResolver {
                                     boolean downloadSources, boolean downloadJavadoc) {
         var properties = BuildExecutor.setupProperties(currentDir);
         properties.getRoot().putAll(jvmProperties);
-        properties_ = new HierarchicalProperties().parent(properties);
-        properties_.putAll(wrapperProperties);
+        properties = new HierarchicalProperties().parent(properties);
+        properties.putAll(wrapperProperties);
 
-        resolution_ = new VersionResolution(properties_);
+        resolution_ = new VersionResolution(properties);
 
         retriever_ = ArtifactRetriever.cachingInstance();
-        Repository.resolveMavenLocal(properties_);
+        Repository.resolveMavenLocal(properties);
 
         hashFile_ = hashFile;
 
         destinationDirectory_ = destinationDirectory;
 
         for (var repository : repositories) {
-            repositories_.add(Repository.resolveRepository(properties_, repository));
+            repositories_.add(Repository.resolveRepository(properties, repository));
         }
 
         dependencies_.addAll(extensions.stream().map(d -> resolution_.overrideDependency(Dependency.parse(d))).toList());
@@ -70,14 +69,18 @@ public class WrapperExtensionResolver {
         downloadSources_ = downloadSources;
         downloadJavadoc_ = downloadJavadoc;
         fingerPrintHash_ = createHash(
+            resolution_,
             repositories_.stream().map(Objects::toString).toList(),
             dependencies_.stream().map(Objects::toString).toList(),
             downloadSources, downloadJavadoc);
     }
 
-    private String createHash(Collection<String> repositories, Collection<String> extensions, boolean downloadSources, boolean downloadJavadoc) {
+    private static String createHash(VersionResolution resolution, Collection<String> repositories, Collection<String> extensions, boolean downloadSources, boolean downloadJavadoc) {
         try {
-            var fingerprint = String.join("\n", repositories) + "\n" + String.join("\n", extensions) + "\n" + downloadSources + "\n" + downloadJavadoc;
+            var overrides_fp = String.join("\n", resolution.versionOverrides().entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).toList());
+            var repositories_fp = String.join("\n", repositories);
+            var extensions_fp = String.join("\n", extensions);
+            var fingerprint = overrides_fp + "\n" + repositories_fp + "\n" + extensions_fp + "\n" + downloadSources + "\n" + downloadJavadoc;
             var digest = MessageDigest.getInstance("SHA-1");
             digest.update(fingerprint.getBytes(StandardCharsets.UTF_8));
             return StringUtils.encodeHexLower(digest.digest());
