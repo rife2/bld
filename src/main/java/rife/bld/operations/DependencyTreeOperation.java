@@ -24,6 +24,7 @@ import static rife.bld.dependencies.Scope.*;
  * @since 1.5.21
  */
 public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOperation> {
+    private boolean offline_ = false;
     private HierarchicalProperties properties_ = null;
     private HierarchicalProperties extensionProperties_ = null;
     private ArtifactRetriever retriever_ = null;
@@ -40,6 +41,11 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.5.21
      */
     public void execute() {
+        if (offline_) {
+            System.out.println("Offline mode: dependency-tree is disabled");
+            return;
+        }
+
         var extensions_tree = executeGenerateExtensionsDependencies();
         var compile_tree = executeGenerateCompileDependencies();
         var provided_tree = executeGenerateProvidedDependencies();
@@ -157,10 +163,35 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
         }
 
         // add the repositories and the dependencies from the project
-        return properties(project.properties())
+        return offline(project.offline())
+            .properties(project.properties())
             .artifactRetriever(project.artifactRetriever())
             .repositories(project.repositories())
             .dependencies(project.dependencies());
+    }
+
+    /**
+     * Indicates whether the operation has to run offline.
+     *
+     * @param flag {@code true} if the operation runs offline; or
+     *             {@code false} otherwise
+     * @return this operation instance
+     * @since 2.0
+     */
+    public DependencyTreeOperation offline(boolean flag) {
+        offline_ = flag;
+        return this;
+    }
+
+    /**
+     * Returns whether the operation has to run offline.
+     *
+     * @return {@code true} if the operation runs offline; or
+     *         {@code false} otherwise
+     * @since 2.0
+     */
+    public boolean offline() {
+        return offline_;
     }
 
     /**

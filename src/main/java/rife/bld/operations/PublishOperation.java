@@ -39,6 +39,7 @@ import static rife.tools.StringUtils.encodeHexLower;
  * @since 1.5.7
  */
 public class PublishOperation extends AbstractOperation<PublishOperation> {
+    private boolean offline_ = false;
     private HierarchicalProperties properties_ = null;
     private ArtifactRetriever retriever_ = null;
     private final HttpClient client_ = HttpClient.newHttpClient();
@@ -56,6 +57,11 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * @since 1.5.7
      */
     public void execute() {
+        if (offline_) {
+            System.out.println("Offline mode: publish is disabled");
+            return;
+        }
+
         if (repositories().isEmpty()) {
             throw new OperationOptionException("ERROR: the publication repositories should be specified");
         }
@@ -506,6 +512,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
                 .mavenCompilerSource(project.javaRelease())
                 .mavenCompilerTarget(project.javaRelease());
         }
+        offline(project.offline());
         properties(project.properties());
         artifactRetriever(project.artifactRetriever());
         dependencies().include(project.dependencies());
@@ -526,6 +533,30 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
             info().name(project.name());
         }
         return this;
+    }
+
+    /**
+     * Indicates whether the operation has to run offline.
+     *
+     * @param flag {@code true} if the operation runs offline; or
+     *             {@code false} otherwise
+     * @return this operation instance
+     * @since 2.0
+     */
+    public PublishOperation offline(boolean flag) {
+        offline_ = flag;
+        return this;
+    }
+
+    /**
+     * Returns whether the operation has to run offline.
+     *
+     * @return {@code true} if the operation runs offline; or
+     *         {@code false} otherwise
+     * @since 2.0
+     */
+    public boolean offline() {
+        return offline_;
     }
 
     /**

@@ -25,6 +25,7 @@ import static rife.bld.dependencies.Dependency.CLASSIFIER_SOURCES;
  * @since 1.5
  */
 public class PurgeOperation extends AbstractOperation<PurgeOperation> {
+    private boolean offline_ = false;
     private HierarchicalProperties properties_ = null;
     private ArtifactRetriever retriever_ = null;
     private final List<Repository> repositories_ = new ArrayList<>();
@@ -43,6 +44,11 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     public void execute() {
+        if (offline_) {
+            System.out.println("Offline mode: purge is disabled");
+            return;
+        }
+
         executePurgeCompileDependencies();
         executePurgeProvidedDependencies();
         executePurgeRuntimeDependencies();
@@ -147,7 +153,8 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     public PurgeOperation fromProject(BaseProject project) {
-        return properties(project.properties())
+        return offline(project.offline())
+            .properties(project.properties())
             .artifactRetriever(project.artifactRetriever())
             .repositories(project.repositories())
             .dependencies(project.dependencies())
@@ -158,6 +165,30 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
             .libTestDirectory(project.libTestDirectory())
             .preserveSources(project.downloadSources())
             .preserveJavadoc(project.downloadJavadoc());
+    }
+
+    /**
+     * Indicates whether the operation has to run offline.
+     *
+     * @param flag {@code true} if the operation runs offline; or
+     *             {@code false} otherwise
+     * @return this operation instance
+     * @since 2.0
+     */
+    public PurgeOperation offline(boolean flag) {
+        offline_ = flag;
+        return this;
+    }
+
+    /**
+     * Returns whether the operation has to run offline.
+     *
+     * @return {@code true} if the operation runs offline; or
+     *         {@code false} otherwise
+     * @since 2.0
+     */
+    public boolean offline() {
+        return offline_;
     }
 
     /**

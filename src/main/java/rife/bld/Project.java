@@ -191,12 +191,7 @@ public class Project extends BaseProject {
         jar();
         jarSources();
         jarJavadoc();
-        if (isOffline()) {
-            System.out.println("Offline mode: publish is disabled");
-        }
-        else {
-            publishOperation().executeOnce(() -> publishOperation().fromProject(this));
-        }
+        publishOperation().executeOnce(() -> publishOperation().fromProject(this));
     }
 
     /**

@@ -22,6 +22,7 @@ public class TestDependencyTreeOperation {
     @Test
     void testInstantiation() {
         var operation = new DependencyTreeOperation();
+        assertFalse(operation.offline());
         assertEquals(operation.properties().size(), 0);
         assertTrue(operation.dependencies().isEmpty());
         assertTrue(operation.repositories().isEmpty());
@@ -55,7 +56,9 @@ public class TestDependencyTreeOperation {
         assertTrue(operation2.dependencies().scope(Scope.compile).contains(dependency2));
 
         var operation3 = new DependencyTreeOperation()
+            .offline(true)
             .repositories(repository1, repository2);
+        assertTrue(operation3.offline());
         assertTrue(operation3.repositories().contains(repository1));
         assertTrue(operation3.repositories().contains(repository2));
     }

@@ -9,12 +9,9 @@ import rife.bld.help.HelpHelp;
 import rife.bld.operations.HelpOperation;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.ioc.HierarchicalProperties;
-import rife.template.Template;
-import rife.template.TemplateFactory;
 import rife.tools.ExceptionUtils;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
@@ -134,7 +131,7 @@ public class BuildExecutor {
      *         or {@code false} otherwise
      * @since 2.0
      */
-    public boolean isOffline() {
+    public boolean offline() {
         return offline_;
     }
 

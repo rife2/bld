@@ -485,12 +485,7 @@ public class BaseProject extends BuildExecutor {
     @BuildCommand(value = "dependency-tree", help = DependencyTreeHelp.class)
     public void dependencyTree()
     throws Exception {
-        if (isOffline()) {
-            System.out.println("Offline mode: dependency-tree is disabled");
-        }
-        else {
-            dependencyTreeOperation().executeOnce(() -> dependencyTreeOperation().fromProject(this));
-        }
+        dependencyTreeOperation().executeOnce(() -> dependencyTreeOperation().fromProject(this));
     }
 
     /**
@@ -501,12 +496,7 @@ public class BaseProject extends BuildExecutor {
     @BuildCommand(help = DownloadHelp.class)
     public void download()
     throws Exception {
-        if (isOffline()) {
-            System.out.println("Offline mode: download is disabled");
-        }
-        else {
-            downloadOperation().executeOnce(() -> downloadOperation().fromProject(this));
-        }
+        downloadOperation().executeOnce(() -> downloadOperation().fromProject(this));
     }
 
     /**
@@ -517,12 +507,7 @@ public class BaseProject extends BuildExecutor {
     @BuildCommand(help = PurgeHelp.class)
     public void purge()
     throws Exception {
-        if (isOffline()) {
-            System.out.println("Offline mode: purge is disabled");
-        }
-        else {
-            purgeOperation().executeOnce(() -> purgeOperation().fromProject(this));
-        }
+        purgeOperation().executeOnce(() -> purgeOperation().fromProject(this));
     }
 
     /**
@@ -1689,7 +1674,7 @@ public class BaseProject extends BuildExecutor {
 
     @Override
     public int execute(String[] arguments) {
-        if (!isOffline() &&
+        if (!offline() &&
             autoDownloadPurge()) {
             performAutoDownloadPurge();
         }

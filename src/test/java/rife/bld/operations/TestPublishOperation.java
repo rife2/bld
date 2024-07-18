@@ -60,6 +60,7 @@ public class TestPublishOperation {
     @Test
     void testInstantiation() {
         var operation = new PublishOperation();
+        assertFalse(operation.offline());
         assertTrue(operation.repositories().isEmpty());
         assertNull(operation.moment());
         assertTrue(operation.dependencies().isEmpty());
@@ -109,10 +110,12 @@ public class TestPublishOperation {
         assertTrue(operation2.artifacts().contains(artifact2));
 
         var operation3 = new PublishOperation()
+            .offline(true)
             .repository(repository1)
             .repository(repository2)
             .moment(moment)
             .artifacts(List.of(artifact1, artifact2));
+        assertTrue(operation3.offline());
         operation3.publishProperties().mavenCompilerSource(17).mavenCompilerTarget(19);
         assertTrue(operation3.repositories().contains(repository1));
         assertTrue(operation3.repositories().contains(repository2));

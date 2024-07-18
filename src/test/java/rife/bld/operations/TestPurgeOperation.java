@@ -19,6 +19,7 @@ public class TestPurgeOperation {
     @Test
     void testInstantiation() {
         var operation = new PurgeOperation();
+        assertFalse(operation.offline());
         assertTrue(operation.dependencies().isEmpty());
         assertTrue(operation.repositories().isEmpty());
         assertNull(operation.libCompileDirectory());
@@ -81,7 +82,9 @@ public class TestPurgeOperation {
         assertEquals(dir5, operation2.libTestDirectory());
 
         var operation3 = new PurgeOperation()
+            .offline(true)
             .repositories(repository1, repository2);
+        assertTrue(operation3.offline());
         assertTrue(operation3.repositories().contains(repository1));
         assertTrue(operation3.repositories().contains(repository2));
     }
