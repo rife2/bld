@@ -34,6 +34,7 @@ public class BuildExecutor {
     public static final String BLD_PROPERTIES = "bld.properties";
     public static final String LOCAL_PROPERTIES = "local.properties";
 
+    private static final String ARG_OFFLINE = "--offline";
     private static final String ARG_HELP1 = "--help";
     private static final String ARG_HELP2 = "-h";
     private static final String ARG_HELP3 = "-?";
@@ -42,6 +43,7 @@ public class BuildExecutor {
 
     private final HierarchicalProperties properties_;
     private List<String> arguments_ = Collections.emptyList();
+    private boolean offline_ = false;
     private Map<String, CommandDefinition> buildCommands_ = null;
     private Map<String, String> buildAliases_ = null;
     private final AtomicReference<String> currentCommandName_ = new AtomicReference<>();
@@ -126,7 +128,18 @@ public class BuildExecutor {
     }
 
     /**
-     * Returns the properties uses by this conversation.
+     * Returns whether the bld execution is intended to be offline.
+     *
+     * @return {@code true} if the execution is intended to be offline;
+     *         or {@code false} otherwise
+     * @since 2.0
+     */
+    public boolean isOffline() {
+        return offline_;
+    }
+
+    /**
+     * Returns the properties uses for bld execution.
      *
      * @return the instance of {@code HierarchicalProperties} that is used
      * by this build executor
@@ -275,6 +288,11 @@ public class BuildExecutor {
      * @since 1.5.1
      */
     public void start(String[] arguments) {
+        if (arguments.length > 0 && arguments[0].equals(ARG_OFFLINE)) {
+            offline_ = true;
+            arguments = Arrays.copyOfRange(arguments, 1, arguments.length);
+        }
+
         System.exit(execute(arguments));
     }
 

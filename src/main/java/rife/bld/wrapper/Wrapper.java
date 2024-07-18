@@ -41,6 +41,7 @@ public class Wrapper {
 
     public static final String BUILD_ARGUMENT = "--build";
     public static final String JSON_ARGUMENT = "--json";
+    public static final String OFFLINE_ARGUMENT = "--offline";
     public static final String HELP_COMMAND = "help";
 
     static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2/";
@@ -79,6 +80,7 @@ public class Wrapper {
 
     private File currentDir_ = new File(System.getProperty("user.dir"));
     private LaunchMode launchMode_ = LaunchMode.Cli;
+    private boolean offline_ = false;
 
     private final Properties jvmProperties_ = new Properties();
     private final Properties wrapperProperties_ = new Properties();
@@ -389,6 +391,15 @@ public class Wrapper {
                 arguments.remove(0);
             }
 
+            // first argument after the --build argument is the main build file
+            // arguments.get(0)
+
+            // check if the next argument enables offline mode
+            if (arguments.size() >= 2 &&
+                OFFLINE_ARGUMENT.equals(arguments.get(1))) {
+                offline_ = true;
+            }
+
             var help_index = arguments.indexOf(HELP_COMMAND);
             if (help_index != -1) {
                 try {
@@ -405,12 +416,7 @@ public class Wrapper {
         try {
             extractJvmProperties(arguments);
             initWrapperProperties(getVersion());
-            File distribution;
-            try {
-                distribution = installDistribution();
-            } catch (IOException e) {
-                return -1;
-            }
+            var distribution = installDistribution();
             return launchMain(distribution, arguments);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -513,25 +519,29 @@ public class Wrapper {
         var download_version = version;
         var is_snapshot = isSnapshot(version);
         var is_local = false;
-        if (is_snapshot) {
-            var meta_data = "";
-            try {
-                meta_data = readString(version, new URL(downloadUrl(version, "maven-metadata.xml")));
-            }
-            catch (IOException e) {
+        if (offline_) {
+            System.out.println("Offline mode: no artifacts will be checked nor downloaded");
+            System.out.flush();
+        }
+        else {
+            if (is_snapshot) {
+                var meta_data = "";
                 try {
-                    meta_data = readString(version, new URL(downloadUrl(version, "maven-metadata-local.xml")));
+                    meta_data = readString(version, new URL(downloadUrl(version, "maven-metadata.xml")));
+                } catch (IOException e) {
+                    try {
+                        meta_data = readString(version, new URL(downloadUrl(version, "maven-metadata-local.xml")));
+                    } catch (IOException e2) {
+                        throw e;
+                    }
                 }
-                catch (IOException e2) {
-                    throw e;
-                }
-            }
-            var local_matcher = META_DATA_LOCAL_COPY.matcher(meta_data);
-            is_local = local_matcher.find();
-            if (!is_local) {
-                var version_matcher = META_DATA_SNAPSHOT_VERSION.matcher(meta_data);
-                if (version_matcher.find()) {
-                    download_version = version_matcher.group(1);
+                var local_matcher = META_DATA_LOCAL_COPY.matcher(meta_data);
+                is_local = local_matcher.find();
+                if (!is_local) {
+                    var version_matcher = META_DATA_SNAPSHOT_VERSION.matcher(meta_data);
+                    if (version_matcher.find()) {
+                        download_version = version_matcher.group(1);
+                    }
                 }
             }
         }
@@ -539,40 +549,42 @@ public class Wrapper {
         var distribution_file = new File(DISTRIBUTIONS_DIR, bldFileName(version));
         var distribution_sources_file = new File(DISTRIBUTIONS_DIR, bldSourcesFileName(version));
 
-        // if this is a snapshot and the distribution file exists,
-        // ensure that it's the latest by comparing hashes
-        if (is_snapshot && distribution_file.exists()) {
-            boolean delete_distribution_files = is_local;
-            if (!delete_distribution_files) {
-                var download_md5 = readString(version, new URL(downloadUrl(version, bldFileName(download_version)) + ".md5"));
-                try {
-                    var digest = MessageDigest.getInstance("MD5");
-                    digest.update(FileUtils.readBytes(distribution_file));
-                    if (!download_md5.equals(encodeHexLower(digest.digest()))) {
-                        delete_distribution_files = true;
+        if (!offline_) {
+            // if this is a snapshot and the distribution file exists,
+            // ensure that it's the latest by comparing hashes
+            if (is_snapshot && distribution_file.exists()) {
+                boolean delete_distribution_files = is_local;
+                if (!delete_distribution_files) {
+                    var download_md5 = readString(version, new URL(downloadUrl(version, bldFileName(download_version)) + ".md5"));
+                    try {
+                        var digest = MessageDigest.getInstance("MD5");
+                        digest.update(FileUtils.readBytes(distribution_file));
+                        if (!download_md5.equals(encodeHexLower(digest.digest()))) {
+                            delete_distribution_files = true;
+                        }
+                    } catch (NoSuchAlgorithmException ignore) {
                     }
-                } catch (NoSuchAlgorithmException ignore) {
                 }
+
+                if (delete_distribution_files) {
+                    distribution_file.delete();
+                    if (distribution_sources_file.exists()) {
+                        distribution_sources_file.delete();
+                    }
+                }
+
             }
 
-            if (delete_distribution_files) {
-                distribution_file.delete();
-                if (distribution_sources_file.exists()) {
-                    distribution_sources_file.delete();
-                }
+            // download distribution jars if necessary
+            if (!distribution_file.exists()) {
+                downloadDistribution(distribution_file, downloadUrl(version, bldFileName(download_version)));
             }
-
-        }
-
-        // download distribution jars if necessary
-        if (!distribution_file.exists()) {
-            downloadDistribution(distribution_file, downloadUrl(version, bldFileName(download_version)));
-        }
-        if (!distribution_sources_file.exists()) {
-            try {
-                downloadDistribution(distribution_sources_file, downloadUrl(version, bldSourcesFileName(download_version)));
-            } catch (IOException e) {
-                // this is not critical, ignore
+            if (!distribution_sources_file.exists()) {
+                try {
+                    downloadDistribution(distribution_sources_file, downloadUrl(version, bldSourcesFileName(download_version)));
+                } catch (IOException e) {
+                    // this is not critical, ignore
+                }
             }
         }
 
@@ -618,7 +630,8 @@ public class Wrapper {
 
     private void resolveExtensions() {
         if (null == classloader_ ||
-            null == wrapperPropertiesFile_) {
+            null == wrapperPropertiesFile_ ||
+            offline_) {
             return;
         }
 

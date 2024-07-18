@@ -155,6 +155,7 @@ public class HelpOperation {
 
             System.err.println("""
                 
+                  --offline         Work without internet (only as first argument)
                   --json            Output help in JSON format
                   -?, -h, --help    Shows this help message
                   -D<name>=<value>  Set a JVM system property
