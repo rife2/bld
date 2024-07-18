@@ -60,8 +60,7 @@ public class HelpOperation {
         }
 
         if (!outputJson_) {
-            System.err.println("Welcome to bld " + BldVersion.getVersion() + ".");
-            System.err.println();
+            executePrintWelcome();
         }
 
         var print_full_help = true;
@@ -93,19 +92,7 @@ public class HelpOperation {
         }
     }
 
-    /**
-     * Part of the {@link #execute} operation, prints the help overview
-     * with summaries of all build commands.
-     *
-     * @since 1.5
-     */
-    public void executePrintOverviewHelp() {
-        executePrintOverviewHelp(null);
-    }
-
     private void executePrintOverviewHelp(Exception exception) {
-        var commands = executor_.buildCommands();
-
         if (outputJson_) {
             var t = TemplateFactory.JSON.get("bld.help_commands");
 
@@ -113,6 +100,7 @@ public class HelpOperation {
                 t.setValueEncoded("error-message", ExceptionUtils.getExceptionStackTrace(exception));
             }
 
+            var commands = executor_.buildCommands();
             for (var command : commands.entrySet()) {
                 if (t.isValueSet("commands")) {
                     t.setValue("separator", ", ");
@@ -139,33 +127,72 @@ public class HelpOperation {
                 the other commands.
                 
                 Usage: help [command] [""" + JSON_ARGUMENT + "]");
-            System.err.println("""
+
+            executePrintCommands();
+            executePrintHelpArguments();
+            executePrintBldArguments();
+        }
+    }
+
+    /**
+     * Part of the {@link #execute} operation, prints the welcome message.
+     *
+     * @since 2.0
+     */
+    public void executePrintWelcome() {
+        System.err.println("Welcome to bld " + BldVersion.getVersion() + ".");
+        System.err.println();
+    }
+
+    /**
+     * Part of the {@link #execute} operation, prints the summaries of all supported build commands.
+     *
+     * @since 2.0
+     */
+    public void executePrintCommands() {
+        System.err.println("""
 
                 The following commands are supported:
                 """);
 
-            var command_length = commands.keySet().stream().max(comparingInt(String::length)).get().length() + 2;
-            for (var command : commands.entrySet()) {
-                System.err.print("  ");
-                System.err.printf("%-" + command_length + "s", command.getKey());
-                var build_help = command.getValue().getHelp();
-                System.err.print(build_help.getSummary());
-                System.err.println();
-            }
+        var commands = executor_.buildCommands();
+        var command_length = commands.keySet().stream().max(comparingInt(String::length)).get().length() + 2;
+        for (var command : commands.entrySet()) {
+            System.err.print("  ");
+            System.err.printf("%-" + command_length + "s", command.getKey());
+            var build_help = command.getValue().getHelp();
+            System.err.print(build_help.getSummary());
+            System.err.println();
+        }
+    }
 
-            System.err.println("""
+    /**
+     * Part of the {@link #execute} operation, prints the supported help arguments.
+     *
+     * @since 2.0
+     */
+    public void executePrintHelpArguments() {
+        System.err.println("""
                 
                 The following help arguments are supported:
                 
-                  --json            Output help in JSON format
+                  --json            Output help in JSON format""");
+    }
+
+    /**
+     * Part of the {@link #execute} operation, prints the supported bld arguments.
+     *
+     * @since 2.0
+     */
+    public void executePrintBldArguments() {
+        System.err.println("""
                 
                 The following bld arguments are supported:
                 
                   --offline         Work without internet (only as first argument)
-                  -?, -h, --help    Shows this help message
+                  -?, -h, --help    Shows the help
                   -D<name>=<value>  Set a JVM system property
                   -s, --stacktrace  Print out the stacktrace for exceptions
                 """);
-        }
     }
 }

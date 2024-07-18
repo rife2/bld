@@ -227,10 +227,13 @@ public class BuildExecutor {
         var show_help = false;
         show_help |= arguments_.removeAll(List.of(ARG_HELP1, ARG_HELP2, ARG_HELP3));
         showStacktrace = arguments_.removeAll(List.of(ARG_STACKTRACE1, ARG_STACKTRACE2));
-        show_help |= arguments_.isEmpty();
 
         if (show_help) {
             new HelpOperation(this, Collections.emptyList()).execute();
+            return exitStatus_;
+        }
+        else if (arguments_.isEmpty()) {
+            showBldHelp();
             return exitStatus_;
         }
 
@@ -480,13 +483,22 @@ public class BuildExecutor {
             }
         } else {
             var message = "Unknown command '" + command + "'";
-            new HelpOperation(this, arguments()).executePrintOverviewHelp();
-            System.err.println();
+            showBldHelp();
             System.err.println("ERROR: " + message);
             exitStatus(ExitStatusException.EXIT_FAILURE);
             return false;
         }
         return true;
+    }
+
+    private void showBldHelp() {
+        var help = new HelpOperation(this, arguments());
+        help.executePrintWelcome();
+        System.err.println("""
+            The bld CLI provides its features through a series of commands that
+            perform specific tasks.""");
+        help.executePrintCommands();
+        help.executePrintBldArguments();
     }
 
     /**
