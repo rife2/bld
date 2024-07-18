@@ -141,7 +141,7 @@ public class HelpOperation {
                 Usage: help [command] [""" + JSON_ARGUMENT + "]");
             System.err.println("""
 
-                The following commands are supported.
+                The following commands are supported:
                 """);
 
             var command_length = commands.keySet().stream().max(comparingInt(String::length)).get().length() + 2;
@@ -155,8 +155,13 @@ public class HelpOperation {
 
             System.err.println("""
                 
-                  --offline         Work without internet (only as first argument)
+                The following help arguments are supported:
+                
                   --json            Output help in JSON format
+                
+                The following bld arguments are supported:
+                
+                  --offline         Work without internet (only as first argument)
                   -?, -h, --help    Shows this help message
                   -D<name>=<value>  Set a JVM system property
                   -s, --stacktrace  Print out the stacktrace for exceptions
