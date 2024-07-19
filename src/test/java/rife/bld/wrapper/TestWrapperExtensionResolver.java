@@ -26,8 +26,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -38,7 +38,7 @@ public class TestWrapperExtensionResolver {
             var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), Collections.emptySet(), Collections.emptySet(), false, false);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(3, files2.size());
             Collections.sort(files2);
@@ -60,8 +60,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -74,7 +74,7 @@ public class TestWrapperExtensionResolver {
                 List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(10, files2.size());
             Collections.sort(files2);
@@ -103,8 +103,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -119,7 +119,7 @@ public class TestWrapperExtensionResolver {
                 List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(10, files2.size());
             Collections.sort(files2);
@@ -148,8 +148,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -164,7 +164,7 @@ public class TestWrapperExtensionResolver {
                 List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(11, files2.size());
             Collections.sort(files2);
@@ -194,8 +194,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -206,7 +206,7 @@ public class TestWrapperExtensionResolver {
             var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), true, false);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(17, files2.size());
             Collections.sort(files2);
@@ -242,8 +242,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -254,7 +254,7 @@ public class TestWrapperExtensionResolver {
             var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, true);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(17, files2.size());
             Collections.sort(files2);
@@ -290,8 +290,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -302,7 +302,7 @@ public class TestWrapperExtensionResolver {
             var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), true, true);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(24, files2.size());
             Collections.sort(files2);
@@ -345,8 +345,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -361,7 +361,7 @@ public class TestWrapperExtensionResolver {
                 List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), true, true);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(24, files2.size());
             Collections.sort(files2);
@@ -404,8 +404,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -419,7 +419,7 @@ public class TestWrapperExtensionResolver {
             var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of("testrepo"), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(10, files2.size());
             Collections.sort(files2);
@@ -441,15 +441,15 @@ public class TestWrapperExtensionResolver {
     }
 
     @Test
-    void testCheckHash()
+    void testCheckCache()
     throws Exception {
         var tmp1 = Files.createTempDirectory("test1").toFile();
         var tmp2 = Files.createTempDirectory("test2").toFile();
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -460,7 +460,7 @@ public class TestWrapperExtensionResolver {
             var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files = tmp2.listFiles();
             assertEquals(10, files.length);
             Arrays.stream(files).forEach(file -> {
@@ -492,15 +492,15 @@ public class TestWrapperExtensionResolver {
     }
 
     @Test
-    void testDeleteHash()
+    void testDeleteCache()
     throws Exception {
         var tmp1 = Files.createTempDirectory("test1").toFile();
         var tmp2 = Files.createTempDirectory("test2").toFile();
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -511,7 +511,7 @@ public class TestWrapperExtensionResolver {
             var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files = tmp2.listFiles();
             assertEquals(10, files.length);
             Arrays.stream(files).forEach(file -> {
@@ -536,7 +536,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.jar
                 bld-wrapper.properties
                 bld.cache""", String.join("\n", files3));
-            hash_file.delete();
+            assertTrue(cache_file.delete());
 
             resolver.updateExtensions();
             var files4 = FileUtils.getFileList(tmp2);
@@ -560,15 +560,15 @@ public class TestWrapperExtensionResolver {
     }
 
     @Test
-    void testUpdateHash()
+    void testUpdateCache()
     throws Exception {
         var tmp1 = Files.createTempDirectory("test1").toFile();
         var tmp2 = Files.createTempDirectory("test2").toFile();
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -579,7 +579,7 @@ public class TestWrapperExtensionResolver {
             var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files = tmp2.listFiles();
             assertEquals(10, files.length);
             Arrays.stream(files).forEach(file -> {
@@ -604,7 +604,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.jar
                 bld-wrapper.properties
                 bld.cache""", String.join("\n", files3));
-            FileUtils.writeString("updated", hash_file);
+            FileUtils.writeString("updated", cache_file);
 
             resolver.updateExtensions();
             var files4 = FileUtils.getFileList(tmp2);
@@ -635,8 +635,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -647,7 +647,7 @@ public class TestWrapperExtensionResolver {
             var resolver1 = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver1.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(10, files2.size());
             Collections.sort(files2);
@@ -694,8 +694,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -706,7 +706,7 @@ public class TestWrapperExtensionResolver {
             var resolver1 = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1", "org.jsoup:jsoup:1.15.4"), false, false);
             resolver1.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(11, files2.size());
             Collections.sort(files2);
@@ -747,8 +747,8 @@ public class TestWrapperExtensionResolver {
         try {
             new Wrapper().createWrapperFiles(tmp2, BldVersion.getVersion());
 
-            var hash_file = new File(tmp2, BldCache.BLD_CACHE);
-            assertFalse(hash_file.exists());
+            var cache_file = new File(tmp2, BldCache.BLD_CACHE);
+            assertFalse(cache_file.exists());
             var files1 = FileUtils.getFileList(tmp2);
             assertEquals(2, files1.size());
             Collections.sort(files1);
@@ -761,7 +761,7 @@ public class TestWrapperExtensionResolver {
                 List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver1.updateExtensions();
 
-            assertTrue(hash_file.exists());
+            assertTrue(cache_file.exists());
             var files2 = FileUtils.getFileList(tmp2);
             assertEquals(10, files2.size());
             Collections.sort(files2);
