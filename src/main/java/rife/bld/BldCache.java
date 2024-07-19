@@ -48,7 +48,6 @@ public class BldCache {
     private static final String PROPERTY_DEPENDENCIES_HASH = PROPERTY_DEPENDENCIES_PREFIX + PROPERTY_SUFFIX_HASH;
 
     private final File hashFile_;
-    private final Properties hashProperties_ = new Properties();
     private final VersionResolution resolution_;
     private String extensionsHash_;
     private String dependenciesHash_;
@@ -59,14 +58,6 @@ public class BldCache {
 
         new File(bldLibDir, WRAPPER_PROPERTIES_HASH).delete();
         new File(bldLibDir, BLD_BUILD_HASH).delete();
-
-        if (hashFile_.exists()) {
-            try {
-                hashProperties_.load(new FileInputStream(hashFile_));
-            } catch (IOException e) {
-                // no-op, we'll store a new properties file when we're writing the cache
-            }
-        }
     }
 
     public void fingerprintExtensions(Collection<String> repositories, Collection<String> extensions, boolean downloadSources, boolean downloadJavadoc) {
@@ -121,16 +112,29 @@ public class BldCache {
         return validateExtensionsHash(extensionsHash_);
     }
 
+    private Properties hashProperties() {
+        var properties = new Properties();
+        if (hashFile_.exists()) {
+            try {
+                properties.load(new FileInputStream(hashFile_));
+            } catch (IOException e) {
+                // no-op, we'll store a new properties file when we're writing the cache
+            }
+        }
+        return properties;
+    }
+
     private boolean validateExtensionsHash(String hash) {
-        if (!hashFile_.exists() || hashProperties_.isEmpty()) {
+        var properties = hashProperties();
+        if (!hashFile_.exists() || properties.isEmpty()) {
             return false;
         }
 
-        if (!hash.equals(hashProperties_.getProperty(PROPERTY_EXTENSIONS_HASH))) {
+        if (!hash.equals(properties.getProperty(PROPERTY_EXTENSIONS_HASH))) {
             return false;
         }
 
-        var local_files = hashProperties_.getProperty(PROPERTY_EXTENSIONS_LOCAL);
+        var local_files = properties.getProperty(PROPERTY_EXTENSIONS_LOCAL);
         if (local_files != null && !local_files.isEmpty()) {
             var lines = StringUtils.split(local_files, "\n");
             if (!lines.isEmpty()) {
@@ -164,11 +168,12 @@ public class BldCache {
     }
 
     private boolean validateDependenciesHash(String hash) {
-        if (!hashFile_.exists() || hashProperties_.isEmpty()) {
+        var properties = hashProperties();
+        if (!hashFile_.exists() || properties.isEmpty()) {
             return false;
         }
 
-        return hash.equals(hashProperties_.getProperty(PROPERTY_DEPENDENCIES_HASH));
+        return hash.equals(properties.getProperty(PROPERTY_DEPENDENCIES_HASH));
     }
 
     public void writeCache() {
@@ -176,9 +181,11 @@ public class BldCache {
     }
 
     public void writeCache(List<File> extensionsLocalArtifacts) {
+        var properties = hashProperties();
+
         try {
             if (extensionsHash_ != null) {
-                hashProperties_.put(PROPERTY_EXTENSIONS_HASH, extensionsHash_);
+                properties.put(PROPERTY_EXTENSIONS_HASH, extensionsHash_);
             }
 
             if (extensionsLocalArtifacts != null) {
@@ -188,15 +195,15 @@ public class BldCache {
                         extensions_local.append("\n").append(file.lastModified()).append(':').append(file.getAbsolutePath());
                     }
                 }
-                hashProperties_.put(PROPERTY_EXTENSIONS_LOCAL, extensions_local.toString());
+                properties.put(PROPERTY_EXTENSIONS_LOCAL, extensions_local.toString());
             }
 
             if (dependenciesHash_ != null) {
-                hashProperties_.put(PROPERTY_DEPENDENCIES_HASH, dependenciesHash_);
+                properties.put(PROPERTY_DEPENDENCIES_HASH, dependenciesHash_);
             }
 
             hashFile_.getParentFile().mkdirs();
-            hashProperties_.store(new FileOutputStream(hashFile_), null);
+            properties.store(new FileOutputStream(hashFile_), null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

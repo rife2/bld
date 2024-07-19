@@ -606,7 +606,6 @@ public class TestWrapperExtensionResolver {
                 bld.cache""", String.join("\n", files3));
             FileUtils.writeString("updated", hash_file);
 
-            resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
             var files4 = FileUtils.getFileList(tmp2);
             assertEquals(10, files4.size());
