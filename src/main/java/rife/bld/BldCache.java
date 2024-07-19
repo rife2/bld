@@ -22,18 +22,23 @@ import java.util.List;
 import java.util.Properties;
 
 /**
+ * Provides functionalities related to dependency hashing and caching.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
  * @since 2.0
  */
 public class BldCache {
+    /**
+     * Represents the name of a cache file used by bld.
+     * @since 2.0
+     */
     public static final String BLD_CACHE = "bld.cache";
 
     private static final String PROPERTY_SUFFIX_HASH = ".hash";
     private static final String PROPERTY_SUFFIX_LOCAL = ".local";
 
-    public static final String WRAPPER_PROPERTIES_HASH = Wrapper.WRAPPER_PROPERTIES + PROPERTY_SUFFIX_HASH;
-    public static final String BLD_BUILD_HASH = "bld-build" + PROPERTY_SUFFIX_HASH;
+    private static final String WRAPPER_PROPERTIES_HASH = Wrapper.WRAPPER_PROPERTIES + PROPERTY_SUFFIX_HASH;
+    private static final String BLD_BUILD_HASH = "bld-build" + PROPERTY_SUFFIX_HASH;
 
     private static final String PROPERTY_EXTENSIONS_PREFIX = "bld.extensions";
     private static final String PROPERTY_EXTENSIONS_HASH = PROPERTY_EXTENSIONS_PREFIX + PROPERTY_SUFFIX_HASH;
