@@ -10,10 +10,7 @@ import rife.bld.dependencies.VersionResolution;
 import rife.bld.wrapper.Wrapper;
 import rife.tools.StringUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -120,7 +117,9 @@ public class BldCache {
         var properties = new Properties();
         if (getCacheFile().exists()) {
             try {
-                properties.load(new FileInputStream(getCacheFile()));
+                try (var reader = new BufferedReader(new FileReader(getCacheFile()))) {
+                    properties.load(reader);
+                }
             } catch (IOException e) {
                 // no-op, we'll store a new properties file when we're writing the cache
             }
@@ -207,7 +206,10 @@ public class BldCache {
             }
 
             bldLibDir_.mkdirs();
-            properties.store(new FileOutputStream(getCacheFile()), null);
+
+            try (var writer = new BufferedWriter(new FileWriter(getCacheFile()))) {
+                properties.store(writer, null);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
