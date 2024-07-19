@@ -47,13 +47,13 @@ public class BldCache {
     private static final String PROPERTY_DEPENDENCIES_PREFIX = "bld.dependencies";
     private static final String PROPERTY_DEPENDENCIES_HASH = PROPERTY_DEPENDENCIES_PREFIX + PROPERTY_SUFFIX_HASH;
 
-    private final File hashFile_;
+    private final File bldLibDir_;
     private final VersionResolution resolution_;
     private String extensionsHash_;
     private String dependenciesHash_;
 
     public BldCache(File bldLibDir, VersionResolution resolution) {
-        hashFile_ = new File(bldLibDir, BLD_CACHE);
+        bldLibDir_ = bldLibDir;
         resolution_ = resolution;
 
         new File(bldLibDir, WRAPPER_PROPERTIES_HASH).delete();
@@ -112,11 +112,15 @@ public class BldCache {
         return validateExtensionsHash(extensionsHash_);
     }
 
+    private File getCacheFile() {
+        return new File(bldLibDir_, BLD_CACHE);
+    }
+
     private Properties hashProperties() {
         var properties = new Properties();
-        if (hashFile_.exists()) {
+        if (getCacheFile().exists()) {
             try {
-                properties.load(new FileInputStream(hashFile_));
+                properties.load(new FileInputStream(getCacheFile()));
             } catch (IOException e) {
                 // no-op, we'll store a new properties file when we're writing the cache
             }
@@ -126,7 +130,7 @@ public class BldCache {
 
     private boolean validateExtensionsHash(String hash) {
         var properties = hashProperties();
-        if (!hashFile_.exists() || properties.isEmpty()) {
+        if (properties.isEmpty()) {
             return false;
         }
 
@@ -169,7 +173,7 @@ public class BldCache {
 
     private boolean validateDependenciesHash(String hash) {
         var properties = hashProperties();
-        if (!hashFile_.exists() || properties.isEmpty()) {
+        if (properties.isEmpty()) {
             return false;
         }
 
@@ -202,8 +206,8 @@ public class BldCache {
                 properties.put(PROPERTY_DEPENDENCIES_HASH, dependenciesHash_);
             }
 
-            hashFile_.getParentFile().mkdirs();
-            properties.store(new FileOutputStream(hashFile_), null);
+            bldLibDir_.mkdirs();
+            properties.store(new FileOutputStream(getCacheFile()), null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
