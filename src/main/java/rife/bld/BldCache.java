@@ -195,7 +195,10 @@ public class BldCache {
                 var extensions_local = new StringBuilder();
                 for (var file : extensionsLocalArtifacts) {
                     if (file.exists() && file.canRead()) {
-                        extensions_local.append("\n").append(file.lastModified()).append(':').append(file.getAbsolutePath());
+                        if (!extensions_local.isEmpty()) {
+                            extensions_local.append("\n");
+                        }
+                        extensions_local.append(file.lastModified()).append(':').append(file.getAbsolutePath());
                     }
                 }
                 properties.put(PROPERTY_EXTENSIONS_LOCAL, extensions_local.toString());
