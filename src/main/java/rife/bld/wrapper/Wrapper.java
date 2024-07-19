@@ -520,8 +520,10 @@ public class Wrapper {
         var is_snapshot = isSnapshot(version);
         var is_local = false;
         if (offline_) {
-            System.out.println("Offline mode: no artifacts will be checked nor downloaded");
-            System.out.flush();
+            if (launchMode_ != LaunchMode.Json) {
+                System.out.println("Offline mode: no artifacts will be checked nor downloaded");
+                System.out.flush();
+            }
         }
         else {
             if (is_snapshot) {
