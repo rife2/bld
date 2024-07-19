@@ -176,7 +176,7 @@ public class HelpOperation {
                 
                 The following help arguments are supported:
                 
-                  --json            Output help in JSON format""");
+                  --json            Outputs help in JSON format""");
     }
 
     /**
@@ -189,10 +189,10 @@ public class HelpOperation {
                 
                 The following bld arguments are supported:
                 
-                  --offline         Work without internet (only as first argument)
+                  --offline         Works without Internet (only as first argument)
                   -?, -h, --help    Shows the help
-                  -D<name>=<value>  Set a JVM system property
-                  -s, --stacktrace  Print out the stacktrace for exceptions
+                  -D<name>=<value>  Sets a JVM system property
+                  -s, --stacktrace  Prints out the stacktrace for exceptions
                 """);
     }
 }
