@@ -44,23 +44,23 @@ public class Wrapper {
     public static final String OFFLINE_ARGUMENT = "--offline";
     public static final String HELP_COMMAND = "help";
 
+    public static final String WRAPPER_PREFIX = "bld-wrapper";
+    public static final String WRAPPER_PROPERTIES = WRAPPER_PREFIX + ".properties";
+
     static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2/";
     static final String SONATYPE_SNAPSHOTS = "https://s01.oss.sonatype.org/content/repositories/snapshots/";
     static final String DOWNLOAD_LOCATION = MAVEN_CENTRAL + "com/uwyn/rife2/bld/${version}/";
     static final String DOWNLOAD_LOCATION_SNAPSHOT = SONATYPE_SNAPSHOTS + "com/uwyn/rife2/bld/${version}/";
+    static final String BLD_CACHE = "bld.cache";
     static final String BLD_FILENAME = "bld-${version}.jar";
     static final String BLD_SOURCES_FILENAME = "bld-${version}-sources.jar";
     static final String BLD_VERSION = "BLD_VERSION";
-    static final String BLD_BUILD_HASH = "bld-build.hash";
-    static final String WRAPPER_PREFIX = "bld-wrapper";
-    static final String WRAPPER_PROPERTIES = WRAPPER_PREFIX + ".properties";
     static final String WRAPPER_JAR = WRAPPER_PREFIX + ".jar";
     static final String BLD_PROPERTY_VERSION = "bld.version";
     static final String RIFE2_PROPERTY_DOWNLOAD_LOCATION = "rife2.downloadLocation";
     static final String BLD_PROPERTY_DOWNLOAD_LOCATION = "bld.downloadLocation";
     static final String PROPERTY_REPOSITORIES = "bld.repositories";
     static final String PROPERTY_EXTENSION_PREFIX = "bld.extension";
-    static final String PROPERTY_EXTENSIONS = "bld.extensions";
     static final String PROPERTY_DOWNLOAD_EXTENSION_SOURCES = "bld.downloadExtensionSources";
     static final String PROPERTY_DOWNLOAD_EXTENSION_JAVADOC = "bld.downloadExtensionJavadoc";
     static final String PROPERTY_SOURCE_DIRECTORIES = "bld.sourceDirectories";
@@ -637,9 +637,9 @@ public class Wrapper {
 
         try {
             var resolver_class = classloader_.loadClass("rife.bld.wrapper.WrapperExtensionResolver");
-            var constructor = resolver_class.getConstructor(File.class, File.class, File.class, Properties.class, Properties.class, Collection.class, Collection.class, boolean.class, boolean.class);
+            var constructor = resolver_class.getConstructor(File.class, File.class, Properties.class, Properties.class, Collection.class, Collection.class, boolean.class, boolean.class);
             var update_method = resolver_class.getMethod("updateExtensions");
-            var resolver = constructor.newInstance(currentDir_, new File(wrapperPropertiesFile_.getAbsolutePath() + ".hash"), libBldDirectory(),
+            var resolver = constructor.newInstance(currentDir_, libBldDirectory(),
                 jvmProperties_, wrapperProperties_,
                 repositories_, extensions_,
                 downloadExtensionSources_, downloadExtensionJavadoc_);

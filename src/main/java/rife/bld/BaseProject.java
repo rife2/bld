@@ -1595,79 +1595,19 @@ public class BaseProject extends BuildExecutor {
         purge();
     }
 
-    private static final String BLD_BUILD_HASH = "bld-build.hash";
-
     private void performAutoDownloadPurge() {
-        // verify and update the fingerprint hash file,
-        // don't download and purge if the hash is identical
-        var hash_file = new File(libBldDirectory(), BLD_BUILD_HASH);
-        var hash = createHash();
-        if (validateHash(hash_file, hash)) {
+        var resolution = new VersionResolution(properties());
+        var cache = new BldCache(libBldDirectory(), resolution);
+        cache.fingerprintDependencies(repositories(), dependencies(), downloadSources(), downloadJavadoc());
+        if (cache.isDependenciesHashValid()) {
             return;
         }
 
         try {
             executeAutoDownloadPurge();
 
-            writeHash(hash_file, hash);
+            cache.writeCache();
         } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String createHash() {
-        var resolution = new VersionResolution(properties());
-        var finger_print = new StringBuilder();
-        finger_print.append(String.join("\n", resolution.versionOverrides().entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).toList()));
-        for (var repository : repositories()) {
-            finger_print.append(repository.toString());
-            finger_print.append('\n');
-        }
-        for (var entry : dependencies().entrySet()) {
-            finger_print.append(entry.getKey());
-            finger_print.append('\n');
-            if (entry.getValue() != null) {
-                for (var dependency : entry.getValue()) {
-                    finger_print.append(dependency.toString());
-                    finger_print.append('\n');
-                }
-            }
-        }
-        finger_print.append(downloadSources())
-                .append('\n')
-                .append(downloadJavadoc())
-                .append('\n');
-
-        try {
-            var digest = MessageDigest.getInstance("SHA-1");
-            digest.update(finger_print.toString().getBytes(StandardCharsets.UTF_8));
-            return StringUtils.encodeHexLower(digest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            // should not happen
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean validateHash(File hashFile, String hash) {
-        try {
-            if (hashFile.exists()) {
-                var current_hash = FileUtils.readString(hashFile);
-                if (current_hash.equals(hash)) {
-                    return true;
-                }
-                hashFile.delete();
-            }
-            return false;
-        } catch (FileUtilsErrorException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void writeHash(File hashFile, String hash) {
-        try {
-            hashFile.getParentFile().mkdirs();
-            FileUtils.writeString(hash, hashFile);
-        } catch (FileUtilsErrorException e) {
             throw new RuntimeException(e);
         }
     }

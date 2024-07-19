@@ -4,17 +4,12 @@
  */
 package rife.bld.wrapper;
 
+import rife.bld.BldCache;
 import rife.bld.BuildExecutor;
 import rife.bld.dependencies.*;
 import rife.ioc.HierarchicalProperties;
-import rife.tools.FileUtils;
-import rife.tools.StringUtils;
-import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import static rife.bld.dependencies.Dependency.CLASSIFIER_JAVADOC;
@@ -31,8 +26,7 @@ import static rife.bld.dependencies.Dependency.CLASSIFIER_SOURCES;
 public class WrapperExtensionResolver {
     private final VersionResolution resolution_;
     private final ArtifactRetriever retriever_;
-    private final File hashFile_;
-    private final String fingerPrintHash_;
+    private final BldCache cache_;
     private final File destinationDirectory_;
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencySet dependencies_ = new DependencySet();
@@ -42,7 +36,7 @@ public class WrapperExtensionResolver {
 
     private boolean headerPrinted_ = false;
 
-    public WrapperExtensionResolver(File currentDir, File hashFile, File destinationDirectory,
+    public WrapperExtensionResolver(File currentDir, File destinationDirectory,
                                     Properties jvmProperties, Properties wrapperProperties,
                                     Collection<String> repositories, Collection<String> extensions,
                                     boolean downloadSources, boolean downloadJavadoc) {
@@ -56,7 +50,7 @@ public class WrapperExtensionResolver {
         retriever_ = ArtifactRetriever.cachingInstance();
         Repository.resolveMavenLocal(properties);
 
-        hashFile_ = hashFile;
+        cache_ = new BldCache(destinationDirectory, resolution_);
 
         destinationDirectory_ = destinationDirectory;
 
@@ -68,32 +62,16 @@ public class WrapperExtensionResolver {
 
         downloadSources_ = downloadSources;
         downloadJavadoc_ = downloadJavadoc;
-        fingerPrintHash_ = createHash(
-            resolution_,
+        cache_.fingerprintExtensions(
             repositories_.stream().map(Objects::toString).toList(),
             dependencies_.stream().map(Objects::toString).toList(),
             downloadSources, downloadJavadoc);
     }
 
-    private static String createHash(VersionResolution resolution, Collection<String> repositories, Collection<String> extensions, boolean downloadSources, boolean downloadJavadoc) {
-        try {
-            var overrides_fp = String.join("\n", resolution.versionOverrides().entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).toList());
-            var repositories_fp = String.join("\n", repositories);
-            var extensions_fp = String.join("\n", extensions);
-            var fingerprint = overrides_fp + "\n" + repositories_fp + "\n" + extensions_fp + "\n" + downloadSources + "\n" + downloadJavadoc;
-            var digest = MessageDigest.getInstance("SHA-1");
-            digest.update(fingerprint.getBytes(StandardCharsets.UTF_8));
-            return StringUtils.encodeHexLower(digest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            // should not happen
-            throw new RuntimeException(e);
-        }
-    }
-
     public void updateExtensions() {
         // verify and update the fingerprint hash file,
         // don't update the extensions if the hash is identical
-        if (validateHash()) {
+        if (cache_.isExtensionHashValid()) {
             return;
         }
 
@@ -103,65 +81,10 @@ public class WrapperExtensionResolver {
         // purge the files that are not part of the latest extensions anymore
         purgeExtensionDependencies(filenames);
 
-        writeHash();
+        cache_.writeCache(localArtifacts_);
 
         if (headerPrinted_) {
             System.out.println();
-        }
-    }
-
-    private boolean validateHash() {
-        try {
-            if (hashFile_.exists()) {
-                var contents = FileUtils.readString(hashFile_);
-                var lines = StringUtils.split(contents, "\n");
-                if (!lines.isEmpty()) {
-                    // first line is the fingerprint hash
-                    if (lines.remove(0).equals(fingerPrintHash_)) {
-                        // other lines are last modified timestamps of local files
-                        // that were dependency artifacts
-                        while (!lines.isEmpty()) {
-                            var line = lines.get(0);
-                            var parts = line.split(":", 2);
-                            // verify that the local file has the same modified timestamp still
-                            if (parts.length == 2) {
-                                var file = new File(parts[1]);
-                                if (!file.exists() || !file.canRead() || file.lastModified() != Long.parseLong(parts[0])) {
-                                    break;
-                                }
-                            } else {
-                                break;
-                            }
-                            lines.remove(0);
-                        }
-
-                        // there were no invalid lines, so the hash file contents are valid
-                        if (lines.isEmpty()) {
-                            return true;
-                        }
-                    }
-                }
-                hashFile_.delete();
-            }
-            return false;
-        } catch (FileUtilsErrorException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void writeHash() {
-        try {
-            var contents = new StringBuilder();
-            contents.append(fingerPrintHash_);
-            for (var file : localArtifacts_) {
-                if (file.exists() && file.canRead()) {
-                    contents.append("\n").append(file.lastModified()).append(':').append(file.getAbsolutePath());
-                }
-            }
-
-            FileUtils.writeString(contents.toString(), hashFile_);
-        } catch (FileUtilsErrorException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -204,7 +127,7 @@ public class WrapperExtensionResolver {
     private void purgeExtensionDependencies(Set<String> filenames) {
         for (var file : destinationDirectory_.listFiles()) {
             if (file.getName().startsWith(Wrapper.WRAPPER_PREFIX) ||
-                file.getName().equals(Wrapper.BLD_BUILD_HASH)) {
+                file.getName().equals(Wrapper.BLD_CACHE)) {
                 continue;
             }
             if (!filenames.contains(file.getName())) {

@@ -361,7 +361,7 @@ public class TestProject {
             assertEquals("""
                 /lib
                 /lib/bld
-                /lib/bld/bld-build.hash
+                /lib/bld/bld.cache
                 /lib/compile
                 /lib/compile/rife2-1.5.11.jar
                 /lib/provided
@@ -385,7 +385,7 @@ public class TestProject {
             assertEquals("""
                 /lib
                 /lib/bld
-                /lib/bld/bld-build.hash""", FileUtils.generateDirectoryListing(tmp));
+                /lib/bld/bld.cache""", FileUtils.generateDirectoryListing(tmp));
 
             project = new CustomProjectAutoPurge(tmp);
             project.enableAutoDownloadPurge();
@@ -393,7 +393,7 @@ public class TestProject {
             assertEquals("""
                 /lib
                 /lib/bld
-                /lib/bld/bld-build.hash""", FileUtils.generateDirectoryListing(tmp));
+                /lib/bld/bld.cache""", FileUtils.generateDirectoryListing(tmp));
 
             project = new CustomProjectAutoPurge(tmp);
             project.enableAutoDownloadPurge();
@@ -402,7 +402,7 @@ public class TestProject {
             assertEquals("""
                 /lib
                 /lib/bld
-                /lib/bld/bld-build.hash
+                /lib/bld/bld.cache
                 /lib/compile
                 /lib/compile/rife2-1.5.12.jar
                 /lib/provided
@@ -426,7 +426,7 @@ public class TestProject {
             assertEquals("""
                 /lib
                 /lib/bld
-                /lib/bld/bld-build.hash
+                /lib/bld/bld.cache
                 /lib/compile
                 /lib/compile/rife2-1.5.15.jar
                 /lib/provided

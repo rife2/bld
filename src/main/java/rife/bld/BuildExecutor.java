@@ -439,6 +439,7 @@ public class BuildExecutor {
 
         // try to find a match for the provided command amongst
         // the ones that are known
+        var matched = false;
         if (definition == null) {
             // try to find starting matching options
             var matches = new ArrayList<>(buildCommands().keySet().stream()
@@ -463,7 +464,7 @@ public class BuildExecutor {
             // only proceed if exactly one match was found
             if (matches.size() == 1) {
                 matched_command = matches.get(0);
-                System.out.println("Executing matched command: " + matched_command);
+                matched = true;
                 definition = buildCommands().get(matched_command);
             }
         }
@@ -473,6 +474,13 @@ public class BuildExecutor {
             currentCommandName_.set(matched_command);
             currentCommandDefinition_.set(definition);
             try {
+                if (matched) {
+                    System.out.println("Executing matched command: " + matched_command);
+                }
+                else {
+                    System.out.println("Executing command: " + currentCommandName_);
+                }
+
                 definition.execute();
             } catch (ExitStatusException e) {
                 exitStatus(e.getExitStatus());
