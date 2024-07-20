@@ -64,14 +64,13 @@ public class WrapperExtensionResolver {
         downloadJavadoc_ = downloadJavadoc;
         cache_.fingerprintExtensions(
             repositories_.stream().map(Objects::toString).toList(),
-            dependencies_.stream().map(Objects::toString).toList(),
-            downloadSources, downloadJavadoc);
+            dependencies_.stream().map(Objects::toString).toList());
     }
 
     public void updateExtensions() {
         // verify and update the fingerprint hash file,
         // don't update the extensions if the hash is identical
-        if (cache_.isExtensionHashValid()) {
+        if (cache_.isExtensionsCacheValid(downloadSources_, downloadJavadoc_)) {
             return;
         }
 
@@ -81,6 +80,7 @@ public class WrapperExtensionResolver {
         // purge the files that are not part of the latest extensions anymore
         purgeExtensionDependencies(filenames);
 
+        cache_.cacheExtensionsDownloads(downloadSources_, downloadJavadoc_);
         cache_.writeCache(localArtifacts_);
 
         if (headerPrinted_) {

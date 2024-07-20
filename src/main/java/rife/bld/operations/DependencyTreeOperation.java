@@ -5,12 +5,14 @@
 package rife.bld.operations;
 
 import rife.bld.BaseProject;
+import rife.bld.BldCache;
 import rife.bld.BldVersion;
 import rife.bld.BuildExecutor;
 import rife.bld.dependencies.*;
 import rife.bld.wrapper.Wrapper;
 import rife.ioc.HierarchicalProperties;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
     private final DependencyScopes extensionDependencies_ = new DependencyScopes();
 
     private final StringBuilder dependencyTree_ = new StringBuilder();
+    private File libBldDir_ = null;
 
     /**
      * Performs the dependency tree operation.
@@ -46,11 +49,97 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
             return;
         }
 
-        var extensions_tree = executeGenerateExtensionsDependencies();
-        var compile_tree = executeGenerateCompileDependencies();
-        var provided_tree = executeGenerateProvidedDependencies();
-        var runtime_tree = executeGenerateRuntimeDependencies();
-        var test_tree = executeGenerateTestDependencies();
+        // calculate the dependency tree of the extensions, using the cache if possible
+
+        String extensions_tree = null;
+        BldCache extensions_cache = null;
+        if (libBldDir_ != null) {
+            extensions_cache =  new BldCache(libBldDir_, new VersionResolution(extensionProperties()));
+            extensions_cache.fingerprintExtensions(
+                extensionRepositories().stream().map(Repository::toString).toList(),
+                extensionDependencies().scope(compile).stream().map(Dependency::toString).toList());
+            if (extensions_cache.isExtensionHashValid()) {
+                var cached_tree = extensions_cache.getCachedExtensionsDependencyTree();
+                if (cached_tree != null) {
+                    extensions_tree = cached_tree;
+                }
+            }
+        }
+
+        if (extensions_tree == null) {
+            extensions_tree = executeGenerateExtensionsDependencies();
+            if (extensions_cache != null) {
+                extensions_cache.cacheExtensionsDependencyTree(extensions_tree);
+                extensions_cache.writeCache();
+            }
+        }
+
+        // calculate the dependency tree of the dependencies, using the cache if possible
+
+        String compile_tree = null;
+        String provided_tree = null;
+        String runtime_tree = null;
+        String test_tree = null;
+        BldCache dependencies_cache = null;
+        if (libBldDir_ != null) {
+            dependencies_cache =  new BldCache(libBldDir_, new VersionResolution(properties()));
+            dependencies_cache.fingerprintDependencies(repositories(), dependencies());
+            if (dependencies_cache.isDependenciesHashValid()) {
+                var cached_compile_tree = dependencies_cache.getCachedDependenciesCompileDependencyTree();
+                if (cached_compile_tree != null) {
+                    compile_tree = cached_compile_tree;
+                }
+                var cached_provided_tree = dependencies_cache.getCachedDependenciesProvidedDependencyTree();
+                if (cached_provided_tree != null) {
+                    provided_tree = cached_provided_tree;
+                }
+                var cached_runtime_tree = dependencies_cache.getCachedDependenciesRuntimeDependencyTree();
+                if (cached_runtime_tree != null) {
+                    runtime_tree = cached_runtime_tree;
+                }
+                var cached_test_tree = dependencies_cache.getCachedDependenciesTestDependencyTree();
+                if (cached_test_tree != null) {
+                    test_tree = cached_test_tree;
+                }
+            }
+        }
+        
+        var write_dependencies_cache = false;
+        if (compile_tree == null) {
+            compile_tree = executeGenerateCompileDependencies();
+            if (dependencies_cache != null) {
+                dependencies_cache.cacheDependenciesCompileDependencyTree(compile_tree);
+                write_dependencies_cache = true;
+            }
+        }
+        if (provided_tree == null) {
+            provided_tree = executeGenerateProvidedDependencies();
+            if (dependencies_cache != null) {
+                dependencies_cache.cacheDependenciesProvidedDependencyTree(provided_tree);
+                write_dependencies_cache = true;
+            }
+        }
+        if (runtime_tree == null) {
+            runtime_tree = executeGenerateRuntimeDependencies();
+            if (dependencies_cache != null) {
+                dependencies_cache.cacheDependenciesRuntimeDependencyTree(runtime_tree);
+                write_dependencies_cache = true;
+            }
+        }
+        if (test_tree == null) {
+            test_tree = executeGenerateTestDependencies();
+            if (dependencies_cache != null) {
+                dependencies_cache.cacheDependenciesTestDependencyTree(test_tree);
+                write_dependencies_cache = true;
+            }
+        }
+
+        if (write_dependencies_cache) {
+            dependencies_cache.writeCache();
+        }
+
+        // output the dependency trees
+
         dependencyTree_.setLength(0);
         dependencyTree_.append(extensions_tree);
         dependencyTree_.append(System.lineSeparator());
@@ -143,6 +232,8 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.5.21
      */
     public DependencyTreeOperation fromProject(BaseProject project) {
+        libBldDir_ = project.libBldDirectory();
+
         // add the repositories and dependencies from the extensions
         var wrapper = new Wrapper();
         wrapper.currentDir(project.workDirectory());
