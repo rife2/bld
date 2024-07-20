@@ -34,7 +34,7 @@ public record PomDependency(String groupId, String artifactId, String version, S
         return new Dependency(
             groupId(),
             artifactId(),
-            VersionNumber.parse(version()),
+            Version.parse(version()),
             classifier(),
             type(),
             exclusions(),

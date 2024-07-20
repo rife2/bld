@@ -6,6 +6,7 @@ package rife;
 
 import rife.bld.BuildCommand;
 import rife.bld.Cli;
+import rife.bld.dependencies.VersionNumber;
 import rife.bld.extension.ZipOperation;
 import rife.bld.operations.*;
 import rife.bld.publish.*;
@@ -28,7 +29,7 @@ public class BldBuild extends AbstractRife2Build {
     throws Exception {
         name = "bld";
         mainClass = "rife.bld.Cli";
-        version = version(FileUtils.readString(new File(srcMainResourcesDirectory(), "BLD_VERSION")));
+        version = VersionNumber.parse(FileUtils.readString(new File(srcMainResourcesDirectory(), "BLD_VERSION")));
 
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
         scope(test)

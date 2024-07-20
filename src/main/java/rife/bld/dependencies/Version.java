@@ -4,12 +4,42 @@
  */
 package rife.bld.dependencies;
 
+import static rife.bld.dependencies.VersionNumber.parseOrNull;
+
 /**
  * Represents the basic functionality of a dependency version.
  *
  * @since 2.0
  */
 public interface Version extends Comparable<Version> {
+    /**
+     * Parses a version from a string representation.
+     * <p>
+     * If the string can't be successfully parsed as a semantic {@link VersionNumber},
+     * it will be parsed as a {@link VersionGeneric}.
+     *
+     * @param version the version string to parse
+     * @return the parsed version instance
+     * @since 2.0
+     */
+    static Version parse(String version) {
+        if (version == null || version.isEmpty()) {
+            return VersionNumber.UNKNOWN;
+        }
+
+        var result = parseOrNull(version);
+        if (result != null) {
+            return result;
+        }
+
+        // bld doesn't support version ranges at this time
+        if (version.startsWith("[") || version.startsWith("(")) {
+            return VersionNumber.UNKNOWN;
+        }
+
+        return new VersionGeneric(version);
+    }
+
     /**
      * Retrieves the qualifier of the version.
      *

@@ -150,13 +150,13 @@ public class TestDependencyTreeOperation {
                 .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
                 .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-core", new VersionNumber(10,1,12)))
                 .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-jasper", new VersionNumber(10,1,12)))
-                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+                .include(new Dependency("net.imagej", "ij", Version.parse("1.54d")));
             operation.dependencies().scope(Scope.test)
                 .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
                 .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
                 .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
                 .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
-                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+                .include(new Dependency("net.imagej", "ij", Version.parse("1.54d")));
 
             operation.execute();
 
@@ -306,13 +306,13 @@ public class TestDependencyTreeOperation {
                 .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
                 .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-core", new VersionNumber(10,1,12)))
                 .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-jasper", new VersionNumber(10,1,12)))
-                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+                .include(new Dependency("net.imagej", "ij", Version.parse("1.54d")));
             project.dependencies().scope(Scope.test)
                 .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
                 .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
                 .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
                 .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
-                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+                .include(new Dependency("net.imagej", "ij", Version.parse("1.54d")));
 
             var operation = new DependencyTreeOperation()
                 .fromProject(project);
@@ -405,13 +405,13 @@ public class TestDependencyTreeOperation {
                 .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
                 .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-core", new VersionNumber(10,1,12)))
                 .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-jasper", new VersionNumber(10,1,12)))
-                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+                .include(new Dependency("net.imagej", "ij", Version.parse("1.54d")));
             project.dependencies().scope(Scope.test)
                 .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
                 .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
                 .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
                 .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
-                .include(new Dependency("net.imagej", "ij", VersionNumber.parse("1.54d")));
+                .include(new Dependency("net.imagej", "ij", Version.parse("1.54d")));
 
             var operation = new DependencyTreeOperation()
                 .fromProject(project);

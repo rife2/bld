@@ -52,7 +52,7 @@ public class BaseProject extends BuildExecutor {
      * @see #version()
      * @since 1.5
      */
-    protected Version version = null;
+    protected VersionNumber version = null;
     /**
      * The project's main class.
      *
@@ -684,7 +684,7 @@ public class BaseProject extends BuildExecutor {
      * @since 1.5
      */
     public Version version(String description) {
-        return VersionNumber.parse(description);
+        return Version.parse(description);
     }
 
     /**
@@ -1198,7 +1198,7 @@ public class BaseProject extends BuildExecutor {
      *
      * @since 1.5
      */
-    public Version version() {
+    public VersionNumber version() {
         if (version == null) {
             throw new IllegalStateException("The version variable has to be set.");
         }

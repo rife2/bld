@@ -5,10 +5,7 @@
 package rife.bld.publish;
 
 import org.junit.jupiter.api.Test;
-import rife.bld.dependencies.Dependency;
-import rife.bld.dependencies.DependencyScopes;
-import rife.bld.dependencies.Scope;
-import rife.bld.dependencies.VersionNumber;
+import rife.bld.dependencies.*;
 import rife.tools.StringUtils;
 
 import java.io.File;
@@ -50,7 +47,7 @@ public class TestPomBuilder {
                 .info(new PublishInfo()
                         .groupId("com.example")
                         .artifactId("myapp")
-                        .version(VersionNumber.parse("1.2.3-SNAPSHOT"))
+                        .version(Version.parse("1.2.3-SNAPSHOT"))
                         .name("the thing")
                         .description("the thing but longer")
                         .url("https://the.thing"));
@@ -227,7 +224,7 @@ public class TestPomBuilder {
                 .info(new PublishInfo()
                         .groupId("com.example")
                         .artifactId("myapp")
-                        .version(VersionNumber.parse("1.2.3-SNAPSHOT"))
+                        .version(Version.parse("1.2.3-SNAPSHOT"))
                         .name("the thing")
                         .description("the thing but longer")
                         .url("https://the.thing")
@@ -533,7 +530,7 @@ public class TestPomBuilder {
                 .info(new PublishInfo()
                         .groupId("com.example")
                         .artifactId("myapp")
-                        .version(VersionNumber.parse("1.2.3-SNAPSHOT"))
+                        .version(Version.parse("1.2.3-SNAPSHOT"))
                         .name("the thing")
                         .description("the thing but longer")
                         .url("https://the.thing")

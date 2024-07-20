@@ -197,7 +197,7 @@ class Xml2MavenPom extends Xml2Data {
             switch (qName) {
                 case "parent" -> {
                     if (isChildOfProject()) {
-                        var parent_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), VersionNumber.parse(resolveMavenProperties(lastVersion_)));
+                        var parent_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), Version.parse(resolveMavenProperties(lastVersion_)));
                         var parent = new DependencyResolver(resolution_, retriever_, repositories_, parent_dependency).getMavenPom(parent_);
 
                         parent.mavenProperties_.keySet().removeAll(mavenProperties_.keySet());
@@ -224,7 +224,7 @@ class Xml2MavenPom extends Xml2Data {
                     var dependency = new PomDependency(lastGroupId_, lastArtifactId_, lastVersion_, lastClassifier_, lastType_, lastScope_, lastOptional_, exclusions_, parent_);
                     if (collectDependencyManagement_) {
                         if (dependency.isPomImport()) {
-                            var import_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), VersionNumber.parse(resolveMavenProperties(lastVersion_)));
+                            var import_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), Version.parse(resolveMavenProperties(lastVersion_)));
                             var imported_pom = new DependencyResolver(resolution_, retriever_, repositories_, import_dependency).getMavenPom(parent_);
                             imported_pom.dependencyManagement_.keySet().removeAll(dependencyManagement_.keySet());
                             var resolved_dependencies = new LinkedHashSet<PomDependency>();

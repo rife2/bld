@@ -41,7 +41,7 @@ public class TestMetadataBuilder {
             .info(new PublishInfo()
                 .groupId("com.example")
                 .artifactId("myapp")
-                .version(VersionNumber.parse("1.2.3-SNAPSHOT")));
+                .version(Version.parse("1.2.3-SNAPSHOT")));
         assertEquals("""
             <?xml version="1.0" encoding="UTF-8"?>
             <metadata modelVersion="1.1.0">
@@ -100,7 +100,7 @@ public class TestMetadataBuilder {
             .info(new PublishInfo()
                 .groupId("com.example")
                 .artifactId("myapp")
-                .version(VersionNumber.parse("1.2.3-SNAPSHOT")))
+                .version(Version.parse("1.2.3-SNAPSHOT")))
             .otherVersions(List.of(new VersionNumber(6,0,1), new VersionNumber(3,0,2), new VersionNumber(1,0,3), new VersionNumber(3,0,2)))
             .updated(ZonedDateTime.of(2023, 3, 27, 8, 56, 17, 123, ZoneId.of("America/New_York")));
         assertEquals("""
@@ -129,7 +129,7 @@ public class TestMetadataBuilder {
             .info(new PublishInfo()
                 .groupId("com.example")
                 .artifactId("myapp")
-                .version(VersionNumber.parse("1.2.3-SNAPSHOT")))
+                .version(Version.parse("1.2.3-SNAPSHOT")))
             .snapshot(ZonedDateTime.of(2023, 3, 27, 8, 56, 17, 123, ZoneId.of("America/New_York")), 5);
         assertEquals("""
             <?xml version="1.0" encoding="UTF-8"?>
@@ -156,7 +156,7 @@ public class TestMetadataBuilder {
             .info(new PublishInfo()
                 .groupId("com.example")
                 .artifactId("myapp")
-                .version(VersionNumber.parse("1.2.3-SNAPSHOT")))
+                .version(Version.parse("1.2.3-SNAPSHOT")))
             .snapshot(moment, 5)
             .snapshotVersions(List.of(
                 new SnapshotVersion("classifier1", "ext1", "123", moment2),
@@ -207,7 +207,7 @@ public class TestMetadataBuilder {
             .info(new PublishInfo()
                 .groupId("com.example")
                 .artifactId("myapp")
-                .version(VersionNumber.parse("1.2.3-SNAPSHOT")))
+                .version(Version.parse("1.2.3-SNAPSHOT")))
             .snapshotLocal()
             .snapshotVersions(List.of(
                 new SnapshotVersion("classifier1", "ext1", "123", moment2),

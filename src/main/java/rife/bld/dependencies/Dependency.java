@@ -80,7 +80,7 @@ public record Dependency(String groupId, String artifactId, Version version, Str
 
         var groupId = matcher.group("groupId");
         var artifactId = matcher.group("artifactId");
-        var version = VersionNumber.parse(matcher.group("version"));
+        var version = Version.parse(matcher.group("version"));
         var classifier = matcher.group("classifier");
         var type = matcher.group("type");
 

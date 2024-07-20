@@ -63,9 +63,9 @@ public class Xml2MavenMetadata extends Xml2Data implements MavenMetadata {
 
     public void endElement(String uri, String localName, String qName) {
         switch (qName) {
-            case "latest" -> latest_ = VersionNumber.parse(characterData_.toString());
-            case "release" -> release_ = VersionNumber.parse(characterData_.toString());
-            case "version" -> versions_.add(VersionNumber.parse(characterData_.toString()));
+            case "latest" -> latest_ = Version.parse(characterData_.toString());
+            case "release" -> release_ = Version.parse(characterData_.toString());
+            case "version" -> versions_.add(Version.parse(characterData_.toString()));
             case "timestamp" -> snapshotTimestamp_ = characterData_.toString();
             case "buildNumber" -> snapshotBuildNumber_ = Integer.parseInt(characterData_.toString());
             case "snapshot" -> isSnapshot_ = true;

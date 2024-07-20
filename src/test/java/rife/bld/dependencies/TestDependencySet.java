@@ -45,16 +45,16 @@ public class TestDependencySet {
     @Test
     void testAddAll() {
         var set1 = new DependencySet()
-            .include(new Dependency("org.eclipse.jetty", "jetty-server", VersionNumber.parse("11.0.14")))
-            .include(new Dependency("org.eclipse.jetty.toolchain", "jetty-jakarta-servlet-api", VersionNumber.parse("5.0.2")))
-            .include(new Dependency("org.eclipse.jetty", "jetty-http", VersionNumber.parse("11.0.14")))
-            .include(new Dependency("org.eclipse.jetty", "jetty-io", VersionNumber.parse("11.0.14")))
-            .include(new Dependency("org.eclipse.jetty", "jetty-util", VersionNumber.parse("11.0.14")))
-            .include(new Dependency("org.slf4j", "slf4j-api", VersionNumber.parse("2.0.5")));
+            .include(new Dependency("org.eclipse.jetty", "jetty-server", Version.parse("11.0.14")))
+            .include(new Dependency("org.eclipse.jetty.toolchain", "jetty-jakarta-servlet-api", Version.parse("5.0.2")))
+            .include(new Dependency("org.eclipse.jetty", "jetty-http", Version.parse("11.0.14")))
+            .include(new Dependency("org.eclipse.jetty", "jetty-io", Version.parse("11.0.14")))
+            .include(new Dependency("org.eclipse.jetty", "jetty-util", Version.parse("11.0.14")))
+            .include(new Dependency("org.slf4j", "slf4j-api", Version.parse("2.0.5")));
 
         var set2 = new DependencySet()
-            .include(new Dependency("org.slf4j", "slf4j-simple", VersionNumber.parse("2.0.6")))
-            .include(new Dependency("org.slf4j", "slf4j-api", VersionNumber.parse("2.0.6")));
+            .include(new Dependency("org.slf4j", "slf4j-simple", Version.parse("2.0.6")))
+            .include(new Dependency("org.slf4j", "slf4j-api", Version.parse("2.0.6")));
 
         var set_union1 = new DependencySet(set1);
         set_union1.addAll(set2);

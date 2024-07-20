@@ -70,16 +70,16 @@ public class TestVersionNumber {
     void testInvalidParsed() {
         assertEquals(VersionNumber.parse(null), VersionNumber.UNKNOWN);
         assertEquals(VersionNumber.parse(""), VersionNumber.UNKNOWN);
-        assertEquals(VersionNumber.parse("foo"), new VersionGeneric("foo"));
-        assertEquals(VersionNumber.parse("1."), new VersionGeneric("1."));
-        assertEquals(VersionNumber.parse("1.2.3-"), new VersionGeneric("1.2.3-"));
-        assertEquals(VersionNumber.parse("."), new VersionGeneric("."));
-        assertEquals(VersionNumber.parse("_"), new VersionGeneric("_"));
-        assertEquals(VersionNumber.parse("-"), new VersionGeneric("-"));
-        assertEquals(VersionNumber.parse(".1"), new VersionGeneric(".1"));
-        assertEquals(VersionNumber.parse("a.1"), new VersionGeneric("a.1"));
-        assertEquals(VersionNumber.parse("1_2"), new VersionGeneric("1_2"));
-        assertEquals(VersionNumber.parse("1_2_2"), new VersionGeneric("1_2_2"));
+        assertEquals(VersionNumber.parse("foo"), VersionNumber.UNKNOWN);
+        assertEquals(VersionNumber.parse("1."), VersionNumber.UNKNOWN);
+        assertEquals(VersionNumber.parse("1.2.3-"), VersionNumber.UNKNOWN);
+        assertEquals(VersionNumber.parse("."), VersionNumber.UNKNOWN);
+        assertEquals(VersionNumber.parse("_"), VersionNumber.UNKNOWN);
+        assertEquals(VersionNumber.parse("-"), VersionNumber.UNKNOWN);
+        assertEquals(VersionNumber.parse(".1"), VersionNumber.UNKNOWN);
+        assertEquals(VersionNumber.parse("a.1"), VersionNumber.UNKNOWN);
+        assertEquals(VersionNumber.parse("1_2"), VersionNumber.UNKNOWN);
+        assertEquals(VersionNumber.parse("1_2_2"), VersionNumber.UNKNOWN);
     }
 
     @Test

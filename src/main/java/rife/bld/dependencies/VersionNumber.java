@@ -37,25 +37,35 @@ public record VersionNumber(Integer major, Integer minor, Integer revision, Stri
     /**
      * Parses a version number from a string representation.
      * <p>
-     * If the string can't be successfully parsed, {@link VersionNumber#UNKNOWN} will be returned.
+     * If the string can't be successfully parsed as a semantic version,
+     * {@link VersionNumber#UNKNOWN} will be returned.
      *
      * @param version the version string to parse
      * @return a parsed instance of {@code VersionNumber}; or
      * {@link VersionNumber#UNKNOWN} when the string couldn't be parsed
      * @since 1.5
      */
-    public static Version parse(String version) {
+    public static VersionNumber parse(String version) {
         if (version == null || version.isEmpty()) {
             return UNKNOWN;
         }
 
+        var result = parseOrNull(version);
+        if (result == null) {
+            result = UNKNOWN;
+        }
+
+        return result;
+    }
+
+    static VersionNumber parseOrNull(String version) {
+        if (version == null) {
+            return null;
+        }
+
         var matcher = VERSION_PATTERN.matcher(version);
         if (!matcher.matches()) {
-            // bld doesn't support version ranges at this time
-            if (version.startsWith("[") || version.startsWith("(")) {
-                return UNKNOWN;
-            }
-            return new VersionGeneric(version);
+            return null;
         }
 
         var major = matcher.group("major");

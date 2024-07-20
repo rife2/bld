@@ -48,11 +48,9 @@ public class VersionGeneric implements Version {
     }
 
     /**
-     * Returns this instance tokenized representation as unmodifiable list.
-     *
-     * @since 2.0
+     * Visible for testing.
      */
-    public List<Item> asItems() {
+    List<Item> asItems() {
         return items_;
     }
 
@@ -72,7 +70,7 @@ public class VersionGeneric implements Version {
     /**
      * Visible for testing.
      */
-    public static void trimPadding(List<Item> items) {
+    static void trimPadding(List<Item> items) {
         Boolean number = null;
         var end = items.size() - 1;
         for (var i = end; i > 0; i--) {
