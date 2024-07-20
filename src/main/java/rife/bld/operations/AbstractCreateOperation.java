@@ -6,6 +6,7 @@ package rife.bld.operations;
 
 import rife.bld.BldVersion;
 import rife.bld.Project;
+import rife.bld.dependencies.VersionNumber;
 import rife.bld.operations.exceptions.OperationOptionException;
 import rife.bld.wrapper.Wrapper;
 import rife.template.TemplateFactory;
@@ -228,9 +229,15 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
                 build_template.setValue("groupId", dependency.groupId());
                 build_template.setValue("artifactId", dependency.artifactId());
                 var version = dependency.version();
-                var version_string = version.major() + "," + version.minor() + "," + version.revision();
-                if (!version.qualifier().isEmpty()) {
-                    version_string += ",\"" + version.qualifier() + "\"";
+                var version_string = "";
+                if (version instanceof VersionNumber versionNumber) {
+                    version_string = versionNumber.major() + "," + versionNumber.minor() + "," + versionNumber.revision();
+                    if (!version.qualifier().isEmpty()) {
+                        version_string += ",\"" + version.qualifier() + "\"";
+                    }
+                }
+                else {
+                    version_string = "\"" + version.toString() + "\"";
                 }
                 build_template.setValue("version", version_string);
                 build_template.appendBlock("dependencies", "dependency");

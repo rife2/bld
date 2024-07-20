@@ -14,28 +14,28 @@ import java.util.List;
  */
 public interface MavenMetadata {
     /**
-     * Returns latest version number in the metadata.
+     * Returns latest version in the metadata.
      *
-     * @return the latest version number
+     * @return the latest version
      * @since 1.5.8
      */
-    VersionNumber getLatest();
+    Version getLatest();
 
     /**
-     * Returns release version number in the metadata.
+     * Returns release version in the metadata.
      *
-     * @return the release version number
+     * @return the release version
      * @since 1.5.8
      */
-    VersionNumber getRelease();
+    Version getRelease();
 
     /**
-     * Returns snapshot version number in the metadata.
+     * Returns snapshot version in the metadata.
      *
-     * @return the snapshot version number
+     * @return the snapshot version
      * @since 1.5.8
      */
-    VersionNumber getSnapshot();
+    Version getSnapshot();
 
     /**
      * Returns snapshot timestamp in the metadata.
@@ -56,8 +56,8 @@ public interface MavenMetadata {
     /**
      * Returns all the release or snapshot versions in the metadata.
      *
-     * @return the version number list
+     * @return the version list
      * @since 1.5.8
      */
-    List<VersionNumber> getVersions();
+    List<Version> getVersions();
 }

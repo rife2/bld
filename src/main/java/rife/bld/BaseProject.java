@@ -688,7 +688,7 @@ public class BaseProject extends BuildExecutor {
      * {@link VersionNumber#UNKNOWN} if the description couldn't be parsed
      * @since 1.5
      */
-    public VersionNumber version(String description) {
+    public Version version(String description) {
         return VersionNumber.parse(description);
     }
 

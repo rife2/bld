@@ -29,6 +29,7 @@ class Xml2MavenPom extends Xml2Data {
     private final Stack<String> elementStack_ = new Stack<>();
     private ExclusionSet exclusions_ = null;
 
+    private boolean initialParse_ = true;
     private boolean collectProperties_ = false;
     private boolean collectDependencyManagement_ = false;
     private boolean collectDependencies_ = false;
@@ -142,32 +143,36 @@ class Xml2MavenPom extends Xml2Data {
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
         characterData_ = new StringBuilder();
 
-        switch (qName) {
-            case "parent" -> resetState();
-            case "properties" -> {
+        if (initialParse_) {
+            if (qName.equals("properties")) {
                 if (isChildOfProject()) {
                     collectProperties_ = true;
                 }
             }
-            case "dependencyManagement" -> {
-                if (isChildOfProject()) {
-                    collectDependencyManagement_ = true;
+        }
+        else {
+            switch (qName) {
+                case "parent" -> resetState();
+                case "dependencyManagement" -> {
+                    if (isChildOfProject()) {
+                        collectDependencyManagement_ = true;
+                    }
                 }
-            }
-            case "dependencies" -> {
-                if (isChildOfProject()) {
-                    resetState();
-                    collectDependencies_ = true;
+                case "dependencies" -> {
+                    if (isChildOfProject()) {
+                        resetState();
+                        collectDependencies_ = true;
+                    }
                 }
-            }
-            case "exclusions" -> {
-                if (collectDependencyManagement_ || collectDependencies_) {
-                    collectExclusions_ = true;
-                    exclusions_ = new ExclusionSet();
+                case "exclusions" -> {
+                    if (collectDependencyManagement_ || collectDependencies_) {
+                        collectExclusions_ = true;
+                        exclusions_ = new ExclusionSet();
+                    }
                 }
-            }
-            case "dependency" -> {
-                if (collectDependencies_) resetState();
+                case "dependency" -> {
+                    if (collectDependencies_) resetState();
+                }
             }
         }
 
@@ -177,110 +182,117 @@ class Xml2MavenPom extends Xml2Data {
     public void endElement(String uri, String localName, String qName) {
         elementStack_.pop();
 
-        switch (qName) {
-            case "parent" -> {
-                if (isChildOfProject()) {
-                    var parent_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), VersionNumber.parse(resolveMavenProperties(lastVersion_)));
-                    var parent = new DependencyResolver(resolution_, retriever_, repositories_, parent_dependency).getMavenPom(parent_);
+        if (initialParse_) {
+            switch (qName) {
+                case "properties" -> collectProperties_ = false;
+                case "project" -> initialParse_ = false;
+                default -> {
+                    if (collectProperties_) {
+                        mavenProperties_.put(qName, getCharacterData());
+                    }
+                }
+            }
+        }
+        else {
+            switch (qName) {
+                case "parent" -> {
+                    if (isChildOfProject()) {
+                        var parent_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), VersionNumber.parse(resolveMavenProperties(lastVersion_)));
+                        var parent = new DependencyResolver(resolution_, retriever_, repositories_, parent_dependency).getMavenPom(parent_);
 
-                    parent.mavenProperties_.keySet().removeAll(mavenProperties_.keySet());
-                    mavenProperties_.putAll(parent.mavenProperties_);
+                        parent.mavenProperties_.keySet().removeAll(mavenProperties_.keySet());
+                        mavenProperties_.putAll(parent.mavenProperties_);
 
-                    parent.dependencyManagement_.keySet().removeAll(dependencyManagement_.keySet());
-                    dependencyManagement_.putAll(parent.dependencyManagement_);
+                        parent.dependencyManagement_.keySet().removeAll(dependencyManagement_.keySet());
+                        dependencyManagement_.putAll(parent.dependencyManagement_);
 
-                    parent.dependencies_.removeAll(dependencies_);
-                    dependencies_.addAll(parent.dependencies_);
+                        parent.dependencies_.removeAll(dependencies_);
+                        dependencies_.addAll(parent.dependencies_);
 
+                        resetState();
+                    }
+                }
+                case "dependencyManagement" -> collectDependencyManagement_ = false;
+                case "dependencies" -> collectDependencies_ = false;
+                case "exclusions" -> collectExclusions_ = false;
+                case "exclusion" -> {
+                    if (collectExclusions_) {
+                        exclusions_.add(new DependencyExclusion(lastExclusionGroupId_, lastExclusionArtifactId_));
+                    }
+                }
+                case "dependency" -> {
+                    var dependency = new PomDependency(lastGroupId_, lastArtifactId_, lastVersion_, lastClassifier_, lastType_, lastScope_, lastOptional_, exclusions_, parent_);
+                    if (collectDependencyManagement_) {
+                        if (dependency.isPomImport()) {
+                            var import_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), VersionNumber.parse(resolveMavenProperties(lastVersion_)));
+                            var imported_pom = new DependencyResolver(resolution_, retriever_, repositories_, import_dependency).getMavenPom(parent_);
+                            imported_pom.dependencyManagement_.keySet().removeAll(dependencyManagement_.keySet());
+                            var resolved_dependencies = new LinkedHashSet<PomDependency>();
+                            for (var managed_dependency : imported_pom.dependencyManagement_.keySet()) {
+                                resolved_dependencies.add(imported_pom.resolveDependency(managed_dependency));
+                            }
+
+                            resolved_dependencies.removeAll(dependencyManagement_.keySet());
+                            for (var resolved_dependency : resolved_dependencies) {
+                                dependencyManagement_.put(resolved_dependency, resolved_dependency);
+                            }
+                        } else {
+                            dependencyManagement_.put(dependency, dependency);
+                        }
+                    } else if (collectDependencies_) {
+                        dependencies_.add(dependency);
+                    }
                     resetState();
                 }
-            }
-            case "properties" -> collectProperties_ = false;
-            case "dependencyManagement" -> collectDependencyManagement_ = false;
-            case "dependencies" -> collectDependencies_ = false;
-            case "exclusions" -> collectExclusions_ = false;
-            case "exclusion" -> {
-                if (collectExclusions_) {
-                    exclusions_.add(new DependencyExclusion(lastExclusionGroupId_, lastExclusionArtifactId_));
-                }
-            }
-            case "dependency" -> {
-                var dependency = new PomDependency(lastGroupId_, lastArtifactId_, lastVersion_, lastClassifier_, lastType_, lastScope_, lastOptional_, exclusions_, parent_);
-                if (collectDependencyManagement_) {
-                    if (dependency.isPomImport()) {
-                        var import_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), VersionNumber.parse(resolveMavenProperties(lastVersion_)));
-                        var imported_pom = new DependencyResolver(resolution_, retriever_, repositories_, import_dependency).getMavenPom(parent_);
-                        imported_pom.dependencyManagement_.keySet().removeAll(dependencyManagement_.keySet());
-                        var resolved_dependencies = new LinkedHashSet<PomDependency>();
-                        for (var managed_dependency : imported_pom.dependencyManagement_.keySet()) {
-                            resolved_dependencies.add(imported_pom.resolveDependency(managed_dependency));
-                        }
-
-                        resolved_dependencies.removeAll(dependencyManagement_.keySet());
-                        for (var resolved_dependency : resolved_dependencies) {
-                            dependencyManagement_.put(resolved_dependency, resolved_dependency);
-                        }
-                    } else {
-                        dependencyManagement_.put(dependency, dependency);
+                case "groupId" -> {
+                    if (isChildOfProject()) {
+                        addProjectProperty(qName);
+                    } else if (isChildOfParent() || isChildOfDependency()) {
+                        lastGroupId_ = getCharacterData();
+                    } else if (collectExclusions_ && isChildOfExclusion()) {
+                        lastExclusionGroupId_ = getCharacterData();
                     }
-                } else if (collectDependencies_) {
-                    dependencies_.add(dependency);
                 }
-                resetState();
-            }
-            case "groupId" -> {
-                if (isChildOfProject()) {
-                    addProjectProperty(qName);
-                } else if (isChildOfParent() || isChildOfDependency()) {
-                    lastGroupId_ = getCharacterData();
-                } else if (collectExclusions_ && isChildOfExclusion()) {
-                    lastExclusionGroupId_ = getCharacterData();
+                case "artifactId" -> {
+                    if (isChildOfProject()) {
+                        addProjectProperty(qName);
+                    } else if (isChildOfParent() || isChildOfDependency()) {
+                        lastArtifactId_ = getCharacterData();
+                    } else if (collectExclusions_ && isChildOfExclusion()) {
+                        lastExclusionArtifactId_ = getCharacterData();
+                    }
                 }
-            }
-            case "artifactId" -> {
-                if (isChildOfProject()) {
-                    addProjectProperty(qName);
-                } else if (isChildOfParent() || isChildOfDependency()) {
-                    lastArtifactId_ = getCharacterData();
-                } else if (collectExclusions_ && isChildOfExclusion()) {
-                    lastExclusionArtifactId_ = getCharacterData();
+                case "version" -> {
+                    if (isChildOfProject()) {
+                        addProjectProperty(qName);
+                    } else if (isChildOfParent() || isChildOfDependency()) {
+                        lastVersion_ = getCharacterData();
+                    }
                 }
-            }
-            case "version" -> {
-                if (isChildOfProject()) {
-                    addProjectProperty(qName);
-                } else if (isChildOfParent() || isChildOfDependency()) {
-                    lastVersion_ = getCharacterData();
+                case "type" -> {
+                    if (isChildOfDependency()) {
+                        lastType_ = getCharacterData();
+                    }
                 }
-            }
-            case "type" -> {
-                if (isChildOfDependency()) {
-                    lastType_ = getCharacterData();
+                case "classifier" -> {
+                    if (isChildOfDependency()) {
+                        lastClassifier_ = getCharacterData();
+                    }
                 }
-            }
-            case "classifier" -> {
-                if (isChildOfDependency()) {
-                    lastClassifier_ = getCharacterData();
+                case "scope" -> {
+                    if (isChildOfDependency()) {
+                        lastScope_ = getCharacterData();
+                    }
                 }
-            }
-            case "scope" -> {
-                if (isChildOfDependency()) {
-                    lastScope_ = getCharacterData();
+                case "optional" -> {
+                    if (isChildOfDependency()) {
+                        lastOptional_ = getCharacterData();
+                    }
                 }
-            }
-            case "optional" -> {
-                if (isChildOfDependency()) {
-                    lastOptional_ = getCharacterData();
-                }
-            }
-            case "packaging", "name", "description", "url", "inceptionYear" -> {
-                if (isChildOfProject()) {
-                    addProjectProperty(qName);
-                }
-            }
-            default -> {
-                if (collectProperties_) {
-                    mavenProperties_.put(qName, getCharacterData());
+                case "packaging", "name", "description", "url", "inceptionYear" -> {
+                    if (isChildOfProject()) {
+                        addProjectProperty(qName);
+                    }
                 }
             }
         }

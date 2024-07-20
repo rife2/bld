@@ -78,7 +78,7 @@ public class DependencyResolver {
      * @return the resolved version
      * @since 1.5
      */
-    public VersionNumber resolveVersion() {
+    public Version resolveVersion() {
         var version = resolution_.overrideVersion(dependency_);
         if (version.equals(VersionNumber.UNKNOWN)) {
             return latestVersion();
@@ -191,7 +191,7 @@ public class DependencyResolver {
      * couldn't be found in the provided repositories
      * @since 1.5
      */
-    public List<VersionNumber> listVersions() {
+    public List<Version> listVersions() {
         return getMavenMetadata().getVersions();
     }
 
@@ -202,7 +202,7 @@ public class DependencyResolver {
      * if the dependency couldn't be found in the provided repositories
      * @since 1.5
      */
-    public VersionNumber latestVersion() {
+    public Version latestVersion() {
         return getMavenMetadata().getLatest();
     }
 
@@ -213,7 +213,7 @@ public class DependencyResolver {
      * if the dependency couldn't be found in the provided repositories
      * @since 1.5
      */
-    public VersionNumber releaseVersion() {
+    public Version releaseVersion() {
         return getMavenMetadata().getRelease();
     }
 
@@ -318,7 +318,7 @@ public class DependencyResolver {
 
     private List<RepositoryArtifact> getTransferArtifacts() {
         final var version = resolveVersion();
-        final VersionNumber pom_version;
+        final Version pom_version;
         if (version.isSnapshot()) {
             var metadata = getSnapshotMavenMetadata();
             pom_version = metadata.getSnapshot();
@@ -400,7 +400,7 @@ public class DependencyResolver {
 
     private List<RepositoryArtifact> getPomLocations() {
         final var version = resolveVersion();
-        final VersionNumber pom_version;
+        final Version pom_version;
         if (version.isSnapshot()) {
             var metadata = getSnapshotMavenMetadata();
             pom_version = metadata.getSnapshot();
@@ -449,6 +449,11 @@ public class DependencyResolver {
         }
 
         var xml = new Xml2MavenPom(parent, resolution_, retriever_, repositories_);
+        // first pass only extracts the properties from the pom
+        if (!xml.processXml(pom)) {
+            throw new DependencyXmlParsingErrorException(dependency_, retrieved_artifact.location(), xml.getErrors());
+        }
+        // second pass parses all the rest so that the properties are available anywhere
         if (!xml.processXml(pom)) {
             throw new DependencyXmlParsingErrorException(dependency_, retrieved_artifact.location(), xml.getErrors());
         }

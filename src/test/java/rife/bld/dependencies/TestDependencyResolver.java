@@ -135,6 +135,16 @@ public class TestDependencyResolver {
     }
 
     @Test
+    void testGetCompileDependenciesGoogleApi() {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
+        var dependencies = resolver.getDirectDependencies(compile);
+        assertNotNull(dependencies);
+        assertEquals(1, dependencies.size());
+        assertEquals("""
+            com.google.api-client:google-api-client:2.5.0""", StringUtils.join(dependencies, "\n"));
+    }
+
+    @Test
     void testGetCompileDependenciesJetty() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -845,6 +855,72 @@ public class TestDependencyResolver {
                 jetty-server-11.0.14.jar
                 jetty-util-11.0.14.jar
                 slf4j-api-2.0.5.jar""", StringUtils.join(files, "\n"));
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testTransferDependencyGoogleApi()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
+        var tmp = Files.createTempDirectory("transfers").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            assertEquals("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/apis/google-api-services-youtube/v3-rev20240514-2.0.0/google-api-services-youtube-v3-rev20240514-2.0.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/api-client/google-api-client/2.5.0/google-api-client-2.5.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/commons-codec/commons-codec/1.17.0/commons-codec-1.17.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/oauth-client/google-oauth-client/1.35.0/google-oauth-client-1.35.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/auth/google-auth-library-credentials/1.23.0/google-auth-library-credentials-1.23.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/auth/google-auth-library-oauth2-http/1.23.0/google-auth-library-oauth2-http-1.23.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/http-client/google-http-client-gson/1.44.1/google-http-client-gson-1.44.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/guava/guava/33.2.0-jre/guava-33.2.0-jre.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/http-client/google-http-client-apache-v2/1.44.1/google-http-client-apache-v2-1.44.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.4.16/httpcore-4.4.16.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.5.14/httpclient-4.5.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/http-client/google-http-client/1.44.1/google-http-client-1.44.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/auto/value/auto-value-annotations/1.10.4/auto-value-annotations-1.10.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.18.0/error_prone_annotations-2.18.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/guava/failureaccess/1.0.2/failureaccess-1.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/3.0.0/j2objc-annotations-3.0.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/grpc/grpc-context/1.60.1/grpc-context-1.60.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/opencensus/opencensus-api/0.31.1/opencensus-api-0.31.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/opencensus/opencensus-contrib-http-util/0.31.1/opencensus-contrib-http-util-0.31.1.jar""", StringUtils.join(result, "\n"));
+
+            var files = FileUtils.getFileList(tmp);
+            assertEquals(24, files.size());
+            Collections.sort(files);
+            assertEquals("""
+                auto-value-annotations-1.10.4.jar
+                checker-qual-3.42.0.jar
+                commons-codec-1.17.0.jar
+                commons-logging-1.2.jar
+                error_prone_annotations-2.18.0.jar
+                failureaccess-1.0.2.jar
+                google-api-client-2.5.0.jar
+                google-api-services-youtube-v3-rev20240514-2.0.0.jar
+                google-auth-library-credentials-1.23.0.jar
+                google-auth-library-oauth2-http-1.23.0.jar
+                google-http-client-1.44.1.jar
+                google-http-client-apache-v2-1.44.1.jar
+                google-http-client-gson-1.44.1.jar
+                google-oauth-client-1.35.0.jar
+                grpc-context-1.60.1.jar
+                gson-2.10.1.jar
+                guava-33.2.0-jre.jar
+                httpclient-4.5.14.jar
+                httpcore-4.4.16.jar
+                j2objc-annotations-3.0.0.jar
+                jsr305-3.0.2.jar
+                listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
+                opencensus-api-0.31.1.jar
+                opencensus-contrib-http-util-0.31.1.jar""", StringUtils.join(files, "\n"));
         } finally {
             FileUtils.deleteDirectory(tmp);
         }

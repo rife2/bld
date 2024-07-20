@@ -113,13 +113,13 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      *
      * @param repository the repository to publish to
      * @param moment the timestamp at which the operation started executing
-     * @return the adapted version number with the snapshot timestamp and build number
+     * @return the adapted version with the snapshot timestamp and build number
      * @since 1.5.10
      */
-    protected VersionNumber executePublishSnapshotMetadata(Repository repository, ZonedDateTime moment) {
+    protected Version executePublishSnapshotMetadata(Repository repository, ZonedDateTime moment) {
         var metadata = new MetadataBuilder();
 
-        VersionNumber actual_version;
+        Version actual_version;
         if (repository.isLocal()) {
             actual_version = info().version();
             metadata.snapshotLocal();
@@ -172,7 +172,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * @param actualVersion the version that was potentially adapted if this is a snapshot
      * @since 1.5.10
      */
-    protected void executePublishArtifacts(Repository repository, VersionNumber actualVersion) {
+    protected void executePublishArtifacts(Repository repository, Version actualVersion) {
         // upload artifacts
         for (var artifact : artifacts()) {
             var artifact_name = new StringBuilder(info().artifactId()).append('-').append(actualVersion);
@@ -196,7 +196,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * @param actualVersion the version that was potentially adapted if this is a snapshot
      * @since 1.5.10
      */
-    protected void executePublishPom(Repository repository, VersionNumber actualVersion) {
+    protected void executePublishPom(Repository repository, Version actualVersion) {
         // generate and upload pom
         executePublishStringArtifact(
             repository,
@@ -212,7 +212,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * @since 1.5.8
      */
     protected void executePublishMetadata(Repository repository, ZonedDateTime moment) {
-        var current_versions = new ArrayList<VersionNumber>();
+        var current_versions = new ArrayList<Version>();
         var resolution = new VersionResolution(properties());
         var resolver = new DependencyResolver(resolution, artifactRetriever(), List.of(repository), new Dependency(info().groupId(), info().artifactId(), info().version()));
         try {

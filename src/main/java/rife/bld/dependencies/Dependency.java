@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
  * @since 1.5
  */
-public record Dependency(String groupId, String artifactId, VersionNumber version, String classifier, String type, ExclusionSet exclusions, Dependency parent) {
+public record Dependency(String groupId, String artifactId, Version version, String classifier, String type, ExclusionSet exclusions, Dependency parent) {
     public static final String CLASSIFIER_SOURCES = "sources";
     public static final String CLASSIFIER_JAVADOC = "javadoc";
 
@@ -28,23 +28,23 @@ public record Dependency(String groupId, String artifactId, VersionNumber versio
         this(groupId, artifactId, null, null, null);
     }
 
-    public Dependency(String groupId, String artifactId, VersionNumber version) {
+    public Dependency(String groupId, String artifactId, Version version) {
         this(groupId, artifactId, version, null, null);
     }
 
-    public Dependency(String groupId, String artifactId, VersionNumber version, String classifier) {
+    public Dependency(String groupId, String artifactId, Version version, String classifier) {
         this(groupId, artifactId, version, classifier, null);
     }
 
-    public Dependency(String groupId, String artifactId, VersionNumber version, String classifier, String type) {
+    public Dependency(String groupId, String artifactId, Version version, String classifier, String type) {
         this(groupId, artifactId, version, classifier, type, null);
     }
 
-    public Dependency(String groupId, String artifactId, VersionNumber version, String classifier, String type, ExclusionSet exclusions) {
+    public Dependency(String groupId, String artifactId, Version version, String classifier, String type, ExclusionSet exclusions) {
         this(groupId, artifactId, version, classifier, type, exclusions, null);
     }
 
-    public Dependency(String groupId, String artifactId, VersionNumber version, String classifier, String type, ExclusionSet exclusions, Dependency parent) {
+    public Dependency(String groupId, String artifactId, Version version, String classifier, String type, ExclusionSet exclusions, Dependency parent) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = (version == null ? VersionNumber.UNKNOWN : version);

@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
  * @since 1.5
  */
-public record VersionNumber(Integer major, Integer minor, Integer revision, String qualifier, String separator) implements Comparable<VersionNumber> {
+public record VersionNumber(Integer major, Integer minor, Integer revision, String qualifier, String separator) implements Version {
     public static final String SNAPSHOT_QUALIFIER = "SNAPSHOT";
 
     /**
@@ -44,14 +44,14 @@ public record VersionNumber(Integer major, Integer minor, Integer revision, Stri
      * {@link VersionNumber#UNKNOWN} when the string couldn't be parsed
      * @since 1.5
      */
-    public static VersionNumber parse(String version) {
+    public static Version parse(String version) {
         if (version == null || version.isEmpty()) {
             return UNKNOWN;
         }
 
         var matcher = VERSION_PATTERN.matcher(version);
         if (!matcher.matches()) {
-            return UNKNOWN;
+            return new VersionGeneric(version);
         }
 
         var major = matcher.group("major");
@@ -142,13 +142,8 @@ public record VersionNumber(Integer major, Integer minor, Integer revision, Stri
         return new VersionNumber(major, minor, revision, null);
     }
 
-    /**
-     * Retrieves the version number with a different qualifier.
-     *
-     * @return this version number with a different qualifier
-     * @since 1.5.8
-     */
-    public VersionNumber withQualifier(String qualifier) {
+    @Override
+    public Version withQualifier(String qualifier) {
         return new VersionNumber(major, minor, revision, qualifier);
     }
 
@@ -182,37 +177,35 @@ public record VersionNumber(Integer major, Integer minor, Integer revision, Stri
         return revision == null ? 0 : revision;
     }
 
-    /**
-     * Indicates whether this is a snapshot version.
-     *
-     * @return {@code true} if this is a snapshot version; or
-     * {@code false} otherwise
-     * @since 1.5.8
-     */
     public boolean isSnapshot() {
         return qualifier().toUpperCase().contains(SNAPSHOT_QUALIFIER);
     }
 
-    public int compareTo(VersionNumber other) {
-        if (majorInt() != other.majorInt()) {
-            return majorInt() - other.majorInt();
-        }
-        if (minorInt() != other.minorInt()) {
-            return minorInt() - other.minorInt();
-        }
-        if (revisionInt() != other.revisionInt()) {
-            return revisionInt() - other.revisionInt();
+    @Override
+    public int compareTo(Version other) {
+        if (other instanceof VersionNumber otherNumber) {
+            if (majorInt() != otherNumber.majorInt()) {
+                return majorInt() - otherNumber.majorInt();
+            }
+            if (minorInt() != otherNumber.minorInt()) {
+                return minorInt() - otherNumber.minorInt();
+            }
+            if (revisionInt() != otherNumber.revisionInt()) {
+                return revisionInt() - otherNumber.revisionInt();
+            }
+
+            if (qualifier.equals(otherNumber.qualifier)) {
+                return 0;
+            } else if (qualifier.isEmpty()) {
+                return 1;
+            } else if (otherNumber.qualifier.isEmpty()) {
+                return -1;
+            }
+
+            return qualifier.toLowerCase().compareTo(otherNumber.qualifier.toLowerCase());
         }
 
-        if (qualifier.equals(other.qualifier)) {
-            return 0;
-        } else if (qualifier.isEmpty()) {
-            return 1;
-        } else if (other.qualifier.isEmpty()) {
-            return -1;
-        }
-
-        return qualifier.toLowerCase().compareTo(other.qualifier.toLowerCase());
+        return toString().compareTo(other.toString());
     }
 
     public String toString() {
@@ -235,7 +228,7 @@ public record VersionNumber(Integer major, Integer minor, Integer revision, Stri
 
     @Override
     public boolean equals(Object other) {
-        return other instanceof VersionNumber && compareTo((VersionNumber) other) == 0;
+        return other instanceof Version && compareTo((Version) other) == 0;
     }
 
     @Override

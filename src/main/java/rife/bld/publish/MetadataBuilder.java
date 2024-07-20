@@ -4,6 +4,7 @@
  */
 package rife.bld.publish;
 
+import rife.bld.dependencies.Version;
 import rife.bld.dependencies.VersionNumber;
 import rife.template.TemplateFactory;
 import rife.tools.StringUtils;
@@ -24,7 +25,7 @@ public class MetadataBuilder {
 
     private PublishInfo info_ = null;
     private ZonedDateTime timestamp_ = null;
-    private final Set<VersionNumber> otherVersions_ = new HashSet<>();
+    private final Set<Version> otherVersions_ = new HashSet<>();
     private ZonedDateTime snapshotTimestamp_ = null;
     private Integer snapshotBuildNumber_ = null;
     private boolean snapshotLocal_ = false;
@@ -81,7 +82,7 @@ public class MetadataBuilder {
      * @return this {@code MetadataBuilder} instance
      * @since 1.5.8
      */
-    public MetadataBuilder otherVersions(Collection<VersionNumber> otherVersions) {
+    public MetadataBuilder otherVersions(Collection<Version> otherVersions) {
         otherVersions_.addAll(otherVersions);
         return this;
     }
@@ -94,7 +95,7 @@ public class MetadataBuilder {
      * @return the other versions
      * @since 1.5.8
      */
-    public Set<VersionNumber> otherVersions() {
+    public Set<Version> otherVersions() {
         return otherVersions_;
     }
 

@@ -18,10 +18,10 @@ import java.util.regex.Pattern;
  * @since 1.5.8
  */
 public class Xml2MavenMetadata extends Xml2Data implements MavenMetadata {
-    private VersionNumber latest_ = VersionNumber.UNKNOWN;
-    private VersionNumber release_ = VersionNumber.UNKNOWN;
-    private final List<VersionNumber> versions_;
-    private VersionNumber snapshot_ = VersionNumber.UNKNOWN;
+    private Version latest_ = VersionNumber.UNKNOWN;
+    private Version release_ = VersionNumber.UNKNOWN;
+    private final List<Version> versions_;
+    private Version snapshot_ = VersionNumber.UNKNOWN;
 
     private StringBuilder characterData_ = null;
 
@@ -33,15 +33,15 @@ public class Xml2MavenMetadata extends Xml2Data implements MavenMetadata {
         versions_ = new ArrayList<>();
     }
 
-    public VersionNumber getLatest() {
+    public Version getLatest() {
         return latest_;
     }
 
-    public VersionNumber getRelease() {
+    public Version getRelease() {
         return release_;
     }
 
-    public VersionNumber getSnapshot() {
+    public Version getSnapshot() {
         return snapshot_;
     }
 
@@ -53,7 +53,7 @@ public class Xml2MavenMetadata extends Xml2Data implements MavenMetadata {
         return snapshotBuildNumber_;
     }
 
-    public List<VersionNumber> getVersions() {
+    public List<Version> getVersions() {
         return versions_;
     }
 
@@ -87,7 +87,7 @@ public class Xml2MavenMetadata extends Xml2Data implements MavenMetadata {
                 if (snapshotTimestamp_ != null && snapshotBuildNumber_ != null) {
                     qualifier = snapshotTimestamp_ + "-" + snapshotBuildNumber_;
                 }
-                snapshot_ = new VersionNumber(version.major(), version.minor(), version.revision(), qualifier);
+                snapshot_ = version.withQualifier(qualifier);
             }
         }
 

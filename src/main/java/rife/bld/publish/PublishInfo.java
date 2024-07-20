@@ -4,6 +4,7 @@
  */
 package rife.bld.publish;
 
+import rife.bld.dependencies.Version;
 import rife.bld.dependencies.VersionNumber;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.List;
 public class PublishInfo {
     private String groupId_ = null;
     private String artifactId_ = null;
-    private VersionNumber version_ = null;
+    private Version version_ = null;
     private String name_ = null;
     private String description_ = null;
     private String url_ = null;
@@ -81,7 +82,7 @@ public class PublishInfo {
      * @return this {@code PublishInfo} instance
      * @since 1.5.7
      */
-    public PublishInfo version(VersionNumber version) {
+    public PublishInfo version(Version version) {
         version_ = version;
         return this;
     }
@@ -92,7 +93,7 @@ public class PublishInfo {
      * @return the project's version.
      * @since 1.5.7
      */
-    public VersionNumber version() {
+    public Version version() {
         return version_;
     }
 

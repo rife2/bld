@@ -36,7 +36,7 @@ public class VersionResolution {
      */
     public static final String PROPERTY_OVERRIDE_PREFIX = "bld.override";
 
-    private final Map<String, VersionNumber> versionOverrides_ = new HashMap<>();
+    private final Map<String, Version> versionOverrides_ = new HashMap<>();
 
     /**
      * Returns a dummy {@code VersionResolution} instance that doesn't override anything.
@@ -49,7 +49,7 @@ public class VersionResolution {
     }
 
     /**
-     * Creates a new instance of the {@code VersionReslution} class from hierarchical properties that
+     * Creates a new instance of the {@code VersionResolution} class from hierarchical properties that
      * are passed in.
      * <p>
      * The actual version overrides are determined at instantiation time and any future changes to the
@@ -83,7 +83,7 @@ public class VersionResolution {
      * @return the overridden version if it is available; or the original version otherwise
      * @since 2.0
      */
-    public VersionNumber overrideVersion(Dependency original) {
+    public Version overrideVersion(Dependency original) {
         var overridden = versionOverrides_.get(original.toArtifactString());
         if (overridden == null) {
             return original.version();
@@ -119,7 +119,7 @@ public class VersionResolution {
      * @return the map of version overrides
      * @since 2.0
      */
-    public Map<String, VersionNumber> versionOverrides() {
+    public Map<String, Version> versionOverrides() {
         return versionOverrides_;
     }
 }
