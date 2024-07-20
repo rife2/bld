@@ -35,14 +35,11 @@ import static rife.tools.FileUtils.JAVA_FILE_PATTERN;
 public class Wrapper {
     private enum LaunchMode {
         Cli,
-        Build,
-        Json
+        Build
     }
 
     public static final String BUILD_ARGUMENT = "--build";
-    public static final String JSON_ARGUMENT = "--json";
     public static final String OFFLINE_ARGUMENT = "--offline";
-    public static final String HELP_COMMAND = "help";
 
     public static final String WRAPPER_PREFIX = "bld-wrapper";
     public static final String WRAPPER_PROPERTIES = WRAPPER_PREFIX + ".properties";
@@ -399,18 +396,6 @@ public class Wrapper {
                 OFFLINE_ARGUMENT.equals(arguments.get(1))) {
                 offline_ = true;
             }
-
-            var help_index = arguments.indexOf(HELP_COMMAND);
-            if (help_index != -1) {
-                try {
-                    if (arguments.get(help_index + 1).equals(JSON_ARGUMENT) ||
-                        arguments.get(help_index + 2).equals(JSON_ARGUMENT)) {
-                        launchMode_ = LaunchMode.Json;
-                    }
-                } catch (IndexOutOfBoundsException e) {
-                    // no-op, there are no additional arguments, so definitely no json option
-                }
-            }
         }
 
         try {
@@ -520,10 +505,8 @@ public class Wrapper {
         var is_snapshot = isSnapshot(version);
         var is_local = false;
         if (offline_) {
-            if (launchMode_ != LaunchMode.Json) {
-                System.out.println("Offline mode: no artifacts will be checked nor downloaded");
-                System.out.flush();
-            }
+            System.out.println("Offline mode: no artifacts will be checked nor downloaded");
+            System.out.flush();
         }
         else {
             if (is_snapshot) {
@@ -600,19 +583,15 @@ public class Wrapper {
     private void downloadDistribution(File file, String downloadUrl)
     throws IOException {
         try {
-            if (launchMode_ != LaunchMode.Json) {
-                System.out.print("Downloading: " + downloadUrl + " ... ");
-                System.out.flush();
-            }
+            System.out.print("Downloading: " + downloadUrl + " ... ");
+            System.out.flush();
             var url = new URL(downloadUrl);
             var readableByteChannel = Channels.newChannel(url.openStream());
             try (var fileOutputStream = new FileOutputStream(file)) {
                 var fileChannel = fileOutputStream.getChannel();
                 fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
-                if (launchMode_ != LaunchMode.Json) {
-                    System.out.print("done");
-                }
+                System.out.print("done");
             }
         } catch (FileNotFoundException e) {
             System.err.println("not found");
@@ -624,9 +603,7 @@ public class Wrapper {
             Files.deleteIfExists(file.toPath());
             throw e;
         } finally {
-            if (launchMode_ != LaunchMode.Json) {
-                System.out.println();
-            }
+            System.out.println();
         }
     }
 
