@@ -158,6 +158,16 @@ public class TestDependencyResolver {
     }
 
     @Test
+    void testGetCompileDependenciesAssertJ() {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.assertj", "assertj-joda-time", new VersionNumber(2, 2, 0)));
+        var dependencies = resolver.getDirectDependencies(compile);
+        assertNotNull(dependencies);
+        assertEquals(1, dependencies.size());
+        assertEquals("""
+            org.assertj:assertj-core""", StringUtils.join(dependencies, "\n"));
+    }
+
+    @Test
     void testGetCompileDependenciesJettyOverride1() {
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.13")),
             ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));

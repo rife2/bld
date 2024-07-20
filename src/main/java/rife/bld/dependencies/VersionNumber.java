@@ -51,6 +51,10 @@ public record VersionNumber(Integer major, Integer minor, Integer revision, Stri
 
         var matcher = VERSION_PATTERN.matcher(version);
         if (!matcher.matches()) {
+            // bld doesn't support version ranges at this time
+            if (version.startsWith("[") || version.startsWith("(")) {
+                return UNKNOWN;
+            }
             return new VersionGeneric(version);
         }
 
