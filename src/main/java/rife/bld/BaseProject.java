@@ -8,13 +8,8 @@ import rife.bld.dependencies.*;
 import rife.bld.help.*;
 import rife.bld.operations.*;
 import rife.tools.FileUtils;
-import rife.tools.StringUtils;
-import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -803,7 +798,7 @@ public class BaseProject extends BuildExecutor {
      * @return a newly created {@code Dependency} instance
      * @since 1.5
      */
-    public Dependency dependency(String groupId, String artifactId, VersionNumber version) {
+    public Dependency dependency(String groupId, String artifactId, Version version) {
         return new Dependency(groupId, artifactId, version);
     }
 
@@ -817,7 +812,7 @@ public class BaseProject extends BuildExecutor {
      * @return a newly created {@code Dependency} instance
      * @since 1.5
      */
-    public Dependency dependency(String groupId, String artifactId, VersionNumber version, String classifier) {
+    public Dependency dependency(String groupId, String artifactId, Version version, String classifier) {
         return new Dependency(groupId, artifactId, version, classifier);
     }
 
@@ -832,7 +827,7 @@ public class BaseProject extends BuildExecutor {
      * @return a newly created {@code Dependency} instance
      * @since 1.5
      */
-    public Dependency dependency(String groupId, String artifactId, VersionNumber version, String classifier, String type) {
+    public Dependency dependency(String groupId, String artifactId, Version version, String classifier, String type) {
         return new Dependency(groupId, artifactId, version, classifier, type);
     }
 
