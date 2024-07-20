@@ -10,6 +10,7 @@ import java.util.*;
 import static java.util.Objects.requireNonNull;
 
 /**
+ * Generic version implementation based on the Maven implementation.
  *
  * @since 2.0
  */
@@ -40,7 +41,7 @@ public class VersionGeneric implements Version {
      * @param version The version string, must not be {@code null}.
      * @since 2.0
      */
-    VersionGeneric(String version) {
+    public VersionGeneric(String version) {
         version_ = requireNonNull(version, "version cannot be null");
         items_ = parse(version);
         hash_ = items_.hashCode();
