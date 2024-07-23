@@ -26,7 +26,6 @@ import static rife.bld.dependencies.Dependency.CLASSIFIER_SOURCES;
 public class WrapperExtensionResolver {
     private final VersionResolution resolution_;
     private final ArtifactRetriever retriever_;
-    private final BldCache cache_;
     private final File destinationDirectory_;
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencySet dependencies_ = new DependencySet();
@@ -50,8 +49,6 @@ public class WrapperExtensionResolver {
         retriever_ = ArtifactRetriever.cachingInstance();
         Repository.resolveMavenLocal(properties);
 
-        cache_ = new BldCache(destinationDirectory, resolution_);
-
         destinationDirectory_ = destinationDirectory;
 
         for (var repository : repositories) {
@@ -62,15 +59,17 @@ public class WrapperExtensionResolver {
 
         downloadSources_ = downloadSources;
         downloadJavadoc_ = downloadJavadoc;
-        cache_.cacheExtensionsHash(
-            repositories_.stream().map(Objects::toString).toList(),
-            dependencies_.stream().map(Objects::toString).toList());
     }
 
     public void updateExtensions() {
         // verify and update the fingerprint hash file,
         // don't update the extensions if the hash is identical
-        if (cache_.isExtensionsCacheValid(downloadSources_, downloadJavadoc_)) {
+        var cache = new BldCache(destinationDirectory_, resolution_);
+        cache.cacheExtensionsHash(
+            repositories_.stream().map(Objects::toString).toList(),
+            dependencies_.stream().map(Objects::toString).toList());
+        cache.cacheExtensionsDownloads(downloadSources_, downloadJavadoc_);
+        if (cache.isExtensionsCacheValid()) {
             return;
         }
 
@@ -80,9 +79,8 @@ public class WrapperExtensionResolver {
         // purge the files that are not part of the latest extensions anymore
         purgeExtensionDependencies(filenames);
 
-        cache_.cacheExtensionsDownloads(downloadSources_, downloadJavadoc_);
-        cache_.cacheExtensionsLocalArtifacts(localArtifacts_);
-        cache_.writeCache();
+        cache.cacheExtensionsLocalArtifacts(localArtifacts_);
+        cache.writeCache();
 
         if (headerPrinted_) {
             System.out.println();

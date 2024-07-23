@@ -1594,14 +1594,14 @@ public class BaseProject extends BuildExecutor {
         var resolution = new VersionResolution(properties());
         var cache = new BldCache(libBldDirectory(), resolution);
         cache.cacheDependenciesHash(repositories(), dependencies());
-        if (cache.isDependenciesCacheValid(downloadSources(), downloadJavadoc())) {
+        cache.cacheDependenciesDownloads(downloadSources(), downloadJavadoc());
+        if (cache.isDependenciesCacheValid()) {
             return;
         }
 
         try {
             executeAutoDownloadPurge();
 
-            cache.cacheDependenciesDownloads(downloadSources(), downloadJavadoc());
             cache.writeCache();
         } catch (Exception e) {
             throw new RuntimeException(e);

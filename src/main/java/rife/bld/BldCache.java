@@ -56,7 +56,7 @@ public class BldCache {
     private static final String PROPERTY_DEPENDENCIES_RUNTIME_DEPENDENCY_TREE = PROPERTY_DEPENDENCIES_PREFIX + ".runtime" + PROPERTY_SUFFIX_DEPENDENCY_TREE;
     private static final String PROPERTY_DEPENDENCIES_TEST_DEPENDENCY_TREE = PROPERTY_DEPENDENCIES_PREFIX + ".test" + PROPERTY_SUFFIX_DEPENDENCY_TREE;
 
-    private final File bldLibDir_;
+    private final File cacheDir_;
     private final VersionResolution resolution_;
     private String extensionsHash_;
     private Boolean extensionsDownloadSources_;
@@ -74,18 +74,30 @@ public class BldCache {
     /**
      * Creates a new {@code BldCache} instance.
      *
-     * @param bldLibDir the library directory where the bld cache file is stored
+     * @param cacheDir the directory where the bld cache file is stored
      * @param resolution the version resolution that should be used when needed during the cache operations
      * @since 2.0
      */
-    public BldCache(File bldLibDir, VersionResolution resolution) {
-        bldLibDir_ = bldLibDir;
+    public BldCache(File cacheDir, VersionResolution resolution) {
+        cacheDir_ = cacheDir;
         resolution_ = resolution;
 
-        new File(bldLibDir, WRAPPER_PROPERTIES_HASH).delete();
-        new File(bldLibDir, BLD_BUILD_HASH).delete();
+        new File(cacheDir, WRAPPER_PROPERTIES_HASH).delete();
+        new File(cacheDir, BLD_BUILD_HASH).delete();
     }
 
+    /**
+     * Calculates the hash that corresponds to the provided repositories and extensions.
+     * <p>
+     * This will be stored with this instance of {@code BldCache}, using {@link #writeCache()} is required to store it to disk.
+     *
+     * @param repositories the repositories to include into the hash
+     * @param extensions the extensions to include into the hash
+     * @since 2.0
+     * @see #isExtensionsHashValid()
+     * @see #isExtensionsCacheValid()
+     * @see #writeCache()
+     */
     public void cacheExtensionsHash(Collection<String> repositories, Collection<String> extensions) {
         try {
             var overrides_fp = String.join("\n", resolution_.versionOverrides().entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).toList());
@@ -102,21 +114,95 @@ public class BldCache {
         }
     }
 
-    public boolean isExtensionHashValid() {
+    /**
+     * Determined whether the extensions hash stored in this {@code BldCache} instance is the same as the one stored
+     * in the cache on disk.
+     *
+     * @return {@code true} is the extensions hash is the same; or {@code false} otherwise
+     * @since 2.0
+     * @see #cacheExtensionsHash
+     * @see #isExtensionsCacheValid
+     */
+    public boolean isExtensionsHashValid() {
         return validateExtensionsHash(extensionsHash_);
     }
 
-    public boolean isExtensionsCacheValid(boolean downloadSources, boolean downloadJavadoc) {
+    /**
+     * Sets which other artifacts should be downloaded besides main jars for the extensions.
+     * <p>
+     * This will be stored with this instance of {@code BldCache}, using {@link #writeCache()} is required to store it to disk.
+     *
+     * @param downloadSources whether the extensions sources should be downloaded or not
+     * @param downloadJavadoc whether the extensions javadocs should be downloaded or not
+     * @since 2.0
+     * @see #isExtensionsCacheValid()
+     * @see #writeCache()
+     */
+    public void cacheExtensionsDownloads(boolean downloadSources, boolean downloadJavadoc) {
+        extensionsDownloadSources_ = downloadSources;
+        extensionsDownloadJavadocs_ = downloadJavadoc;
+    }
+
+    /**
+     * Sets which local artifacts were used by the transfer of the extensions into the project.
+     * <p>
+     * This will be stored with this instance of {@code BldCache}, using {@link #writeCache()} is required to store it to disk.
+     *
+     * @param extensionsLocalArtifacts the list of extension files that were pulled from local storage
+     * @since 2.0
+     * @see #isExtensionsCacheValid()
+     * @see #writeCache()
+     */
+    public void cacheExtensionsLocalArtifacts(List<File> extensionsLocalArtifacts) {
+        extensionsLocalArtifacts_ = extensionsLocalArtifacts;
+    }
+
+    /**
+     * Sets the textual presentation of the extensions dependency tree.
+     * <p>
+     * This will be stored with this instance of {@code BldCache}, using {@link #writeCache()} is required to store it to disk.
+     *
+     * @param dependencyTree the textual presentation of the extensions dependency tree
+     * @since 2.0
+     * @see #getCachedExtensionsDependencyTree
+     * @see #writeCache()
+     */
+    public void cacheExtensionsDependencyTree(String dependencyTree) {
+        extensionsDependencyTree_ = dependencyTree;
+    }
+
+    /**
+     * Retrieves the textual presentation of the extensions dependency tree from the cache state on disk.
+     *
+     * @return the cached textual presentation of the extensions dependency tree; or {@code null} of this dependency
+     * tree wasn't found in the stored cache
+     * @since 2.0
+     * @see #cacheExtensionsDependencyTree
+     */
+    public String getCachedExtensionsDependencyTree() {
+        return hashProperties().getProperty(PROPERTY_EXTENSIONS_DEPENDENCY_TREE);
+    }
+
+    /**
+     * Determines whether the extensions state stored in this {@code BldCache} instance is the same as the state of the cache on disk.
+     *
+     * @return {@code true} if state is identical; or {@code false} otherwise
+     * @since 2.0
+     * @see #cacheExtensionsHash
+     * @see #cacheExtensionsDownloads
+     * @see #cacheExtensionsLocalArtifacts
+     */
+    public boolean isExtensionsCacheValid() {
         var properties = hashProperties();
         if (properties.isEmpty()) {
             return false;
         }
 
-        if (downloadSources != Boolean.parseBoolean(properties.getProperty(PROPERTY_EXTENSIONS_DOWNLOAD_SOURCES))) {
+        if (extensionsDownloadSources_ != Boolean.parseBoolean(properties.getProperty(PROPERTY_EXTENSIONS_DOWNLOAD_SOURCES))) {
             return false;
         }
 
-        if (downloadJavadoc != Boolean.parseBoolean(properties.getProperty(PROPERTY_EXTENSIONS_DOWNLOAD_JAVADOC))) {
+        if (extensionsDownloadJavadocs_ != Boolean.parseBoolean(properties.getProperty(PROPERTY_EXTENSIONS_DOWNLOAD_JAVADOC))) {
             return false;
         }
 
@@ -162,23 +248,18 @@ public class BldCache {
         return true;
     }
 
-    public void cacheExtensionsDownloads(boolean downloadSources, boolean downloadJavadoc) {
-        extensionsDownloadSources_ = downloadSources;
-        extensionsDownloadJavadocs_ = downloadJavadoc;
-    }
-
-    public void cacheExtensionsDependencyTree(String dependencyTree) {
-        extensionsDependencyTree_ = dependencyTree;
-    }
-
-    public String getCachedExtensionsDependencyTree() {
-        return hashProperties().getProperty(PROPERTY_EXTENSIONS_DEPENDENCY_TREE);
-    }
-
-    public void cacheExtensionsLocalArtifacts(List<File> extensionsLocalArtifacts) {
-        extensionsLocalArtifacts_ = extensionsLocalArtifacts;
-    }
-
+    /**
+     * Calculates the hash that corresponds to the provided repositories and dependencies.
+     * <p>
+     * This will be stored with this instance of {@code BldCache}, using {@link #writeCache()} is required to store it to disk.
+     *
+     * @param repositories the repositories to include into the hash
+     * @param dependencies the dependencies to include into the hash
+     * @since 2.0
+     * @see #isDependenciesHashValid()
+     * @see #isDependenciesCacheValid()
+     * @see #writeCache()
+     */
     public void cacheDependenciesHash(List<Repository> repositories, DependencyScopes dependencies) {
         var finger_print = new StringBuilder();
         finger_print.append(String.join("\n", resolution_.versionOverrides().entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).toList()));
@@ -207,21 +288,158 @@ public class BldCache {
         }
     }
 
+    /**
+     * Determined whether the dependencies hash stored in this {@code BldCache} instance is the same as the one stored
+     * in the cache on disk.
+     *
+     * @return {@code true} is the dependencies hash is the same; or {@code false} otherwise
+     * @since 2.0
+     * @see #cacheDependenciesHash
+     * @see #isDependenciesCacheValid
+     */
     public boolean isDependenciesHashValid() {
         return validateDependenciesHash(dependenciesHash_);
     }
 
-    public boolean isDependenciesCacheValid(boolean downloadSources, boolean downloadJavadoc) {
+    /**
+     * Sets which other artifacts should be downloaded besides main jars for the dependencies.
+     * <p>
+     * This will be stored with this instance of {@code BldCache}, using {@link #writeCache()} is required to store it to disk.
+     *
+     * @param downloadSources whether the dependencies sources should be downloaded or not
+     * @param downloadJavadoc whether the dependencies javadocs should be downloaded or not
+     * @since 2.0
+     * @see #isDependenciesCacheValid()
+     * @see #writeCache()
+     */
+    public void cacheDependenciesDownloads(boolean downloadSources, boolean downloadJavadoc) {
+        dependenciesDownloadSources_ = downloadSources;
+        dependenciesDownloadJavadocs_ = downloadJavadoc;
+    }
+
+    /**
+     * Sets the textual presentation of the compile scope dependency tree.
+     * <p>
+     * This will be stored with this instance of {@code BldCache}, using {@link #writeCache()} is required to store it to disk.
+     *
+     * @param compileTree the textual presentation of the compile scope dependency tree
+     * @since 2.0
+     * @see #getCachedDependenciesCompileDependencyTree
+     * @see #writeCache()
+     */
+    public void cacheDependenciesCompileDependencyTree(String compileTree) {
+        dependenciesCompileDependencyTree_ = compileTree;
+    }
+
+    /**
+     * Retrieves the textual presentation of the compile scope dependency tree from the cache state on disk.
+     *
+     * @return the cached textual presentation of the compile scope dependency tree; or {@code null} of this dependency
+     * tree wasn't found in the stored cache
+     * @since 2.0
+     * @see #cacheDependenciesCompileDependencyTree
+     */
+    public String getCachedDependenciesCompileDependencyTree() {
+        return hashProperties().getProperty(PROPERTY_DEPENDENCIES_COMPILE_DEPENDENCY_TREE);
+    }
+
+    /**
+     * Sets the textual presentation of the provided scope dependency tree.
+     * <p>
+     * This will be stored with this instance of {@code BldCache}, using {@link #writeCache()} is required to store it to disk.
+     *
+     * @param providedTree the textual presentation of the provided scope dependency tree
+     * @since 2.0
+     * @see #getCachedDependenciesProvidedDependencyTree
+     * @see #writeCache()
+     */
+    public void cacheDependenciesProvidedDependencyTree(String providedTree) {
+        dependenciesProvidedDependencyTree_ = providedTree;
+    }
+
+    /**
+     * Retrieves the textual presentation of the provided scope dependency tree from the cache state on disk.
+     *
+     * @return the cached textual presentation of the provided scope dependency tree; or {@code null} of this dependency
+     * tree wasn't found in the stored cache
+     * @since 2.0
+     * @see #cacheDependenciesProvidedDependencyTree
+     */
+    public String getCachedDependenciesProvidedDependencyTree() {
+        return hashProperties().getProperty(PROPERTY_DEPENDENCIES_PROVIDED_DEPENDENCY_TREE);
+    }
+
+    /**
+     * Sets the textual presentation of the runtime scope dependency tree.
+     * <p>
+     * This will be stored with this instance of {@code BldCache}, using {@link #writeCache()} is required to store it to disk.
+     *
+     * @param runtimeTree the textual presentation of the runtime scope dependency tree
+     * @since 2.0
+     * @see #getCachedDependenciesRuntimeDependencyTree
+     * @see #writeCache()
+     */
+    public void cacheDependenciesRuntimeDependencyTree(String runtimeTree) {
+        dependenciesRuntimeDependencyTree_ = runtimeTree;
+    }
+
+    /**
+     * Retrieves the textual presentation of the runtime scope dependency tree from the cache state on disk.
+     *
+     * @return the cached textual presentation of the runtime scope dependency tree; or {@code null} of this dependency
+     * tree wasn't found in the stored cache
+     * @since 2.0
+     * @see #cacheDependenciesRuntimeDependencyTree
+     */
+    public String getCachedDependenciesRuntimeDependencyTree() {
+        return hashProperties().getProperty(PROPERTY_DEPENDENCIES_RUNTIME_DEPENDENCY_TREE);
+    }
+
+    /**
+     * Sets the textual presentation of the test scope dependency tree.
+     * <p>
+     * This will be stored with this instance of {@code BldCache}, using {@link #writeCache()} is required to store it to disk.
+     *
+     * @param testTree the textual presentation of the test scope dependency tree
+     * @since 2.0
+     * @see #getCachedDependenciesTestDependencyTree
+     * @see #writeCache()
+     */
+    public void cacheDependenciesTestDependencyTree(String testTree) {
+        dependenciesTestDependencyTree_ = testTree;
+    }
+
+    /**
+     * Retrieves the textual presentation of the test scope dependency tree from the cache state on disk.
+     *
+     * @return the cached textual presentation of the test scope dependency tree; or {@code null} of this dependency
+     * tree wasn't found in the stored cache
+     * @since 2.0
+     * @see #cacheDependenciesTestDependencyTree
+     */
+    public String getCachedDependenciesTestDependencyTree() {
+        return hashProperties().getProperty(PROPERTY_DEPENDENCIES_TEST_DEPENDENCY_TREE);
+    }
+
+    /**
+     * Determines whether the dependencies state stored in this {@code BldCache} instance is the same as the state of the cache on disk.
+     *
+     * @return {@code true} if state is identical; or {@code false} otherwise
+     * @since 2.0
+     * @see #cacheDependenciesHash
+     * @see #cacheDependenciesDownloads
+     */
+    public boolean isDependenciesCacheValid() {
         var properties = hashProperties();
         if (properties.isEmpty()) {
             return false;
         }
 
-        if (downloadSources != Boolean.parseBoolean(properties.getProperty(PROPERTY_DEPENDENCIES_DOWNLOAD_SOURCES))) {
+        if (dependenciesDownloadSources_ != Boolean.parseBoolean(properties.getProperty(PROPERTY_DEPENDENCIES_DOWNLOAD_SOURCES))) {
             return false;
         }
 
-        if (downloadJavadoc != Boolean.parseBoolean(properties.getProperty(PROPERTY_DEPENDENCIES_DOWNLOAD_JAVADOC))) {
+        if (dependenciesDownloadJavadocs_ != Boolean.parseBoolean(properties.getProperty(PROPERTY_DEPENDENCIES_DOWNLOAD_JAVADOC))) {
             return false;
         }
 
@@ -237,45 +455,8 @@ public class BldCache {
         return hash.equals(properties.getProperty(PROPERTY_DEPENDENCIES_HASH));
     }
 
-    public void cacheDependenciesDownloads(boolean downloadSources, boolean downloadJavadoc) {
-        dependenciesDownloadSources_ = downloadSources;
-        dependenciesDownloadJavadocs_ = downloadJavadoc;
-    }
-
-    public void cacheDependenciesCompileDependencyTree(String compileTree) {
-        dependenciesCompileDependencyTree_ = compileTree;
-    }
-
-    public String getCachedDependenciesCompileDependencyTree() {
-        return hashProperties().getProperty(PROPERTY_DEPENDENCIES_COMPILE_DEPENDENCY_TREE);
-    }
-
-    public void cacheDependenciesProvidedDependencyTree(String providedTree) {
-        dependenciesProvidedDependencyTree_ = providedTree;
-    }
-
-    public String getCachedDependenciesProvidedDependencyTree() {
-        return hashProperties().getProperty(PROPERTY_DEPENDENCIES_PROVIDED_DEPENDENCY_TREE);
-    }
-
-    public void cacheDependenciesRuntimeDependencyTree(String runtimeTree) {
-        dependenciesRuntimeDependencyTree_ = runtimeTree;
-    }
-
-    public String getCachedDependenciesRuntimeDependencyTree() {
-        return hashProperties().getProperty(PROPERTY_DEPENDENCIES_RUNTIME_DEPENDENCY_TREE);
-    }
-
-    public void cacheDependenciesTestDependencyTree(String testTree) {
-        dependenciesTestDependencyTree_ = testTree;
-    }
-
-    public String getCachedDependenciesTestDependencyTree() {
-        return hashProperties().getProperty(PROPERTY_DEPENDENCIES_TEST_DEPENDENCY_TREE);
-    }
-
     private File getCacheFile() {
-        return new File(bldLibDir_, BLD_CACHE);
+        return new File(cacheDir_, BLD_CACHE);
     }
 
     private Properties hashProperties() {
@@ -292,6 +473,11 @@ public class BldCache {
         return properties;
     }
 
+    /**
+     * Writes the state of this {@code BldCache} instance to disk.
+     *
+     * @since 2.0
+     */
     public void writeCache() {
         var properties = hashProperties();
 
@@ -362,7 +548,7 @@ public class BldCache {
                 properties.put(PROPERTY_DEPENDENCIES_DOWNLOAD_JAVADOC, String.valueOf(dependenciesDownloadJavadocs_));
             }
 
-            bldLibDir_.mkdirs();
+            cacheDir_.mkdirs();
 
             try (var writer = new BufferedWriter(new FileWriter(getCacheFile()))) {
                 properties.store(writer, null);

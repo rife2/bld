@@ -58,7 +58,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
             extensions_cache.cacheExtensionsHash(
                 extensionRepositories().stream().map(Repository::toString).toList(),
                 extensionDependencies().scope(compile).stream().map(Dependency::toString).toList());
-            if (extensions_cache.isExtensionHashValid()) {
+            if (extensions_cache.isExtensionsHashValid()) {
                 var cached_tree = extensions_cache.getCachedExtensionsDependencyTree();
                 if (cached_tree != null) {
                     extensions_tree = cached_tree;
