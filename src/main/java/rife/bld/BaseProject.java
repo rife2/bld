@@ -1593,7 +1593,7 @@ public class BaseProject extends BuildExecutor {
     private void performAutoDownloadPurge() {
         var resolution = new VersionResolution(properties());
         var cache = new BldCache(libBldDirectory(), resolution);
-        cache.fingerprintDependencies(repositories(), dependencies());
+        cache.cacheDependenciesHash(repositories(), dependencies());
         if (cache.isDependenciesCacheValid(downloadSources(), downloadJavadoc())) {
             return;
         }

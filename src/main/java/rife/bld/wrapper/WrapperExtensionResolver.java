@@ -62,7 +62,7 @@ public class WrapperExtensionResolver {
 
         downloadSources_ = downloadSources;
         downloadJavadoc_ = downloadJavadoc;
-        cache_.fingerprintExtensions(
+        cache_.cacheExtensionsHash(
             repositories_.stream().map(Objects::toString).toList(),
             dependencies_.stream().map(Objects::toString).toList());
     }
@@ -81,7 +81,8 @@ public class WrapperExtensionResolver {
         purgeExtensionDependencies(filenames);
 
         cache_.cacheExtensionsDownloads(downloadSources_, downloadJavadoc_);
-        cache_.writeCache(localArtifacts_);
+        cache_.cacheExtensionsLocalArtifacts(localArtifacts_);
+        cache_.writeCache();
 
         if (headerPrinted_) {
             System.out.println();

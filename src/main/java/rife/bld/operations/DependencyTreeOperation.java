@@ -55,7 +55,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
         BldCache extensions_cache = null;
         if (libBldDir_ != null) {
             extensions_cache =  new BldCache(libBldDir_, new VersionResolution(extensionProperties()));
-            extensions_cache.fingerprintExtensions(
+            extensions_cache.cacheExtensionsHash(
                 extensionRepositories().stream().map(Repository::toString).toList(),
                 extensionDependencies().scope(compile).stream().map(Dependency::toString).toList());
             if (extensions_cache.isExtensionHashValid()) {
@@ -83,7 +83,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
         BldCache dependencies_cache = null;
         if (libBldDir_ != null) {
             dependencies_cache =  new BldCache(libBldDir_, new VersionResolution(properties()));
-            dependencies_cache.fingerprintDependencies(repositories(), dependencies());
+            dependencies_cache.cacheDependenciesHash(repositories(), dependencies());
             if (dependencies_cache.isDependenciesHashValid()) {
                 var cached_compile_tree = dependencies_cache.getCachedDependenciesCompileDependencyTree();
                 if (cached_compile_tree != null) {
