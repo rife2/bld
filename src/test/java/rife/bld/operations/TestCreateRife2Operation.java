@@ -128,8 +128,8 @@ public class TestCreateRife2Operation {
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
-                    /myapp/lib/test/jsoup-1\\.17\\.2-sources\\.jar
-                    /myapp/lib/test/jsoup-1\\.17\\.2\\.jar
+                    /myapp/lib/test/jsoup-1\\.18\\.1-sources\\.jar
+                    /myapp/lib/test/jsoup-1\\.18\\.1\\.jar
                     /myapp/lib/test/junit-jupiter-5\\.10\\.3-sources\\.jar
                     /myapp/lib/test/junit-jupiter-5\\.10\\.3\\.jar
                     /myapp/lib/test/junit-jupiter-api-5\\.10\\.3-sources\\.jar
@@ -242,8 +242,8 @@ public class TestCreateRife2Operation {
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
-                    /myapp/lib/test/jsoup-1\\.17\\.2-sources\\.jar
-                    /myapp/lib/test/jsoup-1\\.17\\.2\\.jar
+                    /myapp/lib/test/jsoup-1\\.18\\.1-sources\\.jar
+                    /myapp/lib/test/jsoup-1\\.18\\.1\\.jar
                     /myapp/lib/test/junit-jupiter-5\\.10\\.3-sources\\.jar
                     /myapp/lib/test/junit-jupiter-5\\.10\\.3\\.jar
                     /myapp/lib/test/junit-jupiter-api-5\\.10\\.3-sources\\.jar
@@ -487,8 +487,8 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local/jetty-session-12\\.0\\.11\\.jar
                 /myapp/lib/local/jetty-util-12\\.0\\.11-sources\\.jar
                 /myapp/lib/local/jetty-util-12\\.0\\.11\\.jar
-                /myapp/lib/local/jsoup-1\\.17\\.2-sources\\.jar
-                /myapp/lib/local/jsoup-1\\.17\\.2\\.jar
+                /myapp/lib/local/jsoup-1\\.18\\.1-sources\\.jar
+                /myapp/lib/local/jsoup-1\\.18\\.1\\.jar
                 /myapp/lib/local/junit-jupiter-5\\.10\\.3-sources\\.jar
                 /myapp/lib/local/junit-jupiter-5\\.10\\.3\\.jar
                 /myapp/lib/local/junit-jupiter-api-5\\.10\\.3-sources\\.jar
@@ -663,8 +663,8 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local_test
                 /myapp/lib/local_test/apiguardian-api-1\\.1\\.2-sources\\.jar
                 /myapp/lib/local_test/apiguardian-api-1\\.1\\.2\\.jar
-                /myapp/lib/local_test/jsoup-1\\.17\\.2-sources\\.jar
-                /myapp/lib/local_test/jsoup-1\\.17\\.2\\.jar
+                /myapp/lib/local_test/jsoup-1\\.18\\.1-sources\\.jar
+                /myapp/lib/local_test/jsoup-1\\.18\\.1\\.jar
                 /myapp/lib/local_test/junit-jupiter-5\\.10\\.3-sources\\.jar
                 /myapp/lib/local_test/junit-jupiter-5\\.10\\.3\\.jar
                 /myapp/lib/local_test/junit-jupiter-api-5\\.10\\.3-sources\\.jar
