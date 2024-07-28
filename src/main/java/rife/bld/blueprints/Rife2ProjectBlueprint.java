@@ -41,7 +41,7 @@ public class Rife2ProjectBlueprint extends WebProject {
         scope(compile)
             .include(dependency("com.uwyn.rife2", "rife2", version(1,8,0)));
         scope(test)
-            .include(dependency("org.jsoup", "jsoup", version(1,17,2)))
+            .include(dependency("org.jsoup", "jsoup", version(1,18,1)))
             .include(dependency("org.junit.jupiter", "junit-jupiter", version(5,10,3)))
             .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1,10,3)));
         scope(standalone)
