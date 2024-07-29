@@ -383,7 +383,8 @@ public class Wrapper {
             }
             currentDir_ = new File(current_file.getParent());
 
-            if (BUILD_ARGUMENT.equals(arguments.get(0))) {
+            if (!arguments.isEmpty() &&
+                BUILD_ARGUMENT.equals(arguments.get(0))) {
                 launchMode_ = LaunchMode.Build;
                 arguments.remove(0);
             }
