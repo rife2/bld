@@ -95,6 +95,27 @@ significantly reduces the cognitive load, and taking actions immediately
 without having to mentally construct a described plan, makes it easier to
 reason about your build.
 
+# IDE support
+
+<img src="https://rife2.com/images/bld-idea.png" style="width: 100%">
+
+Since version 2.0, bld comes with its own [IntelliJ IDEA plugin](https://github.com/rife2/bld-idea):
+
+* detect `bld` projects and find their main Java class
+* quick access to open and edit the main Java class and wrapper properties of `bld` projects
+* list all the commands in `bld` projects in a side panel
+* execute one or multiple commands in the order they were selected
+* reload the commands in the `bld` project
+* terminate currently running `bld` commands
+* `bld` console panel for command output with source code hyperlinking
+* display the `bld` dependency tree
+* toggle to run `bld` in offline or online mode
+* auto-save all open files before executing a `bld` command
+* convenient `bld` one-click cache invalidation
+* set `bld` commands to run before or after IDEA compilation
+* create custom `bld` command run configuration with options, JVM arguments, and before launch tasks
+* assign keyboard shortcuts to `bld` commands
+
 # Find out more
 
 `bld` lets your build logic get out of the way so that you can focus on writing
