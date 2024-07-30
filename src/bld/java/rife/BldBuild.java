@@ -35,34 +35,37 @@ public class BldBuild extends AbstractRife2Build {
         scope(test)
             .include(dependency("org.json", "json", version(20240303)));
 
-        var core_directory = new File(workDirectory(), "core");
-        var core_src_directory = new File(core_directory, "src");
-        var core_src_main_directory = new File(core_src_directory, "main");
-        var core_src_main_java_directory = new File(core_src_main_directory, "java");
-        var core_src_main_resources_directory = new File(core_src_main_directory, "resources");
-        var core_src_test_directory = new File(core_src_directory, "test");
-        var core_src_test_java_directory = new File(core_src_test_directory, "java");
-        var core_src_test_resources_directory = new File(core_src_test_directory, "resources");
-        var core_src_main_resources_templates_directory = new File(core_src_main_resources_directory, "templates");
+        var core_dir = new File(workDirectory(), "core");
+        var core_src_dir = new File(core_dir, "src");
+        var core_src_main_dir = new File(core_src_dir, "main");
 
         antlr4Operation
-            .sourceDirectories(List.of(new File(core_src_main_directory, "antlr")))
+            .sourceDirectories(List.of(new File(core_src_main_dir, "antlr")))
             .outputDirectory(new File(buildDirectory(), "generated/rife/template/antlr"));
 
-        precompileOperation()
-            .sourceDirectories(core_src_main_resources_templates_directory)
-            .templateTypes(HTML, XML, SQL, TXT, JSON);
+        var core_src_test_dir = new File(core_src_dir, "test");
+        var core_src_test_java_dir = new File(core_src_test_dir, "java");
+        var core_src_main_java_dir = new File(core_src_main_dir, "java");
 
         compileOperation()
-            .mainSourceDirectories(antlr4Operation.outputDirectory(), core_src_main_java_directory)
-            .testSourceDirectories(core_src_test_java_directory)
+            .mainSourceDirectories(antlr4Operation.outputDirectory(), core_src_main_java_dir)
+            .testSourceDirectories(core_src_test_java_dir)
             .compileOptions()
-                .debuggingInfo(JavacOptions.DebuggingInfo.ALL)
-                .addAll(List.of("-encoding", "UTF-8"));
+            .debuggingInfo(JavacOptions.DebuggingInfo.ALL)
+            .addAll(List.of("-encoding", "UTF-8"));
+
+        var core_src_main_resources_dir = new File(core_src_main_dir, "resources");
+        var core_src_main_resources_templates_dir = new File(core_src_main_resources_dir, "templates");
+
+        precompileOperation()
+            .sourceDirectories(core_src_main_resources_templates_dir)
+            .templateTypes(HTML, XML, SQL, TXT, JSON);
+
+        var core_src_test_resources_dir = new File(core_src_test_dir, "resources");
 
         jarOperation()
-            .sourceDirectories(core_src_main_resources_directory)
-            .excluded(Pattern.compile("^\\Q" + core_src_main_resources_templates_directory.getAbsolutePath() + "\\E.*"))
+            .sourceDirectories(core_src_main_resources_dir)
+            .excluded(Pattern.compile("^\\Q" + core_src_main_resources_templates_dir.getAbsolutePath() + "\\E.*"))
             .manifestAttribute(Attributes.Name.MAIN_CLASS, mainClass());
 
         zipBldOperation
@@ -70,11 +73,11 @@ public class BldBuild extends AbstractRife2Build {
             .destinationFileName("bld-" + version() + ".zip");
 
         testsBadgeOperation
-            .classpath(core_src_main_resources_directory.getAbsolutePath())
-            .classpath(core_src_test_resources_directory.getAbsolutePath());
-
+            .classpath(core_src_main_resources_dir.getAbsolutePath())
+            .classpath(core_src_test_resources_dir.getAbsolutePath());
+        
         javadocOperation()
-            .sourceFiles(FileUtils.getJavaFileList(core_src_main_java_directory))
+            .sourceFiles(FileUtils.getJavaFileList(core_src_main_java_dir))
             .javadocOptions()
                 .docTitle("<a href=\"https://rife2.com/bld\">bld</a> " + version())
                 .overview(new File(srcMainJavaDirectory(), "overview.html"));
