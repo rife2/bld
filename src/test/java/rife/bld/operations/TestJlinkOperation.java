@@ -5,7 +5,7 @@
 
 package rife.bld.operations;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import rife.bld.operations.exceptions.ExitStatusException;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -13,13 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestJlinkOperation {
     @Test
-    public void TestNoArguments() {
+    void testNoArguments() {
         var jlink = new JlinkOperation();
         assertThrows(ExitStatusException.class, jlink::execute);
     }
 
     @Test
-    public void TestVersion() {
+    void testVersion() {
         var jlink = new JlinkOperation().toolArg("--version");
         assertDoesNotThrow(jlink::execute);
     }

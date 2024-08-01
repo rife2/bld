@@ -5,7 +5,7 @@
 
 package rife.bld.operations;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import rife.bld.operations.exceptions.ExitStatusException;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -13,13 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestJmodOperation {
     @Test
-    public void TestNoArguments() {
+    void testNoArguments() {
         var jmod = new JmodOperation();
         assertThrows(ExitStatusException.class, jmod::execute);
     }
 
     @Test
-    public void TestVersion() {
+    void testVersion() {
         var jmod = new JmodOperation().operationMode(JmodOperation.OperationMode.DESCRIBE).toolArg("--version");
         assertDoesNotThrow(jmod::execute);
     }

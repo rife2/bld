@@ -5,7 +5,7 @@
 
 package rife.bld.operations;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import rife.bld.operations.exceptions.ExitStatusException;
 
 import java.io.File;
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestJpackageOperation {
     @Test
-    public void TestCreatePackage() throws Exception {
+    void testCreatePackage() throws Exception {
         var tmpdir = Files.createTempDirectory("bld-jpackage-test").toFile();
         tmpdir.deleteOnExit();
         var options = new JpackageOptions()
@@ -43,13 +43,13 @@ public class TestJpackageOperation {
     }
 
     @Test
-    public void TestNoArguments() {
+    void testNoArguments() {
         var jpackage = new JpackageOperation();
         assertThrows(ExitStatusException.class, jpackage::execute);
     }
 
     @Test
-    public void TestVersion() {
+    void testVersion() {
         var jpackage = new JpackageOperation().toolArg("--version");
         assertDoesNotThrow(jpackage::execute);
     }
