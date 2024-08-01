@@ -91,7 +91,7 @@ jobs:
 
     steps:
       - name: Install libmd
-        run: apt-get update -qq && apt-get install -y libmd0
+        run: sudo apt-get update -qq && sudo apt-get install -y libmd0
       - name: Checkout source repository
         uses: actions/checkout@v4
         with:

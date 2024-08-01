@@ -7,6 +7,7 @@ package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
 import rife.bld.operations.exceptions.ExitStatusException;
+import rife.tools.FileUtils;
 
 import java.nio.file.Files;
 
@@ -37,10 +38,9 @@ public class TestJpackageOperation {
         assertNotNull(files, "files should not be null");
         assertTrue(files.length > 0, "No files found");
 
-        for (var file : files) {
-            System.out.println(file.getName());
-            file.deleteOnExit();
-        }
+        assertTrue(files[0].getName().matches("bld.*\\.[A-Za-z]{3}"), "Package not found");
+
+        FileUtils.deleteDirectory(tmpdir);
     }
 
     @Test
