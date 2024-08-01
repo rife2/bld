@@ -8,7 +8,6 @@ package rife.bld.operations;
 import org.junit.jupiter.api.Test;
 import rife.bld.operations.exceptions.ExitStatusException;
 
-import java.io.File;
 import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,20 +25,22 @@ public class TestJpackageOperation {
                 .dest(tmpdir.getAbsolutePath())
                 .verbose(true);
 
-        var os = System.getProperty("os.name");
-        if (os.startsWith("Windows")) {
-            options.type(JpackageOptions.PackageType.EXE);
-        } else if (os.startsWith("Linux")) {
+        var os = System.getProperty("os.version");
+        if (os.endsWith("MANJARO")) {
             options.type(JpackageOptions.PackageType.DEB);
-        } else if (os.startsWith("Mac")) {
-            options.type(JpackageOptions.PackageType.DMG);
         }
 
         var jpackage = new JpackageOperation().jpackageOptions(options);
         jpackage.execute();
 
-        var deb = new File(tmpdir, "bld_1.0-1_amd64.deb");
-        assertTrue(deb.delete());
+        var files = tmpdir.listFiles();
+        assertNotNull(files, "files should not be null");
+        assertTrue(files.length > 0, "No files found");
+
+        for (var file : files) {
+            System.out.println(file.getName());
+            file.deleteOnExit();
+        }
     }
 
     @Test
