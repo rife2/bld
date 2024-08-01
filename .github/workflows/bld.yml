@@ -90,8 +90,6 @@ jobs:
         java-version: [ 17, 20, 21, 22 ]
 
     steps:
-      - name: Install libmd
-        run: sudo apt-get update -qq && sudo apt-get install -y libmd0
       - name: Checkout source repository
         uses: actions/checkout@v4
         with:
