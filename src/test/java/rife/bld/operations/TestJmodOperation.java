@@ -16,13 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestJmodOperation {
     @Test
-    void testNoArguments() {
-        var jmod = new JmodOperation();
-        assertThrows(ExitStatusException.class, jmod::execute);
-    }
-
-    @Test
-    void testOptions() {
+    void testArguments() {
         var args = new HashMap<String, String>();
         args.put("--class-path", "classpath");
         args.put("--cmds", "cmds");
@@ -43,7 +37,6 @@ public class TestJmodOperation {
         args.put("--module-version", "module-version");
         args.put("--target-platform", "target-platform");
         args.put("--warn-if-resolved", "deprecated");
-        args.put("@filename", null);
 
         var options = new JmodOptions()
                 .classpath(args.get("--class-path"))
@@ -56,7 +49,6 @@ public class TestJmodOperation {
                 .dryRun(true)
                 .exclude(new JmodOptions.FilePattern(JmodOptions.FilePatternType.GLOB, "glob"),
                         new JmodOptions.FilePattern(JmodOptions.FilePatternType.REGEX, "regex"))
-                .filename("filename")
                 .hashModules(args.get("--hash-modules"))
                 .headerFiles(args.get("--header-files"))
                 .legalNotices(args.get("--legal-notices"))
@@ -74,6 +66,29 @@ public class TestJmodOperation {
             assertTrue(options.containsKey(arg.getKey()), arg.getValue() + " not found");
             assertEquals(arg.getValue(), options.get(arg.getKey()), arg.getKey());
         }
+    }
+
+    @Test
+    void testHelp() {
+        var jmod = new JmodOperation()
+                .operationMode(JmodOperation.OperationMode.HASH)
+                .jmodFile("foo")
+                .addArgs("--help-extra");
+        assertDoesNotThrow(jmod::execute);
+    }
+
+    @Test
+    void testNoArguments() {
+        var jmod = new JmodOperation();
+        assertTrue(jmod.options().isEmpty(), "options not empty");
+        assertTrue(jmod.jmodOptions().isEmpty(), "jmod options not empty");
+        assertThrows(ExitStatusException.class, jmod::execute);
+    }
+
+    @Test
+    void testOptions() {
+        var jpackage = new JpackageOperation().options("src/test/resources/options_version.txt");
+        assertDoesNotThrow(jpackage::execute);
     }
 
     @Test

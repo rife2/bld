@@ -7,6 +7,8 @@ package rife.bld.operations;
 
 import rife.bld.operations.exceptions.ExitStatusException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,6 +19,7 @@ import java.util.Map;
  */
 public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> {
     private final JmodOptions jmodOptions_ = new JmodOptions();
+    private final List<String> options_ = new ArrayList<>();
     private String jmodFile_;
     private OperationMode operationMode_;
 
@@ -95,6 +98,26 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      */
     public JmodOperation operationMode(OperationMode mode) {
         operationMode_ = mode;
+        return this;
+    }
+
+    /**
+     * Retrieves the list of files containing options or mode.
+     *
+     * @return the list of files
+     */
+    public List<String> options() {
+        return options_;
+    }
+
+    /**
+     * Read options and/or mode from a file.
+     *
+     * @param filename one or more file
+     * @return this operation instance
+     */
+    public JmodOperation options(String... filename) {
+        options_.addAll(List.of(filename));
         return this;
     }
 

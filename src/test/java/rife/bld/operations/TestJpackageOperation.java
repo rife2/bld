@@ -15,44 +15,9 @@ import java.util.HashMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestJpackageOperation {
-    @Test
-    void testCreatePackage() throws Exception {
-        var tmpdir = Files.createTempDirectory("bld-jpackage-test").toFile();
-        tmpdir.deleteOnExit();
-
-        var options = new JpackageOptions()
-                .input("lib/bld")
-                .name("bld")
-                .mainJar("bld-wrapper.jar")
-                .javaOptions("--enable-preview")
-                .dest(tmpdir.getAbsolutePath())
-                .verbose(true);
-
-        var os = System.getProperty("os.version");
-        if (os.endsWith("MANJARO")) {
-            options.type(JpackageOptions.PackageType.DEB);
-        }
-
-        var jpackage = new JpackageOperation().jpackageOptions(options);
-        jpackage.execute();
-
-        var files = tmpdir.listFiles();
-        assertNotNull(files, "files should not be null");
-        assertTrue(files.length > 0, "No files found");
-
-        assertTrue(files[0].getName().matches("bld.*\\.[A-Za-z]{3}"), "Package not found");
-
-        FileUtils.deleteDirectory(tmpdir);
-    }
 
     @Test
-    void testNoArguments() {
-        var jpackage = new JpackageOperation();
-        assertThrows(ExitStatusException.class, jpackage::execute);
-    }
-
-    @Test
-    void testOptions() {
+    void testArguments() {
         var args = new HashMap<String, String>();
         args.put("--about-url", "about-url");
         args.put("--add-launcher", "name=path");
@@ -95,7 +60,7 @@ public class TestJpackageOperation {
         args.put("--main-class", "main-class");
         args.put("--main-jar", "main-jar");
         args.put("--module", "module");
-        args.put("--module-path", "module-path-1,module-path-2");
+        args.put("--module-path", "module-path-1:module-path-2");
         args.put("--name", "name");
         args.put("--resource-dir", "resource-dir");
         args.put("--runtime-image", "runtime-image");
@@ -114,7 +79,6 @@ public class TestJpackageOperation {
         args.put("--win-shortcut-prompt", null);
         args.put("--win-update-url", "win-update-url");
         args.put("--win-upgrade-uuid", "win-upgrade-uuid");
-        args.put("@filename", null);
 
         var options = new JpackageOptions()
                 .aboutUrl(args.get("--about-url"))
@@ -176,8 +140,7 @@ public class TestJpackageOperation {
                 .winShortcut(true)
                 .winShortcutPrompt(true)
                 .winUpdateUrl(args.get("--win-update-url"))
-                .winUpgradeUuid(args.get("--win-upgrade-uuid"))
-                .filename("filename");
+                .winUpgradeUuid(args.get("--win-upgrade-uuid"));
 
         assertEquals(options.size(), args.size(), "Wrong number of arguments");
 
@@ -189,8 +152,58 @@ public class TestJpackageOperation {
     }
 
     @Test
+    void testCreatePackage() throws Exception {
+        var tmpdir = Files.createTempDirectory("bld-jpackage-test").toFile();
+        tmpdir.deleteOnExit();
+
+        var options = new JpackageOptions()
+                .input("lib/bld")
+                .name("bld")
+                .mainJar("bld-wrapper.jar")
+                .javaOptions("--enable-preview")
+                .dest(tmpdir.getAbsolutePath())
+                .verbose(true);
+
+        var os = System.getProperty("os.version");
+        if (os.endsWith("MANJARO")) {
+            options.type(JpackageOptions.PackageType.DEB);
+        }
+
+        var jpackage = new JpackageOperation().jpackageOptions(options);
+        jpackage.execute();
+
+        var files = tmpdir.listFiles();
+        assertNotNull(files, "files should not be null");
+        assertTrue(files.length > 0, "No files found");
+
+        assertTrue(files[0].getName().matches("bld.*\\.[A-Za-z]{3}"), "Package not found");
+
+        FileUtils.deleteDirectory(tmpdir);
+    }
+
+    @Test
+    void testHelp() {
+        var jpackage = new JpackageOperation().addArgs("--help");
+        assertDoesNotThrow(jpackage::execute);
+    }
+
+    @Test
+    void testNoArguments() {
+        var jpackage = new JpackageOperation();
+        assertTrue(jpackage.options().isEmpty(), "options not empty");
+        assertTrue(jpackage.jpackageOptions().isEmpty(), "jpackage options not empty");
+        assertThrows(ExitStatusException.class, jpackage::execute);
+    }
+
+    @Test
+    void testOptions() {
+        var jpackage = new JpackageOperation().options("src/test/resources/options_verbose.txt");
+        assertDoesNotThrow(jpackage::execute);
+    }
+
+    @Test
     void testVersion() {
-        var jpackage = new JpackageOperation().addArgs("--version");
+        var jpackage = new JpackageOperation().addArgs("--verbose", "--version");
         assertDoesNotThrow(jpackage::execute);
     }
 }

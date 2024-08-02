@@ -15,24 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestJlinkOperation {
     @Test
-    void testNoArguments() {
-        var jlink = new JlinkOperation();
-        assertThrows(ExitStatusException.class, jlink::execute);
-    }
-
-    @Test
-    void testDisablePlugin() {
-        var jlink = new JlinkOperation()
-                .disablePlugin("vm")
-                .disablePlugin("system-modules")
-                .listPlugins();
-        assertDoesNotThrow(jlink::execute);
-
-        assertTrue(jlink.toolArgs().containsAll(List.of("vm", "system-modules")));
-    }
-
-    @Test
-    void testOptions() {
+    void testArguments() {
         var args = new HashMap<String, String>();
         args.put("--add-modules", "module-1,module-2");
         args.put("--bind-services", null);
@@ -79,8 +62,39 @@ public class TestJlinkOperation {
     }
 
     @Test
+    void testDisablePlugin() {
+        var jlink = new JlinkOperation()
+                .disablePlugin("vm")
+                .disablePlugin("system-modules")
+                .listPlugins();
+        assertDoesNotThrow(jlink::execute);
+
+        assertTrue(jlink.toolArgs().containsAll(List.of("vm", "system-modules")));
+    }
+
+    @Test
+    void testHelp() {
+        var jlink = new JlinkOperation().addArgs("--help");
+        assertDoesNotThrow(jlink::execute);
+    }
+
+    @Test
+    void testNoArguments() {
+        var jlink = new JlinkOperation();
+        assertTrue(jlink.jlinkOptions().isEmpty(), "jlink options not empty");
+        assertTrue(jlink.options().isEmpty(), "options not empty");
+        assertThrows(ExitStatusException.class, jlink::execute);
+    }
+
+    @Test
+    void testOptions() {
+        var jlink = new JlinkOperation().options("src/test/resources/options_verbose.txt");
+        assertDoesNotThrow(jlink::execute);
+    }
+
+    @Test
     void testVersion() {
-        var jlink = new JlinkOperation().addArgs("--version");
+        var jlink = new JlinkOperation().addArgs("--verbose", "--version");
         assertDoesNotThrow(jlink::execute);
     }
 }

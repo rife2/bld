@@ -136,17 +136,6 @@ public class JmodOptions extends HashMap<String, String> {
     }
 
     /**
-     * Read options from the specified file.
-     *
-     * @param filename the filename
-     * @return this map of options
-     */
-    public JmodOptions filename(String filename) {
-        put("@" + filename);
-        return this;
-    }
-
-    /**
      * Associates {@code null} with the specified key in this map. If the map previously contained a mapping for the
      * key, the old value is replaced.
      *

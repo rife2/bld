@@ -5,6 +5,8 @@
 
 package rife.bld.operations;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,6 +17,7 @@ import java.util.Map;
  */
 public class JpackageOperation extends AbstractToolProviderOperation<JpackageOperation> {
     private final JpackageOptions jpackageOptions_ = new JpackageOptions();
+    private final List<String> options_ = new ArrayList<>();
 
     public JpackageOperation() {
         super("jpackage");
@@ -23,7 +26,27 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
     @Override
     public void execute() throws Exception {
         addArgs(jpackageOptions_);
+        addArgs(options_.stream().map(opt -> '@' + opt).toList());
         super.execute();
+    }
+
+    /**
+     * Retrieves the list of files containing options or mode.
+     *
+     * @return the list of files
+     */
+    public List<String> options(){
+        return options_;
+    }
+    /**
+     * Read options and/or mode from a file.
+     *
+     * @param filename one or more file
+     * @return this operation instance
+     */
+    public JpackageOperation options(String... filename) {
+        options_.addAll(List.of(filename));
+        return this;
     }
 
     /**

@@ -26,17 +26,6 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Read options and/or mode from a file.
-     *
-     * @param filename the filename
-     * @return this map of options
-     */
-    public JpackageOptions filename(String filename) {
-        put("@" + filename);
-        return this;
-    }
-
-    /**
      * List of application launchers.
      * <p>
      * The main application launcher will be built from the command line options. Additional alternative launchers
@@ -135,7 +124,9 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Path where generated output file is placed
+     * Path where generated output file is placed.
+     * <p>
+     * Defaults to the current working directory.
      *
      * @param path absolute path or relative to the current directory
      * @return this map of options
@@ -160,18 +151,7 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Options to pass to the Java runtime.
-     *
-     * @param options the options
-     * @return this map of options
-     */
-    public JpackageOptions javaOptions(String... options) {
-        put("--java-options", String.join(" ", options));
-        return this;
-    }
-
-    /**
-     * Path of the icon of the application package/
+     * Path of the icon of the application package.
      *
      * @param path absolute path or relative to the current directory
      * @return this map of options
@@ -195,13 +175,39 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Absolute path of the installation directory of the application
+     * Absolute path of the installation directory of the application.
      *
      * @param path the absolute directory path
      * @return this map of options
      */
     public JpackageOptions installDir(String path) {
         put("--install-dir", path);
+        return this;
+    }
+
+    /**
+     * Options to pass to the Java runtime.
+     *
+     * @param options the options
+     * @return this map of options
+     */
+    public JpackageOptions javaOptions(String... options) {
+        put("--java-options", String.join(" ", options));
+        return this;
+    }
+
+    /**
+     * List of options to pass to jlink.
+     * <p>
+     * If not specified, defaults to {@link JlinkOptions#stripNativeCommands(boolean) stripNativeCommands}
+     * {@link JlinkOptions#stripDebug(boolean) stripDebug} {@link JlinkOptions#noManPages(boolean) noManPages}
+     * {@link JlinkOptions#noHeaderFiles(boolean) noHeaderFiles}.
+     *
+     * @param options the {@link JlinkOptions}
+     * @return this map of options
+     */
+    public JpackageOptions jlinkOptions(JlinkOptions options) {
+        put("--jlink-options", String.join(" ", options.toList()));
         return this;
     }
 
@@ -222,37 +228,7 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * List of options to pass to jlink.
-     * <p>
-     * If not specified, defaults to {@link JlinkOptions#stripNativeCommands(boolean) stripNativeCommands}
-     * {@link JlinkOptions#stripDebug(boolean) stripDebug} {@link JlinkOptions#noManPages(boolean) noManPages}
-     * {@link JlinkOptions#noHeaderFiles(boolean) noHeaderFiles}.
-     *
-     * @param options the {@link JlinkOptions}
-     * @return this map of options
-     */
-    public JpackageOptions jlinkOptions(JlinkOptions options) {
-        put("--jlink-options", String.join(" ", options.toList()));
-        return this;
-    }
-
-    /**
-     * Required packages or capabilities for the application.
-     *
-     * @param packageDeps {@code true} if required, {@code false} otherwise
-     * @return this map of options
-     */
-    public JpackageOptions linuxPackageDeps(boolean packageDeps) {
-        if (packageDeps) {
-            put("--linux-package-deps");
-        } else {
-            remove("--linux-package-deps");
-        }
-        return this;
-    }
-
-    /**
-     * Path to the license file
+     * Path to the license file.
      *
      * @param path absolute path or relative to the current directory
      * @return this map of options
@@ -263,7 +239,7 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Group value of the RPM {@code <name>.spec} file or Section value of DEB control file
+     * Group value of the RPM {@code <name>.spec} file or Section value of DEB control file.
      *
      * @param appCategory the application category
      * @return this map of options
@@ -285,7 +261,7 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Maintainer for .deb package.
+     * Maintainer for {@code .deb} package.
      *
      * @param maintainer the maintainer
      * @return this map of options
@@ -307,16 +283,16 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Creates a shortcut for the application.
+     * Required packages or capabilities for the application.
      *
-     * @param shortcut {@code true| to create a shortcut, {@code false} otherwise
+     * @param packageDeps {@code true} if required, {@code false} otherwise
      * @return this map of options
      */
-    public JpackageOptions linuxShortcut(boolean shortcut) {
-        if (shortcut) {
-            put("--linux-shortcut");
+    public JpackageOptions linuxPackageDeps(boolean packageDeps) {
+        if (packageDeps) {
+            put("--linux-package-deps");
         } else {
-            remove("--linux-shortcut");
+            remove("--linux-package-deps");
         }
         return this;
     }
@@ -333,13 +309,30 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Type of the license ({@code License: <value>} of the RPM .spec)
+     * Type of the license.
+     * <p>
+     * {@code License: <value>} of the RPM {@code .spec}
      *
      * @param licenseType the license type
      * @return this map of options
      */
     public JpackageOptions linuxRpmLicenseType(String licenseType) {
         put("--linux-rpm-license-type", licenseType);
+        return this;
+    }
+
+    /**
+     * Creates a shortcut for the application.
+     *
+     * @param shortcut {@code true| to create a shortcut, {@code false} otherwise
+     * @return this map of options
+     */
+    public JpackageOptions linuxShortcut(boolean shortcut) {
+        if (shortcut) {
+            put("--linux-shortcut");
+        } else {
+            remove("--linux-shortcut");
+        }
         return this;
     }
 
@@ -439,7 +432,7 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Name of the application as it appears in the Menu Bar
+     * Name of the application as it appears in the Menu Bar.
      * <p>
      * This can be different from the application name.
      * <p>
@@ -530,7 +523,8 @@ public class JpackageOptions extends HashMap<String, String> {
     /**
      * The main JAR of the application; containing the main class.
      * <p>
-     * Either {@link #module(String, String) module} or {@link #mainJar(String) mainJar} option can be specified but not both.
+     * Either {@link #module(String, String) module} or {@link #mainJar(String) mainJar} option can be specified but
+     * not both.
      *
      * @param jar the path relative to the input path
      * @return this map of options
@@ -548,7 +542,8 @@ public class JpackageOptions extends HashMap<String, String> {
      * <p>
      * When this option is specified, the main module will be linked in the Java runtime image.
      * <p>
-     * Either {@link #module(String, String) module} or {@link #mainJar(String) mainJar} option can be specified but not both.
+     * Either {@link #module(String, String) module} or {@link #mainJar(String) mainJar} option can be specified but
+     * not both.
      *
      * @param name the module name
      * @return this map of options
@@ -565,7 +560,8 @@ public class JpackageOptions extends HashMap<String, String> {
      * <p>
      * When this option is specified, the main module will be linked in the Java runtime image.
      * <p>
-     * Either {@link #module(String, String) module} or {@link #mainJar(String) mainJar} option can be specified but not both.
+     * Either {@link #module(String, String) module} or {@link #mainJar(String) mainJar} option can be specified but
+     * not both.
      *
      * @param name      the module name
      * @param mainClass the main class
@@ -575,16 +571,6 @@ public class JpackageOptions extends HashMap<String, String> {
     public JpackageOptions module(String name, String mainClass) {
         put("--module-name", name + "/" + mainClass);
         return this;
-    }
-
-    /**
-     * Associates {@code null} with the specified key in this map. If the map previously contained a mapping for the
-     * key, the old value is replaced.
-     *
-     * @param key key with which the specified value is to be associated
-     */
-    public void put(String key) {
-        put(key, null);
     }
 
     /**
@@ -598,7 +584,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions modulePath(String... path) {
-        put("--module-path", String.join(",", path));
+        put("--module-path", String.join(":", path));
         return this;
     }
 
@@ -611,6 +597,16 @@ public class JpackageOptions extends HashMap<String, String> {
     public JpackageOptions name(String name) {
         put("--name", name);
         return this;
+    }
+
+    /**
+     * Associates {@code null} with the specified key in this map. If the map previously contained a mapping for the
+     * key, the old value is replaced.
+     *
+     * @param key key with which the specified value is to be associated
+     */
+    public void put(String key) {
+        put(key, null);
     }
 
     /**
@@ -677,6 +673,8 @@ public class JpackageOptions extends HashMap<String, String> {
 
     /**
      * The type of package to create.
+     * <p>
+     * If this option is not specified a platform dependent default type will be created.
      *
      * @param type the package type
      * @return this map of options
@@ -729,7 +727,7 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Adds a dialog to enable the user to choose a directory in which the product is installed..
+     * Adds a dialog to enable the user to choose a directory in which the product is installed.
      *
      * @param winDirChooser {@code true} to let the user choose a directory, {@code false} otherwise
      * @return this map of options
@@ -867,7 +865,7 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Name of launcher, and a path to a Properties file that contains a list of key, value pairs/
+     * Name of launcher, and a path to a Properties file that contains a list of key, value pairs.
      * <p>
      * The keys {@code module}, {@code main-jar}, {@code main-class}, {@code description},
      * {@code arguments}, {@code java-options}, {@code app-version}, {@code icon},

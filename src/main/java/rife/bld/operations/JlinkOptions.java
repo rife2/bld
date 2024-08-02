@@ -15,9 +15,10 @@ import java.util.List;
  * @since 2.0.2
  */
 public class JlinkOptions extends HashMap<String, String> {
-    /**
+    /**ranran
      * All Modules Path.
      */
+    @SuppressWarnings("unused")
     public final static String ALL_MODULE_PATH = "ALL-MODULE-PATH";
 
     /**
@@ -49,21 +50,10 @@ public class JlinkOptions extends HashMap<String, String> {
     }
 
     /**
-     * Read options from file.
-     *
-     * @param filename the filename
-     * @return this map of options
-     */
-    public JlinkOptions filename(String filename) {
-        put("@" + filename);
-        return this;
-    }
-
-    /**
      * Compression to use in compressing resources.
      * <p>
-     * Where {@link ZipCompression#ZIP_0 ZIP_0} provides no compression and {@link ZipCompression#ZIP_9 ZIP_9} provides the
-     * best compression.
+     * Where {@link ZipCompression#ZIP_0 ZIP_0} provides no compression and {@link ZipCompression#ZIP_9 ZIP_9} provides
+     * the best compression.
      * <p>Default is {@link ZipCompression#ZIP_6 ZIP_6}
      *
      * @param compression the {@link ZipCompression compression} level
@@ -110,6 +100,7 @@ public class JlinkOptions extends HashMap<String, String> {
      * @param module the module
      * @return this map of options
      */
+    @SuppressWarnings("UnusedReturnValue")
     public JlinkOptions launcher(String name, String module) {
         put("--launcher", name + "=" + module);
         return this;
@@ -268,7 +259,7 @@ public class JlinkOptions extends HashMap<String, String> {
     }
 
     /**
-     * Enable verbose tracing
+     * Enable verbose tracing.
      *
      * @param verbose {@code true} to enable verbose tracing, {@code false} otherwise.
      * @return this map of options
