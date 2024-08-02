@@ -17,6 +17,7 @@ import java.util.Map;
  */
 public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> {
     private final JmodOptions jmodOptions_ = new JmodOptions();
+    private String jmodFile_;
     private OperationMode operationMode_;
 
     public JmodOperation() {
@@ -28,10 +29,36 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
         if (operationMode_ == null) {
             System.err.println("Operation mode not set.");
             throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
+        } else if (jmodFile_ == null) {
+            System.err.println("Jmod file not set.");
+            throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
         }
-        toolArg(operationMode_.mode);
-        toolArgs(jmodOptions_);
+        addArgs(operationMode_.mode);
+        addArgs(jmodOptions_);
+        addArgs(jmodFile_);
         super.execute();
+    }
+
+    /**
+     * Retrieves the name of the JMOD file to create or from which to retrieve information.
+     *
+     * @return the JMOD file
+     */
+    public String jmodFile() {
+        return jmodFile_;
+    }
+
+    /**
+     * Specifies name of the JMOD file to create or from which to retrieve information.
+     * <p>
+     * The JMOD file is <b>required</b>.
+     *
+     * @param file the JMOD file
+     * @return this operation instance
+     */
+    public JmodOperation jmodFile(String file) {
+        jmodFile_ = file;
+        return this;
     }
 
     /**
@@ -39,7 +66,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      * <p>
      * This is a modifiable list that can be retrieved and changed.
      *
-     * @return the list of jmod options
+     * @return the map of jmod options
      */
     public JmodOptions jmodOptions() {
         return jmodOptions_;
@@ -59,7 +86,9 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
     }
 
     /**
-     * Provides the required {@link OperationMode operation mode}.
+     * Provides the {@link OperationMode operation mode}.
+     * <p>
+     * The operation mode is <b>required</b>.
      *
      * @param mode the mode
      * @return this operation instance
@@ -73,10 +102,25 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      * The operation modes.
      */
     public enum OperationMode {
+        /**
+         * Creates a new JMOD archive file.
+         */
         CREATE("create"),
+        /**
+         * Prints the module details.
+         */
         DESCRIBE("describe"),
+        /**
+         * Extracts all the files from the JMOD archive file.
+         */
         EXTRACT("extract"),
+        /**
+         * Determines leaf modules and records the hashes of the dependencies that directly and indirectly require them.
+         */
         HASH("hash"),
+        /**
+         * Prints the names of all the entries.
+         */
         LIST("list");
 
         final String mode;

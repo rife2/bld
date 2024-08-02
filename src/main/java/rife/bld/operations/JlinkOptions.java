@@ -4,7 +4,9 @@
  */
 package rife.bld.operations;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Options for jlink tool.
@@ -39,10 +41,21 @@ public class JlinkOptions extends HashMap<String, String> {
      */
     public JlinkOptions bindServices(boolean bindServices) {
         if (bindServices) {
-            put("--bind-services", null);
+            put("--bind-services");
         } else {
             remove("--bind-services");
         }
+        return this;
+    }
+
+    /**
+     * Read options from file.
+     *
+     * @param filename the filename
+     * @return this map of options
+     */
+    public JlinkOptions filename(String filename) {
+        put("@" + filename);
         return this;
     }
 
@@ -61,16 +74,6 @@ public class JlinkOptions extends HashMap<String, String> {
         return this;
     }
 
-    /**
-     * Disable the plugin mentioned.
-     *
-     * @param plugin the plugin name
-     * @return this map of options
-     */
-    public JlinkOptions disablePlugin(String plugin) {
-        put("--disable-plugin", plugin);
-        return this;
-    }
 
     /**
      * Byte order of generated jimage.
@@ -86,17 +89,6 @@ public class JlinkOptions extends HashMap<String, String> {
     }
 
     /**
-     * Read options from file.
-     *
-     * @param filename the filename
-     * @return this map of options
-     */
-    public JlinkOptions filename(String filename) {
-        put("@" + filename, null);
-        return this;
-    }
-
-    /**
      * Suppress a fatal error when signed modular JARs are linked in the image.
      *
      * @param ignoreSigningInformation {@code true} to ignore signing information, {@code false} otherwise
@@ -104,7 +96,7 @@ public class JlinkOptions extends HashMap<String, String> {
      */
     public JlinkOptions ignoreSigningInformation(boolean ignoreSigningInformation) {
         if (ignoreSigningInformation) {
-            put("--ignore-signing-information", null);
+            put("--ignore-signing-information");
         } else {
             remove("--ignore-signing-information");
         }
@@ -120,6 +112,21 @@ public class JlinkOptions extends HashMap<String, String> {
      */
     public JlinkOptions launcher(String name, String module) {
         put("--launcher", name + "=" + module);
+        return this;
+    }
+
+    /**
+     * Exclude include header files.
+     *
+     * @param noHeaderFiles {@code true} to exclude header files, {@code false} otherwise
+     * @return this map of options
+     */
+    public JlinkOptions noHeaderFiles(boolean noHeaderFiles) {
+        if (noHeaderFiles) {
+            put("--no-header-files");
+        } else {
+            remove("--no-header-files");
+        }
         return this;
     }
 
@@ -162,21 +169,6 @@ public class JlinkOptions extends HashMap<String, String> {
     }
 
     /**
-     * Exclude include header files.
-     *
-     * @param noHeaderFiles {@code true} to exclude header files, {@code false} otherwise
-     * @return this map of options
-     */
-    public JlinkOptions noHeaderFiles(boolean noHeaderFiles) {
-        if (noHeaderFiles) {
-            put("--no-header-files", null);
-        } else {
-            remove("--no-header-files");
-        }
-        return this;
-    }
-
-    /**
      * Exclude man pages.
      *
      * @param noManPages {@code true} to exclude man pages, {@code false} otherwise
@@ -184,11 +176,21 @@ public class JlinkOptions extends HashMap<String, String> {
      */
     public JlinkOptions noManPages(boolean noManPages) {
         if (noManPages) {
-            put("--no-man-pages", null);
+            put("--no-man-pages");
         } else {
             remove("--no-man-pages");
         }
         return this;
+    }
+
+    /**
+     * Associates {@code null} with the specified key in this map. If the map previously contained a mapping for the
+     * key, the old value is replaced.
+     *
+     * @param key key with which the specified value is to be associated
+     */
+    public void put(String key) {
+        put(key, null);
     }
 
     /**
@@ -221,7 +223,7 @@ public class JlinkOptions extends HashMap<String, String> {
      */
     public JlinkOptions stripDebug(boolean stripDebug) {
         if (stripDebug) {
-            put("--strip-debug", null);
+            put("--strip-debug");
         } else {
             remove("--strip-debug");
         }
@@ -236,7 +238,7 @@ public class JlinkOptions extends HashMap<String, String> {
      */
     public JlinkOptions stripNativeCommands(boolean stripNativeCommands) {
         if (stripNativeCommands) {
-            put("--strip-native-commands", null);
+            put("--strip-native-commands");
         } else {
             remove("--strip-native-commands");
         }
@@ -254,6 +256,17 @@ public class JlinkOptions extends HashMap<String, String> {
         return this;
     }
 
+    public List<String> toList() {
+        var list = new ArrayList<String>();
+        forEach((k, v) -> {
+            list.add(k);
+            if (v != null && !v.isEmpty()) {
+                list.add(v);
+            }
+        });
+        return list;
+    }
+
     /**
      * Enable verbose tracing
      *
@@ -262,7 +275,7 @@ public class JlinkOptions extends HashMap<String, String> {
      */
     public JlinkOptions verbose(boolean verbose) {
         if (verbose) {
-            put("--verbose", null);
+            put("--verbose");
         } else {
             remove("--verbose");
         }
@@ -281,4 +294,5 @@ public class JlinkOptions extends HashMap<String, String> {
             this.byteOrder = byteOrder;
         }
     }
+
 }

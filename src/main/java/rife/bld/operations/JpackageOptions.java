@@ -26,6 +26,17 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
+     * Read options and/or mode from a file.
+     *
+     * @param filename the filename
+     * @return this map of options
+     */
+    public JpackageOptions filename(String filename) {
+        put("@" + filename);
+        return this;
+    }
+
+    /**
      * List of application launchers.
      * <p>
      * The main application launcher will be built from the command line options. Additional alternative launchers
@@ -65,17 +76,6 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions appContent(String... additionalContent) {
         put("--app-content", String.join(",", additionalContent));
-        return this;
-    }
-
-    /**
-     * Options to pass to the Java runtime.
-     *
-     * @param options the options
-     * @return this map of options
-     */
-    public JpackageOptions javaOptions(String... options) {
-        put("--java-options", String.join(" ", options));
         return this;
     }
 
@@ -160,13 +160,13 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Read options and/or mode from a file.
+     * Options to pass to the Java runtime.
      *
-     * @param filename the filename
+     * @param options the options
      * @return this map of options
      */
-    public JpackageOptions filename(String filename) {
-        put("@" + filename, null);
+    public JpackageOptions javaOptions(String... options) {
+        put("--java-options", String.join(" ", options));
         return this;
     }
 
@@ -206,6 +206,22 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
+     * Request to create an installer that will register the main application launcher as a background service-type
+     * application.
+     *
+     * @param launcherAsService {@code true} to register the launcher as a service; {@code false} otherwise
+     * @return this map of options
+     */
+    public JpackageOptions launcherAsService(boolean launcherAsService) {
+        if (launcherAsService) {
+            put("--launcher-as-service");
+        } else {
+            remove("--launcher-as-service");
+        }
+        return this;
+    }
+
+    /**
      * List of options to pass to jlink.
      * <p>
      * If not specified, defaults to {@link JlinkOptions#stripNativeCommands(boolean) stripNativeCommands}
@@ -216,22 +232,21 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions jlinkOptions(JlinkOptions options) {
-        put("--jlink-options", String.join(" ", AbstractToolProviderOperation.argsToList(options)));
+        put("--jlink-options", String.join(" ", options.toList()));
         return this;
     }
 
     /**
-     * Request to create an installer that will register the main application launcher as a background service-type
-     * application.
+     * Required packages or capabilities for the application.
      *
-     * @param launcherAsService {@code true} to register the launcher as a service; {@code false} otherwise
+     * @param packageDeps {@code true} if required, {@code false} otherwise
      * @return this map of options
      */
-    public JpackageOptions launcherAsService(boolean launcherAsService) {
-        if (launcherAsService) {
-            put("--launcher-as-service", null);
+    public JpackageOptions linuxPackageDeps(boolean packageDeps) {
+        if (packageDeps) {
+            put("--linux-package-deps");
         } else {
-            remove("--launcher-as-service");
+            remove("--linux-package-deps");
         }
         return this;
     }
@@ -292,13 +307,17 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Required packages or capabilities for the application.
+     * Creates a shortcut for the application.
      *
-     * @param packageDeps the package dependencies
-     * @return this list of operation
+     * @param shortcut {@code true| to create a shortcut, {@code false} otherwise
+     * @return this map of options
      */
-    public JpackageOptions linuxPackageDeps(String packageDeps) {
-        put("--linux-package-deps", packageDeps);
+    public JpackageOptions linuxShortcut(boolean shortcut) {
+        if (shortcut) {
+            put("--linux-shortcut");
+        } else {
+            remove("--linux-shortcut");
+        }
         return this;
     }
 
@@ -325,17 +344,173 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * Creates a shortcut for the application.
+     * String used to construct {@code LSApplicationCategoryType} in application plist.
+     * <p>
+     * The default value is {@code utilities}.
      *
-     * @param shortcut {@code true| to create a shortcut, {@code false} otherwise
+     * @param appCategory the category
      * @return this map of options
      */
-    public JpackageOptions linuxShortcut(boolean shortcut) {
-        if (shortcut) {
-            put("--linux-shortcut", null);
+    public JpackageOptions macAppCategory(String appCategory) {
+        put("--mac-app-category", appCategory);
+        return this;
+    }
+
+    /**
+     * Identity used to sign application image.
+     * <p>
+     * This value will be passed directly to {@code --sign} option of {@code codesign} tool.
+     * <p>
+     * This option cannot be combined with {@link #macSigningKeyUserName(String) macSignKeyUserName}.
+     *
+     * @param identity the identity
+     * @return this map of options
+     */
+    public JpackageOptions macAppImageSignIdentity(String identity) {
+        put("--mac-app-image-sign-identity", identity);
+        return this;
+    }
+
+    /**
+     * Indicates that the jpackage output is intended for the Mac App Store.
+     *
+     * @param appStore {@code true} if intended for the Mac App Store, {@code false} otherwise
+     * @return this map of options
+     */
+    public JpackageOptions macAppStore(boolean appStore) {
+        if (appStore) {
+            put("--mac-app-store");
         } else {
-            remove("--linux-shortcut");
+            remove("--mac-app-store");
         }
+        return this;
+    }
+
+    /**
+     * Include all the referenced content in the dmg.
+     *
+     * @param additionalContent one or more path
+     * @return this map of options
+     */
+    public JpackageOptions macDmgContent(String... additionalContent) {
+        put("--mac-dmg-content", String.join(",", additionalContent));
+        return this;
+    }
+
+    /**
+     * Path to file containing entitlements to use when signing executables and libraries in the bundle.
+     *
+     * @param path the fie path
+     * @return this map of options
+     */
+    public JpackageOptions macEntitlements(String path) {
+        put("--mac-entitlements", path);
+        return this;
+    }
+
+    /**
+     * Identity used to sign "pkg" installer.
+     * <p>
+     * This value will be passed directly to {@code --sign} option of {@code productbuild} tool.
+     * <p>
+     * This option cannot be combined with {@link #macSigningKeyUserName(String) macSignKeyUserName}.
+     *
+     * @param identity the identity
+     * @return this map of options
+     */
+    public JpackageOptions macInstallerSignIdentity(String identity) {
+        put("--mac-installer-sign-identity", identity);
+        return this;
+    }
+
+    /**
+     * An identifier that uniquely identifies the application for macOS.
+     * <p>
+     * Defaults to the main class name.
+     * <p>
+     * May only use alphanumeric ({@code A-Z,a-z,0-9}), hyphen ({@code -}), and period ({@code .}) characters.
+     *
+     * @param packageIdentifier the package identifier
+     * @return this map of options
+     */
+    public JpackageOptions macPackageIdentifier(String packageIdentifier) {
+        put("--mac-package-identifier", packageIdentifier);
+        return this;
+    }
+
+    /**
+     * Name of the application as it appears in the Menu Bar
+     * <p>
+     * This can be different from the application name.
+     * <p>
+     * This name must be less than 16 characters long and be suitable for displaying in the menu bar and the application
+     * Info window.
+     * <p>
+     * Defaults to the application name.
+     *
+     * @param name the package name
+     * @return this map of options
+     */
+    public JpackageOptions macPackageName(String name) {
+        put("--mac-package-name", name);
+        return this;
+    }
+
+    /**
+     * When signing the application package, this value is prefixed to all components that need to be signed that don't
+     * have an existing package identifier.
+     *
+     * @param prefix the signing prefix
+     * @return this map of options
+     */
+    public JpackageOptions macPackageSigningPrefix(String prefix) {
+        put("--mac-package-signing-prefix", prefix);
+        return this;
+    }
+
+    /**
+     * Request that the package or the predefined application image be signed.
+     *
+     * @param sign {@code true} to sign, {@code false} otherwise
+     * @return this map of options
+     */
+    public JpackageOptions macSign(boolean sign) {
+        if (sign) {
+            put("--mac-sign");
+        } else {
+            remove("--mac-sign");
+        }
+        return this;
+    }
+
+    /**
+     * Team or user name portion in Apple signing identities.
+     * <p>
+     * For direct control of the signing identity used to sign application images or installers use
+     * {@link #macAppImageSignIdentity(String) macAppImageSignIdentity} and/or
+     * {@link #macInstallerSignIdentity(String) macInstallerSignIdentity}.
+     * <p>
+     * This option cannot be combined with {@link #macAppImageSignIdentity(String) macAppImageSignIdentity} or
+     * {@link #macInstallerSignIdentity(String) macInstallerSignIdentity}.
+     *
+     * @param username the username
+     * @return this map of options
+     */
+    public JpackageOptions macSigningKeyUserName(String username) {
+        put("--mac-signing-key-user-name", username);
+        return this;
+    }
+
+    /**
+     * Name of the keychain to search for the signing identity.
+     * <p>
+     * If not specified, the standard keychains are used.
+     *
+     * @param keychain the keychain name
+     * @return this map of options
+     */
+    public JpackageOptions macSigningKeychain(String keychain) {
+        put("--mac-signing-keychain", keychain);
         return this;
     }
 
@@ -360,6 +535,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param jar the path relative to the input path
      * @return this map of options
      */
+    @SuppressWarnings("JavadocDeclaration")
     public JpackageOptions mainJar(String jar) {
         put("--main-jar", jar);
         return this;
@@ -368,14 +544,14 @@ public class JpackageOptions extends HashMap<String, String> {
     /**
      * The main module and main class of the application.
      * <p>
-     * This module must be located on the {@link #modulePath(String) module path}.
+     * This module must be located on the {@link #modulePath(String...) module path}.
      * <p>
      * When this option is specified, the main module will be linked in the Java runtime image.
      * <p>
      * Either {@link #module(String, String) module} or {@link #mainJar(String) mainJar} option can be specified but not both.
      *
      * @param name the module name
-     * @return this list of operation
+     * @return this map of options
      */
     public JpackageOptions module(String name) {
         put("--module", name);
@@ -385,7 +561,7 @@ public class JpackageOptions extends HashMap<String, String> {
     /**
      * The main module and main class of the application.
      * <p>
-     * This module must be located on the {@link #modulePath(String) module path}.
+     * This module must be located on the {@link #modulePath(String...) module path}.
      * <p>
      * When this option is specified, the main module will be linked in the Java runtime image.
      * <p>
@@ -395,23 +571,20 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param mainClass the main class
      * @return this map of options
      */
+    @SuppressWarnings("JavadocDeclaration")
     public JpackageOptions module(String name, String mainClass) {
         put("--module-name", name + "/" + mainClass);
         return this;
     }
 
     /**
-     * Module path.
-     * <p>
-     * If not specified, the JDKs jmods directory will be used, if it exists. If specified, but it does not contain the
-     * {@code java.base} module, the JDKs jmods directory will be added, if it exists.
+     * Associates {@code null} with the specified key in this map. If the map previously contained a mapping for the
+     * key, the old value is replaced.
      *
-     * @param path the module path
-     * @return this map of options
+     * @param key key with which the specified value is to be associated
      */
-    public JpackageOptions modulePath(String path) {
-        put("--module-path", path);
-        return this;
+    public void put(String key) {
+        put(key, null);
     }
 
     /**
@@ -480,7 +653,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions stripDebug(boolean stripDebug) {
         if (stripDebug) {
-            put("--strip-debug", null);
+            put("--strip-debug");
         } else {
             remove("--strip-debug");
         }
@@ -525,126 +698,6 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
-     * An identifier that uniquely identifies the application for macOS.
-     * <p>
-     * Defaults to the main class name.
-     * <p>
-     * May only use alphanumeric ({@code A-Z,a-z,0-9}), hyphen ({@code -}), and period ({@code .}) characters.
-     *
-     * @param packageIdentifier the package identifier
-     * @return this map of options
-     */
-    public JpackageOptions macPackageIdentifier(String packageIdentifier) {
-        put("--mac-package-identifier", packageIdentifier);
-        return this;
-    }
-
-    /**
-     * When signing the application package, this value is prefixed to all components that need to be signed that don't
-     * have an existing package identifier.
-     *
-     * @param packageSigningPrefix the signing prefix
-     * @return this map of options
-     */
-    public JpackageOptions macPackageSigningPrefix(String packageSigningPrefix) {
-        put("--mac-package-signing-prefix", packageSigningPrefix);
-        return this;
-    }
-
-    /**
-     * When signing the application package, this value is prefixed to all components that need to be signed that don't
-     * have an existing package identifier.
-     *
-     * @param prefix the prefix
-     * @return this map of options
-     */
-    public JpackageOptions macSign(String prefix) {
-        put("--mac-sign", prefix);
-        return this;
-    }
-
-    /**
-     * Name of the keychain to search for the signing identity.
-     * <p>
-     * If not specified, the standard keychains are used.
-     *
-     * @param keychain the keychain name
-     * @return this map of options
-     */
-    public JpackageOptions macSigningKeychain(String keychain) {
-        put("--mac-signing-keychain", keychain);
-        return this;
-    }
-
-    /**
-     * Team or user name portion in Apple signing identities.
-     *
-     * @param username the username
-     * @return this map of options
-     */
-    public JpackageOptions macSigningKeyUserName(String username) {
-        put("--mac-signing-key-user-name", username);
-        return this;
-    }
-
-    /**
-     * String used to construct {@code LSApplicationCategoryType} in application plist.
-     * <p>
-     * The default value is {@code utilities}.
-     *
-     * @param appCategory the category
-     * @return this map of options
-     */
-    public JpackageOptions macAppCategory(String appCategory) {
-        put("--mac-app-category", appCategory);
-        return this;
-    }
-
-    /**
-     * Path to file containing entitlements to use when signing executables and libraries in the bundle.
-     *
-     * @param path the fie path
-     * @return this map of options
-     */
-    public JpackageOptions macEntitlements(String path) {
-        put("--mac-entitlements", path);
-        return this;
-    }
-
-    /**
-     * Indicates that the jpackage output is intended for the Mac App Store.
-     *
-     * @param appStore {@code true} if intended for the Mac App Store, {@code false} otherwise
-     * @return this map of options
-     */
-    public JpackageOptions macAppStore(boolean appStore) {
-        if (appStore) {
-            put("--mac-app-store", null);
-        } else {
-            remove("--mac-app-store");
-        }
-        return this;
-    }
-
-    /**
-     * Name of the application as it appears in the Menu Bar
-     * <p>
-     * This can be different from the application name.
-     * <p>
-     * This name must be less than 16 characters long and be suitable for displaying in the menu bar and the application
-     * Info window.
-     * <p>
-     * Defaults to the application name.
-     *
-     * @param name the package name
-     * @return this map of options
-     */
-    public JpackageOptions macPackageName(String name) {
-        put("--mac-package-name", name);
-        return this;
-    }
-
-    /**
      * Enables verbose output.
      *
      * @param verbose {@code true} to enable verbose tracing, {@code false} otherwise.
@@ -652,9 +705,25 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions verbose(boolean verbose) {
         if (verbose) {
-            put("--verbose", null);
+            put("--verbose");
         } else {
             remove("--verbose");
+        }
+        return this;
+    }
+
+    /**
+     * Creates a console launcher for the application, should be specified for application which requires console
+     * interactions.
+     *
+     * @param winConsole {@code true} to create a console launcher, {@code false} otherwise
+     * @return this map of options
+     */
+    public JpackageOptions winConsole(boolean winConsole) {
+        if (winConsole) {
+            put("--win-console");
+        } else {
+            remove("--win-console");
         }
         return this;
     }
@@ -667,7 +736,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions winDirChooser(boolean winDirChooser) {
         if (winDirChooser) {
-            put("--win-dir-chooser", null);
+            put("--win-dir-chooser");
         } else {
             remove("--win-dir-chooser");
         }
@@ -693,7 +762,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions winMenu(boolean winMenu) {
         if (winMenu) {
-            put("--win-menu", null);
+            put("--win-menu");
         } else {
             remove("--win-menu");
         }
@@ -706,7 +775,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param menuGroup the menu group
      * @return this map of options
      */
-    public JpackageOptions winMenuGroupM(String menuGroup) {
+    public JpackageOptions winMenuGroup(String menuGroup) {
         put("--win-menu-group", menuGroup);
         return this;
     }
@@ -719,7 +788,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions winPerUserInstall(boolean winPerUserInstall) {
         if (winPerUserInstall) {
-            put("--win-per-user-install", null);
+            put("--win-per-user-install");
         } else {
             remove("--win-per-user-install");
         }
@@ -734,7 +803,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions winShortcut(boolean winShortcut) {
         if (winShortcut) {
-            put("--win-shortcut", null);
+            put("--win-shortcut");
         } else {
             remove("--win-shortcut");
         }
@@ -749,7 +818,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions winShortcutPrompt(boolean shortcutPrompt) {
         if (shortcutPrompt) {
-            put("--win-shortcut-prompt", null);
+            put("--win-shortcut-prompt");
         } else {
             remove("--win-shortcut-prompt");
         }
@@ -775,33 +844,6 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions winUpgradeUuid(String uuid) {
         put("--win-upgrade-uuid", uuid);
-        return this;
-    }
-
-    /**
-     * Creates a console launcher for the application, should be specified for application which requires console
-     * interactions.
-     *
-     * @param winConsole {@code true} to create a console launcher, {@code false} otherwise
-     * @return this map of options
-     */
-    public JpackageOptions winConsole(boolean winConsole) {
-        if (winConsole) {
-            put("--win-console", null);
-        } else {
-            remove("--win-console");
-        }
-        return this;
-    }
-
-    /**
-     * Include all the referenced content in the dmg.
-     *
-     * @param additionalContent one or more path
-     * @return this map of options
-     */
-    public JpackageOptions macDmgContent(String... additionalContent) {
-        put("--mac-dmg-content", String.join(",", additionalContent));
         return this;
     }
 

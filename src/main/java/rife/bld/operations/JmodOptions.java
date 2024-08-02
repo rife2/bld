@@ -94,7 +94,7 @@ public class JmodOptions extends HashMap<String, String> {
      */
     public JmodOptions doNotResolveByDefault(boolean doNotResolveByDefault) {
         if (doNotResolveByDefault) {
-            put("--do-not-resolve-by-default", null);
+            put("--do-not-resolve-by-default");
         } else {
             remove("--do-not-resolve-by-default");
         }
@@ -109,7 +109,7 @@ public class JmodOptions extends HashMap<String, String> {
      */
     public JmodOptions dryRun(boolean dryRun) {
         if (dryRun) {
-            put("--dry-run", null);
+            put("--dry-run");
         } else {
             remove("--dry-run");
         }
@@ -120,7 +120,7 @@ public class JmodOptions extends HashMap<String, String> {
      * Exclude files matching the supplied pattern list.
      *
      * @param pattern one or more pattern
-     * @return the list of options
+     * @return the map of options
      */
     public JmodOptions exclude(FilePattern... pattern) {
         var args = new ArrayList<String>();
@@ -142,8 +142,18 @@ public class JmodOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions filename(String filename) {
-        put("@" + filename, null);
+        put("@" + filename);
         return this;
+    }
+
+    /**
+     * Associates {@code null} with the specified key in this map. If the map previously contained a mapping for the
+     * key, the old value is replaced.
+     *
+     * @param key key with which the specified value is to be associated
+     */
+    public void put(String key) {
+        put(key, null);
     }
 
     /**

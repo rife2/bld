@@ -5,6 +5,8 @@
 
 package rife.bld.operations;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,14 +17,26 @@ import java.util.Map;
  */
 public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation> {
     private final JlinkOptions jlinkOptions_ = new JlinkOptions();
+    private final List<String> disabledPlugins_ = new ArrayList<>();
 
     public JlinkOperation() {
         super("jlink");
     }
 
+    /**
+     * Disable the plugin mentioned.
+     *
+     * @param plugin the plugin name
+     * @return this map of options
+     */
+    public JlinkOperation disablePlugin(String... plugin) {
+        disabledPlugins_.addAll(List.of(plugin));
+        return this;
+    }
+
     @Override
     public void execute() throws Exception {
-        toolArgs(jlinkOptions_);
+        disabledPlugins_.forEach(plugin -> addArg("--disable-plugin", plugin));
         super.execute();
     }
 
@@ -31,10 +45,20 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
      * <p>
      * This is a modifiable list that can be retrieved and changed.
      *
-     * @return the list of jlink options
+     * @return the map of jlink options
      */
     public JlinkOptions jlinkOptions() {
         return jlinkOptions_;
+    }
+
+    /**
+     * List available plugins.
+     *
+     * @return this operation instance
+     */
+    public JlinkOperation listPlugins() {
+        addArgs("--list-plugins");
+        return this;
     }
 
     /**

@@ -22,7 +22,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
 
     @Override
     public void execute() throws Exception {
-        toolArgs(jpackageOptions_);
+        addArgs(jpackageOptions_);
         super.execute();
     }
 

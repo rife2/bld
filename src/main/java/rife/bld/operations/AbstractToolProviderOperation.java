@@ -9,7 +9,6 @@ import rife.bld.operations.exceptions.ExitStatusException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.spi.ToolProvider;
@@ -22,7 +21,7 @@ import java.util.spi.ToolProvider;
  */
 public abstract class AbstractToolProviderOperation<T extends AbstractToolProviderOperation<T>>
         extends AbstractOperation<AbstractToolProviderOperation<T>> {
-    private final Map<String, String> toolArgs_ = new HashMap<>();
+    private final List<String> toolArgs_ = new ArrayList<>();
     private final String toolName_;
 
     /**
@@ -35,43 +34,18 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     }
 
     /**
-     * Converts arguments to a list.
-     *
-     * @param args the argument-value pairs
-     * @return the arguments list
-     */
-    static List<String> argsToList(Map<String, String> args) {
-        var list = new ArrayList<String>();
-        for (String arg : args.keySet()) {
-            var value = args.get(arg);
-            list.add(arg);
-            if (value != null && !value.isEmpty()) {
-                list.add(value);
-            }
-        }
-        return list;
-    }
-
-    /**
-     * Adds tool command line argument.
-     *
-     * @param arg the argument to add
-     * @return this operation
-     */
-    public T toolArg(String arg) {
-        toolArgs_.put(arg, null);
-        return (T) this;
-    }
-
-    /**
      * Add tool command line argument.
      *
      * @param arg   the argument
      * @param value the value
      * @return this operation
      */
-    public T toolArg(String arg, String value) {
-        toolArgs_.put(arg, value);
+    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
+    public T addArg(String arg, String value) {
+        toolArgs_.add(arg);
+        if (value != null && !value.isEmpty()) {
+            toolArgs_.add(value);
+        }
         return (T) this;
     }
 
@@ -81,18 +55,33 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
      * @param args the argument-value pairs to add
      * @return this operation
      */
-    protected T toolArgs(Map<String, String> args) {
-        toolArgs_.putAll(args);
+    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
+    protected T addArgs(Map<String, String> args) {
+        args.forEach(this::addArg);
         return (T) this;
     }
 
     /**
-     * Clears the tool command line arguments.
+     * Adds tool command line arguments.
      *
+     * @param args the argument to add
      * @return this operation
      */
-    protected T clearToolArguments() {
-        toolArgs_.clear();
+    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
+    public T addArgs(List<String> args) {
+        toolArgs_.addAll(args);
+        return (T) this;
+    }
+
+    /**
+     * Adds tool command line arguments.
+     *
+     * @param arg one or more argument
+     * @return this operation
+     */
+    @SuppressWarnings("unchecked")
+    public T addArgs(String... arg) {
+        addArgs(List.of(arg));
         return (T) this;
     }
 
@@ -105,17 +94,15 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
         var tool = ToolProvider.findFirst(toolName_).orElseThrow(() ->
                 new IllegalStateException("No " + toolName_ + " tool found."));
 
-        var argsList = argsToList(toolArgs_);
-
         var stderr = new StringWriter();
         var stdout = new StringWriter();
         try (var err = new PrintWriter(stderr); var out = new PrintWriter(stdout)) {
-            var status = tool.run(out, err, argsList.toArray(new String[0]));
+            var status = tool.run(out, err, toolArgs_.toArray(new String[0]));
             out.flush();
             err.flush();
 
             if (status != 0) {
-                System.out.println(tool.name() + " " + String.join(" ", argsList));
+                System.out.println(tool.name() + ' ' + String.join(" ", toolArgs_));
             }
 
             var output = stdout.toString();
@@ -136,7 +123,7 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
      *
      * @return the arguments
      */
-    public Map<String, String> toolArgs() {
+    public List<String> toolArgs() {
         return toolArgs_;
     }
 }
