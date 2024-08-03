@@ -5,10 +5,13 @@
 
 package rife.bld.operations;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.tools.FileUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.HashMap;
 
@@ -17,6 +20,13 @@ import static rife.bld.operations.JpackageOptions.Launcher;
 import static rife.bld.operations.JpackageOptions.PackageType;
 
 public class TestJpackageOperation {
+    private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+    private final PrintStream stdout = System.out;
+
+    @AfterEach
+    public void tearDown() {
+        System.setOut(stdout);
+    }
 
     @Test
     void testArguments() {
@@ -156,57 +166,64 @@ public class TestJpackageOperation {
     @Test
     void testCreatePackage() throws Exception {
         var tmpdir = Files.createTempDirectory("bld-jpackage-test").toFile();
-        tmpdir.deleteOnExit();
+        try {
+            var options = new JpackageOptions()
+                    .input("lib/bld")
+                    .name("bld")
+                    .mainJar("bld-wrapper.jar")
+                    .javaOptions("--enable-preview")
+                    .dest(tmpdir.getAbsolutePath())
+                    .verbose(true);
 
-        var options = new JpackageOptions()
-                .input("lib/bld")
-                .name("bld")
-                .mainJar("bld-wrapper.jar")
-                .javaOptions("--enable-preview")
-                .dest(tmpdir.getAbsolutePath())
-                .verbose(true);
+            var os = System.getProperty("os.version");
+            if (os.endsWith("MANJARO")) {
+                options.type(PackageType.DEB);
+            }
 
-        var os = System.getProperty("os.version");
-        if (os.endsWith("MANJARO")) {
-            options.type(PackageType.DEB);
+            var jpackage = new JpackageOperation().jpackageOptions(options);
+            jpackage.execute();
+
+            var files = tmpdir.listFiles();
+            assertNotNull(files, "files should not be null");
+            assertTrue(files.length > 0, "no files found");
+
+            assertTrue(files[0].getName().matches("bld.*\\.[A-Za-z]{3}"), "Package not found");
+        } finally {
+            FileUtils.deleteDirectory(tmpdir);
         }
+    }
 
-        var jpackage = new JpackageOperation().jpackageOptions(options);
-        jpackage.execute();
-
-        var files = tmpdir.listFiles();
-        assertNotNull(files, "files should not be null");
-        assertTrue(files.length > 0, "No files found");
-
-        assertTrue(files[0].getName().matches("bld.*\\.[A-Za-z]{3}"), "Package not found");
-
-        FileUtils.deleteDirectory(tmpdir);
+    @Test
+    void testFileOptions() {
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jpackage = new JpackageOperation().fileOptions("src/test/resources/jlink/options_verbose.txt",
+                "src/test/resources/jlink/options_version.txt");
+        assertDoesNotThrow(jpackage::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
     }
 
     @Test
     void testHelp() {
-        var jpackage = new JpackageOperation().addArgs("--help");
+        var jpackage = new JpackageOperation().toolArgs("--help");
         assertDoesNotThrow(jpackage::execute);
+        assertTrue(jpackage.toolArgs().isEmpty(), "args not empty");
     }
 
     @Test
     void testNoArguments() {
         var jpackage = new JpackageOperation();
-        assertTrue(jpackage.options().isEmpty(), "options not empty");
+        assertTrue(jpackage.fileOptions().isEmpty(), "file options not empty");
         assertTrue(jpackage.jpackageOptions().isEmpty(), "jpackage options not empty");
         assertThrows(ExitStatusException.class, jpackage::execute);
     }
 
     @Test
-    void testOptions() {
-        var jpackage = new JpackageOperation().options("src/test/resources/jlink/options_verbose.txt",
-                "src/test/resources/jlink/options_version.txt");
-        assertDoesNotThrow(jpackage::execute);
-    }
-
-    @Test
     void testVersion() {
-        var jpackage = new JpackageOperation().addArgs("--verbose", "--version");
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jpackage = new JpackageOperation().toolArgs("--verbose", "--version");
         assertDoesNotThrow(jpackage::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
     }
 }

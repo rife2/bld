@@ -5,12 +5,15 @@
 
 package rife.bld.operations;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.tools.FileUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -20,6 +23,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static rife.bld.operations.JmodOperation.OperationMode;
 
 public class TestJmodOperation {
+    private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+    private final PrintStream stdout = System.out;
+
+    @AfterEach
+    public void tearDown() {
+        System.setOut(stdout);
+    }
+
     @Test
     void testArguments() {
         var args = new HashMap<String, String>();
@@ -76,83 +87,81 @@ public class TestJmodOperation {
     @Test
     void testCreate() throws IOException {
         var tmpdir = Files.createTempDirectory("bld-jmod-test").toFile();
-        tmpdir.deleteOnExit();
+        try {
+            var mod = new File(tmpdir, "dev.mccue.tree.jmod");
 
-        var mod = new File(tmpdir, "dev.mccue.tree.jmod");
-        mod.deleteOnExit();
+            var options = new JmodOptions()
+                    .legalNotices("src/test/resources/jlink/dev.mccue.apple/legal")
+                    .classpath("src/test/resources/jlink/build/jar/dev.mccue.apple.jar");
+            var jmod = new JmodOperation()
+                    .operationMode(OperationMode.CREATE)
+                    .jmodFile(mod.getAbsolutePath())
+                    .jmodOptions(options);
 
-        var options = new JmodOptions()
-                .legalNotices("src/test/resources/jlink/dev.mccue.apple/legal")
-                .classpath("src/test/resources/jlink/build/jar/dev.mccue.apple.jar");
-        var jmod = new JmodOperation()
-                .operationMode(OperationMode.CREATE)
-                .jmodFile(mod.getAbsolutePath())
-                .jmodOptions(options);
-
-        assertDoesNotThrow(jmod::execute);
-        assertTrue(mod.exists(), "mod does not exist");
-
-        FileUtils.deleteDirectory(tmpdir);
+            assertDoesNotThrow(jmod::execute);
+            assertTrue(mod.exists(), "mod does not exist");
+        } finally {
+            FileUtils.deleteDirectory(tmpdir);
+        }
     }
 
     @Test
     void testExecute() throws IOException {
         var tmpdir = Files.createTempDirectory("bld-jmod-test").toFile();
-        tmpdir.deleteOnExit();
+        try {
+            var mod = new File(tmpdir, "dev.mccue.tree.jmod");
 
-        var mod = new File(tmpdir, "dev.mccue.tree.jmod");
-        mod.deleteOnExit();
+            var options = new JmodOptions().classpath("src/test/resources/jlink/build/jar/dev.mccue.tree.jar");
+            var jmod = new JmodOperation()
+                    .operationMode(OperationMode.CREATE)
+                    .jmodFile(mod.getAbsolutePath())
+                    .jmodOptions(options);
 
-        var options = new JmodOptions().classpath("src/test/resources/jlink/build/jar/dev.mccue.tree.jar");
-        var jmod = new JmodOperation()
-                .operationMode(OperationMode.CREATE)
-                .jmodFile(mod.getAbsolutePath())
-                .jmodOptions(options);
+            assertDoesNotThrow(jmod::execute);
+            assertTrue(mod.exists(), "mod does not exist");
 
-        assertDoesNotThrow(jmod::execute);
-        assertTrue(mod.exists(), "mod does not exist");
+            jmod.jmodOptions().clear();
 
-        jmod.jmodOptions().clear();
+            jmod.operationMode(OperationMode.DESCRIBE);
+            assertDoesNotThrow(jmod::execute, "describe mod failed");
 
-        jmod.operationMode(OperationMode.DESCRIBE);
-        assertDoesNotThrow(jmod::execute, "describe mod failed");
-
-        jmod.operationMode(OperationMode.LIST);
-        assertDoesNotThrow(jmod::execute, "list mod failed");
-
-        FileUtils.deleteDirectory(tmpdir);
+            jmod.operationMode(OperationMode.LIST);
+            assertDoesNotThrow(jmod::execute, "list mod failed");
+        } finally {
+            FileUtils.deleteDirectory(tmpdir);
+        }
     }
 
     @Test
     void testHelp() {
-        var jmod = new JmodOperation()
-                .operationMode(OperationMode.HASH)
-                .jmodFile("foo")
-                .addArgs("--help-extra");
+        var jmod = new JmodOperation().toolArgs("--help-extra");
         assertDoesNotThrow(jmod::execute);
+        assertTrue(jmod.toolArgs().isEmpty(), "args not empty");
     }
 
     @Test
     void testNoArguments() {
         var jmod = new JmodOperation();
-        assertTrue(jmod.options().isEmpty(), "options not empty");
+        assertTrue(jmod.fileOptions().isEmpty(), "file options not empty");
         assertTrue(jmod.jmodOptions().isEmpty(), "jmod options not empty");
         assertThrows(ExitStatusException.class, jmod::execute);
     }
 
     @Test
-    void testOptions() {
-        var jpackage = new JpackageOperation().options("src/test/resources/jlink/options_verbose.txt",
-                "src/test/resources/jlink/options_version.txt");
-        assertDoesNotThrow(jpackage::execute);
+    void testFileOptions() {
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jmod = new JmodOperation().fileOptions("src/test/resources/jlink/options_version.txt");
+        assertDoesNotThrow(jmod::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
     }
 
     @Test
     void testVersion() {
-        var jmod = new JmodOperation()
-                .operationMode(OperationMode.DESCRIBE)
-                .jmodFile("foo")
-                .addArgs("--version");
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jmod = new JmodOperation().toolArgs("--version");
         assertDoesNotThrow(jmod::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
     }
 }

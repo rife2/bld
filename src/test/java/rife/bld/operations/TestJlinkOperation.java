@@ -5,18 +5,29 @@
 
 package rife.bld.operations;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.tools.FileUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestJlinkOperation {
+    private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+    private final PrintStream stdout = System.out;
+
+    @AfterEach
+    public void tearDown() {
+        System.setOut(stdout);
+    }
+
     @Test
     void testArguments() {
         var args = new HashMap<String, String>();
@@ -66,64 +77,76 @@ public class TestJlinkOperation {
 
     @Test
     void testDisablePlugin() {
+        System.setOut(new PrintStream(outputStreamCaptor));
         var jlink = new JlinkOperation()
                 .disablePlugin("vm")
                 .disablePlugin("system-modules")
                 .listPlugins();
         assertDoesNotThrow(jlink::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.contains("List of available plugins:"), out);
     }
 
     @Test
     void testExecute() throws IOException {
         var tmpdir = Files.createTempDirectory("bld-jlink-test").toFile();
-        tmpdir.deleteOnExit();
+        try {
+            var output = new File(tmpdir, "jlink");
 
-        var output = new File(tmpdir, "jlink");
-        output.deleteOnExit();
+            var options = new JlinkOptions()
+                    .modulePath("src/test/resources/jlink/build/jmod")
+                    .addModules("dev.mccue.tree")
+                    .launcher("tree", "dev.mccue.tree", "dev.mccue.tree.Tree")
+                    .output(output.getAbsolutePath());
+            var jlink = new JlinkOperation().jlinkOptions(options);
 
-        var options = new JlinkOptions()
-                .modulePath("src/test/resources/jlink/build/jmod")
-                .addModules("dev.mccue.tree")
-                .launcher("tree", "dev.mccue.tree", "dev.mccue.tree.Tree")
-                .output(output.getAbsolutePath());
-        var jlink = new JlinkOperation().jlinkOptions(options);
+            assertDoesNotThrow(jlink::execute);
+            assertTrue(output.exists(), "Output dir does not exist");
+        } finally {
+            FileUtils.deleteDirectory(tmpdir);
+        }
+    }
 
+    @Test
+    void testFileOptions() {
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jlink = new JlinkOperation().fileOptions("src/test/resources/jlink/options_verbose.txt",
+                "src/test/resources/jlink/options_version.txt");
         assertDoesNotThrow(jlink::execute);
-        assertTrue(output.exists(), "Output dir does not exist");
-
-        FileUtils.deleteDirectory(tmpdir);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
     }
 
     @Test
     void testHelp() {
-        var jlink = new JlinkOperation().addArgs("--help");
+        var jlink = new JlinkOperation().toolArgs("--help");
         assertDoesNotThrow(jlink::execute);
+        assertTrue(jlink.toolArgs().isEmpty(), "args not empty");
     }
 
     @Test
     void testNoArguments() {
         var jlink = new JlinkOperation();
         assertTrue(jlink.jlinkOptions().isEmpty(), "jlink options not empty");
-        assertTrue(jlink.options().isEmpty(), "options not empty");
+        assertTrue(jlink.fileOptions().isEmpty(), "file options not empty");
         assertThrows(ExitStatusException.class, jlink::execute);
     }
 
     @Test
-    void testOptions() {
-        var jlink = new JlinkOperation().options("src/test/resources/jlink/options_verbose.txt",
-                "src/test/resources/jlink/options_version.txt");
-        assertDoesNotThrow(jlink::execute);
-    }
-
-    @Test
     void testParseOptions() {
-        var jlink = new JlinkOperation().options("src/test/resources/jlink/options_jlink.txt");
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jlink = new JlinkOperation().fileOptions("src/test/resources/jlink/options_jlink.txt");
         assertDoesNotThrow(jlink::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.contains("List of available plugins:"), out);
     }
 
     @Test
     void testVersion() {
-        var jlink = new JlinkOperation().addArgs("--verbose", "--version");
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jlink = new JlinkOperation().toolArgs("--verbose", "--version");
         assertDoesNotThrow(jlink::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
     }
 }
