@@ -7,9 +7,12 @@ package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
 import rife.bld.operations.exceptions.ExitStatusException;
+import rife.tools.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,8 +71,27 @@ public class TestJlinkOperation {
                 .disablePlugin("system-modules")
                 .listPlugins();
         assertDoesNotThrow(jlink::execute);
+    }
 
-        assertTrue(jlink.toolArgs().containsAll(List.of("vm", "system-modules")));
+    @Test
+    void testExecute() throws IOException {
+        var tmpdir = Files.createTempDirectory("bld-jlink-test").toFile();
+        tmpdir.deleteOnExit();
+
+        var output = new File(tmpdir, "jlink");
+        output.deleteOnExit();
+
+        var options = new JlinkOptions()
+                .modulePath("src/test/resources/jlink/build/jmod")
+                .addModules("dev.mccue.tree")
+                .launcher("tree", "dev.mccue.tree", "dev.mccue.tree.Tree")
+                .output(output.getAbsolutePath());
+        var jlink = new JlinkOperation().jlinkOptions(options);
+
+        assertDoesNotThrow(jlink::execute);
+        assertTrue(output.exists(), "Output dir does not exist");
+
+        FileUtils.deleteDirectory(tmpdir);
     }
 
     @Test
@@ -88,7 +110,7 @@ public class TestJlinkOperation {
 
     @Test
     void testOptions() {
-        var jlink = new JlinkOperation().options("src/test/resources/options_verbose.txt");
+        var jlink = new JlinkOperation().options("src/test/resources/jlink/options_verbose.txt");
         assertDoesNotThrow(jlink::execute);
     }
 

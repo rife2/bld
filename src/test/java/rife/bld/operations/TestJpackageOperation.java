@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static rife.bld.operations.JpackageOptions.Launcher;
+import static rife.bld.operations.JpackageOptions.PackageType;
 
 public class TestJpackageOperation {
 
@@ -82,7 +84,7 @@ public class TestJpackageOperation {
 
         var options = new JpackageOptions()
                 .aboutUrl(args.get("--about-url"))
-                .addLauncher(new JpackageOptions.Launcher("name", "path"))
+                .addLauncher(new Launcher("name", "path"))
                 .addModules(args.get("--add-modules").split(","))
                 .appContent(args.get("--app-content").split(","))
                 .appImage(args.get("--app-image"))
@@ -128,7 +130,7 @@ public class TestJpackageOperation {
                 .runtimeImage(args.get("--runtime-image"))
                 .stripDebug(true)
                 .temp(args.get("--temp"))
-                .type(JpackageOptions.PackageType.EXE)
+                .type(PackageType.EXE)
                 .vendor(args.get("--vendor"))
                 .verbose(true)
                 .winConsole(true)
@@ -166,7 +168,7 @@ public class TestJpackageOperation {
 
         var os = System.getProperty("os.version");
         if (os.endsWith("MANJARO")) {
-            options.type(JpackageOptions.PackageType.DEB);
+            options.type(PackageType.DEB);
         }
 
         var jpackage = new JpackageOperation().jpackageOptions(options);
@@ -197,7 +199,7 @@ public class TestJpackageOperation {
 
     @Test
     void testOptions() {
-        var jpackage = new JpackageOperation().options("src/test/resources/options_verbose.txt");
+        var jpackage = new JpackageOperation().options("src/test/resources/jlink/options_verbose.txt");
         assertDoesNotThrow(jpackage::execute);
     }
 

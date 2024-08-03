@@ -7,12 +7,17 @@ package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
 import rife.bld.operations.exceptions.ExitStatusException;
+import rife.tools.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static rife.bld.operations.JmodOperation.OperationMode;
 
 public class TestJmodOperation {
     @Test
@@ -69,9 +74,59 @@ public class TestJmodOperation {
     }
 
     @Test
+    void testCreate() throws IOException {
+        var tmpdir = Files.createTempDirectory("bld-jmod-test").toFile();
+        tmpdir.deleteOnExit();
+
+        var mod = new File(tmpdir, "dev.mccue.tree.jmod");
+        mod.deleteOnExit();
+
+        var options = new JmodOptions()
+                .legalNotices("src/test/resources/jlink/dev.mccue.apple/legal")
+                .classpath("src/test/resources/jlink/build/jar/dev.mccue.apple.jar");
+        var jmod = new JmodOperation()
+                .operationMode(OperationMode.CREATE)
+                .jmodFile(mod.getAbsolutePath())
+                .jmodOptions(options);
+
+        assertDoesNotThrow(jmod::execute);
+        assertTrue(mod.exists(), "mod does not exist");
+
+        FileUtils.deleteDirectory(tmpdir);
+    }
+
+    @Test
+    void testExecute() throws IOException {
+        var tmpdir = Files.createTempDirectory("bld-jmod-test").toFile();
+        tmpdir.deleteOnExit();
+
+        var mod = new File(tmpdir, "dev.mccue.tree.jmod");
+        mod.deleteOnExit();
+
+        var options = new JmodOptions().classpath("src/test/resources/jlink/build/jar/dev.mccue.tree.jar");
+        var jmod = new JmodOperation()
+                .operationMode(OperationMode.CREATE)
+                .jmodFile(mod.getAbsolutePath())
+                .jmodOptions(options);
+
+        assertDoesNotThrow(jmod::execute);
+        assertTrue(mod.exists(), "mod does not exist");
+
+        jmod.jmodOptions().clear();
+
+        jmod.operationMode(OperationMode.DESCRIBE);
+        assertDoesNotThrow(jmod::execute, "describe mod failed");
+
+        jmod.operationMode(OperationMode.LIST);
+        assertDoesNotThrow(jmod::execute, "list mod failed");
+
+        FileUtils.deleteDirectory(tmpdir);
+    }
+
+    @Test
     void testHelp() {
         var jmod = new JmodOperation()
-                .operationMode(JmodOperation.OperationMode.HASH)
+                .operationMode(OperationMode.HASH)
                 .jmodFile("foo")
                 .addArgs("--help-extra");
         assertDoesNotThrow(jmod::execute);
@@ -87,14 +142,14 @@ public class TestJmodOperation {
 
     @Test
     void testOptions() {
-        var jpackage = new JpackageOperation().options("src/test/resources/options_version.txt");
+        var jpackage = new JpackageOperation().options("src/test/resources/jlink/options_version.txt");
         assertDoesNotThrow(jpackage::execute);
     }
 
     @Test
     void testVersion() {
         var jmod = new JmodOperation()
-                .operationMode(JmodOperation.OperationMode.DESCRIBE)
+                .operationMode(OperationMode.DESCRIBE)
                 .jmodFile("foo")
                 .addArgs("--version");
         assertDoesNotThrow(jmod::execute);
