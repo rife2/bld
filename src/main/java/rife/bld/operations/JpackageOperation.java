@@ -16,8 +16,8 @@ import java.util.Map;
  * @since 2.0.2
  */
 public class JpackageOperation extends AbstractToolProviderOperation<JpackageOperation> {
+    private final List<String> fileOptions_ = new ArrayList<>();
     private final JpackageOptions jpackageOptions_ = new JpackageOptions();
-    private final List<String> options_ = new ArrayList<>();
 
     public JpackageOperation() {
         super("jpackage");
@@ -25,8 +25,8 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
 
     @Override
     public void execute() throws Exception {
-        addArgs(jpackageOptions_);
-        addArgs(options_.stream().map(opt -> '@' + opt).toList());
+        toolArgs(fileOptions_.stream().map(opt -> '@' + opt).toList());
+        toolArgs(jpackageOptions_);
         super.execute();
     }
 
@@ -35,17 +35,18 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
      *
      * @return the list of files
      */
-    public List<String> options(){
-        return options_;
+    public List<String> fileOptions() {
+        return fileOptions_;
     }
+
     /**
      * Read options and/or mode from a file.
      *
-     * @param filename one or more file
+     * @param file one or more file
      * @return this operation instance
      */
-    public JpackageOperation options(String... filename) {
-        options_.addAll(List.of(filename));
+    public JpackageOperation fileOptions(String... file) {
+        fileOptions_.addAll(List.of(file));
         return this;
     }
 

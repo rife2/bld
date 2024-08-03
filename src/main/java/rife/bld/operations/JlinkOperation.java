@@ -5,12 +5,9 @@
 
 package rife.bld.operations;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 /**
  * Create run-time images using the jlink tool.
@@ -21,7 +18,7 @@ import java.util.Scanner;
 public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation> {
     private final List<String> disabledPlugins_ = new ArrayList<>();
     private final JlinkOptions jlinkOptions_ = new JlinkOptions();
-    private final List<String> options_ = new ArrayList<>();
+    private final List<String> fileOptions_ = new ArrayList<>();
 
     public JlinkOperation() {
         super("jlink");
@@ -40,9 +37,9 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
 
     @Override
     public void execute() throws Exception {
-        disabledPlugins_.forEach(plugin -> addArgs("--disable-plugin", plugin));
-        addArgs(jlinkOptions_);
-        addArgs(parseOptions());
+        toolArgsFromFile(fileOptions_);
+        disabledPlugins_.forEach(plugin -> toolArgs("--disable-plugin", plugin));
+        toolArgs(jlinkOptions_);
         super.execute();
     }
 
@@ -71,23 +68,13 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     }
 
     /**
-     * List available plugins.
-     *
-     * @return this operation instance
-     */
-    public JlinkOperation listPlugins() {
-        addArgs("--list-plugins");
-        return this;
-    }
-
-    /**
      * Read options and/or mode from a file.
      *
-     * @param filename one or more file
+     * @param file one or more file
      * @return this operation instance
      */
-    public JlinkOperation options(String... filename) {
-        options_.addAll(List.of(filename));
+    public JlinkOperation fileOptions(String... file) {
+        fileOptions_.addAll(List.of(file));
         return this;
     }
 
@@ -96,31 +83,17 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
      *
      * @return the list of files
      */
-    public List<String> options() {
-        return options_;
+    public List<String> fileOptions() {
+        return fileOptions_;
     }
 
-    // Shouldn't be needed, but jlink doesn't support @filename when called via ToolProvider
-    private List<String> parseOptions() throws FileNotFoundException {
-        var list = new ArrayList<String>();
-
-        for (var option : options_) {
-            try (var scanner = new Scanner(new File(option))) {
-                while (scanner.hasNext()) {
-                    var splitLine = scanner.nextLine().split("--");
-                    for (String args : splitLine) {
-                        if (!args.isBlank()) {
-                            var splitArgs = args.split(" ", 2);
-                            list.add("--" + splitArgs[0]);
-                            if (splitArgs.length > 1 && !splitArgs[1].isBlank()) {
-                                list.add(splitArgs[1]);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return list;
+    /**
+     * List available plugins.
+     *
+     * @return this operation instance
+     */
+    public JlinkOperation listPlugins() {
+        toolArgs("--list-plugins");
+        return this;
     }
 }

@@ -5,8 +5,6 @@
 
 package rife.bld.operations;
 
-import rife.bld.operations.exceptions.ExitStatusException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +16,8 @@ import java.util.Map;
  * @since 2.0.2
  */
 public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> {
+    private final List<String> fileOptions_ = new ArrayList<>();
     private final JmodOptions jmodOptions_ = new JmodOptions();
-    private final List<String> options_ = new ArrayList<>();
     private String jmodFile_;
     private OperationMode operationMode_;
 
@@ -29,17 +27,38 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
 
     @Override
     public void execute() throws Exception {
-        if (operationMode_ == null) {
-            System.err.println("Operation mode not set.");
-            throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
-        } else if (jmodFile_ == null) {
-            System.err.println("Jmod file not set.");
-            throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
+        if (operationMode_ != null) {
+            toolArgs(operationMode_.mode);
         }
-        addArgs(operationMode_.mode);
-        addArgs(jmodOptions_);
-        addArgs(jmodFile_);
+
+        toolArgsFromFile(fileOptions_);
+        toolArgs(jmodOptions_);
+
+        if (jmodFile_ != null) {
+            toolArgs(jmodFile_);
+        }
+
         super.execute();
+    }
+
+    /**
+     * Retrieves the list of files containing options or mode.
+     *
+     * @return the list of files
+     */
+    public List<String> fileOptions() {
+        return fileOptions_;
+    }
+
+    /**
+     * Read options and/or mode from a file.
+     *
+     * @param file one or more file
+     * @return this operation instance
+     */
+    public JmodOperation fileOptions(String... file) {
+        fileOptions_.addAll(List.of(file));
+        return this;
     }
 
     /**
@@ -98,26 +117,6 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      */
     public JmodOperation operationMode(OperationMode mode) {
         operationMode_ = mode;
-        return this;
-    }
-
-    /**
-     * Retrieves the list of files containing options or mode.
-     *
-     * @return the list of files
-     */
-    public List<String> options() {
-        return options_;
-    }
-
-    /**
-     * Read options and/or mode from a file.
-     *
-     * @param filename one or more file
-     * @return this operation instance
-     */
-    public JmodOperation options(String... filename) {
-        options_.addAll(List.of(filename));
         return this;
     }
 

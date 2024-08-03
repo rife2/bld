@@ -6,9 +6,12 @@ package rife.bld.operations;
 
 import rife.bld.operations.exceptions.ExitStatusException;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.spi.ToolProvider;
 
 /**
@@ -32,47 +35,6 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     }
 
     /**
-     * Adds tool command line arguments.
-     *
-     * @param args the argument-value pairs to add
-     * @return this operation
-     */
-    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
-    protected T addArgs(Map<String, String> args) {
-        args.forEach((k, v) -> {
-            toolArgs_.add(k);
-            if (v != null && !v.isEmpty()) {
-                toolArgs_.add(v);
-            }
-        });
-        return (T) this;
-    }
-
-    /**
-     * Adds tool command line arguments.
-     *
-     * @param args the argument to add
-     * @return this operation
-     */
-    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
-    public T addArgs(List<String> args) {
-        toolArgs_.addAll(args);
-        return (T) this;
-    }
-
-    /**
-     * Adds tool command line arguments.
-     *
-     * @param arg one or more argument
-     * @return this operation
-     */
-    @SuppressWarnings("unchecked")
-    public T addArgs(String... arg) {
-        addArgs(List.of(arg));
-        return (T) this;
-    }
-
-    /**
      * Runs an instance of the tool.
      * <p>
      * On success, command line arguments are automatically cleared.
@@ -85,6 +47,7 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
             System.err.println("No " + toolName_ + " command line arguments specified.");
             throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
         }
+
         var tool = ToolProvider.findFirst(toolName_).orElseThrow(() ->
                 new IllegalStateException("No " + toolName_ + " tool found."));
 
@@ -92,17 +55,92 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
         if (status != 0) {
             System.out.println(tool.name() + ' ' + String.join(" ", toolArgs_));
         }
+
         ExitStatusException.throwOnFailure(status);
 
         toolArgs_.clear();
     }
 
     /**
-     * Returns the tool command line arguments.
+     * Adds arguments to pass to the tool.
+     *
+     * @param arg one or more argument
+     * @return this operation
+     */
+    @SuppressWarnings("unchecked")
+    public T toolArgs(String... arg) {
+        toolArgs(List.of(arg));
+        return (T) this;
+    }
+
+    /**
+     * Adds arguments to pass to the tool.
+     *
+     * @param args the argument-value pairs to add
+     * @return this operation
+     */
+    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
+    protected T toolArgs(Map<String, String> args) {
+        args.forEach((k, v) -> {
+            toolArgs_.add(k);
+            if (v != null && !v.isEmpty()) {
+                toolArgs_.add(v);
+            }
+        });
+        return (T) this;
+    }
+
+    /**
+     * Adds arguments to pass to the tool.
+     *
+     * @param args the argument to add
+     * @return this operation
+     */
+    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
+    public T toolArgs(List<String> args) {
+        toolArgs_.addAll(args);
+        return (T) this;
+    }
+
+    /**
+     * Returns the tool's arguments.
      *
      * @return the arguments
      */
     public List<String> toolArgs() {
         return toolArgs_;
+    }
+
+    /**
+     * Parses arguments to pass to the tool from the given files.
+     *
+     * @param files the list of files
+     * @return this operation instance
+     * @throws FileNotFoundException if a file cannot be found
+     */
+    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
+    public T toolArgsFromFile(List<String> files) throws FileNotFoundException {
+        var list = new ArrayList<String>();
+
+        for (var option : files) {
+            try (var scanner = new Scanner(new File(option))) {
+                while (scanner.hasNext()) {
+                    var splitLine = scanner.nextLine().split("--");
+                    for (String args : splitLine) {
+                        if (!args.isBlank()) {
+                            var splitArgs = args.split(" ", 2);
+                            list.add("--" + splitArgs[0]);
+                            if (splitArgs.length > 1 && !splitArgs[1].isBlank()) {
+                                list.add(splitArgs[1]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        toolArgs(list);
+
+        return (T) this;
     }
 }
