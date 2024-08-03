@@ -35,7 +35,6 @@ public class TestJmodOperation {
         var args = new HashMap<String, String>();
         args.put("--class-path", "classpath");
         args.put("--cmds", "cmds");
-        args.put("--compress", "zip-5");
         args.put("--config", "config");
         args.put("--date", "1997-08-29T09:14:00Z");
         args.put("--dir", "dir");
@@ -119,12 +118,17 @@ public class TestJmodOperation {
             assertTrue(mod.exists(), "mod does not exist");
 
             jmod.jmodOptions().clear();
+            System.setOut(new PrintStream(outputStreamCaptor));
 
             jmod.operationMode(OperationMode.DESCRIBE);
             assertDoesNotThrow(jmod::execute, "describe mod failed");
+            assertTrue(outputStreamCaptor.toString().contains("dev.mccue.tree"),
+                    "missing dev.mccue.tee in:\n" + outputStreamCaptor);
 
             jmod.operationMode(OperationMode.LIST);
             assertDoesNotThrow(jmod::execute, "list mod failed");
+            assertTrue(outputStreamCaptor.toString().contains("module-info.class"),
+                    "missing module-info.class in:\n" + outputStreamCaptor);
         } finally {
             FileUtils.deleteDirectory(tmpdir);
         }
