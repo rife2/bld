@@ -107,7 +107,16 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
         for (var option : options_) {
             try (var scanner = new Scanner(new File(option))) {
                 while (scanner.hasNext()) {
-                    list.addAll(List.of(scanner.next().split(" ")));
+                    var splitLine = scanner.nextLine().split("--");
+                    for (String args : splitLine) {
+                        if (!args.isEmpty()) {
+                            var splitArgs = args.split(" ", 2);
+                            list.add("--" + splitArgs[0]);
+                            if (splitArgs.length > 1 && !splitArgs[1].isEmpty()) {
+                                list.add(splitArgs[1]);
+                            }
+                        }
+                    }
                 }
             }
         }
