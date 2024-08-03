@@ -199,7 +199,8 @@ public class TestJpackageOperation {
 
     @Test
     void testOptions() {
-        var jpackage = new JpackageOperation().options("src/test/resources/jlink/options_verbose.txt");
+        var jpackage = new JpackageOperation().options("src/test/resources/jlink/options_verbose.txt",
+                "src/test/resources/jlink/options_version.txt");
         assertDoesNotThrow(jpackage::execute);
     }
 

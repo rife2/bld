@@ -110,7 +110,14 @@ public class TestJlinkOperation {
 
     @Test
     void testOptions() {
-        var jlink = new JlinkOperation().options("src/test/resources/jlink/options_verbose.txt");
+        var jlink = new JlinkOperation().options("src/test/resources/jlink/options_verbose.txt",
+                "src/test/resources/jlink/options_version.txt");
+        assertDoesNotThrow(jlink::execute);
+    }
+
+    @Test
+    void testParseOptions() {
+        var jlink = new JlinkOperation().options("src/test/resources/jlink/options_jlink.txt");
         assertDoesNotThrow(jlink::execute);
     }
 

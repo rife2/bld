@@ -100,7 +100,7 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
         return options_;
     }
 
-    // Shouldn't be needed, but for some reason jlink doesn't like @filename when called via ToolProvider
+    // Shouldn't be needed, but jlink doesn't support @filename when called via ToolProvider
     private List<String> parseOptions() throws FileNotFoundException {
         var list = new ArrayList<String>();
 
@@ -109,10 +109,10 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
                 while (scanner.hasNext()) {
                     var splitLine = scanner.nextLine().split("--");
                     for (String args : splitLine) {
-                        if (!args.isEmpty()) {
+                        if (!args.isBlank()) {
                             var splitArgs = args.split(" ", 2);
                             list.add("--" + splitArgs[0]);
-                            if (splitArgs.length > 1 && !splitArgs[1].isEmpty()) {
+                            if (splitArgs.length > 1 && !splitArgs[1].isBlank()) {
                                 list.add(splitArgs[1]);
                             }
                         }
