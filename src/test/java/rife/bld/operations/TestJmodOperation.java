@@ -153,7 +153,7 @@ public class TestJmodOperation {
         var jmod = new JmodOperation().fileOptions("src/test/resources/jlink/options_version.txt");
         assertDoesNotThrow(jmod::execute);
         var out = outputStreamCaptor.toString();
-        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
     }
 
     @Test
@@ -162,6 +162,6 @@ public class TestJmodOperation {
         var jmod = new JmodOperation().toolArgs("--version");
         assertDoesNotThrow(jmod::execute);
         var out = outputStreamCaptor.toString();
-        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
     }
 }

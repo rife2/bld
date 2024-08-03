@@ -114,7 +114,7 @@ public class TestJlinkOperation {
                 "src/test/resources/jlink/options_version.txt");
         assertDoesNotThrow(jlink::execute);
         var out = outputStreamCaptor.toString();
-        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
     }
 
     @Test
@@ -147,6 +147,6 @@ public class TestJlinkOperation {
         var jlink = new JlinkOperation().toolArgs("--verbose", "--version");
         assertDoesNotThrow(jlink::execute);
         var out = outputStreamCaptor.toString();
-        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
     }
 }

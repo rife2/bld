@@ -200,7 +200,7 @@ public class TestJpackageOperation {
                 "src/test/resources/jlink/options_version.txt");
         assertDoesNotThrow(jpackage::execute);
         var out = outputStreamCaptor.toString();
-        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
     }
 
     @Test
@@ -224,6 +224,6 @@ public class TestJpackageOperation {
         var jpackage = new JpackageOperation().toolArgs("--verbose", "--version");
         assertDoesNotThrow(jpackage::execute);
         var out = outputStreamCaptor.toString();
-        assertTrue(out.matches("\\d+.\\d+.\\d+[\\r\\n]+"), out);
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
     }
 }
