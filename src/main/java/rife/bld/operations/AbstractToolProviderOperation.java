@@ -85,18 +85,24 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
         return (T) this;
     }
 
+    /**
+     * Runs an instance of the tool.
+     * <p>
+     * Command line arguments are automatically cleared.
+     *
+     * @throws Exception if an error occurred
+     */
     @Override
     public void execute() throws Exception {
         if (toolArgs_.isEmpty()) {
-            System.err.println("No " + toolName_ + " arguments specified.");
+            System.err.println("No " + toolName_ + " command line arguments specified.");
             throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
         }
-        var tool = ToolProvider.findFirst(toolName_).orElseThrow(() ->
-                new IllegalStateException("No " + toolName_ + " tool found."));
-
         var stderr = new StringWriter();
         var stdout = new StringWriter();
         try (var err = new PrintWriter(stderr); var out = new PrintWriter(stdout)) {
+            var tool = ToolProvider.findFirst(toolName_).orElseThrow(() ->
+                    new IllegalStateException("No " + toolName_ + " tool found."));
             var status = tool.run(out, err, toolArgs_.toArray(new String[0]));
             out.flush();
             err.flush();
@@ -115,6 +121,8 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
             }
 
             ExitStatusException.throwOnFailure(status);
+        } finally {
+            toolArgs_.clear();
         }
     }
 
