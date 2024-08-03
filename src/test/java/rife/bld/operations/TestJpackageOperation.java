@@ -166,14 +166,17 @@ public class TestJpackageOperation {
     void testCreatePackage() throws Exception {
         var tmpdir = Files.createTempDirectory("bld-jpackage-test").toFile();
         try {
+            var jlinkOptions = new JlinkOptions()
+                    .compress(JlinkOptions.CompressionLevel.ZIP)
+                    .stripNativeCommands(true);
             var options = new JpackageOptions()
                     .input("lib/bld")
                     .name("bld")
                     .mainJar("bld-wrapper.jar")
                     .javaOptions("--enable-preview")
                     .dest(tmpdir.getAbsolutePath())
-                    .verbose(true);
-
+                    .verbose(true)
+                    .jlinkOptions(jlinkOptions);
             var os = System.getProperty("os.version");
             if (os.endsWith("MANJARO")) {
                 options.type(PackageType.DEB);

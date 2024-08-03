@@ -56,7 +56,6 @@ public class TestJmodOperation {
         var options = new JmodOptions()
                 .classpath(args.get("--class-path"))
                 .cmds(args.get("--cmds"))
-                .compress(ZipCompression.ZIP_5)
                 .config(args.get("--config"))
                 .date(ZonedDateTime.of(1997, 8, 29, 2, 14, 0, 0, ZoneId.of("America/Los_Angeles")))
                 .dir(args.get("--dir"))

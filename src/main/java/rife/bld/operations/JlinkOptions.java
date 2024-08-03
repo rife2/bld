@@ -15,7 +15,7 @@ import java.util.List;
  * @since 2.0.2
  */
 public class JlinkOptions extends HashMap<String, String> {
-    /**ranran
+    /**
      * All Modules Path.
      */
     @SuppressWarnings("unused")
@@ -50,16 +50,12 @@ public class JlinkOptions extends HashMap<String, String> {
     }
 
     /**
-     * Compression to use in compressing resources.
-     * <p>
-     * Where {@link ZipCompression#ZIP_0 ZIP_0} provides no compression and {@link ZipCompression#ZIP_9 ZIP_9} provides
-     * the best compression.
-     * <p>Default is {@link ZipCompression#ZIP_6 ZIP_6}
+     * Enable compression of resources.
      *
-     * @param compression the {@link ZipCompression compression} level
+     * @param compression the {@link CompressionLevel compression} level
      * @return this map of options
      */
-    public JlinkOptions compress(ZipCompression compression) {
+    public JlinkOptions compress(CompressionLevel compression) {
         put("--compress", compression.level);
         return this;
     }
@@ -107,21 +103,6 @@ public class JlinkOptions extends HashMap<String, String> {
     }
 
     /**
-     * Exclude include header files.
-     *
-     * @param noHeaderFiles {@code true} to exclude header files, {@code false} otherwise
-     * @return this map of options
-     */
-    public JlinkOptions noHeaderFiles(boolean noHeaderFiles) {
-        if (noHeaderFiles) {
-            put("--no-header-files");
-        } else {
-            remove("--no-header-files");
-        }
-        return this;
-    }
-
-    /**
      * Add a launcher command of the given name for the module and the main class.
      *
      * @param name      the name
@@ -160,6 +141,21 @@ public class JlinkOptions extends HashMap<String, String> {
     }
 
     /**
+     * Exclude include header files.
+     *
+     * @param noHeaderFiles {@code true} to exclude header files, {@code false} otherwise
+     * @return this map of options
+     */
+    public JlinkOptions noHeaderFiles(boolean noHeaderFiles) {
+        if (noHeaderFiles) {
+            put("--no-header-files");
+        } else {
+            remove("--no-header-files");
+        }
+        return this;
+    }
+
+    /**
      * Exclude man pages.
      *
      * @param noManPages {@code true} to exclude man pages, {@code false} otherwise
@@ -175,16 +171,6 @@ public class JlinkOptions extends HashMap<String, String> {
     }
 
     /**
-     * Associates {@code null} with the specified key in this map. If the map previously contained a mapping for the
-     * key, the old value is replaced.
-     *
-     * @param key key with which the specified value is to be associated
-     */
-    public void put(String key) {
-        put(key, null);
-    }
-
-    /**
      * Location of output path.
      *
      * @param path the output path
@@ -193,6 +179,16 @@ public class JlinkOptions extends HashMap<String, String> {
     public JlinkOptions output(String path) {
         put("--output", path);
         return this;
+    }
+
+    /**
+     * Associates {@code null} with the specified key in this map. If the map previously contained a mapping for the
+     * key, the old value is replaced.
+     *
+     * @param key key with which the specified value is to be associated
+     */
+    public void put(String key) {
+        put(key, null);
     }
 
     /**
@@ -222,7 +218,7 @@ public class JlinkOptions extends HashMap<String, String> {
     }
 
     /**
-     * Strip the native commands.
+     * Strip native commands.
      *
      * @param stripNativeCommands {@code true} to strip, {@code false} otherwise
      * @return this map of options
@@ -286,4 +282,27 @@ public class JlinkOptions extends HashMap<String, String> {
         }
     }
 
+    /**
+     * Resources compression levels.
+     */
+    public enum CompressionLevel {
+        /**
+         * Level 0: No compression
+         */
+        NO_COMPRESSION("0"),
+        /**
+         * Level 1: Constant string sharing
+         */
+        CONSTANT_STRING_SHARING("1"),
+        /**
+         * Level 2: ZIP
+         */
+        ZIP("2");
+
+        public final String level;
+
+        CompressionLevel(String level) {
+            this.level = level;
+        }
+    }
 }

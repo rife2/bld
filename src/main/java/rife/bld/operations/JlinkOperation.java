@@ -85,14 +85,4 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     public List<String> fileOptions() {
         return fileOptions_;
     }
-
-    /**
-     * List available plugins.
-     *
-     * @return this operation instance
-     */
-    public JlinkOperation listPlugins() {
-        toolArgs("--list-plugins");
-        return this;
-    }
 }

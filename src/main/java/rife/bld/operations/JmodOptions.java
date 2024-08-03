@@ -39,21 +39,6 @@ public class JmodOptions extends HashMap<String, String> {
     }
 
     /**
-     * Compression to use when creating the JMOD archive.
-     * <p>
-     * Where {@link ZipCompression#ZIP_0 ZIP_0} provides no compression and {@link ZipCompression#ZIP_9 ZIP_9} provides the
-     * best compression.
-     * <p>Default is {@link ZipCompression#ZIP_6 ZIP_6}
-     *
-     * @param compression the {@link ZipCompression compression} level
-     * @return this map of options
-     */
-    public JmodOptions compress(ZipCompression compression) {
-        put("--compress", compression.level);
-        return this;
-    }
-
-    /**
      * Location of user-editable config files
      *
      * @param path the path to the config files
@@ -133,16 +118,6 @@ public class JmodOptions extends HashMap<String, String> {
         }
         put("--exclude", String.join(",", args));
         return this;
-    }
-
-    /**
-     * Associates {@code null} with the specified key in this map. If the map previously contained a mapping for the
-     * key, the old value is replaced.
-     *
-     * @param key key with which the specified value is to be associated
-     */
-    public void put(String key) {
-        put(key, null);
     }
 
     /**
@@ -233,6 +208,16 @@ public class JmodOptions extends HashMap<String, String> {
     public JmodOptions moduleVersion(String version) {
         put("--module-version", version);
         return this;
+    }
+
+    /**
+     * Associates {@code null} with the specified key in this map. If the map previously contained a mapping for the
+     * key, the old value is replaced.
+     *
+     * @param key key with which the specified value is to be associated
+     */
+    public void put(String key) {
+        put(key, null);
     }
 
     /**

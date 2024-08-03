@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static rife.bld.operations.JlinkOptions.CompressionLevel;
 
 public class TestJlinkOperation {
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
@@ -32,7 +33,7 @@ public class TestJlinkOperation {
         var args = new HashMap<String, String>();
         args.put("--add-modules", "module-1,module-2");
         args.put("--bind-services", null);
-        args.put("--compress", "zip-6");
+        args.put("--compress", "2");
         args.put("--endian", "big");
         args.put("--ignore-signing-information", null);
         args.put("--launcher", "name=module/mainclass");
@@ -49,7 +50,7 @@ public class TestJlinkOperation {
         var options = new JlinkOptions()
                 .addModules(args.get("--add-modules").split(","))
                 .bindServices(true)
-                .compress(ZipCompression.ZIP_6)
+                .compress(CompressionLevel.ZIP)
                 .endian(JlinkOptions.Endian.BIG)
                 .ignoreSigningInformation(true)
                 .launcher("name", "module", "mainclass")
@@ -80,7 +81,7 @@ public class TestJlinkOperation {
         var jlink = new JlinkOperation()
                 .disablePlugin("vm")
                 .disablePlugin("system-modules")
-                .listPlugins();
+                .toolArgs("--list-plugins");
         assertDoesNotThrow(jlink::execute);
         var out = outputStreamCaptor.toString();
         assertTrue(out.contains("List of available plugins:"), out);
@@ -96,6 +97,7 @@ public class TestJlinkOperation {
                     .modulePath("src/test/resources/jlink/build/jmod")
                     .addModules("dev.mccue.tree")
                     .launcher("tree", "dev.mccue.tree", "dev.mccue.tree.Tree")
+                    .compress(CompressionLevel.NO_COMPRESSION)
                     .output(output.getAbsolutePath());
             var jlink = new JlinkOperation().jlinkOptions(options);
 
