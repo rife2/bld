@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2024 Erik C. Thauvin (https://erik.thauvin.net/)
  * Licensed under the Apache License, Version 2.0 (the "License")
  */
@@ -12,7 +12,6 @@ import java.util.HashMap;
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
  * @since 2.0.2
  */
-
 public class JpackageOptions extends HashMap<String, String> {
     /**
      * URL of the application's home page.
