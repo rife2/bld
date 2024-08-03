@@ -6,8 +6,6 @@ package rife.bld.operations;
 
 import rife.bld.operations.exceptions.ExitStatusException;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,22 +32,6 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     }
 
     /**
-     * Add tool command line argument.
-     *
-     * @param arg   the argument
-     * @param value the value
-     * @return this operation
-     */
-    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
-    public T addArg(String arg, String value) {
-        toolArgs_.add(arg);
-        if (value != null && !value.isEmpty()) {
-            toolArgs_.add(value);
-        }
-        return (T) this;
-    }
-
-    /**
      * Adds tool command line arguments.
      *
      * @param args the argument-value pairs to add
@@ -57,7 +39,12 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
      */
     @SuppressWarnings({"unchecked", "UnusedReturnValue"})
     protected T addArgs(Map<String, String> args) {
-        args.forEach(this::addArg);
+        args.forEach((k, v) -> {
+            toolArgs_.add(k);
+            if (v != null && !v.isEmpty()) {
+                toolArgs_.add(v);
+            }
+        });
         return (T) this;
     }
 
@@ -88,7 +75,7 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     /**
      * Runs an instance of the tool.
      * <p>
-     * Command line arguments are automatically cleared.
+     * On success, command line arguments are automatically cleared.
      *
      * @throws Exception if an error occurred
      */
@@ -98,32 +85,16 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
             System.err.println("No " + toolName_ + " command line arguments specified.");
             throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
         }
-        var stderr = new StringWriter();
-        var stdout = new StringWriter();
-        try (var err = new PrintWriter(stderr); var out = new PrintWriter(stdout)) {
-            var tool = ToolProvider.findFirst(toolName_).orElseThrow(() ->
-                    new IllegalStateException("No " + toolName_ + " tool found."));
-            var status = tool.run(out, err, toolArgs_.toArray(new String[0]));
-            out.flush();
-            err.flush();
+        var tool = ToolProvider.findFirst(toolName_).orElseThrow(() ->
+                new IllegalStateException("No " + toolName_ + " tool found."));
 
-            if (status != 0) {
-                System.out.println(tool.name() + ' ' + String.join(" ", toolArgs_));
-            }
-
-            var output = stdout.toString();
-            if (!output.isBlank()) {
-                System.out.println(output);
-            }
-            var error = stderr.toString();
-            if (!error.isBlank()) {
-                System.err.println(error);
-            }
-
-            ExitStatusException.throwOnFailure(status);
-        } finally {
-            toolArgs_.clear();
+        var status = tool.run(System.out, System.err, toolArgs_.toArray(new String[0]));
+        if (status != 0) {
+            System.out.println(tool.name() + ' ' + String.join(" ", toolArgs_));
         }
+        ExitStatusException.throwOnFailure(status);
+
+        toolArgs_.clear();
     }
 
     /**

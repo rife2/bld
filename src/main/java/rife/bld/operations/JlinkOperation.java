@@ -40,7 +40,7 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
 
     @Override
     public void execute() throws Exception {
-        disabledPlugins_.forEach(plugin -> addArg("--disable-plugin", plugin));
+        disabledPlugins_.forEach(plugin -> addArgs("--disable-plugin", plugin));
         addArgs(jlinkOptions_);
         addArgs(parseOptions());
         super.execute();
