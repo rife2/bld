@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run Tests" type="JUnit" factoryName="JUnit">
-    <module name="app" />
+    <module name="rife.bld" />
     <option name="PACKAGE_NAME" value="rife" />
     <option name="MAIN_CLASS_NAME" value="" />
     <option name="METHOD_NAME" value="" />

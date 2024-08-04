@@ -1,0 +1,55 @@
+module rife.bld {
+    requires java.compiler;
+    requires java.desktop;
+    requires java.logging;
+    requires java.net.http;
+    requires java.prefs;
+    requires static java.sql;
+    requires java.xml;
+
+    exports rife.bld;
+    exports rife.bld.blueprints;
+    exports rife.bld.dependencies;
+    exports rife.bld.dependencies.exceptions;
+    exports rife.bld.help;
+    exports rife.bld.operations;
+    exports rife.bld.operations.exceptions;
+    exports rife.bld.publish;
+
+    exports rife;
+    exports rife.cmf;
+    exports rife.cmf.transform;
+    exports rife.config;
+    exports rife.config.exceptions;
+    exports rife.database;
+    exports rife.database.capabilities;
+    exports rife.database.exceptions;
+    exports rife.database.queries;
+    exports rife.database.querymanagers.generic;
+    exports rife.database.querymanagers.generic.databasedrivers;
+    exports rife.database.querymanagers.generic.exceptions;
+    exports rife.database.querymanagers.generic.instrument;
+    exports rife.database.types;
+    exports rife.database.types.databasedrivers;
+    exports rife.datastructures;
+    exports rife.engine;
+    exports rife.forms;
+    exports rife.instrument;
+    exports rife.instrument.exceptions;
+    exports rife.ioc;
+    exports rife.ioc.exceptions;
+    exports rife.resources;
+    exports rife.resources.databasedrivers;
+    exports rife.resources.exceptions;
+    exports rife.selector;
+    exports rife.template;
+    exports rife.template.exceptions;
+    exports rife.tools;
+    exports rife.tools.exceptions;
+    exports rife.validation;
+    exports rife.validation.annotations;
+    exports rife.validation.exceptions;
+    exports rife.validation.instrument;
+    exports rife.xml;
+    exports rife.xml.exceptions;
+}
