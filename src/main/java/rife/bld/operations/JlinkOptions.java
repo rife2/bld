@@ -52,7 +52,7 @@ public class JlinkOptions extends HashMap<String, String> {
     /**
      * Compression to use in compressing resources.
      * <p>
-     * <b>Requires Java 21 or higher</b>.
+     * <b>Requires Java 21 or higher</b>. Use {@link #compress(CompressionLevel)} for lower versions.
      * <p>
      * Where {@link ZipCompression#ZIP_0 ZIP_0} provides no compression and {@link ZipCompression#ZIP_9 ZIP_9} provides
      * the best compression.
@@ -60,6 +60,7 @@ public class JlinkOptions extends HashMap<String, String> {
      *
      * @param compression the {@link ZipCompression compression} level
      * @return this map of options
+     * @see #compress(ZipCompression)
      */
     public JlinkOptions compress(ZipCompression compression) {
         put("--compress", compression.level);
@@ -68,9 +69,12 @@ public class JlinkOptions extends HashMap<String, String> {
 
     /**
      * Enable compression of resources.
+     * <p>
+     * Use {@link #compress(ZipCompression)} on Java 21 or higher.
      *
      * @param compression the {@link CompressionLevel compression} level
      * @return this map of options
+     * @see #compress(CompressionLevel)
      */
     public JlinkOptions compress(CompressionLevel compression) {
         put("--compress", compression.level);
