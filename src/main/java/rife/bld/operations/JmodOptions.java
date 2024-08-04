@@ -39,6 +39,24 @@ public class JmodOptions extends HashMap<String, String> {
     }
 
     /**
+     * Compression to use when creating the JMOD archive.
+     * <p>
+     * <b>Requires Java 20 or higher</b>.
+     * <p>
+     * Where {@link ZipCompression#ZIP_0 ZIP_0} provides no compression and {@link ZipCompression#ZIP_9 ZIP_9} provides the
+     * best compression.
+     * <p>
+     * Default is {@link ZipCompression#ZIP_6 ZIP_6}
+     *
+     * @param compression the {@link ZipCompression compression} level
+     * @return this map of options
+     */
+    public JmodOptions compress(ZipCompression compression) {
+        put("--compress", compression.level);
+        return this;
+    }
+
+    /**
      * Location of user-editable config files
      *
      * @param path the path to the config files

@@ -109,6 +109,10 @@ public class TestJmodOperation {
             var mod = new File(tmpdir, "dev.mccue.tree.jmod");
 
             var options = new JmodOptions().classpath("src/test/resources/jlink/build/jar/dev.mccue.tree.jar");
+            if (Runtime.version().version().get(0) >= 20) {
+                options.compress(ZipCompression.ZIP_9);
+            }
+
             var jmod = new JmodOperation()
                     .operationMode(OperationMode.CREATE)
                     .jmodFile(mod.getAbsolutePath())

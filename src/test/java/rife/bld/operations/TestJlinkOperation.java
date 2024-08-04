@@ -97,8 +97,13 @@ public class TestJlinkOperation {
                     .modulePath("src/test/resources/jlink/build/jmod")
                     .addModules("dev.mccue.tree")
                     .launcher("tree", "dev.mccue.tree", "dev.mccue.tree.Tree")
-                    .compress(CompressionLevel.NO_COMPRESSION)
                     .output(output.getAbsolutePath());
+            if (Runtime.version().version().get(0) >= 21) {
+                options.compress(ZipCompression.ZIP_6);
+            } else {
+                options.compress(CompressionLevel.ZIP);
+            }
+
             var jlink = new JlinkOperation().jlinkOptions(options);
 
             assertDoesNotThrow(jlink::execute);

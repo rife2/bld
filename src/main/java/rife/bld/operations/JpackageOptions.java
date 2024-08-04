@@ -27,8 +27,10 @@ public class JpackageOptions extends HashMap<String, String> {
     /**
      * List of application launchers.
      * <p>
-     * The main application launcher will be built from the command line options. Additional alternative launchers
-     * can be built using this option, and this option can be used to build multiple additional launchers.
+     * The main application launcher will be built from the command line options.
+     * <p>
+     * Additional alternative launchers can be built using this option, and this option can be used to build multiple
+     * additional launchers.
      *
      * @param launcher one or more {@link Launcher}
      * @return this map of options
@@ -58,6 +60,8 @@ public class JpackageOptions extends HashMap<String, String> {
 
     /**
      * List of paths to files and/or directories to add to the application payload.
+     * <p>
+     * <b>Requires Java 20 or higher</b>.
      *
      * @param additionalContent one or more path
      * @return this map of options
@@ -213,6 +217,8 @@ public class JpackageOptions extends HashMap<String, String> {
     /**
      * Request to create an installer that will register the main application launcher as a background service-type
      * application.
+     * <p>
+     * <b>Requires Java 20 or higher</b>.
      *
      * @param launcherAsService {@code true} to register the launcher as a service; {@code false} otherwise
      * @return this map of options
