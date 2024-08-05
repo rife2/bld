@@ -1,2 +1,4 @@
- --verbose  --version
-    --list-plugins
+ --verbose  --version #foo
+    --module-path   "foo bar" --list-plugins
+# bar
+

@@ -6,12 +6,15 @@ package rife.bld.operations;
 
 import rife.bld.operations.exceptions.ExitStatusException;
 
-import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.spi.ToolProvider;
 
 /**
@@ -76,23 +79,6 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     /**
      * Adds arguments to pass to the tool.
      *
-     * @param args the argument-value pairs to add
-     * @return this operation
-     */
-    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
-    protected T toolArgs(Map<String, String> args) {
-        args.forEach((k, v) -> {
-            toolArgs_.add(k);
-            if (v != null && !v.isEmpty()) {
-                toolArgs_.add(v);
-            }
-        });
-        return (T) this;
-    }
-
-    /**
-     * Adds arguments to pass to the tool.
-     *
      * @param args the argument to add
      * @return this operation
      */
@@ -119,28 +105,122 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
      * @throws FileNotFoundException if a file cannot be found
      */
     @SuppressWarnings({"unchecked", "UnusedReturnValue"})
-    public T toolArgsFromFile(List<String> files) throws FileNotFoundException {
-        var list = new ArrayList<String>();
+    public T toolArgsFromFile(List<String> files) throws IOException {
+        var args = new ArrayList<String>();
 
-        for (var option : files) {
-            try (var scanner = new Scanner(new File(option))) {
-                while (scanner.hasNext()) {
-                    var splitLine = scanner.nextLine().split("--");
-                    for (String args : splitLine) {
-                        if (!args.isBlank()) {
-                            var splitArgs = args.split(" ", 2);
-                            list.add("--" + splitArgs[0]);
-                            if (splitArgs.length > 1 && !splitArgs[1].isBlank()) {
-                                list.add(splitArgs[1]);
-                            }
-                        }
-                    }
+        for (var file : files) {
+            try (var reader = Files.newBufferedReader(Paths.get(file), Charset.defaultCharset())) {
+                var tokenizer = new CommandLineTokenizer(reader);
+                String token;
+                while ((token = tokenizer.nextToken()) != null) {
+                    args.add(token);
                 }
             }
         }
 
-        toolArgs(list);
+        toolArgs(args);
 
         return (T) this;
+    }
+
+    /**
+     * Adds arguments to pass to the tool.
+     *
+     * @param args the argument-value pairs to add
+     * @return this operation
+     */
+    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
+    protected T toolArgs(Map<String, String> args) {
+        args.forEach((k, v) -> {
+            toolArgs_.add(k);
+            if (v != null && !v.isEmpty()) {
+                toolArgs_.add(v);
+            }
+        });
+        return (T) this;
+    }
+
+    /**
+     * Tokenize command line arguments.
+     *
+     * <ul>
+     * <li>Arguments containing spaces should be quoted</li>
+     * <li>Escape sequences and comments are supported</li>
+     * </ul>
+     */
+    public static class CommandLineTokenizer {
+        private final StringBuilder buf_ = new StringBuilder();
+        private final Reader input_;
+        private int ch_;
+
+        public CommandLineTokenizer(Reader input) throws IOException {
+            input_ = input;
+            ch_ = input.read();
+        }
+
+        public String nextToken() throws IOException {
+            skipWhitespaceOrComments();
+            if (ch_ == -1) {
+                return null;
+            }
+
+            buf_.setLength(0); // reset buffer
+
+            char quote = 0;
+            while (ch_ != -1) {
+                if (Character.isWhitespace(ch_)) { // whitespaces
+                    if (quote == 0) {
+                        break;
+                    }
+                    buf_.append((char) ch_);
+                } else if (ch_ == '\'' || ch_ == '"') { // quotes
+                    if (quote == 0) {
+                        quote = (char) ch_;
+                    } else if (quote == ch_) {
+                        quote = 0;
+                    } else {
+                        buf_.append((char) ch_);
+                    }
+                } else if (ch_ == '\\') { // escaped
+                    ch_ = input_.read();
+                    buf_.append(handleEscapeSequence());
+                } else {
+                    buf_.append((char) ch_);
+                }
+
+                ch_ = input_.read();
+            }
+            return buf_.toString();
+        }
+
+        private char handleEscapeSequence() {
+            if (ch_ == -1) {
+                return '\\';
+            }
+
+            return switch (ch_) {
+                case 'n' -> '\n';
+                case 'r' -> '\r';
+                case 't' -> '\t';
+                case 'f' -> '\f';
+                default -> (char) ch_;
+            };
+        }
+
+
+        private void skipWhitespaceOrComments() throws IOException {
+            while (ch_ != -1) {
+                if (Character.isWhitespace(ch_)) { // Skip whitespaces
+                    ch_ = input_.read();
+                } else if (ch_ == '#') {
+                    // Skip the entire comment until a new line or end of input
+                    do {
+                        ch_ = input_.read();
+                    } while (ch_ != -1 && ch_ != '\n' && ch_ != '\r');
+                } else {
+                    return;
+                }
+            }
+        }
     }
 }
