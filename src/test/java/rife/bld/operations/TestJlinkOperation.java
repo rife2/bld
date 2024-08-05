@@ -78,7 +78,12 @@ public class TestJlinkOperation {
     @Test
     void testCmdFiles() {
         System.setOut(new PrintStream(outputStreamCaptor));
-        var jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_jlink.txt");
+        final JlinkOperation jlink;
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_jlink_win.txt");
+        } else {
+            jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_jlink.txt");
+        }
         assertDoesNotThrow(jlink::execute);
         var out = outputStreamCaptor.toString();
         assertTrue(out.contains("List of available plugins:"), out);

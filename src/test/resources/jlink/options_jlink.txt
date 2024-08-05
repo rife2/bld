@@ -1,5 +1,5 @@
  --verbose  --version #--foo
-    --module-path   "\'foo\' \"bar\" --bar"   --list-plugins
+    --module-path   "\'foo --bar\' \"bar --foo\" --bar"   --list-plugins
 --output foo --bind-services
 
 # bar
