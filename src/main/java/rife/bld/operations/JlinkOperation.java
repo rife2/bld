@@ -15,12 +15,33 @@ import java.util.Map;
  * @since 2.0.2
  */
 public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation> {
+    private final List<String> cmdFiles_ = new ArrayList<>();
     private final List<String> disabledPlugins_ = new ArrayList<>();
     private final JlinkOptions jlinkOptions_ = new JlinkOptions();
-    private final List<String> fileOptions_ = new ArrayList<>();
 
     public JlinkOperation() {
         super("jlink");
+    }
+
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param file one or more file
+     * @return this operation instance
+     */
+    public JlinkOperation cmdFiles(String... file) {
+        cmdFiles_.addAll(List.of(file));
+        return this;
+    }
+
+    /**
+     * Retrieves the list of files containing options or mode.
+     *
+     * @return the list of files
+     */
+    public List<String> cmdFiles() {
+        return cmdFiles_;
     }
 
     /**
@@ -36,21 +57,10 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
 
     @Override
     public void execute() throws Exception {
-        toolArgsFromFile(fileOptions_);
+        toolArgsFromFile(cmdFiles_);
         disabledPlugins_.forEach(plugin -> toolArgs("--disable-plugin", plugin));
         toolArgs(jlinkOptions_);
         super.execute();
-    }
-
-    /**
-     * Retrieves the list of options for the jlink tool.
-     * <p>
-     * This is a modifiable list that can be retrieved and changed.
-     *
-     * @return the map of jlink options
-     */
-    public JlinkOptions jlinkOptions() {
-        return jlinkOptions_;
     }
 
     /**
@@ -67,22 +77,13 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     }
 
     /**
-     * Read options and/or mode from a file.
+     * Retrieves the list of options for the jlink tool.
+     * <p>
+     * This is a modifiable list that can be retrieved and changed.
      *
-     * @param file one or more file
-     * @return this operation instance
+     * @return the map of jlink options
      */
-    public JlinkOperation fileOptions(String... file) {
-        fileOptions_.addAll(List.of(file));
-        return this;
-    }
-
-    /**
-     * Retrieves the list of files containing options or mode.
-     *
-     * @return the list of files
-     */
-    public List<String> fileOptions() {
-        return fileOptions_;
+    public JlinkOptions jlinkOptions() {
+        return jlinkOptions_;
     }
 }

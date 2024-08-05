@@ -116,7 +116,7 @@ public class TestJlinkOperation {
     @Test
     void testFileOptions() {
         System.setOut(new PrintStream(outputStreamCaptor));
-        var jlink = new JlinkOperation().fileOptions("src/test/resources/jlink/options_verbose.txt",
+        var jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_verbose.txt",
                 "src/test/resources/jlink/options_version.txt");
         assertDoesNotThrow(jlink::execute);
         var out = outputStreamCaptor.toString();
@@ -134,14 +134,14 @@ public class TestJlinkOperation {
     void testNoArguments() {
         var jlink = new JlinkOperation();
         assertTrue(jlink.jlinkOptions().isEmpty(), "jlink options not empty");
-        assertTrue(jlink.fileOptions().isEmpty(), "file options not empty");
+        assertTrue(jlink.cmdFiles().isEmpty(), "file options not empty");
         assertThrows(ExitStatusException.class, jlink::execute);
     }
 
     @Test
     void testParseOptions() {
         System.setOut(new PrintStream(outputStreamCaptor));
-        var jlink = new JlinkOperation().fileOptions("src/test/resources/jlink/options_jlink.txt");
+        var jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_jlink.txt");
         assertDoesNotThrow(jlink::execute);
         var out = outputStreamCaptor.toString();
         assertTrue(out.contains("List of available plugins:"), out);

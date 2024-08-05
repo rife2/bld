@@ -139,6 +139,15 @@ public class TestJmodOperation {
     }
 
     @Test
+    void testFileOptions() {
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jmod = new JmodOperation().cmdFiles("src/test/resources/jlink/options_version.txt");
+        assertDoesNotThrow(jmod::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
+    }
+
+    @Test
     void testHelp() {
         var jmod = new JmodOperation().toolArgs("--help-extra");
         assertDoesNotThrow(jmod::execute);
@@ -148,18 +157,9 @@ public class TestJmodOperation {
     @Test
     void testNoArguments() {
         var jmod = new JmodOperation();
-        assertTrue(jmod.fileOptions().isEmpty(), "file options not empty");
+        assertTrue(jmod.cmdFiles().isEmpty(), "file options not empty");
         assertTrue(jmod.jmodOptions().isEmpty(), "jmod options not empty");
         assertThrows(ExitStatusException.class, jmod::execute);
-    }
-
-    @Test
-    void testFileOptions() {
-        System.setOut(new PrintStream(outputStreamCaptor));
-        var jmod = new JmodOperation().fileOptions("src/test/resources/jlink/options_version.txt");
-        assertDoesNotThrow(jmod::execute);
-        var out = outputStreamCaptor.toString();
-        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
     }
 
     @Test

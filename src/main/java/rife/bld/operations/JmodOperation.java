@@ -15,7 +15,7 @@ import java.util.Map;
  * @since 2.0.2
  */
 public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> {
-    private final List<String> fileOptions_ = new ArrayList<>();
+    private final List<String> cmdFiles = new ArrayList<>();
     private final JmodOptions jmodOptions_ = new JmodOptions();
     private String jmodFile_;
     private OperationMode operationMode_;
@@ -24,13 +24,33 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
         super("jmod");
     }
 
+    /**
+     * Retrieves the list of files containing options or mode.
+     *
+     * @return the list of files
+     */
+    public List<String> cmdFiles() {
+        return cmdFiles;
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param file one or more file
+     * @return this operation instance
+     */
+    public JmodOperation cmdFiles(String... file) {
+        cmdFiles.addAll(List.of(file));
+        return this;
+    }
+
     @Override
     public void execute() throws Exception {
         if (operationMode_ != null) {
             toolArgs(operationMode_.mode);
         }
 
-        toolArgsFromFile(fileOptions_);
+        toolArgsFromFile(cmdFiles);
         toolArgs(jmodOptions_);
 
         if (jmodFile_ != null) {
@@ -38,26 +58,6 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
         }
 
         super.execute();
-    }
-
-    /**
-     * Retrieves the list of files containing options or mode.
-     *
-     * @return the list of files
-     */
-    public List<String> fileOptions() {
-        return fileOptions_;
-    }
-
-    /**
-     * Read options and/or mode from a file.
-     *
-     * @param file one or more file
-     * @return this operation instance
-     */
-    public JmodOperation fileOptions(String... file) {
-        fileOptions_.addAll(List.of(file));
-        return this;
     }
 
     /**
