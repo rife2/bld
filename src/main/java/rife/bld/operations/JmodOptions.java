@@ -6,6 +6,7 @@ package rife.bld.operations;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -74,7 +75,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions date(ZonedDateTime date) {
-        put("--date", date.format(DateTimeFormatter.ISO_INSTANT));
+        put("--date", date.truncatedTo(ChronoUnit.SECONDS).format(DateTimeFormatter.ISO_INSTANT));
         return this;
     }
 

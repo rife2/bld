@@ -56,7 +56,7 @@ public class TestJmodOperation {
                 .classpath(args.get("--class-path"))
                 .cmds(args.get("--cmds"))
                 .config(args.get("--config"))
-                .date(ZonedDateTime.of(1997, 8, 29, 2, 14, 0, 0, ZoneId.of("America/Los_Angeles")))
+                .date(ZonedDateTime.of(1997, 8, 29, 2, 14, 0, 1, ZoneId.of("America/Los_Angeles")))
                 .dir(args.get("--dir"))
                 .doNotResolveByDefault(true)
                 .dryRun(true)
