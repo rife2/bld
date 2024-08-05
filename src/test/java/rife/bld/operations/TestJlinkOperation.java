@@ -76,6 +76,25 @@ public class TestJlinkOperation {
     }
 
     @Test
+    void testCmdFiles() {
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_jlink.txt");
+        assertDoesNotThrow(jlink::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.contains("List of available plugins:"), out);
+    }
+
+    @Test
+    void testCmdFilesMulti() {
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_verbose.txt",
+                "src/test/resources/jlink/options_version.txt");
+        assertDoesNotThrow(jlink::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
+    }
+
+    @Test
     void testDisablePlugin() {
         System.setOut(new PrintStream(outputStreamCaptor));
         var jlink = new JlinkOperation()
@@ -114,16 +133,6 @@ public class TestJlinkOperation {
     }
 
     @Test
-    void testFileOptions() {
-        System.setOut(new PrintStream(outputStreamCaptor));
-        var jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_verbose.txt",
-                "src/test/resources/jlink/options_version.txt");
-        assertDoesNotThrow(jlink::execute);
-        var out = outputStreamCaptor.toString();
-        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
-    }
-
-    @Test
     void testHelp() {
         var jlink = new JlinkOperation().toolArgs("--help");
         assertDoesNotThrow(jlink::execute);
@@ -136,15 +145,6 @@ public class TestJlinkOperation {
         assertTrue(jlink.jlinkOptions().isEmpty(), "jlink options not empty");
         assertTrue(jlink.cmdFiles().isEmpty(), "file options not empty");
         assertThrows(ExitStatusException.class, jlink::execute);
-    }
-
-    @Test
-    void testParseOptions() {
-        System.setOut(new PrintStream(outputStreamCaptor));
-        var jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_jlink.txt");
-        assertDoesNotThrow(jlink::execute);
-        var out = outputStreamCaptor.toString();
-        assertTrue(out.contains("List of available plugins:"), out);
     }
 
     @Test

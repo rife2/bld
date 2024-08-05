@@ -15,7 +15,7 @@ import java.util.Map;
  * @since 2.0.2
  */
 public class JpackageOperation extends AbstractToolProviderOperation<JpackageOperation> {
-    private final List<String> fileOptions_ = new ArrayList<>();
+    private final List<String> cmdFiles_ = new ArrayList<>();
     private final JpackageOptions jpackageOptions_ = new JpackageOptions();
 
     public JpackageOperation() {
@@ -24,7 +24,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
 
     @Override
     public void execute() throws Exception {
-        toolArgs(fileOptions_.stream().map(opt -> '@' + opt).toList());
+        toolArgs(cmdFiles_.stream().map(opt -> '@' + opt).toList());
         toolArgs(jpackageOptions_);
         super.execute();
     }
@@ -35,17 +35,17 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
      * @return the list of files
      */
     public List<String> fileOptions() {
-        return fileOptions_;
+        return cmdFiles_;
     }
 
     /**
-     * Read options and/or mode from a file.
+     * Read options and/or mode from file(s).
      *
      * @param file one or more file
      * @return this operation instance
      */
-    public JpackageOperation fileOptions(String... file) {
-        fileOptions_.addAll(List.of(file));
+    public JpackageOperation cmdFiles(String... file) {
+        cmdFiles_.addAll(List.of(file));
         return this;
     }
 

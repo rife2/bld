@@ -196,9 +196,9 @@ public class TestJpackageOperation {
     }
 
     @Test
-    void testFileOptions() {
+    void testCmdFiles() {
         System.setOut(new PrintStream(outputStreamCaptor));
-        var jpackage = new JpackageOperation().fileOptions("src/test/resources/jlink/options_verbose.txt",
+        var jpackage = new JpackageOperation().cmdFiles("src/test/resources/jlink/options_verbose.txt",
                 "src/test/resources/jlink/options_version.txt");
         assertDoesNotThrow(jpackage::execute);
         var out = outputStreamCaptor.toString();

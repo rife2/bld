@@ -82,12 +82,39 @@ public class TestJmodOperation {
     }
 
     @Test
+    void testCmdFiles() {
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jmod = new JmodOperation().cmdFiles("src/test/resources/jlink/options_version.txt");
+        assertDoesNotThrow(jmod::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
+    }
+
+    @Test
+    void testCmdFilesCreate() throws IOException {
+        var tmpdir = Files.createTempDirectory("bld-jmod-test").toFile();
+        try {
+            var mod = new File(tmpdir, "dev.mccue.tree.jmod");
+
+            var jmod = new JmodOperation()
+                    .cmdFiles("src/test/resources/jlink/options_jmod.txt")
+                    .jmodFile(mod.getAbsolutePath());
+
+            assertDoesNotThrow(jmod::execute);
+            assertTrue(mod.exists(), "mod does not exist");
+        } finally {
+            FileUtils.deleteDirectory(tmpdir);
+        }
+    }
+
+    @Test
     void testCreate() throws IOException {
         var tmpdir = Files.createTempDirectory("bld-jmod-test").toFile();
         try {
             var mod = new File(tmpdir, "dev.mccue.tree.jmod");
 
             var options = new JmodOptions()
+                    .date(ZonedDateTime.now())
                     .legalNotices("src/test/resources/jlink/dev.mccue.apple/legal")
                     .classpath("src/test/resources/jlink/build/jar/dev.mccue.apple.jar");
             var jmod = new JmodOperation()
@@ -136,15 +163,6 @@ public class TestJmodOperation {
         } finally {
             FileUtils.deleteDirectory(tmpdir);
         }
-    }
-
-    @Test
-    void testFileOptions() {
-        System.setOut(new PrintStream(outputStreamCaptor));
-        var jmod = new JmodOperation().cmdFiles("src/test/resources/jlink/options_version.txt");
-        assertDoesNotThrow(jmod::execute);
-        var out = outputStreamCaptor.toString();
-        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
     }
 
     @Test

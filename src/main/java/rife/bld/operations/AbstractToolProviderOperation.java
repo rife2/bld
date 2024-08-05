@@ -159,7 +159,7 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
         }
 
         public String nextToken() throws IOException {
-            skipWhitespaceOrComments();
+            trimWhitespaceOrComments();
             if (ch_ == -1) {
                 return null;
             }
@@ -208,7 +208,7 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
         }
 
 
-        private void skipWhitespaceOrComments() throws IOException {
+        private void trimWhitespaceOrComments() throws IOException {
             while (ch_ != -1) {
                 if (Character.isWhitespace(ch_)) { // Skip whitespaces
                     ch_ = input_.read();
