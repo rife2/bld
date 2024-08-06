@@ -40,8 +40,7 @@ public class BldBuild extends AbstractRife2Build {
         var core_src_main_dir = new File(core_src_dir, "main");
 
         antlr4Operation
-            .sourceDirectories(List.of(new File(core_src_main_dir, "antlr")))
-            .outputDirectory(new File(buildDirectory(), "generated/rife/template/antlr"));
+            .sourceDirectories(List.of(new File(core_src_main_dir, "antlr")));
 
         var core_src_test_dir = new File(core_src_dir, "test");
         var core_src_test_java_dir = new File(core_src_test_dir, "java");
@@ -108,6 +107,14 @@ public class BldBuild extends AbstractRife2Build {
                 .signPassphrase(property("sign.passphrase")))
             .artifacts(
                 new PublishArtifact(zipBldOperation.destinationFile(), "", "zip"));
+    }
+
+    @Override
+    public void javadoc()
+    throws Exception {
+        javadocOperation().executeOnce(() -> javadocOperation()
+            .fromProject(this)
+            .sourceFiles(FileUtils.getJavaFileList(buildGeneratedDir)));
     }
 
     final ZipOperation zipBldOperation = new ZipOperation();
