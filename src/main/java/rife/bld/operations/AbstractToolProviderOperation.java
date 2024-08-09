@@ -168,15 +168,10 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
 
             char quote = 0;
             while (ch_ != -1) {
-                if (Character.isWhitespace(ch_)) { // whitespaces
-                    if (quote == 0) {
-                        break;
-                    }
-                    buf_.append((char) ch_);
-                } else if (ch_ == '\'' || ch_ == '"') { // quotes
-                    if (quote == 0) {
+                if (ch_ == '\'' || ch_ == '"') { // quotes
+                    if (quote == 0) { // begin quote
                         quote = (char) ch_;
-                    } else if (quote == ch_) {
+                    } else if (quote == ch_) { // end quote
                         quote = 0;
                     } else {
                         buf_.append((char) ch_);
@@ -184,21 +179,19 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
                 } else if (ch_ == '\\') { // escaped
                     ch_ = input_.read();
                     buf_.append(handleEscapeSequence());
+                } else if (quote == 0 && Character.isWhitespace(ch_)) { // whitespaces
+                    break;
                 } else {
                     buf_.append((char) ch_);
                 }
-
                 ch_ = input_.read();
             }
             return buf_.toString();
         }
 
         private char handleEscapeSequence() {
-            if (ch_ == -1) {
-                return '\\';
-            }
-
             return switch (ch_) {
+                case -1 -> '\\';
                 case 'n' -> '\n';
                 case 'r' -> '\r';
                 case 't' -> '\t';
@@ -206,7 +199,6 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
                 default -> (char) ch_;
             };
         }
-
 
         private void trimWhitespaceOrComments() throws IOException {
             while (ch_ != -1) {
@@ -218,7 +210,7 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
                         ch_ = input_.read();
                     } while (ch_ != -1 && ch_ != '\n' && ch_ != '\r');
                 } else {
-                    return;
+                    break;
                 }
             }
         }

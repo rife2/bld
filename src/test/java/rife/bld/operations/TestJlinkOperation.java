@@ -90,7 +90,7 @@ public class TestJlinkOperation {
     }
 
     @Test
-    void testCmdFilesMulti() {
+    void testCmdFilesVersion() {
         System.setOut(new PrintStream(outputStreamCaptor));
         var jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_verbose.txt",
                 "src/test/resources/jlink/options_version.txt");
