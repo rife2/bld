@@ -1,0 +1,3 @@
+create
+--legal-notices src/test/resources/jlink/dev.mccue.apple/legal
+--class-path src/test/resources/jlink/build/jar/dev.mccue.apple.jar
