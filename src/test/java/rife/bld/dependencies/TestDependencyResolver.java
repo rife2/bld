@@ -111,10 +111,10 @@ public class TestDependencyResolver {
 
     @Test
     void testSnapshotMetadata() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 1, "SNAPSHOT")));
         var metadata = resolver.getSnapshotMavenMetadata();
         assertNotNull(metadata);
-        assertEquals("20230303.130437", metadata.getSnapshotTimestamp());
+        assertEquals("20230307.195509", metadata.getSnapshotTimestamp());
         assertEquals(4, metadata.getSnapshotBuildNumber());
     }
 
@@ -128,7 +128,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesRIFE2Snapshot() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 1, "SNAPSHOT")));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(0, dependencies.size());
@@ -334,12 +334,12 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesRIFE2Snapshot() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 1, "SNAPSHOT")));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(1, dependencies.size());
         assertEquals("""
-            com.uwyn.rife2:rife2:1.4.0-SNAPSHOT""", StringUtils.join(dependencies, "\n"));
+            com.uwyn.rife2:rife2:1.4.1-SNAPSHOT""", StringUtils.join(dependencies, "\n"));
     }
 
     @Test
@@ -727,17 +727,21 @@ public class TestDependencyResolver {
     void testTransferDependency()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertTrue(StringUtils.join(result, "\n").matches("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*.jar"""));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(1, files.size());
             assertTrue(files.get(0).matches("rife2-.+\\.jar"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -745,18 +749,22 @@ public class TestDependencyResolver {
     void testTransferDependencySources()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
             assertTrue(StringUtils.join(result, "\n").matches("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*-sources.jar"""));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(2, files.size());
             assertTrue(files.get(0).matches("rife2-.+\\.jar"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -764,79 +772,214 @@ public class TestDependencyResolver {
     void testTransferDependencySourcesJavadoc()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2"));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertTrue(StringUtils.join(result, "\n").matches("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*-sources.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*-javadoc.jar"""));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(3, files.size());
             assertTrue(files.get(0).matches("rife2-.+\\.jar"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
     @Test
     void testTransferDependencySnapshot()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 1, "SNAPSHOT")));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
-                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4.jar""", StringUtils.join(result, "\n"));
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(1, files.size());
-            assertTrue(files.contains("rife2-1.4.0-20230303.130437-4.jar"));
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4.jar"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
     @Test
     void testTransferDependencySnapshotSources()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 1, "SNAPSHOT")));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
             assertEquals("""
-                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4.jar
-                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4-sources.jar""", StringUtils.join(result, "\n"));
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4.jar
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4-sources.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(2, files.size());
-            assertTrue(files.contains("rife2-1.4.0-20230303.130437-4.jar"));
-            assertTrue(files.contains("rife2-1.4.0-20230303.130437-4-sources.jar"));
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4.jar"));
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4-sources.jar"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
     @Test
     void testTransferDependencySnapshotSourcesJavadoc()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0, "SNAPSHOT")));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 1, "SNAPSHOT")));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertEquals("""
-                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4.jar
-                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4-sources.jar
-                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.0-SNAPSHOT/rife2-1.4.0-20230303.130437-4-javadoc.jar""", StringUtils.join(result, "\n"));
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4.jar
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4-sources.jar
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4-javadoc.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(3, files.size());
-            assertTrue(files.contains("rife2-1.4.0-20230303.130437-4.jar"));
-            assertTrue(files.contains("rife2-1.4.0-20230303.130437-4-javadoc.jar"));
-            assertTrue(files.contains("rife2-1.4.0-20230303.130437-4-sources.jar"));
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4.jar"));
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4-javadoc.jar"));
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4-sources.jar"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencySourcesModule()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2"));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
+            assertTrue(StringUtils.join(result, "\n").matches("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*-sources.jar"""));
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var files = FileUtils.getFileList(tmp2);
+            assertEquals(2, files.size());
+            assertTrue(files.get(0).matches("rife2-.+\\.jar"));
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencySourcesJavadocModule()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2"));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            assertTrue(StringUtils.join(result, "\n").matches("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/uwyn/rife2/rife2/.*/rife2-.*-javadoc.jar"""));
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var files = FileUtils.getFileList(tmp2);
+            assertEquals(3, files.size());
+            assertTrue(files.get(0).matches("rife2-.+\\.jar"));
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencySnapshotModule()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 1, "SNAPSHOT")));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
+            assertEquals("""
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4.jar""", StringUtils.join(result, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var files = FileUtils.getFileList(tmp2);
+            assertEquals(1, files.size());
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4.jar"));
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencySnapshotSourcesModule()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 1, "SNAPSHOT")));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
+            assertEquals("""
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4.jar
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4-sources.jar""", StringUtils.join(result, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var files = FileUtils.getFileList(tmp2);
+            assertEquals(2, files.size());
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4.jar"));
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4-sources.jar"));
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencySnapshotSourcesJavadocModule()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 1, "SNAPSHOT")));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            assertEquals("""
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4.jar
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4-sources.jar
+                https://s01.oss.sonatype.org/content/repositories/snapshots/:https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/rife2/1.4.1-SNAPSHOT/rife2-1.4.1-20230307.195509-4-javadoc.jar""", StringUtils.join(result, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var files = FileUtils.getFileList(tmp2);
+            assertEquals(3, files.size());
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4.jar"));
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4-javadoc.jar"));
+            assertTrue(files.contains("rife2-1.4.1-20230307.195509-4-sources.jar"));
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -844,9 +987,10 @@ public class TestDependencyResolver {
     void testTransferDependencyJetty()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
@@ -855,7 +999,43 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.5/slf4j-api-2.0.5.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
+            assertEquals(6, files.size());
+            Collections.sort(files);
+            assertEquals("""
+                jetty-http-11.0.14.jar
+                jetty-io-11.0.14.jar
+                jetty-jakarta-servlet-api-5.0.2.jar
+                jetty-server-11.0.14.jar
+                jetty-util-11.0.14.jar
+                slf4j-api-2.0.5.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencyJettyModule()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
+            assertEquals("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/11.0.14/jetty-http-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/11.0.14/jetty-io-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.5/slf4j-api-2.0.5.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14.jar""", StringUtils.join(result, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty())
+            ;
+            var files = FileUtils.getFileList(tmp2);
             assertEquals(6, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -866,7 +1046,8 @@ public class TestDependencyResolver {
                 jetty-util-11.0.14.jar
                 slf4j-api-2.0.5.jar""", StringUtils.join(files, "\n"));
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -874,9 +1055,10 @@ public class TestDependencyResolver {
     void testTransferDependencyGoogleApi()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/apis/google-api-services-youtube/v3-rev20240514-2.0.0/google-api-services-youtube-v3-rev20240514-2.0.0.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/api-client/google-api-client/2.5.0/google-api-client-2.5.0.jar
@@ -903,7 +1085,79 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/opencensus/opencensus-api/0.31.1/opencensus-api-0.31.1.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/opencensus/opencensus-contrib-http-util/0.31.1/opencensus-contrib-http-util-0.31.1.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
+            assertEquals(24, files.size());
+            Collections.sort(files);
+            assertEquals("""
+                auto-value-annotations-1.10.4.jar
+                checker-qual-3.42.0.jar
+                commons-codec-1.17.0.jar
+                commons-logging-1.2.jar
+                error_prone_annotations-2.18.0.jar
+                failureaccess-1.0.2.jar
+                google-api-client-2.5.0.jar
+                google-api-services-youtube-v3-rev20240514-2.0.0.jar
+                google-auth-library-credentials-1.23.0.jar
+                google-auth-library-oauth2-http-1.23.0.jar
+                google-http-client-1.44.1.jar
+                google-http-client-apache-v2-1.44.1.jar
+                google-http-client-gson-1.44.1.jar
+                google-oauth-client-1.35.0.jar
+                grpc-context-1.60.1.jar
+                gson-2.10.1.jar
+                guava-33.2.0-jre.jar
+                httpclient-4.5.14.jar
+                httpcore-4.4.16.jar
+                j2objc-annotations-3.0.0.jar
+                jsr305-3.0.2.jar
+                listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
+                opencensus-api-0.31.1.jar
+                opencensus-contrib-http-util-0.31.1.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencyGoogleApiModule()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
+            assertEquals("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/apis/google-api-services-youtube/v3-rev20240514-2.0.0/google-api-services-youtube-v3-rev20240514-2.0.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/api-client/google-api-client/2.5.0/google-api-client-2.5.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/commons-codec/commons-codec/1.17.0/commons-codec-1.17.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/oauth-client/google-oauth-client/1.35.0/google-oauth-client-1.35.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/auth/google-auth-library-credentials/1.23.0/google-auth-library-credentials-1.23.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/auth/google-auth-library-oauth2-http/1.23.0/google-auth-library-oauth2-http-1.23.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/http-client/google-http-client-gson/1.44.1/google-http-client-gson-1.44.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/guava/guava/33.2.0-jre/guava-33.2.0-jre.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/http-client/google-http-client-apache-v2/1.44.1/google-http-client-apache-v2-1.44.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.4.16/httpcore-4.4.16.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.5.14/httpclient-4.5.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/http-client/google-http-client/1.44.1/google-http-client-1.44.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/auto/value/auto-value-annotations/1.10.4/auto-value-annotations-1.10.4.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.18.0/error_prone_annotations-2.18.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/guava/failureaccess/1.0.2/failureaccess-1.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/3.0.0/j2objc-annotations-3.0.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/grpc/grpc-context/1.60.1/grpc-context-1.60.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/opencensus/opencensus-api/0.31.1/opencensus-api-0.31.1.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/opencensus/opencensus-contrib-http-util/0.31.1/opencensus-contrib-http-util-0.31.1.jar""", StringUtils.join(result, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var files = FileUtils.getFileList(tmp2);
             assertEquals(24, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -932,7 +1186,8 @@ public class TestDependencyResolver {
                 opencensus-api-0.31.1.jar
                 opencensus-contrib-http-util-0.31.1.jar""", StringUtils.join(files, "\n"));
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -944,9 +1199,10 @@ public class TestDependencyResolver {
             .put(PROPERTY_OVERRIDE_PREFIX + "1", "org.eclipse.jetty:jetty-io:11.0.13")
             .put(PROPERTY_OVERRIDE_PREFIX + "2", "org.eclipse.jetty:jetty-server:11.0.15"));
         var resolver = new DependencyResolver(resolution, ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.15/jetty-server-11.0.15.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
@@ -955,7 +1211,47 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.11/slf4j-api-2.0.11.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.15/jetty-util-11.0.15.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
+            assertEquals(6, files.size());
+            Collections.sort(files);
+            assertEquals("""
+                jetty-http-11.0.15.jar
+                jetty-io-11.0.13.jar
+                jetty-jakarta-servlet-api-5.0.2.jar
+                jetty-server-11.0.15.jar
+                jetty-util-11.0.15.jar
+                slf4j-api-2.0.11.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencyJettyOverriddenVersionsModule()
+    throws Exception {
+        var resolution = new VersionResolution(new HierarchicalProperties()
+            .put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.11")
+            .put(PROPERTY_OVERRIDE_PREFIX + "1", "org.eclipse.jetty:jetty-io:11.0.13")
+            .put(PROPERTY_OVERRIDE_PREFIX + "2", "org.eclipse.jetty:jetty-server:11.0.15"));
+        var resolver = new DependencyResolver(resolution, ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
+            assertEquals("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.15/jetty-server-11.0.15.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/11.0.15/jetty-http-11.0.15.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/11.0.13/jetty-io-11.0.13.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.11/slf4j-api-2.0.11.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.15/jetty-util-11.0.15.jar""", StringUtils.join(result, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var files = FileUtils.getFileList(tmp2);
             assertEquals(6, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -966,7 +1262,8 @@ public class TestDependencyResolver {
                 jetty-util-11.0.15.jar
                 slf4j-api-2.0.11.jar""", StringUtils.join(files, "\n"));
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -974,9 +1271,10 @@ public class TestDependencyResolver {
     void testTransferDependencyJettySources()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-sources.jar
@@ -991,7 +1289,55 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14-sources.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
+            assertEquals(12, files.size());
+            Collections.sort(files);
+            assertEquals("""
+                jetty-http-11.0.14-sources.jar
+                jetty-http-11.0.14.jar
+                jetty-io-11.0.14-sources.jar
+                jetty-io-11.0.14.jar
+                jetty-jakarta-servlet-api-5.0.2-sources.jar
+                jetty-jakarta-servlet-api-5.0.2.jar
+                jetty-server-11.0.14-sources.jar
+                jetty-server-11.0.14.jar
+                jetty-util-11.0.14-sources.jar
+                jetty-util-11.0.14.jar
+                slf4j-api-2.0.5-sources.jar
+                slf4j-api-2.0.5.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencyJettySourcesModule()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
+            assertEquals("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/11.0.14/jetty-http-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/11.0.14/jetty-http-11.0.14-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/11.0.14/jetty-io-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/11.0.14/jetty-io-11.0.14-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.5/slf4j-api-2.0.5.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.5/slf4j-api-2.0.5-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14-sources.jar""", StringUtils.join(result, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var files = FileUtils.getFileList(tmp2);
             assertEquals(12, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -1008,7 +1354,8 @@ public class TestDependencyResolver {
                 slf4j-api-2.0.5-sources.jar
                 slf4j-api-2.0.5.jar""", StringUtils.join(files, "\n"));
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -1016,9 +1363,10 @@ public class TestDependencyResolver {
     void testTransferDependencyJettySourcesJavadoc()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-sources.jar
@@ -1039,7 +1387,67 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14-sources.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14-javadoc.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
+            assertEquals(18, files.size());
+            Collections.sort(files);
+            assertEquals("""
+                jetty-http-11.0.14-javadoc.jar
+                jetty-http-11.0.14-sources.jar
+                jetty-http-11.0.14.jar
+                jetty-io-11.0.14-javadoc.jar
+                jetty-io-11.0.14-sources.jar
+                jetty-io-11.0.14.jar
+                jetty-jakarta-servlet-api-5.0.2-javadoc.jar
+                jetty-jakarta-servlet-api-5.0.2-sources.jar
+                jetty-jakarta-servlet-api-5.0.2.jar
+                jetty-server-11.0.14-javadoc.jar
+                jetty-server-11.0.14-sources.jar
+                jetty-server-11.0.14.jar
+                jetty-util-11.0.14-javadoc.jar
+                jetty-util-11.0.14-sources.jar
+                jetty-util-11.0.14.jar
+                slf4j-api-2.0.5-javadoc.jar
+                slf4j-api-2.0.5-sources.jar
+                slf4j-api-2.0.5.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencyJettySourcesJavadocModule()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            assertEquals("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-javadoc.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2-javadoc.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/11.0.14/jetty-http-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/11.0.14/jetty-http-11.0.14-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/11.0.14/jetty-http-11.0.14-javadoc.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/11.0.14/jetty-io-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/11.0.14/jetty-io-11.0.14-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/11.0.14/jetty-io-11.0.14-javadoc.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.5/slf4j-api-2.0.5.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.5/slf4j-api-2.0.5-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.5/slf4j-api-2.0.5-javadoc.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14-sources.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/11.0.14/jetty-util-11.0.14-javadoc.jar""", StringUtils.join(result, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var files = FileUtils.getFileList(tmp2);
             assertEquals(18, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -1062,7 +1470,8 @@ public class TestDependencyResolver {
                 slf4j-api-2.0.5-sources.jar
                 slf4j-api-2.0.5.jar""", StringUtils.join(files, "\n"));
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -1070,9 +1479,10 @@ public class TestDependencyResolver {
     void testTransferDependenciesJunit()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile, runtime).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile, runtime).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar
@@ -1083,7 +1493,7 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/junit/platform/junit-platform-engine/1.9.2/junit-platform-engine-1.9.2.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(8, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -1095,8 +1505,11 @@ public class TestDependencyResolver {
                 junit-platform-commons-1.9.2.jar
                 junit-platform-engine-1.9.2.jar
                 opentest4j-1.2.0.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -1104,9 +1517,10 @@ public class TestDependencyResolver {
     void testTransferDependencySpringBoot()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-starter/3.0.4/spring-boot-starter-3.0.4.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/springframework/boot/spring-boot/3.0.4/spring-boot-3.0.4.jar
@@ -1127,7 +1541,7 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.4/slf4j-api-2.0.4.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.19.0/log4j-api-2.19.0.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(18, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -1149,8 +1563,11 @@ public class TestDependencyResolver {
                 spring-core-6.0.6.jar
                 spring-expression-6.0.6.jar
                 spring-jcl-6.0.6.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -1158,9 +1575,10 @@ public class TestDependencyResolver {
     void testTransferDependencyMaven()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apache/maven/maven-core/3.9.0/maven-core-3.9.0.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apache/maven/maven-model/3.9.0/maven-model-3.9.0.jar
@@ -1195,7 +1613,7 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/aopalliance/aopalliance/1.0/aopalliance-1.0.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/codehaus/plexus/plexus-cipher/2.0/plexus-cipher-2.0.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(32, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -1231,8 +1649,11 @@ public class TestDependencyResolver {
                 plexus-sec-dispatcher-2.0.jar
                 plexus-utils-3.4.2.jar
                 slf4j-api-1.7.36.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -1240,9 +1661,10 @@ public class TestDependencyResolver {
     void testTransferDependencyPlay()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/play/play_2.13/2.8.19/play_2.13-2.8.19.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.10/scala-library-2.13.10.jar
@@ -1293,7 +1715,7 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-paranamer/2.11.4/jackson-module-paranamer-2.11.4.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.8/paranamer-2.8.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(48, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -1345,8 +1767,11 @@ public class TestDependencyResolver {
                 slf4j-api-1.7.36.jar
                 ssl-config-core_2.13-0.4.3.jar
                 twirl-api_2.13-1.5.1.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -1356,9 +1781,10 @@ public class TestDependencyResolver {
         var resolution = new VersionResolution(new HierarchicalProperties()
             .put(PROPERTY_OVERRIDE_PREFIX, "org.scala-lang:scala-library:2.13.12,org.slf4j:slf4j-api:2.0.11,com.google.guava:guava:31.1-jre"));
         var resolver = new DependencyResolver(resolution, ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/typesafe/play/play_2.13/2.8.19/play_2.13-2.8.19.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.12/scala-library-2.13.12.jar
@@ -1409,7 +1835,7 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-paranamer/2.11.4/jackson-module-paranamer-2.11.4.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.8/paranamer-2.8.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(48, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -1461,8 +1887,11 @@ public class TestDependencyResolver {
                 slf4j-api-2.0.11.jar
                 ssl-config-core_2.13-0.4.3.jar
                 twirl-api_2.13-1.5.1.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -1470,9 +1899,10 @@ public class TestDependencyResolver {
     void testTransferDependencyVaadin()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/vaadin/vaadin/23.3.7/vaadin-23.3.7.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/vaadin/vaadin-core/23.3.7/vaadin-core-23.3.7.jar
@@ -1563,7 +1993,7 @@ public class TestDependencyResolver {
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/net/java/dev/jna/jna-platform/5.11.0/jna-platform-5.11.0.jar
                 https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar""", StringUtils.join(result, "\n"));
 
-            var files = FileUtils.getFileList(tmp);
+            var files = FileUtils.getFileList(tmp1);
             assertEquals(88, files.size());
             Collections.sort(files);
             assertEquals("""
@@ -1655,8 +2085,11 @@ public class TestDependencyResolver {
                 vaadin-virtual-list-flow-23.3.7.jar
                 vaadin__vaadin-mobile-drag-drop-1.0.1.jar
                 validation-api-2.0.1.Final.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
@@ -1664,49 +2097,115 @@ public class TestDependencyResolver {
     void testTransferCheckExisting()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
-        var tmp = Files.createTempDirectory("transfers").toFile();
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
 
             var modification_map = new HashMap<String, Long>();
-            Files.walk(Path.of(tmp.getAbsolutePath()))
+            Files.walk(Path.of(tmp1.getAbsolutePath()))
                 .map(path -> path.toAbsolutePath().toString())
-                .filter(s -> !s.equals(tmp.getAbsolutePath()))
+                .filter(s -> !s.equals(tmp1.getAbsolutePath()))
                 .forEach(it -> modification_map.put(it, new File(it).lastModified()));
 
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
+
             // re-transfer and check the modification time didn't change
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
-            Files.walk(Path.of(tmp.getAbsolutePath()))
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
+            Files.walk(Path.of(tmp1.getAbsolutePath()))
                 .map(path -> path.toAbsolutePath().toString())
-                .filter(s -> !s.equals(tmp.getAbsolutePath()))
+                .filter(s -> !s.equals(tmp1.getAbsolutePath()))
                 .forEach(it -> assertEquals(modification_map.get(it), new File(it).lastModified()));
 
-            // delete one file and check that this is transfered again
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
+
+            // delete one file and check that this is transferred again
             var first = modification_map.keySet().stream().findFirst().get();
             var first_file = new File(first);
             first_file.delete();
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertNotEquals(first_file.lastModified(), modification_map.get(first));
             modification_map.put(first, first_file.lastModified());
-            Files.walk(Path.of(tmp.getAbsolutePath()))
+            Files.walk(Path.of(tmp1.getAbsolutePath()))
                 .map(path -> path.toAbsolutePath().toString())
-                .filter(s -> !s.equals(tmp.getAbsolutePath()))
+                .filter(s -> !s.equals(tmp1.getAbsolutePath()))
                 .forEach(it -> assertEquals(modification_map.get(it), new File(it).lastModified()));
 
-            // change one file and check that this is transfered again
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
+
+            // change one file and check that this is transferred again
             FileUtils.writeString("stuff", first_file);
             var before_transfer_modified = first_file.lastModified();
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertNotEquals(first_file.lastModified(), before_transfer_modified);
             modification_map.put(first, first_file.lastModified());
-            Files.walk(Path.of(tmp.getAbsolutePath()))
+            Files.walk(Path.of(tmp1.getAbsolutePath()))
                 .map(path -> path.toAbsolutePath().toString())
-                .filter(s -> !s.equals(tmp.getAbsolutePath()))
+                .filter(s -> !s.equals(tmp1.getAbsolutePath()))
                 .forEach(it -> assertEquals(modification_map.get(it), new File(it).lastModified()));
 
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
-            FileUtils.deleteDirectory(tmp);
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
         }
     }
 
+    @Test
+    void testTransferCheckExistingModule()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
+
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var modification_map = new HashMap<String, Long>();
+            Files.walk(Path.of(tmp2.getAbsolutePath()))
+                .map(path -> path.toAbsolutePath().toString())
+                .filter(s -> !s.equals(tmp2.getAbsolutePath()))
+                .forEach(it -> modification_map.put(it, new File(it).lastModified()));
+
+            // re-transfer and check the modification time didn't change
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
+            Files.walk(Path.of(tmp2.getAbsolutePath()))
+                .map(path -> path.toAbsolutePath().toString())
+                .filter(s -> !s.equals(tmp2.getAbsolutePath()))
+                .forEach(it -> assertEquals(modification_map.get(it), new File(it).lastModified()));
+
+            // delete one file and check that this is transferred again
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            var first = modification_map.keySet().stream().findFirst().get();
+            var first_file = new File(first);
+            first_file.delete();
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
+            assertNotEquals(first_file.lastModified(), modification_map.get(first));
+            modification_map.put(first, first_file.lastModified());
+            Files.walk(Path.of(tmp2.getAbsolutePath()))
+                .map(path -> path.toAbsolutePath().toString())
+                .filter(s -> !s.equals(tmp2.getAbsolutePath()))
+                .forEach(it -> assertEquals(modification_map.get(it), new File(it).lastModified()));
+
+            // change one file and check that this is transferred again
+            assertTrue(FileUtils.getFileList(tmp1).isEmpty());
+
+            FileUtils.writeString("stuff", first_file);
+            var before_transfer_modified = first_file.lastModified();
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
+            assertNotEquals(first_file.lastModified(), before_transfer_modified);
+            modification_map.put(first, first_file.lastModified());
+            Files.walk(Path.of(tmp2.getAbsolutePath()))
+                .map(path -> path.toAbsolutePath().toString())
+                .filter(s -> !s.equals(tmp2.getAbsolutePath()))
+                .forEach(it -> assertEquals(modification_map.get(it), new File(it).lastModified()));
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
 }

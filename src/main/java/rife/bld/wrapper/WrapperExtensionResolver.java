@@ -109,7 +109,7 @@ public class WrapperExtensionResolver {
                 additional_classifiers = classifiers.toArray(new String[0]);
             }
 
-            var artifacts = dependencies.transferIntoDirectory(resolution_, retriever_, repositories_, destinationDirectory_, additional_classifiers);
+            var artifacts = dependencies.transferIntoDirectory(resolution_, retriever_, repositories_, destinationDirectory_, destinationDirectory_, additional_classifiers);
             for (var artifact : artifacts) {
                 var location = artifact.location();
 

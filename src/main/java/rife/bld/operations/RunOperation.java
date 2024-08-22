@@ -35,6 +35,10 @@ public class RunOperation extends AbstractProcessOperation<RunOperation> {
             args.add("-cp");
             args.add(FileUtils.joinPaths(classpath()));
         }
+        if (!modulePath().isEmpty()) {
+            args.add("-p");
+            args.add(FileUtils.joinPaths(modulePath()));
+        }
         args.add(mainClass());
         args.addAll(runOptions());
         return args;
@@ -50,6 +54,7 @@ public class RunOperation extends AbstractProcessOperation<RunOperation> {
         var operation = workDirectory(project.workDirectory())
                 .javaTool(project.javaTool())
                 .classpath(project.runClasspath())
+                .modulePath(project.runModulePath())
                 .mainClass(project.mainClass());
         if (project.usesRife2Agent()) {
             operation.javaOptions().javaAgent(project.getRife2AgentFile());

@@ -5,6 +5,7 @@
 package rife.bld;
 
 import rife.bld.dependencies.*;
+import rife.bld.dependencies.Module;
 import rife.bld.help.*;
 import rife.bld.operations.*;
 import rife.tools.FileUtils;
@@ -246,12 +247,26 @@ public class BaseProject extends BuildExecutor {
      */
     protected File libCompileDirectory = null;
     /**
+     * The modules compile scope lib directory.
+     *
+     * @see #libCompileModulesDirectory()
+     * @since 2.1
+     */
+    protected File libCompileModulesDirectory = null;
+    /**
      * The provided scope lib directory.
      *
      * @see #libProvidedDirectory()
      * @since 1.8
      */
     protected File libProvidedDirectory = null;
+    /**
+     * The modules provided scope lib directory.
+     *
+     * @see #libProvidedModulesDirectory()
+     * @since 2.1
+     */
+    protected File libProvidedModulesDirectory = null;
     /**
      * The runtime scope lib directory.
      *
@@ -260,6 +275,13 @@ public class BaseProject extends BuildExecutor {
      */
     protected File libRuntimeDirectory = null;
     /**
+     * The modules runtime scope lib directory.
+     *
+     * @see #libRuntimeModulesDirectory()
+     * @since 2.1
+     */
+    protected File libRuntimeModulesDirectory = null;
+    /**
      * The standalone scope lib directory.
      *
      * @see #libStandaloneDirectory()
@@ -267,12 +289,26 @@ public class BaseProject extends BuildExecutor {
      */
     protected File libStandaloneDirectory = null;
     /**
-     * The standalone scope lib directory.
+     * The modules standalone scope lib directory.
+     *
+     * @see #libStandaloneModulesDirectory()
+     * @since 2.1
+     */
+    protected File libStandaloneModulesDirectory = null;
+    /**
+     * The test scope lib directory.
      *
      * @see #libTestDirectory()
      * @since 1.5
      */
     protected File libTestDirectory = null;
+    /**
+     * The modules test scope lib directory.
+     *
+     * @see #libTestModulesDirectory()
+     * @since 2.1
+     */
+    protected File libTestModulesDirectory = null;
     /**
      * The build directory.
      *
@@ -860,6 +896,101 @@ public class BaseProject extends BuildExecutor {
         return new LocalDependency(path);
     }
 
+    /**
+     * Creates a new module instance.
+     *
+     * @param groupId    the module group identifier
+     * @param artifactId the module artifact identifier
+     * @return a newly created {@code Module} instance
+     * @since 2.1
+     */
+    public Module module(String groupId, String artifactId) {
+        return new Module(groupId, artifactId);
+    }
+
+    /**
+     * Creates a new module instance.
+     *
+     * @param groupId    the module group identifier
+     * @param artifactId the module artifact identifier
+     * @param version    the module version
+     * @return a newly created {@code Module} instance
+     * @since 2.1
+     */
+    public Module module(String groupId, String artifactId, String version) {
+        return new Module(groupId, artifactId, version(version));
+    }
+
+    /**
+     * Creates a new module instance.
+     *
+     * @param groupId    the module group identifier
+     * @param artifactId the module artifact identifier
+     * @param version    the module version
+     * @param classifier the module classifier
+     * @return a newly created {@code Module} instance
+     * @since 2.1
+     */
+    public Module module(String groupId, String artifactId, String version, String classifier) {
+        return new Module(groupId, artifactId, version(version), classifier);
+    }
+
+    /**
+     * Creates a new module instance.
+     *
+     * @param groupId    the module group identifier
+     * @param artifactId the module artifact identifier
+     * @param version    the module version
+     * @return a newly created {@code Module} instance
+     * @since 2.1
+     */
+    public Module module(String groupId, String artifactId, Version version) {
+        return new Module(groupId, artifactId, version);
+    }
+
+    /**
+     * Creates a new module instance.
+     *
+     * @param groupId    the module group identifier
+     * @param artifactId the module artifact identifier
+     * @param version    the module version
+     * @param classifier the module classifier
+     * @return a newly created {@code Module} instance
+     * @since 2.1
+     */
+    public Module module(String groupId, String artifactId, Version version, String classifier) {
+        return new Module(groupId, artifactId, version, classifier);
+    }
+
+    /**
+     * Creates a new module instance from a string representation.
+     * The format is {@code groupId:artifactId:version:classifier}.
+     * The {@code version} and {@code classifier} are optional.
+     * <p>
+     * If the string can't be successfully parsed, {@code null} will be returned.
+     *
+     * @param description the module string to parse
+     * @return a parsed instance of {@code Module}; or
+     * {@code null} when the string couldn't be parsed
+     * @since 2.1
+     */
+    public Module module(String description) {
+        return Module.parse(description);
+    }
+
+    /**
+     * Creates a local module instance.
+     * <p>
+     * If the local module points to a directory, it will be scanned for jar files.
+     *
+     * @param path the file system path of the local module
+     * @since 2.1
+     */
+
+    public LocalModule localModule(String path) {
+        return new LocalModule(path);
+    }
+
     /*
      * Project directories
      */
@@ -1013,6 +1144,16 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns the project modules compile scope lib directory.
+     * Defaults to {@code "modules"} relative to {@link #libCompileDirectory()}.
+     *
+     * @since 2.1
+     */
+    public File libCompileModulesDirectory() {
+        return Objects.requireNonNullElseGet(libCompileModulesDirectory, () -> new File(libCompileDirectory(), "modules"));
+    }
+
+    /**
      * Returns the project provided scope lib directory.
      * Defaults to {@code "provided"} relative to {@link #libDirectory()}.
      *
@@ -1020,6 +1161,16 @@ public class BaseProject extends BuildExecutor {
      */
     public File libProvidedDirectory() {
         return Objects.requireNonNullElseGet(libProvidedDirectory, () -> new File(libDirectory(), "provided"));
+    }
+
+    /**
+     * Returns the project modules provided scope lib directory.
+     * Defaults to {@code "modules"} relative to {@link #libProvidedDirectory()}.
+     *
+     * @since 2.1
+     */
+    public File libProvidedModulesDirectory() {
+        return Objects.requireNonNullElseGet(libProvidedModulesDirectory, () -> new File(libProvidedDirectory(), "modules"));
     }
 
     /**
@@ -1033,13 +1184,33 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns the project modules runtime scope lib directory.
+     * Defaults to {@code "modules"} relative to {@link #libRuntimeDirectory()}.
+     *
+     * @since 1.5
+     */
+    public File libRuntimeModulesDirectory() {
+        return Objects.requireNonNullElseGet(libRuntimeModulesDirectory, () -> new File(libRuntimeDirectory(), "modules"));
+    }
+
+    /**
      * Returns the project standalone scope lib directory.
      * Defaults to {@code null}.
      *
      * @since 1.5
      */
     public File libStandaloneDirectory() {
-        return null;
+        return libStandaloneDirectory;
+    }
+
+    /**
+     * Returns the project standalone scope lib directory.
+     * Defaults to {@code null}.
+     *
+     * @since 2.1
+     */
+    public File libStandaloneModulesDirectory() {
+        return libStandaloneModulesDirectory;
     }
 
     /**
@@ -1050,6 +1221,16 @@ public class BaseProject extends BuildExecutor {
      */
     public File libTestDirectory() {
         return Objects.requireNonNullElseGet(libTestDirectory, () -> new File(libDirectory(), "test"));
+    }
+
+    /**
+     * Returns the project modules test scope lib directory.
+     * Defaults to {@code "modules"} relative to {@link #libTestDirectory()}.
+     *
+     * @since 2.1
+     */
+    public File libTestModulesDirectory() {
+        return Objects.requireNonNullElseGet(libTestModulesDirectory, () -> new File(libTestDirectory(), "modules"));
     }
 
     /**
@@ -1142,12 +1323,19 @@ public class BaseProject extends BuildExecutor {
         libDirectory().mkdirs();
         libBldDirectory().mkdirs();
         libCompileDirectory().mkdirs();
+        libCompileModulesDirectory().mkdirs();
         libProvidedDirectory().mkdirs();
+        libProvidedModulesDirectory().mkdirs();
         libRuntimeDirectory().mkdirs();
+        libRuntimeModulesDirectory().mkdirs();
         if (libStandaloneDirectory() != null) {
             libStandaloneDirectory().mkdirs();
         }
+        if (libStandaloneModulesDirectory() != null) {
+            libStandaloneModulesDirectory().mkdirs();
+        }
         libTestDirectory().mkdirs();
+        libTestModulesDirectory().mkdirs();
     }
 
     /**
@@ -1416,6 +1604,25 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns all the jar files that are in the compile scope module path.
+     * <p>
+     * By default, this collects all the jar files in the {@link #libCompileModulesDirectory()}
+     * and adds all the jar files from the compile scope local modules.
+     *
+     * @since 2.1
+     */
+    public List<File> compileModulePathJars() {
+        // detect the jar files in the modules compile lib directory
+        var dir_abs = libCompileModulesDirectory().getAbsoluteFile();
+        var jar_files = FileUtils.getFileList(dir_abs, INCLUDED_JARS, EXCLUDED_JARS);
+
+        // build the compilation module path
+        var module_path = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
+        addLocalModules(module_path, Scope.compile);
+        return module_path;
+    }
+
+    /**
      * Returns all the jar files that are in the provided scope classpath.
      * <p>
      * By default, this collects all the jar files in the {@link #libProvidedDirectory()}
@@ -1435,6 +1642,25 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns all the jar files that are in the provided scope module path.
+     * <p>
+     * By default, this collects all the jar files in the {@link #libProvidedModulesDirectory()}
+     * and adds all the jar files from the provided scope local modules.
+     *
+     * @since 2.1
+     */
+    public List<File> providedModulePathJars() {
+        // detect the jar files in the modules provided lib directory
+        var dir_abs = libProvidedModulesDirectory().getAbsoluteFile();
+        var jar_files = FileUtils.getFileList(dir_abs, INCLUDED_JARS, EXCLUDED_JARS);
+
+        // build the provided module path
+        var module_path = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
+        addLocalModules(module_path, Scope.provided);
+        return module_path;
+    }
+
+    /**
      * Returns all the jar files that are in the runtime scope classpath.
      * <p>
      * By default, this collects all the jar files in the {@link #libRuntimeDirectory()}
@@ -1451,6 +1677,25 @@ public class BaseProject extends BuildExecutor {
         var classpath = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
         addLocalDependencies(classpath, Scope.runtime);
         return classpath;
+    }
+
+    /**
+     * Returns all the jar files that are in the runtime scope module path.
+     * <p>
+     * By default, this collects all the jar files in the {@link #libRuntimeModulesDirectory()}
+     * and adds all the jar files from the runtime scope local modules.
+     *
+     * @since 2.1
+     */
+    public List<File> runtimeModulePathJars() {
+        // detect the jar files in the modules runtime lib directory
+        var dir_abs = libRuntimeModulesDirectory().getAbsoluteFile();
+        var jar_files = FileUtils.getFileList(dir_abs, INCLUDED_JARS, EXCLUDED_JARS);
+
+        // build the runtime module path
+        var module_path = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
+        addLocalModules(module_path, Scope.runtime);
+        return module_path;
     }
 
     /**
@@ -1478,6 +1723,30 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns all the jar files that are in the standalone scope module path.
+     * <p>
+     * By default, this collects all the jar files in the {@link #libStandaloneModulesDirectory()}
+     * and adds all the jar files from the standalone scope local modules.
+     *
+     * @since 2.1
+     */
+    public List<File> standaloneModulePathJars() {
+        // build the standalone classpath
+        List<File> module_path;
+        if (libStandaloneModulesDirectory() == null) {
+            module_path = new ArrayList<>();
+        } else {
+            // detect the jar files in the modules standalone lib directory
+            var dir_abs = libStandaloneModulesDirectory().getAbsoluteFile();
+            var jar_files = FileUtils.getFileList(dir_abs, INCLUDED_JARS, EXCLUDED_JARS);
+
+            module_path = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
+        }
+        addLocalModules(module_path, Scope.standalone);
+        return module_path;
+    }
+
+    /**
      * Returns all the jar files that are in the test scope classpath.
      * <p>
      * By default, this collects all the jar files in the {@link #libTestDirectory()}
@@ -1496,20 +1765,51 @@ public class BaseProject extends BuildExecutor {
         return classpath;
     }
 
+    /**
+     * Returns all the jar files that are in the test scope module path.
+     * <p>
+     * By default, this collects all the jar files in the {@link #libTestModulesDirectory()}
+     * and adds all the jar files from the test scope local modules.
+     *
+     * @since 2.1
+     */
+    public List<File> testModulePathJars() {
+        // detect the jar files in the test lib directory
+        var dir_abs = libTestModulesDirectory().getAbsoluteFile();
+        var jar_files = FileUtils.getFileList(dir_abs, INCLUDED_JARS, EXCLUDED_JARS);
+
+        // build the test module path
+        var module_path = new ArrayList<>(jar_files.stream().map(file -> new File(dir_abs, file)).toList());
+        addLocalModules(module_path, Scope.test);
+        return module_path;
+    }
+
     private void addLocalDependencies(List<File> classpath, Scope scope) {
         if (dependencies.get(scope) == null) {
             return;
         }
-
         for (var dependency : dependencies.get(scope).localDependencies()) {
-            var local_file = new File(workDirectory(), dependency.path());
-            if (local_file.exists()) {
-                if (local_file.isDirectory()) {
-                    var local_jar_files = FileUtils.getFileList(local_file.getAbsoluteFile(), INCLUDED_JARS, EXCLUDED_JARS);
-                    classpath.addAll(new ArrayList<>(local_jar_files.stream().map(file -> new File(local_file, file)).toList()));
-                } else {
-                    classpath.add(local_file);
-                }
+            addLocalJars(classpath, dependency.path());
+        }
+    }
+
+    private void addLocalModules(List<File> classpath, Scope scope) {
+        if (dependencies.get(scope) == null) {
+            return;
+        }
+        for (var module : dependencies.get(scope).localModules()) {
+            addLocalJars(classpath, module.path());
+        }
+    }
+
+    private void addLocalJars(List<File> jars, String path) {
+        var local_file = new File(workDirectory(), path);
+        if (local_file.exists()) {
+            if (local_file.isDirectory()) {
+                var local_jar_files = FileUtils.getFileList(local_file.getAbsoluteFile(), INCLUDED_JARS, EXCLUDED_JARS);
+                jars.addAll(new ArrayList<>(local_jar_files.stream().map(file -> new File(local_file, file)).toList()));
+            } else {
+                jars.add(local_file);
             }
         }
     }
@@ -1517,7 +1817,7 @@ public class BaseProject extends BuildExecutor {
     /**
      * Returns all the classpath entries for compiling the main sources.
      * <p>
-     * By default, this converts the files from {@link #compileClasspathJars()} to absolute paths.
+     * By default, this converts the files from {@link #compileClasspathJars()} and {@link #providedClasspathJars()} to absolute paths.
      *
      * @since 1.5
      */
@@ -1526,9 +1826,20 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns all the module path entries for compiling the main sources.
+     * <p>
+     * By default, this converts the files from {@link #compileModulePathJars()} and {@link #providedModulePathJars()} to absolute paths.
+     *
+     * @since 2.1
+     */
+    public List<String> compileMainModulePath() {
+        return FileUtils.combineToAbsolutePaths(compileModulePathJars(), providedModulePathJars());
+    }
+
+    /**
      * Returns all the classpath entries for compiling the test sources.
      * <p>
-     * By default, this converts the files from {@link #compileClasspathJars()} and
+     * By default, this converts the files from {@link #compileClasspathJars()}, {@link #providedClasspathJars()} and
      * {@link #testClasspathJars()} to absolute paths, as well as the {@link #buildMainDirectory()}
      *
      * @since 1.5
@@ -1538,6 +1849,18 @@ public class BaseProject extends BuildExecutor {
         paths.add(buildMainDirectory().getAbsolutePath());
         paths.addAll(FileUtils.combineToAbsolutePaths(compileClasspathJars(), providedClasspathJars(), testClasspathJars()));
         return paths;
+    }
+
+    /**
+     * Returns all the module path entries for compiling the test sources.
+     * <p>
+     * By default, this converts the files from {@link #compileModulePathJars()}, {@link #providedModulePathJars()} and
+     * {@link #testModulePathJars()} to absolute paths.
+     *
+     * @since 2.1
+     */
+    public List<String> compileTestModulePath() {
+       return FileUtils.combineToAbsolutePaths(compileModulePathJars(), providedModulePathJars(), testModulePathJars());
     }
 
     /**
@@ -1558,9 +1881,21 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns all the module path entries for running the application.
+     * <p>
+     * By default, this converts the files from {@link #compileModulePathJars()},
+     * {@link #runtimeModulePathJars()} and {@link #standaloneModulePathJars()} to absolute paths.
+     *
+     * @since 2.1
+     */
+    public List<String> runModulePath() {
+       return FileUtils.combineToAbsolutePaths(compileModulePathJars(), runtimeModulePathJars(), standaloneModulePathJars());
+    }
+
+    /**
      * Returns all the classpath entries for testing the application.
      * <p>
-     * By default, this converts the files from {@link #compileClasspathJars()},
+     * By default, this converts the files from {@link #compileClasspathJars()}, {@link #providedClasspathJars()},
      * {@link #runtimeClasspathJars()}  and {@link #testClasspathJars()}
      * to absolute paths, as well as the {@link #srcMainResourcesDirectory()},
      * {@link #buildMainDirectory()} and {@link #buildTestDirectory()}
@@ -1575,6 +1910,19 @@ public class BaseProject extends BuildExecutor {
         paths.add(buildTestDirectory().getAbsolutePath());
         paths.addAll(FileUtils.combineToAbsolutePaths(compileClasspathJars(), providedClasspathJars(), runtimeClasspathJars(), standaloneClasspathJars(), testClasspathJars()));
         return paths;
+    }
+
+    /**
+     * Returns all the module path entries for testing the application.
+     * <p>
+     * By default, this converts the files from {@link #compileModulePathJars()}, {@link #providedModulePathJars()},
+     * {@link #runtimeModulePathJars()}  and {@link #testModulePathJars()}
+     * to absolute paths.
+     *
+     * @since 2.1
+     */
+    public List<String> testModulePath() {
+        return FileUtils.combineToAbsolutePaths(compileModulePathJars(), providedModulePathJars(), runtimeModulePathJars(), standaloneModulePathJars(), testModulePathJars());
     }
 
     /**

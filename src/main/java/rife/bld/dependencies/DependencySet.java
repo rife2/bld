@@ -23,6 +23,7 @@ import java.util.*;
 public class DependencySet extends AbstractSet<Dependency> implements Set<Dependency> {
     private final Map<Dependency, Dependency> dependencies_ = new LinkedHashMap<>();
     private final Set<LocalDependency> localDependencies_ = new LinkedHashSet<>();
+    private final Set<LocalModule> localModules_ = new LinkedHashSet<>();
 
     /**
      * Creates an empty dependency set.
@@ -80,41 +81,85 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
     }
 
     /**
+     * Includes a local module into the dependency set.
+     * <p>
+     * Local modules aren't resolved and point to a location on
+     * the file system.
+     *
+     * @param module the module to include
+     * @return this dependency set instance
+     * @since 2.1
+     */
+    public DependencySet include(LocalModule module) {
+        localModules_.add(module);
+        return this;
+    }
+
+    /**
+     * Retrieves the local modules.
+     *
+     * @return the set of local modules
+     * @since 2.1
+     */
+    public Set<LocalModule> localModules() {
+        return localModules_;
+    }
+
+    /**
      * Transfers the artifacts for the dependencies into the provided directory.
      * <p>
      * The destination directory must exist and be writable.
      *
-     * @param resolution   the version resolution state that can be cached
-     * @param retriever    the retriever to use to get artifacts
-     * @param repositories the repositories to use for the transfer
-     * @param directory    the directory to transfer the artifacts into
+     * @param resolution        the version resolution state that can be cached
+     * @param retriever         the retriever to use to get artifacts
+     * @param repositories      the repositories to use for the transfer
+     * @param directory         the directory to transfer the artifacts into
+     * @param modulesDirectory  the directory to download the modules into
      * @return the list of artifacts that were transferred successfully
      * @throws DependencyTransferException when an error occurred during the transfer
-     * @since 2.0
+     * @since 2.1
      */
-    public List<RepositoryArtifact> transferIntoDirectory(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, File directory) {
-        return transferIntoDirectory(resolution, retriever, repositories, directory, (String[]) null);
+    public List<RepositoryArtifact> transferIntoDirectory(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, File directory, File modulesDirectory) {
+        return transferIntoDirectory(resolution, retriever, repositories, directory, modulesDirectory, (String[]) null);
     }
 
     /**
-     * Transfers the artifacts for the dependencies into the provided directory,
+     * Transfers the artifacts for the dependencies into the provided directories,
      * including other classifiers.
      * <p>
      * The destination directory must exist and be writable.
      *
-     * @param resolution   the version resolution state that can be cached
-     * @param retriever    the retriever to use to get artifacts
-     * @param repositories the repositories to use for the download
-     * @param directory    the directory to download the artifacts into
+     * @param resolution        the version resolution state that can be cached
+     * @param retriever         the retriever to use to get artifacts
+     * @param repositories      the repositories to use for the download
+     * @param directory         the directory to download the artifacts into
+     * @param modulesDirectory  the directory to download the modules into
      * @param classifiers  the additional classifiers to transfer
      * @return the list of artifacts that were transferred successfully
      * @throws DependencyTransferException when an error occurred during the transfer
-     * @since 2.0
+     * @since 2.1
      */
-    public List<RepositoryArtifact> transferIntoDirectory(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, File directory, String... classifiers) {
+    public List<RepositoryArtifact> transferIntoDirectory(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, File directory, File modulesDirectory, String... classifiers) {
         var result = new ArrayList<RepositoryArtifact>();
         for (var dependency : this) {
-            var artifact = new DependencyResolver(resolution, retriever, repositories, dependency).transferIntoDirectory(directory);
+            var transfer_directory = directory;
+            if (dependency.isModularJar()) {
+                if (modulesDirectory == null) {
+                    throw new DependencyTransferException(dependency, "modules directory is not provided");
+                }
+                transfer_directory = modulesDirectory;
+            }
+            else if (directory == null) {
+                throw new DependencyTransferException(dependency, "artifacts directory is not provided");
+            }
+
+            if (!transfer_directory.exists()) {
+                if (!transfer_directory.mkdirs()) {
+                    throw new DependencyTransferException(dependency, transfer_directory, "couldn't create directory");
+                }
+            }
+
+            var artifact = new DependencyResolver(resolution, retriever, repositories, dependency).transferIntoDirectory(transfer_directory);
             if (artifact != null) {
                 result.add(artifact);
             }
@@ -122,7 +167,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
             if (classifiers != null) {
                 for (var classifier : classifiers) {
                     if (classifier != null) {
-                        var classifier_artifact = new DependencyResolver(resolution, retriever, repositories, dependency.withClassifier(classifier)).transferIntoDirectory(directory);
+                        var classifier_artifact = new DependencyResolver(resolution, retriever, repositories, dependency.withClassifier(classifier)).transferIntoDirectory(transfer_directory);
                         if (classifier_artifact != null) {
                             result.add(classifier_artifact);
                         }

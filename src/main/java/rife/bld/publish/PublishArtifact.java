@@ -6,6 +6,8 @@ package rife.bld.publish;
 
 import java.io.File;
 
+import static rife.bld.dependencies.Dependency.TYPE_JAR;
+
 /**
  * Contains the information about an artifact that will be published.
  *
@@ -19,6 +21,6 @@ public record PublishArtifact(File file, String classifier, String type) {
     public PublishArtifact(File file, String classifier, String type) {
         this.file = file;
         this.classifier = (classifier == null ? "" : classifier);
-        this.type = (type == null ? "jar" : type);
+        this.type = (type == null ? TYPE_JAR : type);
     }
 }

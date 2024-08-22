@@ -51,8 +51,14 @@ public class TestOperation<T extends TestOperation<T, O>, O extends List<String>
         var args = new ArrayList<String>();
         args.add(javaTool());
         args.addAll(javaOptions());
-        args.add("-cp");
-        args.add(FileUtils.joinPaths(classpath()));
+        if (!classpath().isEmpty()) {
+            args.add("-cp");
+            args.add(FileUtils.joinPaths(classpath()));
+        }
+        if (!modulePath().isEmpty()) {
+            args.add("-p");
+            args.add(FileUtils.joinPaths(modulePath()));
+        }
         args.add(mainClass());
         args.addAll(testToolOptions());
 
@@ -68,7 +74,8 @@ public class TestOperation<T extends TestOperation<T, O>, O extends List<String>
     public T fromProject(BaseProject project) {
         var operation = workDirectory(project.workDirectory())
             .javaTool(project.javaTool())
-            .classpath(project.testClasspath());
+            .classpath(project.testClasspath())
+            .modulePath(project.testModulePath());
         if (project.usesRife2Agent()) {
             operation.javaOptions().javaAgent(project.getRife2AgentFile());
         }

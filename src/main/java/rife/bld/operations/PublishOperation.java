@@ -28,6 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static rife.bld.dependencies.Dependency.*;
 import static rife.bld.publish.MetadataBuilder.SNAPSHOT_TIMESTAMP_FORMATTER;
 import static rife.tools.HttpUtils.*;
 import static rife.tools.StringUtils.encodeHexLower;
@@ -180,8 +181,8 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
                 artifact_name.append('-').append(artifact.classifier());
             }
             var type = artifact.type();
-            if (type == null) {
-                type = "jar";
+            if (type == null || TYPE_JAR.equals(type) || TYPE_MODULAR_JAR.equals(type) || TYPE_CLASSPATH_JAR.equals(type)) {
+                type = TYPE_JAR;
             }
             artifact_name.append('.').append(type);
 
@@ -517,9 +518,9 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
         artifactRetriever(project.artifactRetriever());
         dependencies().include(project.dependencies());
         artifacts(List.of(
-            new PublishArtifact(new File(project.buildDistDirectory(), project.jarFileName()), "", "jar"),
-            new PublishArtifact(new File(project.buildDistDirectory(), project.sourcesJarFileName()), "sources", "jar"),
-            new PublishArtifact(new File(project.buildDistDirectory(), project.javadocJarFileName()), "javadoc", "jar")));
+            new PublishArtifact(new File(project.buildDistDirectory(), project.jarFileName()), "", TYPE_JAR),
+            new PublishArtifact(new File(project.buildDistDirectory(), project.sourcesJarFileName()), CLASSIFIER_SOURCES, TYPE_JAR),
+            new PublishArtifact(new File(project.buildDistDirectory(), project.javadocJarFileName()), CLASSIFIER_JAVADOC, TYPE_JAR)));
         if (info().groupId() == null) {
             info().groupId(project.pkg());
         }

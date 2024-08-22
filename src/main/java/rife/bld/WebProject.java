@@ -108,6 +108,11 @@ public class WebProject extends Project {
         return Objects.requireNonNullElseGet(libStandaloneDirectory, () -> new File(libDirectory(), "standalone"));
     }
 
+    @Override
+    public File libStandaloneModulesDirectory() {
+        return Objects.requireNonNullElseGet(libStandaloneModulesDirectory, () -> new File(libStandaloneDirectory(), "modules"));
+    }
+
     /**
      * Returns the project main webapp directory.
      * Defaults to {@code "webapp"} relative to {@link #srcMainDirectory()}.

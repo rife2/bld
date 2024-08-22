@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import rife.bld.BldVersion;
 import rife.bld.WebProject;
 import rife.bld.dependencies.*;
+import rife.bld.dependencies.Module;
 import rife.bld.wrapper.Wrapper;
 import rife.tools.FileUtils;
 import rife.tools.StringUtils;
@@ -72,7 +73,7 @@ public class TestDependencyTreeOperation {
                 .repositories(List.of(Repository.MAVEN_CENTRAL));
             operation.dependencies().scope(Scope.compile)
                 .include(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1,5,20)))
-                .include(new Dependency("com.stripe", "stripe-java", new VersionNumber(20,136,0)))
+                .include(new Module("com.stripe", "stripe-java", new VersionNumber(20,136,0)))
                 .include(new Dependency("org.json", "json", new VersionNumber(20230227)))
                 .include(new Dependency("com.itextpdf", "itext7-core", new VersionNumber(7,2,5)))
                 .include(new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2,0,7)))
@@ -93,7 +94,7 @@ public class TestDependencyTreeOperation {
                 
                 compile:
                 ├─ com.uwyn.rife2:rife2:1.5.20
-                ├─ com.stripe:stripe-java:20.136.0
+                ├─ com.stripe:stripe-java:20.136.0@modular-jar
                 ├─ org.json:json:20230227
                 ├─ com.itextpdf:itext7-core:7.2.5
                 │  ├─ com.itextpdf:barcodes:7.2.5
@@ -150,12 +151,12 @@ public class TestDependencyTreeOperation {
                 .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
                 .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-core", new VersionNumber(10,1,12)))
                 .include(new Dependency("org.apache.tomcat.embed", "tomcat-embed-jasper", new VersionNumber(10,1,12)))
-                .include(new Dependency("net.imagej", "ij", Version.parse("1.54d")));
+                .include(new Module("net.imagej", "ij", Version.parse("1.54d")));
             operation.dependencies().scope(Scope.test)
                 .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
                 .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
                 .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
-                .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
+                .include(new Module("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
                 .include(new Dependency("net.imagej", "ij", Version.parse("1.54d")));
 
             operation.execute();
@@ -184,7 +185,7 @@ public class TestDependencyTreeOperation {
                 ├─ org.apache.tomcat.embed:tomcat-embed-jasper:10.1.12
                 │  ├─ org.apache.tomcat.embed:tomcat-embed-el:10.1.12
                 │  └─ org.eclipse.jdt:ecj:3.33.0
-                └─ net.imagej:ij:1.54d
+                └─ net.imagej:ij:1.54d@modular-jar
                                 
                 runtime:
                 no dependencies
@@ -197,8 +198,8 @@ public class TestDependencyTreeOperation {
                 │  │  └─ org.eclipse.jetty:jetty-util:11.0.15
                 │  ├─ org.eclipse.jetty:jetty-io:11.0.15
                 │  └─ org.slf4j:slf4j-api:2.0.5
-                ├─ org.eclipse.jetty:jetty-servlet:11.0.15
-                │  └─ org.eclipse.jetty:jetty-security:11.0.15
+                ├─ org.eclipse.jetty:jetty-servlet:11.0.15@modular-jar
+                │  └─ org.eclipse.jetty:jetty-security:11.0.15@modular-jar
                 └─ net.imagej:ij:1.54d
                 
                 """), tree);
@@ -390,7 +391,7 @@ public class TestDependencyTreeOperation {
                 .include(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1,5,20)))
                 .include(new Dependency("com.stripe", "stripe-java", new VersionNumber(20,136,0)))
                 .include(new Dependency("org.json", "json", new VersionNumber(20230227)))
-                .include(new Dependency("com.itextpdf", "itext7-core", new VersionNumber(7,2,5)))
+                .include(new Module("com.itextpdf", "itext7-core", new VersionNumber(7,2,5)))
                 .include(new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2,0,7)))
                 .include(new Dependency("org.apache.thrift", "libthrift", new VersionNumber(0,17,0)))
                 .include(new Dependency("commons-codec", "commons-codec", new VersionNumber(1,15)))
@@ -411,7 +412,7 @@ public class TestDependencyTreeOperation {
                 .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
                 .include(new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
                 .include(new Dependency("org.eclipse.jetty", "jetty-servlet", new VersionNumber(11,0,15)).exclude("*", "jetty-jakarta-servlet-api"))
-                .include(new Dependency("net.imagej", "ij", Version.parse("1.54d")));
+                .include(new Module("net.imagej", "ij", Version.parse("1.54d")));
 
             var operation = new DependencyTreeOperation()
                 .fromProject(project);
@@ -442,22 +443,22 @@ public class TestDependencyTreeOperation {
                 ├─ com.uwyn.rife2:rife2:1.5.20
                 ├─ com.stripe:stripe-java:20.136.0
                 ├─ org.json:json:20230227
-                ├─ com.itextpdf:itext7-core:7.2.5
-                │  ├─ com.itextpdf:barcodes:7.2.5
-                │  ├─ com.itextpdf:font-asian:7.2.5
-                │  ├─ com.itextpdf:forms:7.2.5
-                │  ├─ com.itextpdf:hyph:7.2.5
-                │  ├─ com.itextpdf:io:7.2.5
-                │  │  └─ com.itextpdf:commons:7.2.5
-                │  ├─ com.itextpdf:kernel:7.2.5
-                │  │  ├─ org.bouncycastle:bcpkix-jdk15on:1.70
-                │  │  │  └─ org.bouncycastle:bcutil-jdk15on:1.70
-                │  │  └─ org.bouncycastle:bcprov-jdk15on:1.70
-                │  ├─ com.itextpdf:layout:7.2.5
-                │  ├─ com.itextpdf:pdfa:7.2.5
-                │  ├─ com.itextpdf:sign:7.2.5
-                │  ├─ com.itextpdf:styled-xml-parser:7.2.5
-                │  └─ com.itextpdf:svg:7.2.5
+                ├─ com.itextpdf:itext7-core:7.2.5@modular-jar
+                │  ├─ com.itextpdf:barcodes:7.2.5@modular-jar
+                │  ├─ com.itextpdf:font-asian:7.2.5@modular-jar
+                │  ├─ com.itextpdf:forms:7.2.5@modular-jar
+                │  ├─ com.itextpdf:hyph:7.2.5@modular-jar
+                │  ├─ com.itextpdf:io:7.2.5@modular-jar
+                │  │  └─ com.itextpdf:commons:7.2.5@modular-jar
+                │  ├─ com.itextpdf:kernel:7.2.5@modular-jar
+                │  │  ├─ org.bouncycastle:bcpkix-jdk15on:1.70@modular-jar
+                │  │  │  └─ org.bouncycastle:bcutil-jdk15on:1.70@modular-jar
+                │  │  └─ org.bouncycastle:bcprov-jdk15on:1.70@modular-jar
+                │  ├─ com.itextpdf:layout:7.2.5@modular-jar
+                │  ├─ com.itextpdf:pdfa:7.2.5@modular-jar
+                │  ├─ com.itextpdf:sign:7.2.5@modular-jar
+                │  ├─ com.itextpdf:styled-xml-parser:7.2.5@modular-jar
+                │  └─ com.itextpdf:svg:7.2.5@modular-jar
                 ├─ org.slf4j:slf4j-simple:2.0.7
                 │  └─ org.slf4j:slf4j-api:2.0.7
                 ├─ org.apache.thrift:libthrift:0.17.0
@@ -498,7 +499,7 @@ public class TestDependencyTreeOperation {
                 │  └─ org.slf4j:slf4j-api:2.0.5
                 ├─ org.eclipse.jetty:jetty-servlet:11.0.15
                 │  └─ org.eclipse.jetty:jetty-security:11.0.15
-                └─ net.imagej:ij:1.54d
+                └─ net.imagej:ij:1.54d@modular-jar
                 
                 """), tree);
         } finally {

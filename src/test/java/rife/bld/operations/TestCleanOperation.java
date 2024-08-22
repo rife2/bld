@@ -116,10 +116,15 @@ public class TestCleanOperation {
                     /lib
                     /lib/bld
                     /lib/compile
+                    /lib/compile/modules
                     /lib/provided
+                    /lib/provided/modules
                     /lib/runtime
+                    /lib/runtime/modules
                     /lib/standalone
+                    /lib/standalone/modules
                     /lib/test
+                    /lib/test/modules
                     /src
                     /src/bld
                     /src/bld/java
@@ -140,10 +145,15 @@ public class TestCleanOperation {
                     /lib
                     /lib/bld
                     /lib/compile
+                    /lib/compile/modules
                     /lib/provided
+                    /lib/provided/modules
                     /lib/runtime
+                    /lib/runtime/modules
                     /lib/standalone
+                    /lib/standalone/modules
                     /lib/test
+                    /lib/test/modules
                     /src
                     /src/bld
                     /src/bld/java

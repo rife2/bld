@@ -114,6 +114,11 @@ public class TestProject {
         assertNotNull(project.compileTestClasspath());
         assertNotNull(project.runClasspath());
         assertNotNull(project.testClasspath());
+
+        assertNotNull(project.compileMainModulePath());
+        assertNotNull(project.compileTestModulePath());
+        assertNotNull(project.runModulePath());
+        assertNotNull(project.testModulePath());
     }
 
     static class CustomProject extends Project {
@@ -321,10 +326,6 @@ public class TestProject {
                 .include(dependency("org.jsoup", "jsoup", version(1, 15, 4)))
                 .include(dependency("org.junit.jupiter", "junit-jupiter", version(5, 9, 2)))
                 .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1, 9, 2)));
-            scope(standalone)
-                .include(dependency("org.eclipse.jetty", "jetty-server", version(11, 0, 14)))
-                .include(dependency("org.eclipse.jetty", "jetty-servlet", version(11, 0, 14)))
-                .include(dependency("org.slf4j", "slf4j-simple", version(2, 0, 7)));
         }
 
         public void enableAutoDownloadPurge() {
@@ -364,8 +365,6 @@ public class TestProject {
                 /lib/bld/bld.cache
                 /lib/compile
                 /lib/compile/rife2-1.5.11.jar
-                /lib/provided
-                /lib/runtime
                 /lib/test
                 /lib/test/apiguardian-api-1.1.2.jar
                 /lib/test/jsoup-1.15.4.jar
@@ -379,8 +378,6 @@ public class TestProject {
                 /lib/test/opentest4j-1.2.0.jar""", FileUtils.generateDirectoryListing(tmp));
 
             FileUtils.deleteDirectory(new File(tmp, "lib/compile"));
-            FileUtils.deleteDirectory(new File(tmp, "lib/provided"));
-            FileUtils.deleteDirectory(new File(tmp, "lib/runtime"));
             FileUtils.deleteDirectory(new File(tmp, "lib/test"));
             assertEquals("""
                 /lib
@@ -405,8 +402,6 @@ public class TestProject {
                 /lib/bld/bld.cache
                 /lib/compile
                 /lib/compile/rife2-1.5.12.jar
-                /lib/provided
-                /lib/runtime
                 /lib/test
                 /lib/test/apiguardian-api-1.1.2.jar
                 /lib/test/jsoup-1.15.4.jar
@@ -429,8 +424,6 @@ public class TestProject {
                 /lib/bld/bld.cache
                 /lib/compile
                 /lib/compile/rife2-1.5.15.jar
-                /lib/provided
-                /lib/runtime
                 /lib/test
                 /lib/test/apiguardian-api-1.1.2.jar
                 /lib/test/jsoup-1.15.4.jar

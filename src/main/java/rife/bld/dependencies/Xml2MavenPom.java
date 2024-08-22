@@ -10,6 +10,8 @@ import rife.xml.Xml2Data;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import static rife.bld.dependencies.Dependency.TYPE_JAR;
+
 /**
  * Parses an XML document to retrieve POM information, this is an internal class.
  *
@@ -103,7 +105,7 @@ class Xml2MavenPom extends Xml2Data {
                         "false",
                         exclusions,
                         dependency.parent());
-                    if (resolved_dependency.type() == null || resolved_dependency.type().equals("jar")) {
+                    if (resolved_dependency.type() == null || TYPE_JAR.equals(resolved_dependency.type())) {
                         var scope = Scope.valueOf(resolved_dependency.scope());
                         if (scopes_list.contains(scope)) {
                             var resolved_dependency_set = resolved_dependencies.computeIfAbsent(scope, k -> new LinkedHashSet<>());

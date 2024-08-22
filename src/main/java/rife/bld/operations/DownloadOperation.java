@@ -31,10 +31,15 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
     private File libCompileDirectory_;
+    private File libCompileModulesDirectory_;
     private File libProvidedDirectory_;
+    private File libProvidedModulesDirectory_;
     private File libRuntimeDirectory_;
+    private File libRuntimeModulesDirectory_;
     private File libStandaloneDirectory_;
+    private File libStandaloneModulesDirectory_;
     private File libTestDirectory_;
+    private File libTestModulesDirectory_;
     private boolean downloadSources_ = false;
     private boolean downloadJavadoc_ = false;
 
@@ -65,7 +70,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.5
      */
     protected void executeDownloadCompileDependencies() {
-        executeDownloadDependencies(libCompileDirectory(), dependencies().resolveCompileDependencies(properties(), artifactRetriever(), repositories()));
+        executeDownloadDependencies(libCompileDirectory(), libCompileModulesDirectory(), dependencies().resolveCompileDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -74,7 +79,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.8
      */
     protected void executeDownloadProvidedDependencies() {
-        executeDownloadDependencies(libProvidedDirectory(), dependencies().resolveProvidedDependencies(properties(), artifactRetriever(), repositories()));
+        executeDownloadDependencies(libProvidedDirectory(), libProvidedModulesDirectory(), dependencies().resolveProvidedDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -83,7 +88,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.5
      */
     protected void executeDownloadRuntimeDependencies() {
-        executeDownloadDependencies(libRuntimeDirectory(), dependencies().resolveRuntimeDependencies(properties(), artifactRetriever(), repositories()));
+        executeDownloadDependencies(libRuntimeDirectory(), libRuntimeModulesDirectory(), dependencies().resolveRuntimeDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -92,7 +97,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.5
      */
     protected void executeDownloadStandaloneDependencies() {
-        executeDownloadDependencies(libStandaloneDirectory(), dependencies().resolveStandaloneDependencies(properties(), artifactRetriever(), repositories()));
+        executeDownloadDependencies(libStandaloneDirectory(), libStandaloneModulesDirectory(), dependencies().resolveStandaloneDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -101,23 +106,18 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * @since 1.5
      */
     protected void executeDownloadTestDependencies() {
-        executeDownloadDependencies(libTestDirectory(), dependencies().resolveTestDependencies(properties(), artifactRetriever(), repositories()));
+        executeDownloadDependencies(libTestDirectory(), libTestModulesDirectory(), dependencies().resolveTestDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
      * Part of the {@link #execute} operation, download the artifacts for a particular dependency scope.
      *
      * @param destinationDirectory the directory in which the artifacts should be downloaded
+     * @param modulesDirectory     the directory in which the modules should be downloaded
      * @param dependencies         the dependencies to download
-     * @since 1.6
+     * @since 2.1
      */
-    protected void executeDownloadDependencies(File destinationDirectory, DependencySet dependencies) {
-        if (destinationDirectory == null) {
-            return;
-        }
-
-        destinationDirectory.mkdirs();
-
+    protected void executeDownloadDependencies(File destinationDirectory, File modulesDirectory, DependencySet dependencies) {
         var additional_classifiers = new String[0];
 
         if (downloadSources_ || downloadJavadoc_) {
@@ -128,7 +128,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
             additional_classifiers = classifiers.toArray(new String[0]);
         }
 
-        dependencies.transferIntoDirectory(new VersionResolution(properties()), artifactRetriever(), repositories(), destinationDirectory, additional_classifiers);
+        dependencies.transferIntoDirectory(new VersionResolution(properties()), artifactRetriever(), repositories(), destinationDirectory, modulesDirectory, additional_classifiers);
     }
 
     /**
@@ -145,10 +145,15 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
             .repositories(project.repositories())
             .dependencies(project.dependencies())
             .libCompileDirectory(project.libCompileDirectory())
+            .libCompileModulesDirectory(project.libCompileModulesDirectory())
             .libProvidedDirectory(project.libProvidedDirectory())
+            .libProvidedModulesDirectory(project.libProvidedModulesDirectory())
             .libRuntimeDirectory(project.libRuntimeDirectory())
+            .libRuntimeModulesDirectory(project.libRuntimeModulesDirectory())
             .libStandaloneDirectory(project.libStandaloneDirectory())
+            .libStandaloneModulesDirectory(project.libStandaloneModulesDirectory())
             .libTestDirectory(project.libTestDirectory())
+            .libTestModulesDirectory(project.libTestModulesDirectory())
             .downloadSources(project.downloadSources())
             .downloadJavadoc(project.downloadJavadoc());
     }
@@ -228,6 +233,18 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     }
 
     /**
+     * Provides the {@code compile} scope modules download directory.
+     *
+     * @param directory the directory to download the {@code compile} scope modules into
+     * @return this operation instance
+     * @since 2.1
+     */
+    public DownloadOperation libCompileModulesDirectory(File directory) {
+        libCompileModulesDirectory_ = directory;
+        return this;
+    }
+
+    /**
      * Provides the {@code provided} scope download directory.
      *
      * @param directory the directory to download the {@code provided} scope artifacts into
@@ -236,6 +253,18 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      */
     public DownloadOperation libProvidedDirectory(File directory) {
         libProvidedDirectory_ = directory;
+        return this;
+    }
+
+    /**
+     * Provides the {@code provided} scope modules download directory.
+     *
+     * @param directory the directory to download the {@code provided} scope modules into
+     * @return this operation instance
+     * @since 2.1
+     */
+    public DownloadOperation libProvidedModulesDirectory(File directory) {
+        libProvidedModulesDirectory_ = directory;
         return this;
     }
 
@@ -252,6 +281,18 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     }
 
     /**
+     * Provides the {@code runtime} scope modules download directory.
+     *
+     * @param directory the directory to download the {@code runtime} scope modules into
+     * @return this operation instance
+     * @since 2.1
+     */
+    public DownloadOperation libRuntimeModulesDirectory(File directory) {
+        libRuntimeModulesDirectory_ = directory;
+        return this;
+    }
+
+    /**
      * Provides the {@code standalone} scope download directory.
      *
      * @param directory the directory to download the {@code standalone} scope artifacts into
@@ -264,6 +305,18 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     }
 
     /**
+     * Provides the {@code standalone} scope modules download directory.
+     *
+     * @param directory the directory to download the {@code standalone} scope modules into
+     * @return this operation instance
+     * @since 2.1
+     */
+    public DownloadOperation libStandaloneModulesDirectory(File directory) {
+        libStandaloneModulesDirectory_ = directory;
+        return this;
+    }
+
+    /**
      * Provides the {@code test} scope download directory.
      *
      * @param directory the directory to download the {@code test} scope artifacts into
@@ -272,6 +325,18 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      */
     public DownloadOperation libTestDirectory(File directory) {
         libTestDirectory_ = directory;
+        return this;
+    }
+
+    /**
+     * Provides the {@code test} scope modules download directory.
+     *
+     * @param directory the directory to download the {@code test} scope modules into
+     * @return this operation instance
+     * @since 2.1
+     */
+    public DownloadOperation libTestModulesDirectory(File directory) {
+        libTestModulesDirectory_ = directory;
         return this;
     }
 
@@ -360,6 +425,16 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     }
 
     /**
+     * Retrieves the {@code compile} scope modules download directory.
+     *
+     * @return the {@code compile} scope modules download directory
+     * @since 2.1
+     */
+    public File libCompileModulesDirectory() {
+        return libCompileModulesDirectory_;
+    }
+
+    /**
      * Retrieves the {@code provided} scope download directory.
      *
      * @return the {@code provided} scope download directory
@@ -367,6 +442,16 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      */
     public File libProvidedDirectory() {
         return libProvidedDirectory_;
+    }
+
+    /**
+     * Retrieves the {@code provided} scope modules download directory.
+     *
+     * @return the {@code provided} scope modules download directory
+     * @since 2.1
+     */
+    public File libProvidedModulesDirectory() {
+        return libProvidedModulesDirectory_;
     }
 
     /**
@@ -380,6 +465,16 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     }
 
     /**
+     * Retrieves the {@code runtime} scope modules download directory.
+     *
+     * @return the {@code runtime} scope modules download directory
+     * @since 2.1
+     */
+    public File libRuntimeModulesDirectory() {
+        return libRuntimeModulesDirectory_;
+    }
+
+    /**
      * Retrieves the {@code standalone} scope download directory.
      *
      * @return the {@code standalone} scope download directory
@@ -390,6 +485,16 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     }
 
     /**
+     * Retrieves the {@code standalone} scope modules download directory.
+     *
+     * @return the {@code standalone} scope modules download directory
+     * @since 2.1
+     */
+    public File libStandaloneModulesDirectory() {
+        return libStandaloneModulesDirectory_;
+    }
+
+    /**
      * Retrieves the {@code test} scope download directory.
      *
      * @return the {@code test} scope download directory
@@ -397,6 +502,16 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      */
     public File libTestDirectory() {
         return libTestDirectory_;
+    }
+
+    /**
+     * Retrieves the {@code test} scope modules download directory.
+     *
+     * @return the {@code test} scope modules download directory
+     * @since 2.1
+     */
+    public File libTestModulesDirectory() {
+        return libTestModulesDirectory_;
     }
 
     /**

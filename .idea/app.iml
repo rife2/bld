@@ -27,6 +27,5 @@
     <orderEntry type="library" name="compile" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="runtime" level="project" />
     <orderEntry type="library" scope="TEST" name="test" level="project" />
-    <orderEntry type="module" module-name="bld" />
   </component>
 </module>

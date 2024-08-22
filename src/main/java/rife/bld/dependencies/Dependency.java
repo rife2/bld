@@ -8,21 +8,44 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Contains the information required to describe an url dependency in the build system.
+ * Contains the information required to describe a dependency in the build system.
  *
- * @param groupId    the dependency group identifier
- * @param artifactId the dependency url identifier
- * @param version    the dependency version
- * @param classifier the dependency classier
- * @param type       the dependency type
- * @param exclusions the dependency exclusions for transitive resolution
- * @param parent     the parent dependency that created this dependency (only for information purposes)
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
  * @since 1.5
  */
-public record Dependency(String groupId, String artifactId, Version version, String classifier, String type, ExclusionSet exclusions, Dependency parent) {
+public class Dependency {
     public static final String CLASSIFIER_SOURCES = "sources";
     public static final String CLASSIFIER_JAVADOC = "javadoc";
+
+    /**
+     * The dependency type name for a JAR file that can be placed either on the class-path or on the module-path.
+     *
+     * @since 2.1
+     */
+    public static final String TYPE_JAR = "jar";
+
+    /**
+     * The dependency type name for a JAR file to unconditionally place on the class-path.
+     *
+     * @since 2.1
+     */
+    public static final String TYPE_CLASSPATH_JAR = "classpath-jar";
+
+    /**
+     * The dependency type name for a JAR file to unconditionally place on the module-path.
+     *
+     * @since 2.1
+     */
+    // see https://github.com/apache/maven/blob/maven-4.0.0-beta-3/api/maven-api-core/src/main/java/org/apache/maven/api/Type.java
+    public static final String TYPE_MODULAR_JAR = "modular-jar";
+
+    private final String groupId_;
+    private final String artifactId_;
+    private final Version version_;
+    private final String classifier_;
+    private final String type_;
+    private final ExclusionSet exclusions_;
+    private final Dependency parent_;
 
     public Dependency(String groupId, String artifactId) {
         this(groupId, artifactId, null, null, null);
@@ -45,13 +68,20 @@ public record Dependency(String groupId, String artifactId, Version version, Str
     }
 
     public Dependency(String groupId, String artifactId, Version version, String classifier, String type, ExclusionSet exclusions, Dependency parent) {
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.version = (version == null ? VersionNumber.UNKNOWN : version);
-        this.classifier = (classifier == null ? "" : classifier);
-        this.type = (type == null ? "jar" : type);
-        this.exclusions = (exclusions == null ? new ExclusionSet() : exclusions);
-        this.parent = parent;
+        if (type == null) {
+            type = TYPE_JAR;
+        }
+        if (parent != null && parent.isModularJar() && TYPE_JAR.equals(type)) {
+            type = TYPE_MODULAR_JAR;
+        }
+
+        this.groupId_ = groupId;
+        this.artifactId_ = artifactId;
+        this.version_ = (version == null ? VersionNumber.UNKNOWN : version);
+        this.classifier_ = (classifier == null ? "" : classifier);
+        this.type_ = type;
+        this.exclusions_ = (exclusions == null ? new ExclusionSet() : exclusions);
+        this.parent_ = parent;
     }
 
     private static final Pattern DEPENDENCY_PATTERN = Pattern.compile("^(?<groupId>[^:@]+):(?<artifactId>[^:@]+)(?::(?<version>[^:@]+)(?::(?<classifier>[^:@]+))?)?(?:@(?<type>[^:@]+))?$");
@@ -95,7 +125,7 @@ public record Dependency(String groupId, String artifactId, Version version, Str
      * @since 1.5
      */
     public Dependency baseDependency() {
-        return new Dependency(groupId, artifactId, VersionNumber.UNKNOWN, classifier, type);
+        return new Dependency(groupId_, artifactId_, VersionNumber.UNKNOWN, classifier_, type_);
     }
 
     /**
@@ -107,7 +137,7 @@ public record Dependency(String groupId, String artifactId, Version version, Str
      * @since 1.5
      */
     public Dependency exclude(String groupId, String artifactId) {
-        exclusions.add(new DependencyExclusion(groupId, artifactId));
+        exclusions_.add(new DependencyExclusion(groupId, artifactId));
         return this;
     }
 
@@ -119,7 +149,7 @@ public record Dependency(String groupId, String artifactId, Version version, Str
      * @since 1.5.6
      */
     public Dependency withClassifier(String classifier) {
-        return new Dependency(groupId, artifactId, version, classifier, type);
+        return new Dependency(groupId_, artifactId_, version_, classifier, type_);
     }
 
     /**
@@ -146,34 +176,130 @@ public record Dependency(String groupId, String artifactId, Version version, Str
      * @since 2.0
      */
     public String toArtifactString() {
-        return groupId + ':' + artifactId;
+        return groupId_ + ':' + artifactId_;
     }
 
     public String toString() {
-        var result = new StringBuilder(groupId).append(':').append(artifactId);
-        if (!version.equals(VersionNumber.UNKNOWN)) {
-            result.append(':').append(version);
+        var result = new StringBuilder(groupId_).append(':').append(artifactId_);
+        if (!version_.equals(VersionNumber.UNKNOWN)) {
+            result.append(':').append(version_);
         }
-        if (!classifier.isEmpty()) {
-            result.append(':').append(classifier);
+        if (!classifier_.isEmpty()) {
+            result.append(':').append(classifier_);
         }
-        if (!type.isEmpty() && !"jar".equals(type)) {
-            result.append('@').append(type);
+        if (!type_.isEmpty() && !TYPE_JAR.equals(type_)) {
+            result.append('@').append(type_);
         }
         return result.toString();
     }
 
+    /**
+     * Returns this dependency's {@code groupId}.
+     *
+     * @return the {@code groupId} of this dependency
+     * @since 1.5
+     */
+    public String groupId() {
+        return groupId_;
+    }
+
+    /**
+     * Returns this dependency's {@code artifactId}.
+     *
+     * @return the {@code artifactId} of this dependency
+     * @since 1.5
+     */
+    public String artifactId() {
+        return artifactId_;
+    }
+
+    /**
+     * Returns this dependency's {@code version}.
+     *
+     * @return the {@code version} of this dependency
+     * @since 1.5
+     */
+    public Version version() {
+        return version_;
+    }
+
+    /**
+     * Returns this dependency's {@code classifier}.
+     *
+     * @return the {@code classifier} of this dependency
+     * @since 1.5
+     */
+    public String classifier() {
+        return classifier_;
+    }
+
+    /**
+     * Returns this dependency's {@code type}.
+     *
+     * @return the {@code type} of this dependency
+     * @since 1.5
+     */
+    public String type() {
+        return type_;
+    }
+
+    /**
+     * Returns this dependency's {@code exclusions} for transitive resolution.
+     *
+     * @return the {@code exclusions} of this dependency
+     * @since 1.5
+     */
+    public ExclusionSet exclusions() {
+        return exclusions_;
+    }
+
+    /**
+     * Returns this dependency's {@code parent} dependency that created this
+     * dependency (only for information purposes).
+     *
+     * @return the {@code parent} of this dependency
+     * @since 1.5
+     */
+    public Dependency parent() {
+        return parent_;
+    }
+
+    /**
+     * Indicates whether this dependency specifically is a classpath jar or not.
+     *
+     * @return {@code true} when this dependency specifically is a classpath jar; or {@code false} otherwise
+     * @since 2.1
+     */
+    public boolean isClasspathJar() {
+        return Module.TYPE_CLASSPATH_JAR.equals(type_);
+    }
+
+    /**
+     * Indicates whether this dependency is a modular jar or not.
+     *
+     * @return {@code true} when this dependency is a modular jar; or {@code false} otherwise
+     * @since 2.1
+     */
+    public boolean isModularJar() {
+        return Module.TYPE_MODULAR_JAR.equals(type_);
+    }
+
+    private static String normalizedJarType(String type) {
+        if (TYPE_JAR.equals(type) || TYPE_MODULAR_JAR.equals(type) || TYPE_CLASSPATH_JAR.equals(type)) {
+            return TYPE_JAR;
+        }
+        return type;
+    }
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        var that = (Dependency) o;
-        return groupId.equals(that.groupId) &&
-               artifactId.equals(that.artifactId) &&
-               classifier.equals(that.classifier) &&
-               type.equals(that.type);
+        if (!(o instanceof Dependency that)) return false;
+        return groupId_.equals(that.groupId_) &&
+            artifactId_.equals(that.artifactId_) &&
+            classifier_.equals(that.classifier_) &&
+            normalizedJarType(type_).equals(normalizedJarType(that.type_));
     }
 
     public int hashCode() {
-        return Objects.hash(groupId, artifactId, classifier, type);
+        return Objects.hash(groupId_, artifactId_, classifier_, normalizedJarType(type_));
     }
 }

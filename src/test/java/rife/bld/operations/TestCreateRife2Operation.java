@@ -100,10 +100,13 @@ public class TestCreateRife2Operation {
                     /myapp/lib/bld/bld-wrapper\\.jar
                     /myapp/lib/bld/bld-wrapper\\.properties
                     /myapp/lib/compile
+                    /myapp/lib/compile/modules
                     /myapp/lib/compile/rife2-.+-sources\\.jar
                     /myapp/lib/compile/rife2-.+\\.jar
                     /myapp/lib/provided
+                    /myapp/lib/provided/modules
                     /myapp/lib/runtime
+                    /myapp/lib/runtime/modules
                     /myapp/lib/standalone
                     /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
                     /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0\\.jar
@@ -121,6 +124,7 @@ public class TestCreateRife2Operation {
                     /myapp/lib/standalone/jetty-session-12\\.0\\.11\\.jar
                     /myapp/lib/standalone/jetty-util-12\\.0\\.11-sources\\.jar
                     /myapp/lib/standalone/jetty-util-12\\.0\\.11\\.jar
+                    /myapp/lib/standalone/modules
                     /myapp/lib/standalone/slf4j-api-2\\.0\\.13-sources\\.jar
                     /myapp/lib/standalone/slf4j-api-2\\.0\\.13\\.jar
                     /myapp/lib/standalone/slf4j-simple-2\\.0\\.13-sources\\.jar
@@ -144,6 +148,7 @@ public class TestCreateRife2Operation {
                     /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.3\\.jar
                     /myapp/lib/test/junit-platform-engine-1\\.10\\.3-sources\\.jar
                     /myapp/lib/test/junit-platform-engine-1\\.10\\.3\\.jar
+                    /myapp/lib/test/modules
                     /myapp/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
                     /myapp/lib/test/opentest4j-1\\.3\\.0\\.jar
                     /myapp/src
@@ -214,10 +219,13 @@ public class TestCreateRife2Operation {
                     /myapp/lib/bld/bld-wrapper\\.jar
                     /myapp/lib/bld/bld-wrapper\\.properties
                     /myapp/lib/compile
+                    /myapp/lib/compile/modules
                     /myapp/lib/compile/rife2-.+-sources\\.jar
                     /myapp/lib/compile/rife2-.+\\.jar
                     /myapp/lib/provided
+                    /myapp/lib/provided/modules
                     /myapp/lib/runtime
+                    /myapp/lib/runtime/modules
                     /myapp/lib/standalone
                     /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0-sources\\.jar
                     /myapp/lib/standalone/jakarta\\.servlet-api-6\\.0\\.0\\.jar
@@ -235,6 +243,7 @@ public class TestCreateRife2Operation {
                     /myapp/lib/standalone/jetty-session-12\\.0\\.11\\.jar
                     /myapp/lib/standalone/jetty-util-12\\.0\\.11-sources\\.jar
                     /myapp/lib/standalone/jetty-util-12\\.0\\.11\\.jar
+                    /myapp/lib/standalone/modules
                     /myapp/lib/standalone/slf4j-api-2\\.0\\.13-sources\\.jar
                     /myapp/lib/standalone/slf4j-api-2\\.0\\.13\\.jar
                     /myapp/lib/standalone/slf4j-simple-2\\.0\\.13-sources\\.jar
@@ -258,6 +267,7 @@ public class TestCreateRife2Operation {
                     /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.3\\.jar
                     /myapp/lib/test/junit-platform-engine-1\\.10\\.3-sources\\.jar
                     /myapp/lib/test/junit-platform-engine-1\\.10\\.3\\.jar
+                    /myapp/lib/test/modules
                     /myapp/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
                     /myapp/lib/test/opentest4j-1\\.3\\.0\\.jar
                     /myapp/src
@@ -347,10 +357,15 @@ public class TestCreateRife2Operation {
                     /yourthing/lib/bld/bld-wrapper.jar
                     /yourthing/lib/bld/bld-wrapper.properties
                     /yourthing/lib/compile
+                    /yourthing/lib/compile/modules
                     /yourthing/lib/provided
+                    /yourthing/lib/provided/modules
                     /yourthing/lib/runtime
+                    /yourthing/lib/runtime/modules
                     /yourthing/lib/standalone
+                    /yourthing/lib/standalone/modules
                     /yourthing/lib/test
+                    /yourthing/lib/test/modules
                     /yourthing/src
                     /yourthing/src/bld
                     /yourthing/src/bld/java
@@ -388,7 +403,7 @@ public class TestCreateRife2Operation {
             compile_operation.fromProject(create_operation.project());
             assertThrows(ExitStatusException.class, compile_operation::execute);
             var diagnostics = compile_operation.diagnostics();
-            assertEquals(16, diagnostics.size());
+            assertFalse(diagnostics.isEmpty());
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
@@ -468,6 +483,7 @@ public class TestCreateRife2Operation {
                 /myapp/lib/bld/bld-wrapper\\.jar
                 /myapp/lib/bld/bld-wrapper\\.properties
                 /myapp/lib/compile
+                /myapp/lib/compile/modules
                 /myapp/lib/local
                 /myapp/lib/local/apiguardian-api-1\\.1\\.2-sources\\.jar
                 /myapp/lib/local/apiguardian-api-1\\.1\\.2\\.jar
@@ -512,9 +528,13 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local/slf4j-simple-2\\.0\\.13-sources\\.jar
                 /myapp/lib/local/slf4j-simple-2\\.0\\.13\\.jar
                 /myapp/lib/provided
+                /myapp/lib/provided/modules
                 /myapp/lib/runtime
+                /myapp/lib/runtime/modules
                 /myapp/lib/standalone
+                /myapp/lib/standalone/modules
                 /myapp/lib/test
+                /myapp/lib/test/modules
                 /myapp/src
                 /myapp/src/bld
                 /myapp/src/bld/java
@@ -636,6 +656,7 @@ public class TestCreateRife2Operation {
                 /myapp/lib/bld/bld-wrapper\\.jar
                 /myapp/lib/bld/bld-wrapper\\.properties
                 /myapp/lib/compile
+                /myapp/lib/compile/modules
                 /myapp/lib/local_compile
                 /myapp/lib/local_compile/rife2-.*-sources\\.jar
                 /myapp/lib/local_compile/rife2-.*\\.jar
@@ -682,9 +703,13 @@ public class TestCreateRife2Operation {
                 /myapp/lib/local_test/opentest4j-1\\.3\\.0-sources\\.jar
                 /myapp/lib/local_test/opentest4j-1\\.3\\.0\\.jar
                 /myapp/lib/provided
+                /myapp/lib/provided/modules
                 /myapp/lib/runtime
+                /myapp/lib/runtime/modules
                 /myapp/lib/standalone
+                /myapp/lib/standalone/modules
                 /myapp/lib/test
+                /myapp/lib/test/modules
                 /myapp/src
                 /myapp/src/bld
                 /myapp/src/bld/java

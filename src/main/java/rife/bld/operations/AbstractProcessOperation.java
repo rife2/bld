@@ -27,6 +27,7 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
     protected String javaTool_ = DEFAULT_JAVA_TOOL;
     protected final JavaOptions javaOptions_ = new JavaOptions();
     protected final List<String> classpath_ = new ArrayList<>();
+    protected final List<String> modulePath_ = new ArrayList<>();
     protected String mainClass_;
     protected Function<String, Boolean> outputProcessor_;
     protected Function<String, Boolean> errorProcessor_;
@@ -214,6 +215,32 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
     }
 
     /**
+     * Provides module path entries to use for the operation.
+     *
+     * @param modulePath module path entries for the operation
+     * @return this operation instance
+     * @since 2.1
+     */
+    public T modulePath(String... modulePath) {
+        modulePath_.addAll(List.of(modulePath));
+        return (T) this;
+    }
+
+    /**
+     * Provides a list of module path entries to use for the operation.
+     * <p>
+     * A copy will be created to allow this list to be independently modifiable.
+     *
+     * @param modulePath a list of module path entries for the operation
+     * @return this operation instance
+     * @since 2.1
+     */
+    public T modulePath(List<String> modulePath) {
+        modulePath_.addAll(modulePath);
+        return (T) this;
+    }
+
+    /**
      * Provides the main class to launch with the java tool.
      *
      * @param name the main class to launch
@@ -295,6 +322,18 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      */
     public List<String> classpath() {
         return classpath_;
+    }
+
+    /**
+     * Retrieves the module path to use for the operation.
+     * <p>
+     * This is a modifiable list that can be retrieved and changed.
+     *
+     * @return the operation's module path
+     * @since 2.1
+     */
+    public List<String> modulePath() {
+        return modulePath_;
     }
 
     /**

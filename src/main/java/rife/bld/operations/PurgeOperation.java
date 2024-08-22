@@ -31,10 +31,15 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     private final List<Repository> repositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
     private File libCompileDirectory_;
+    private File libCompileModulesDirectory_;
     private File libProvidedDirectory_;
+    private File libProvidedModulesDirectory_;
     private File libRuntimeDirectory_;
+    private File libRuntimeModulesDirectory_;
     private File libStandaloneDirectory_;
+    private File libStandaloneModulesDirectory_;
     private File libTestDirectory_;
+    private File libTestModulesDirectory_;
     private boolean preserveSources_ = false;
     private boolean preserveJavadoc_ = false;
 
@@ -65,7 +70,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     protected void executePurgeCompileDependencies() {
-        executePurgeDependencies(libCompileDirectory(), dependencies().resolveCompileDependencies(properties(), artifactRetriever(), repositories()));
+        executePurgeDependencies(libCompileDirectory(), libCompileModulesDirectory(), dependencies().resolveCompileDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -74,7 +79,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.8
      */
     protected void executePurgeProvidedDependencies() {
-        executePurgeDependencies(libProvidedDirectory(), dependencies().resolveProvidedDependencies(properties(), artifactRetriever(), repositories()));
+        executePurgeDependencies(libProvidedDirectory(), libProvidedModulesDirectory(), dependencies().resolveProvidedDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -83,7 +88,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     protected void executePurgeRuntimeDependencies() {
-        executePurgeDependencies(libRuntimeDirectory(), dependencies().resolveRuntimeDependencies(properties(), artifactRetriever(), repositories()));
+        executePurgeDependencies(libRuntimeDirectory(), libRuntimeModulesDirectory(), dependencies().resolveRuntimeDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -92,7 +97,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     protected void executePurgeStandaloneDependencies() {
-        executePurgeDependencies(libStandaloneDirectory(), dependencies().resolveStandaloneDependencies(properties(), artifactRetriever(), repositories()));
+        executePurgeDependencies(libStandaloneDirectory(), libStandaloneModulesDirectory(), dependencies().resolveStandaloneDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
@@ -101,22 +106,29 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      * @since 1.5
      */
     protected void executePurgeTestDependencies() {
-        executePurgeDependencies(libTestDirectory(), dependencies().resolveTestDependencies(properties(), artifactRetriever(), repositories()));
+        executePurgeDependencies(libTestDirectory(), libTestModulesDirectory(), dependencies().resolveTestDependencies(properties(), artifactRetriever(), repositories()));
     }
 
     /**
      * Part of the {@link #execute} operation, purge the artifacts for a particular dependency scope.
      *
-     * @param destinationDirectory the directory from which the artifacts should be purged
-     * @param dependencies         the dependencies to purge
-     * @since 1.6
+     * @param classpathDirectory the directory from which the artifacts should be purged
+     * @param modulesDirectory   the directory from which the modules should be purged
+     * @param dependencies       the dependencies to purge
+     * @since 2.1
      */
-    protected void executePurgeDependencies(File destinationDirectory, DependencySet dependencies) {
-        if (destinationDirectory == null) {
+    protected void executePurgeDependencies(File classpathDirectory, File modulesDirectory, DependencySet dependencies) {
+        if (classpathDirectory == null && modulesDirectory == null) {
             return;
         }
-        var filenames = new HashSet<String>();
+
+        var classpath_names = new HashSet<String>();
+        var modules_names = new HashSet<String>();
         for (var dependency : dependencies) {
+            var filenames = classpath_names;
+            if (dependency.isModularJar()) {
+                filenames = modules_names;
+            }
             addTransferLocations(filenames, dependency);
             if (preserveSources_) {
                 addTransferLocations(filenames, dependency.withClassifier(CLASSIFIER_SOURCES));
@@ -126,15 +138,27 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
             }
         }
 
+        purgeFromDirectory(classpathDirectory, modulesDirectory, classpath_names);
+        purgeFromDirectory(modulesDirectory, classpathDirectory, modules_names);
+    }
+
+    private static void purgeFromDirectory(File directory, File preserveDirectory, HashSet<String> preservedFileNames) {
+        if (directory == null) {
+            return;
+        }
+
         boolean printed_header = false;
-        for (var file : destinationDirectory.listFiles()) {
-            if (!filenames.contains(file.getName())) {
-                if (!printed_header) {
-                    printed_header = true;
-                    System.out.println("Deleting from " + destinationDirectory.getName() + ":");
+        var classpath_files = directory.listFiles();
+        if (classpath_files != null) {
+            for (var file : classpath_files) {
+                if (!preservedFileNames.contains(file.getName()) && !file.equals(preserveDirectory)) {
+                    if (!printed_header) {
+                        printed_header = true;
+                        System.out.println("Deleting from " + directory.getName() + ":");
+                    }
+                    System.out.println("    " + file.getName());
+                    file.delete();
                 }
-                System.out.println("    " + file.getName());
-                file.delete();
             }
         }
     }
@@ -159,10 +183,15 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
             .repositories(project.repositories())
             .dependencies(project.dependencies())
             .libCompileDirectory(project.libCompileDirectory())
+            .libCompileModulesDirectory(project.libCompileModulesDirectory())
             .libProvidedDirectory(project.libProvidedDirectory())
+            .libProvidedModulesDirectory(project.libProvidedModulesDirectory())
             .libRuntimeDirectory(project.libRuntimeDirectory())
+            .libRuntimeModulesDirectory(project.libRuntimeModulesDirectory())
             .libStandaloneDirectory(project.libStandaloneDirectory())
+            .libStandaloneModulesDirectory(project.libStandaloneModulesDirectory())
             .libTestDirectory(project.libTestDirectory())
+            .libTestModulesDirectory(project.libTestModulesDirectory())
             .preserveSources(project.downloadSources())
             .preserveJavadoc(project.downloadJavadoc());
     }
@@ -268,6 +297,18 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     }
 
     /**
+     * Provides the {@code compile} scope modules purge directory.
+     *
+     * @param directory the directory to purge the {@code compile} scope modules from
+     * @return this operation instance
+     * @since 2.1
+     */
+    public PurgeOperation libCompileModulesDirectory(File directory) {
+        libCompileModulesDirectory_ = directory;
+        return this;
+    }
+
+    /**
      * Provides the {@code provided} scope purge directory.
      *
      * @param directory the directory to purge the {@code provided} scope artifacts from
@@ -276,6 +317,18 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      */
     public PurgeOperation libProvidedDirectory(File directory) {
         libProvidedDirectory_ = directory;
+        return this;
+    }
+
+    /**
+     * Provides the {@code provided} scope modules purge directory.
+     *
+     * @param directory the directory to purge the {@code provided} scope modules from
+     * @return this operation instance
+     * @since 2.1
+     */
+    public PurgeOperation libProvidedModulesDirectory(File directory) {
+        libProvidedModulesDirectory_ = directory;
         return this;
     }
 
@@ -292,6 +345,18 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     }
 
     /**
+     * Provides the {@code runtime} scope modules purge directory.
+     *
+     * @param directory the directory to purge the {@code runtime} scope modules from
+     * @return this operation instance
+     * @since 2.1
+     */
+    public PurgeOperation libRuntimeModulesDirectory(File directory) {
+        libRuntimeModulesDirectory_ = directory;
+        return this;
+    }
+
+    /**
      * Provides the {@code standalone} scope purge directory.
      *
      * @param directory the directory to purge the {@code standalone} scope artifacts from
@@ -304,6 +369,18 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     }
 
     /**
+     * Provides the {@code standalone} scope modules purge directory.
+     *
+     * @param directory the directory to purge the {@code standalone} scope modules from
+     * @return this operation instance
+     * @since 2.1
+     */
+    public PurgeOperation libStandaloneModulesDirectory(File directory) {
+        libStandaloneModulesDirectory_ = directory;
+        return this;
+    }
+
+    /**
      * Provides the {@code test} scope purge directory.
      *
      * @param directory the directory to purge the {@code test} scope artifacts from
@@ -312,6 +389,18 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      */
     public PurgeOperation libTestDirectory(File directory) {
         libTestDirectory_ = directory;
+        return this;
+    }
+
+    /**
+     * Provides the {@code test} scope modules purge directory.
+     *
+     * @param directory the directory to purge the {@code test} scope modules from
+     * @return this operation instance
+     * @since 2.1
+     */
+    public PurgeOperation libTestModulesDirectory(File directory) {
+        libTestModulesDirectory_ = directory;
         return this;
     }
 
@@ -374,6 +463,16 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     }
 
     /**
+     * Retrieves the {@code compile} scope modules purge directory.
+     *
+     * @return the {@code compile} scope modules purge directory
+     * @since 2.1
+     */
+    public File libCompileModulesDirectory() {
+        return libCompileModulesDirectory_;
+    }
+
+    /**
      * Retrieves the {@code provided} scope purge directory.
      *
      * @return the {@code provided} scope purge directory
@@ -381,6 +480,16 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      */
     public File libProvidedDirectory() {
         return libProvidedDirectory_;
+    }
+
+    /**
+     * Retrieves the {@code provided} scope modules purge directory.
+     *
+     * @return the {@code provided} scope modules purge directory
+     * @since 2.1
+     */
+    public File libProvidedModulesDirectory() {
+        return libProvidedModulesDirectory_;
     }
 
     /**
@@ -394,6 +503,16 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     }
 
     /**
+     * Retrieves the {@code runtime} scope modules purge directory.
+     *
+     * @return the {@code runtime} scope modules purge directory
+     * @since 2.1
+     */
+    public File libRuntimeModulesDirectory() {
+        return libRuntimeModulesDirectory_;
+    }
+
+    /**
      * Retrieves the {@code standalone} scope purge directory.
      *
      * @return the {@code standalone} scope purge directory
@@ -404,6 +523,16 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
     }
 
     /**
+     * Retrieves the {@code standalone} scope modules purge directory.
+     *
+     * @return the {@code standalone} scope modules purge directory
+     * @since 2.1
+     */
+    public File libStandaloneModulesDirectory() {
+        return libStandaloneModulesDirectory_;
+    }
+
+    /**
      * Retrieves the {@code test} scope purge directory.
      *
      * @return the {@code test} scope purge directory
@@ -411,6 +540,16 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
      */
     public File libTestDirectory() {
         return libTestDirectory_;
+    }
+
+    /**
+     * Retrieves the {@code test} scope modules purge directory.
+     *
+     * @return the {@code test} scope modules purge directory
+     * @since 2.1
+     */
+    public File libTestModulesDirectory() {
+        return libTestModulesDirectory_;
     }
 
     /**

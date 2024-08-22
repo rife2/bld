@@ -11,6 +11,8 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static rife.bld.dependencies.Dependency.*;
+
 /**
  * Resolves a dependency within a list of Maven-compatible repositories.
  *
@@ -333,7 +335,7 @@ public class DependencyResolver {
                 result.append('-').append(dependency_.classifier());
             }
             var type = dependency_.type();
-            if (type == null) {
+            if (type == null || TYPE_JAR.equals(type) || TYPE_MODULAR_JAR.equals(type) || TYPE_CLASSPATH_JAR.equals(type)) {
                 type = "jar";
             }
             result.append('.').append(type);

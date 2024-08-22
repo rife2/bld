@@ -14,6 +14,8 @@ import rife.tools.exceptions.FileUtilsErrorException;
 import java.io.File;
 import java.util.Objects;
 
+import static rife.bld.dependencies.Dependency.TYPE_JAR;
+
 /**
  * Provides the functionalities to build a Maven POM xml file.
  *
@@ -186,7 +188,7 @@ public class PomBuilder {
 
                 t.blankValue("dependency-type");
                 t.blankValue("dependency-type-tag");
-                if (!"jar".equals(dependency.type())) {
+                if (!TYPE_JAR.equals(dependency.type())) {
                     t.setValueEncoded("dependency-type", dependency.type());
                     t.setBlock("dependency-type-tag");
                 }

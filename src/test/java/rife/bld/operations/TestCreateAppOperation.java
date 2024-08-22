@@ -95,8 +95,11 @@ public class TestCreateAppOperation {
                     /myapp/lib/bld/bld-wrapper\\.jar
                     /myapp/lib/bld/bld-wrapper\\.properties
                     /myapp/lib/compile
+                    /myapp/lib/compile/modules
                     /myapp/lib/provided
+                    /myapp/lib/provided/modules
                     /myapp/lib/runtime
+                    /myapp/lib/runtime/modules
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
@@ -114,6 +117,7 @@ public class TestCreateAppOperation {
                     /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.3\\.jar
                     /myapp/lib/test/junit-platform-engine-1\\.10\\.3-sources\\.jar
                     /myapp/lib/test/junit-platform-engine-1\\.10\\.3\\.jar
+                    /myapp/lib/test/modules
                     /myapp/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
                     /myapp/lib/test/opentest4j-1\\.3\\.0\\.jar
                     /myapp/src
@@ -175,8 +179,11 @@ public class TestCreateAppOperation {
                     /myapp/lib/bld/bld-wrapper\\.jar
                     /myapp/lib/bld/bld-wrapper\\.properties
                     /myapp/lib/compile
+                    /myapp/lib/compile/modules
                     /myapp/lib/provided
+                    /myapp/lib/provided/modules
                     /myapp/lib/runtime
+                    /myapp/lib/runtime/modules
                     /myapp/lib/test
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /myapp/lib/test/apiguardian-api-1\\.1\\.2\\.jar
@@ -194,6 +201,7 @@ public class TestCreateAppOperation {
                     /myapp/lib/test/junit-platform-console-standalone-1\\.10\\.3\\.jar
                     /myapp/lib/test/junit-platform-engine-1\\.10\\.3-sources\\.jar
                     /myapp/lib/test/junit-platform-engine-1\\.10\\.3\\.jar
+                    /myapp/lib/test/modules
                     /myapp/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
                     /myapp/lib/test/opentest4j-1\\.3\\.0\\.jar
                     /myapp/src
@@ -268,9 +276,13 @@ public class TestCreateAppOperation {
                     /yourthing/lib/bld/bld-wrapper.jar
                     /yourthing/lib/bld/bld-wrapper.properties
                     /yourthing/lib/compile
+                    /yourthing/lib/compile/modules
                     /yourthing/lib/provided
+                    /yourthing/lib/provided/modules
                     /yourthing/lib/runtime
+                    /yourthing/lib/runtime/modules
                     /yourthing/lib/test
+                    /yourthing/lib/test/modules
                     /yourthing/src
                     /yourthing/src/bld
                     /yourthing/src/bld/java
@@ -374,6 +386,7 @@ public class TestCreateAppOperation {
                 /myapp/lib/bld/bld-wrapper\\.jar
                 /myapp/lib/bld/bld-wrapper\\.properties
                 /myapp/lib/compile
+                /myapp/lib/compile/modules
                 /myapp/lib/local
                 /myapp/lib/local/apiguardian-api-1\\.1\\.2-sources\\.jar
                 /myapp/lib/local/apiguardian-api-1\\.1\\.2\\.jar
@@ -394,8 +407,11 @@ public class TestCreateAppOperation {
                 /myapp/lib/local/opentest4j-1\\.3\\.0-sources\\.jar
                 /myapp/lib/local/opentest4j-1\\.3\\.0\\.jar
                 /myapp/lib/provided
+                /myapp/lib/provided/modules
                 /myapp/lib/runtime
+                /myapp/lib/runtime/modules
                 /myapp/lib/test
+                /myapp/lib/test/modules
                 /myapp/src
                 /myapp/src/bld
                 /myapp/src/bld/java
@@ -495,6 +511,7 @@ public class TestCreateAppOperation {
                 /myapp/lib/bld/bld-wrapper\\.jar
                 /myapp/lib/bld/bld-wrapper\\.properties
                 /myapp/lib/compile
+                /myapp/lib/compile/modules
                 /myapp/lib/local_compile
                 /myapp/lib/local_test
                 /myapp/lib/local_test/apiguardian-api-1\\.1\\.2-sources\\.jar
@@ -516,8 +533,11 @@ public class TestCreateAppOperation {
                 /myapp/lib/local_test/opentest4j-1\\.3\\.0-sources\\.jar
                 /myapp/lib/local_test/opentest4j-1\\.3\\.0\\.jar
                 /myapp/lib/provided
+                /myapp/lib/provided/modules
                 /myapp/lib/runtime
+                /myapp/lib/runtime/modules
                 /myapp/lib/test
+                /myapp/lib/test/modules
                 /myapp/src
                 /myapp/src/bld
                 /myapp/src/bld/java

@@ -24,6 +24,22 @@ public class DependencyTransferException extends DependencyException {
         destination_ = destination;
     }
 
+    public DependencyTransferException(Dependency dependency, File destination, String message) {
+        super("Unable to transfer dependency '" + dependency + "' into '" + destination + "': " + message);
+
+        dependency_ = dependency;
+        location_ = null;
+        destination_ = destination;
+    }
+
+    public DependencyTransferException(Dependency dependency, String message) {
+        super("Unable to transfer dependency '" + dependency + "': " + message);
+
+        dependency_ = dependency;
+        location_ = null;
+        destination_ = null;
+    }
+
     public Dependency getDependency() {
         return dependency_;
     }

@@ -26,6 +26,8 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
     private File buildTestDirectory_;
     private final List<String> compileMainClasspath_ = new ArrayList<>();
     private final List<String> compileTestClasspath_ = new ArrayList<>();
+    private final List<String> compileMainModulePath_ = new ArrayList<>();
+    private final List<String> compileTestModulePath_ = new ArrayList<>();
     private final List<File> mainSourceFiles_ = new ArrayList<>();
     private final List<File> testSourceFiles_ = new ArrayList<>();
     private final List<File> mainSourceDirectories_ = new ArrayList<>();
@@ -78,6 +80,7 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
         }
         executeBuildSources(
             compileMainClasspath(),
+            compileMainModulePath(),
             sources,
             buildMainDirectory());
     }
@@ -95,6 +98,7 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
         }
         executeBuildSources(
             compileTestClasspath(),
+            compileTestModulePath(),
             sources,
             buildTestDirectory());
     }
@@ -103,11 +107,12 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
      * Part of the {@link #execute} operation, build sources to a destination.
      *
      * @param classpath   the classpath list used for the compilation
+     * @param modulePath  the module path list used for the compilation
      * @param sources     the source files to compile
      * @param destination the destination directory
-     * @since 1.5
+     * @since 2.1
      */
-    protected void executeBuildSources(List<String> classpath, List<File> sources, File destination)
+    protected void executeBuildSources(List<String> classpath, List<String> modulePath, List<File> sources, File destination)
     throws IOException {
         if (sources.isEmpty() || destination == null) {
             return;
@@ -117,7 +122,13 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
         try (var file_manager = compiler.getStandardFileManager(null, null, null)) {
             var compilation_units = file_manager.getJavaFileObjectsFromFiles(sources);
             var diagnostics = new DiagnosticCollector<JavaFileObject>();
-            var options = new ArrayList<>(List.of("-d", destination.getAbsolutePath(), "-cp", FileUtils.joinPaths(classpath)));
+            var options = new ArrayList<>(List.of("-d", destination.getAbsolutePath()));
+            if (!classpath.isEmpty()) {
+                options.addAll(List.of("-cp", FileUtils.joinPaths(classpath)));
+            }
+            if (!modulePath.isEmpty()) {
+                options.addAll(List.of("-p", FileUtils.joinPaths(modulePath)));
+            }
             options.addAll(compileOptions());
             var compilation_task = compiler.getTask(null, file_manager, diagnostics, options, null, compilation_units);
             if (!compilation_task.call()) {
@@ -161,6 +172,8 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
             .buildTestDirectory(project.buildTestDirectory())
             .compileMainClasspath(project.compileMainClasspath())
             .compileTestClasspath(project.compileTestClasspath())
+            .compileMainModulePath(project.compileMainModulePath())
+            .compileTestModulePath(project.compileTestModulePath())
             .mainSourceFiles(project.mainSourceFiles())
             .testSourceFiles(project.testSourceFiles());
         if (project.javaRelease() != null && !compileOptions().containsRelease()) {
@@ -242,6 +255,58 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
      */
     public CompileOperation compileTestClasspath(List<String> classpath) {
         compileTestClasspath_.addAll(classpath);
+        return this;
+    }
+
+    /**
+     * Provides entries for the main compilation module path.
+     *
+     * @param modulePath module path entries
+     * @return this operation instance
+     * @since 2.1
+     */
+    public CompileOperation compileMainModulePath(String... modulePath) {
+        compileMainModulePath_.addAll(Arrays.asList(modulePath));
+        return this;
+    }
+
+    /**
+     * Provides a list of entries for the main compilation module path.
+     * <p>
+     * A copy will be created to allow this list to be independently modifiable.
+     *
+     * @param modulePath a list of module path entries
+     * @return this operation instance
+     * @since 2.1
+     */
+    public CompileOperation compileMainModulePath(List<String> modulePath) {
+        compileMainModulePath_.addAll(modulePath);
+        return this;
+    }
+
+    /**
+     * Provides entries for the test compilation module path.
+     *
+     * @param modulePath module path entries
+     * @return this operation instance
+     * @since 2.1
+     */
+    public CompileOperation compileTestModulePath(String... modulePath) {
+        compileTestModulePath_.addAll(Arrays.asList(modulePath));
+        return this;
+    }
+
+    /**
+     * Provides a list of entries for the test compilation module path.
+     * <p>
+     * A copy will be created to allow this list to be independently modifiable.
+     *
+     * @param modulePath a list of module path entries
+     * @return this operation instance
+     * @since 2.1
+     */
+    public CompileOperation compileTestModulePath(List<String> modulePath) {
+        compileTestModulePath_.addAll(modulePath);
         return this;
     }
 
@@ -405,6 +470,30 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
      */
     public List<String> compileTestClasspath() {
         return compileTestClasspath_;
+    }
+
+    /**
+     * Retrieves the list of entries for the main compilation module path.
+     * <p>
+     * This is a modifiable list that can be retrieved and changed.
+     *
+     * @return the main compilation module path list
+     * @since 2.1
+     */
+    public List<String> compileMainModulePath() {
+        return compileMainModulePath_;
+    }
+
+    /**
+     * Retrieves the list of entries for the test compilation module path.
+     * <p>
+     * This is a modifiable list that can be retrieved and changed.
+     *
+     * @return the test compilation module path list
+     * @since 2.1
+     */
+    public List<String> compileTestModulePath() {
+        return compileTestModulePath_;
     }
 
     /**

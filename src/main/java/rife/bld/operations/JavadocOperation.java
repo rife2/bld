@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 public class JavadocOperation extends AbstractOperation<JavadocOperation> {
     private File buildDirectory_;
     private final List<String> classpath_ = new ArrayList<>();
+    private final List<String> modulePath_ = new ArrayList<>();
     private final List<File> sourceFiles_ = new ArrayList<>();
     private final List<File> sourceDirectories_ = new ArrayList<>();
     private final JavadocOptions javadocOptions_ = new JavadocOptions();
@@ -74,6 +75,7 @@ public class JavadocOperation extends AbstractOperation<JavadocOperation> {
         }
         executeBuildSources(
             classpath(),
+            modulePath(),
             sources,
             buildDirectory());
     }
@@ -81,12 +83,13 @@ public class JavadocOperation extends AbstractOperation<JavadocOperation> {
     /**
      * Part of the {@link #execute} operation, build sources to a destination.
      *
-     * @param classpath   the classpath list used for the compilation
+     * @param classpath   the classpath list used for the javadoc generation
+     * @param modulePath  the module path list used for the javadoc generation
      * @param sources     the source files to compile
      * @param destination the destination directory
-     * @since 1.5.10
+     * @since 2.1
      */
-    protected void executeBuildSources(List<String> classpath, List<File> sources, File destination)
+    protected void executeBuildSources(List<String> classpath, List<String> modulePath, List<File> sources, File destination)
     throws IOException {
         if (sources.isEmpty() || destination == null) {
             return;
@@ -103,7 +106,13 @@ public class JavadocOperation extends AbstractOperation<JavadocOperation> {
         try (var file_manager = documentation.getStandardFileManager(null, null, null)) {
             var compilation_units = file_manager.getJavaFileObjectsFromFiles(filtered_sources);
             var diagnostics = new DiagnosticCollector<JavaFileObject>();
-            var options = new ArrayList<>(List.of("-d", destination.getAbsolutePath(), "-cp", FileUtils.joinPaths(classpath)));
+            var options = new ArrayList<>(List.of("-d", destination.getAbsolutePath()));
+            if (!classpath.isEmpty()) {
+                options.addAll(List.of("-cp", FileUtils.joinPaths(classpath)));
+            }
+            if (!modulePath.isEmpty()) {
+                options.addAll(List.of("-p", FileUtils.joinPaths(modulePath)));
+            }
             options.addAll(javadocOptions());
             var documentation_task = documentation.getTask(null, file_manager, diagnostics, null, options, compilation_units);
             if (!documentation_task.call()) {
@@ -146,6 +155,7 @@ public class JavadocOperation extends AbstractOperation<JavadocOperation> {
         var operation = buildDirectory(project.buildJavadocDirectory())
             .classpath(project.compileMainClasspath())
             .classpath(project.buildMainDirectory().getAbsolutePath())
+            .modulePath(project.compileMainModulePath())
             .sourceFiles(project.mainSourceFiles());
         if (project.javaRelease() != null && !javadocOptions().containsRelease()) {
             javadocOptions().release(project.javaRelease());
@@ -188,6 +198,32 @@ public class JavadocOperation extends AbstractOperation<JavadocOperation> {
      */
     public JavadocOperation classpath(List<String> classpath) {
         classpath_.addAll(classpath);
+        return this;
+    }
+
+    /**
+     * Provides entries for the javadoc module path.
+     *
+     * @param modulePath module path entries
+     * @return this operation instance
+     * @since 2.1
+     */
+    public JavadocOperation modulePath(String... modulePath) {
+        modulePath_.addAll(Arrays.asList(modulePath));
+        return this;
+    }
+
+    /**
+     * Provides a list of entries for the javadoc moduel path.
+     * <p>
+     * A copy will be created to allow this list to be independently modifiable.
+     *
+     * @param modulePath a list of module path entries
+     * @return this operation instance
+     * @since 2.1
+     */
+    public JavadocOperation modulePath(List<String> modulePath) {
+        modulePath_.addAll(modulePath);
         return this;
     }
 
@@ -359,6 +395,18 @@ public class JavadocOperation extends AbstractOperation<JavadocOperation> {
      */
     public List<String> classpath() {
         return classpath_;
+    }
+
+    /**
+     * Retrieves the list of entries for the javadoc module path.
+     * <p>
+     * This is a modifiable list that can be retrieved and changed.
+     *
+     * @return the javadoc module path list
+     * @since 2.1
+     */
+    public List<String> modulePath() {
+        return modulePath_;
     }
 
     /**
