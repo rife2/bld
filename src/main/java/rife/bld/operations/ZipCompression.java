@@ -8,7 +8,7 @@ package rife.bld.operations;
  * The zip compression levels for jlink and jmod.
  *
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
- * @since 2.0.2
+ * @since 2.1.0
  */
 public enum ZipCompression {
     ZIP_0("zip-0"),

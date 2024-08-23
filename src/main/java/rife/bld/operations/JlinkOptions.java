@@ -12,7 +12,7 @@ import java.util.List;
  * Options for jlink tool.
  *
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
- * @since 2.0.2
+ * @since 2.1.0
  */
 public class JlinkOptions extends HashMap<String, String> {
     /**

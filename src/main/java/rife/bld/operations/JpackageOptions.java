@@ -10,7 +10,7 @@ import java.util.HashMap;
  * Options for jpackage tool.
  *
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
- * @since 2.0.2
+ * @since 2.1.0
  */
 public class JpackageOptions extends HashMap<String, String> {
     /**

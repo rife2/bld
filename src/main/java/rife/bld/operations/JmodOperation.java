@@ -12,7 +12,7 @@ import java.util.Map;
  * Create JMOD files with the jmod tool.
  *
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
- * @since 2.0.2
+ * @since 2.1.0
  */
 public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> {
     private final List<String> cmdFiles = new ArrayList<>();

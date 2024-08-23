@@ -12,7 +12,7 @@ import java.util.Map;
  * Create run-time images using the jlink tool.
  *
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
- * @since 2.0.2
+ * @since 2.1.0
  */
 public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation> {
     private final List<String> cmdFiles_ = new ArrayList<>();
