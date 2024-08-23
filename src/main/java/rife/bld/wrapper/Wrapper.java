@@ -642,7 +642,7 @@ public class Wrapper {
     private int launchMainCli(File jarFile, List<String> arguments)
     throws IOException, InterruptedException {
         var args = new ArrayList<String>();
-        args.add("java");
+        args.add(findJavaExecutable());
         includeJvmProperties(arguments, args);
 
         args.add("-cp");
@@ -695,7 +695,7 @@ public class Wrapper {
         }
 
         var java_args = new ArrayList<String>();
-        java_args.add("java");
+        java_args.add(findJavaExecutable());
         includeJvmProperties(arguments, java_args);
 
         java_args.add("-cp");
@@ -710,6 +710,15 @@ public class Wrapper {
         var process = process_builder.start();
 
         return process.waitFor();
+    }
+
+    private static String findJavaExecutable() {
+        var executable = System.getProperty("os.name").toLowerCase().contains("win") ? "java.exe" : "java";
+        var java_home = System.getProperty("java.home");
+        if (null == java_home) {
+            return executable;
+        }
+        return java_home + File.separator + "bin" + File.separator + executable;
     }
 
     private static void includeJvmProperties(List<String> arguments, List<String> javaArgs) {
