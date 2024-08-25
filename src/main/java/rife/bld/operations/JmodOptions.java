@@ -4,6 +4,8 @@
  */
 package rife.bld.operations;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -40,6 +42,28 @@ public class JmodOptions extends HashMap<String, String> {
     }
 
     /**
+     * Location of native commands.
+     *
+     * @param path the location
+     * @return this map of options
+     */
+    public JmodOptions cmds(File path) {
+        put("--cmds", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Location of native commands.
+     *
+     * @param path the location
+     * @return this map of options
+     */
+    public JmodOptions cmds(Path path) {
+        put("--cmds", path.toString());
+        return this;
+    }
+
+    /**
      * Compression to use when creating the JMOD archive.
      * <p>
      * <b>Requires Java 20 or higher</b>.
@@ -69,6 +93,28 @@ public class JmodOptions extends HashMap<String, String> {
     }
 
     /**
+     * Location of user-editable config files
+     *
+     * @param path the path to the config files
+     * @return this map of options
+     */
+    public JmodOptions config(File path) {
+        put("--config", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Location of user-editable config files
+     *
+     * @param path the path to the config files
+     * @return this map of options
+     */
+    public JmodOptions config(Path path) {
+        put("--config", path.toString());
+        return this;
+    }
+
+    /**
      * Date and time for the timestamps of entries.
      *
      * @param date the date
@@ -87,6 +133,28 @@ public class JmodOptions extends HashMap<String, String> {
      */
     public JmodOptions dir(String path) {
         put("--dir", path);
+        return this;
+    }
+
+    /**
+     * Target directory for extract
+     *
+     * @param path the directory path
+     * @return this map of options
+     */
+    public JmodOptions dir(File path) {
+        put("--dir", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Target directory for extract
+     *
+     * @param path the directory path
+     * @return this map of options
+     */
+    public JmodOptions dir(Path path) {
+        put("--dir", path.toString());
         return this;
     }
 
@@ -164,6 +232,28 @@ public class JmodOptions extends HashMap<String, String> {
     }
 
     /**
+     * Location of header files.
+     *
+     * @param path the location
+     * @return this map of options
+     */
+    public JmodOptions headerFiles(File path) {
+        put("--header-files", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Location of header files.
+     *
+     * @param path the location
+     * @return this map of options
+     */
+    public JmodOptions headerFiles(Path path) {
+        put("--header-files", path.toString());
+        return this;
+    }
+
+    /**
      * Location of legal notices.
      *
      * @param path the location
@@ -175,6 +265,28 @@ public class JmodOptions extends HashMap<String, String> {
     }
 
     /**
+     * Location of legal notices.
+     *
+     * @param path the location
+     * @return this map of options
+     */
+    public JmodOptions legalNotices(File path) {
+        put("--legal-notices", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Location of legal notices.
+     *
+     * @param path the location
+     * @return this map of options
+     */
+    public JmodOptions legalNotices(Path path) {
+        put("--legal-notices", path.toString());
+        return this;
+    }
+
+    /**
      * Location of native libraries.
      *
      * @param path the location
@@ -182,6 +294,28 @@ public class JmodOptions extends HashMap<String, String> {
      */
     public JmodOptions libs(String path) {
         put("--libs", path);
+        return this;
+    }
+
+    /**
+     * Location of native libraries.
+     *
+     * @param path the location
+     * @return this map of options
+     */
+    public JmodOptions libs(File path) {
+        put("--libs", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Location of native libraries.
+     *
+     * @param path the location
+     * @return this map of options
+     */
+    public JmodOptions libs(Path path) {
+        put("--libs", path.toString());
         return this;
     }
 
@@ -208,6 +342,28 @@ public class JmodOptions extends HashMap<String, String> {
     }
 
     /**
+     * Location of man pages.
+     *
+     * @param path the location
+     * @return this map of options
+     */
+    public JmodOptions manPages(File path) {
+        put("--man-pages", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Location of man pages.
+     *
+     * @param path the location
+     * @return this map of options
+     */
+    public JmodOptions manPages(Path path) {
+        put("--man-pages", path.toString());
+        return this;
+    }
+
+    /**
      * Module path.
      *
      * @param path the module path
@@ -215,6 +371,28 @@ public class JmodOptions extends HashMap<String, String> {
      */
     public JmodOptions modulePath(String path) {
         put("--module-path", path);
+        return this;
+    }
+
+    /**
+     * Module path.
+     *
+     * @param path the module path
+     * @return this map of options
+     */
+    public JmodOptions modulePath(File path) {
+        put("--module-path", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Module path.
+     *
+     * @param path the module path
+     * @return this map of options
+     */
+    public JmodOptions modulePath(Path path) {
+        put("--module-path", path.toString());
         return this;
     }
 

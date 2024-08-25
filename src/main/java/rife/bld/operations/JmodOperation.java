@@ -4,7 +4,10 @@
  */
 package rife.bld.operations;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +47,28 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
         return this;
     }
 
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param file one or more file
+     * @return this operation instance
+     */
+    public JmodOperation cmdFiles(File... file) {
+        cmdFiles.addAll(Arrays.stream(file).map(File::getAbsolutePath).toList());
+        return this;
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param file one or more file
+     * @return this operation instance
+     */
+    public JmodOperation cmdFiles(Path... file) {
+        cmdFiles.addAll(Arrays.stream(file).map(Path::toString).toList());
+        return this;
+    }
+
     @Override
     public void execute() throws Exception {
         if (operationMode_ != null) {
@@ -79,6 +104,32 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      */
     public JmodOperation jmodFile(String file) {
         jmodFile_ = file;
+        return this;
+    }
+
+    /**
+     * Specifies name of the JMOD file to create or from which to retrieve information.
+     * <p>
+     * The JMOD file is <b>required</b>.
+     *
+     * @param file the JMOD file
+     * @return this operation instance
+     */
+    public JmodOperation jmodFile(File file) {
+        jmodFile_ = file.getAbsolutePath();
+        return this;
+    }
+
+    /**
+     * Specifies name of the JMOD file to create or from which to retrieve information.
+     * <p>
+     * The JMOD file is <b>required</b>.
+     *
+     * @param file the JMOD file
+     * @return this operation instance
+     */
+    public JmodOperation jmodFile(Path file) {
+        jmodFile_ = file.toString();
         return this;
     }
 

@@ -4,6 +4,9 @@
  */
 package rife.bld.operations;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -21,24 +24,6 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions aboutUrl(String url) {
         put("--about-url", url);
-        return this;
-    }
-
-    /**
-     * List of application launchers.
-     * <p>
-     * The main application launcher will be built from the command line options.
-     * <p>
-     * Additional alternative launchers can be built using this option, and this option can be used to build multiple
-     * additional launchers.
-     *
-     * @param launcher one or more {@link Launcher}
-     * @return this map of options
-     */
-    public JpackageOptions addLauncher(Launcher... launcher) {
-        for (var l : launcher) {
-            put("--add-launcher", l.name + '=' + l.path);
-        }
         return this;
     }
 
@@ -79,6 +64,29 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions appImage(String path) {
         put("--app-image", path);
+        return this;
+    }
+
+    /**
+     * Location of the predefined application image that is used to build an installable package.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions appImage(File path) {
+        put("--app-image", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Location of the predefined application image that is used to build an installable package.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions appImage(Path path) {
+        put("--app-image", path.toString());
         return this;
     }
 
@@ -140,6 +148,33 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
+     * Path where generated output file is placed.
+     * <p>
+     * Defaults to the current working directory.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions dest(File path) {
+        put("--dest", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Path where generated output file is placed.
+     * <p>
+     * Defaults to the current working directory.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions dest(Path path) {
+        put("--dest", path.toString());
+        return this;
+    }
+
+    /**
      * Path to a Properties file that contains list of key, value pairs.
      * <p>
      * The keys {@code extension}, {@code mime-type}, {@code icon}, and {@code description} can be used to describe the
@@ -154,6 +189,35 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
+     * Path to a Properties file that contains list of key, value pairs.
+     * <p>
+     * The keys {@code extension}, {@code mime-type}, {@code icon}, and {@code description} can be used to describe the
+     * association.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions fileAssociations(File... path) {
+        put("--file-associations", String.join(",", Arrays.stream(path).map(File::getAbsolutePath).toList()));
+        return this;
+    }
+
+    /**
+     * Path to a Properties file that contains list of key, value pairs.
+     * <p>
+     * The keys {@code extension}, {@code mime-type}, {@code icon}, and {@code description} can be used to describe the
+     * association.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions fileAssociations(Path... path) {
+        put("--file-associations", String.join(",", Arrays.stream(path).map(Path::toString).toList()));
+        return this;
+    }
+
+    /**
      * Path of the icon of the application package.
      *
      * @param path absolute path or relative to the current directory
@@ -161,6 +225,29 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions icon(String path) {
         put("--icon", path);
+        return this;
+    }
+
+    /**
+     * Path of the icon of the application package.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions icon(File path) {
+        put("--icon", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Path of the icon of the application package.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions icon(Path path) {
+        put("--icon", path.toString());
         return this;
     }
 
@@ -178,6 +265,32 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
+     * Path of the input directory that contains the files to be packaged.
+     * <p>
+     * All files in the input directory will be packaged into the application image.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions input(File path) {
+        put("--input", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Path of the input directory that contains the files to be packaged.
+     * <p>
+     * All files in the input directory will be packaged into the application image.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions input(Path path) {
+        put("--input", path.toString());
+        return this;
+    }
+
+    /**
      * Absolute path of the installation directory of the application.
      *
      * @param path the absolute directory path
@@ -185,6 +298,29 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions installDir(String path) {
         put("--install-dir", path);
+        return this;
+    }
+
+    /**
+     * Absolute path of the installation directory of the application.
+     *
+     * @param path the absolute directory path
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions installDir(File path) {
+        put("--install-dir", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Absolute path of the installation directory of the application.
+     *
+     * @param path the absolute directory path
+     * @return this map of options
+     */
+    public JpackageOptions installDir(Path path) {
+        put("--install-dir", path.toString());
         return this;
     }
 
@@ -240,6 +376,29 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions licenseFile(String path) {
         put("--license-file", path);
+        return this;
+    }
+
+    /**
+     * Path to the license file.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions licenseFile(File path) {
+        put("--license-file", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Path to the license file.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions licenseFile(Path path) {
+        put("--license-file", path.toString());
         return this;
     }
 
@@ -396,6 +555,29 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
+     * Include all the referenced content in the dmg.
+     *
+     * @param additionalContent one or more path
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions macDmgContent(File... additionalContent) {
+        put("--mac-dmg-content", String.join(",", Arrays.stream(additionalContent).map(File::getAbsolutePath).toList()));
+        return this;
+    }
+
+    /**
+     * Include all the referenced content in the dmg.
+     *
+     * @param additionalContent one or more path
+     * @return this map of options
+     */
+    public JpackageOptions macDmgContent(Path... additionalContent) {
+        put("--mac-dmg-content", String.join(",", Arrays.stream(additionalContent).map(Path::toString).toList()));
+        return this;
+    }
+
+    /**
      * Path to file containing entitlements to use when signing executables and libraries in the bundle.
      *
      * @param path the fie path
@@ -403,6 +585,29 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions macEntitlements(String path) {
         put("--mac-entitlements", path);
+        return this;
+    }
+
+    /**
+     * Path to file containing entitlements to use when signing executables and libraries in the bundle.
+     *
+     * @param path the fie path
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions macEntitlements(File path) {
+        put("--mac-entitlements", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Path to file containing entitlements to use when signing executables and libraries in the bundle.
+     *
+     * @param path the fie path
+     * @return this map of options
+     */
+    public JpackageOptions macEntitlements(Path path) {
+        put("--mac-entitlements", path.toString());
         return this;
     }
 
@@ -594,6 +799,36 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
+     * List of module paths.
+     * <p>
+     * Each path is either a directory of modules or the path to a modular jar.
+     * <p>
+     * Each path is absolute or relative to the current directory.
+     *
+     * @param path one or more path
+     * @return this map of options
+     */
+    public JpackageOptions modulePath(File... path) {
+        put("--module-path", String.join(":", Arrays.stream(path).map(File::getAbsolutePath).toList()));
+        return this;
+    }
+
+    /**
+     * List of module paths.
+     * <p>
+     * Each path is either a directory of modules or the path to a modular jar.
+     * <p>
+     * Each path is absolute or relative to the current directory.
+     *
+     * @param path one or more path
+     * @return this map of options
+     */
+    public JpackageOptions modulePath(Path... path) {
+        put("--module-path", String.join(":", Arrays.stream(path).map(Path::toString).toList()));
+        return this;
+    }
+
+    /**
      * Name of the application and/or package.
      *
      * @param name the name
@@ -629,6 +864,35 @@ public class JpackageOptions extends HashMap<String, String> {
     }
 
     /**
+     * Path to override jpackage resources.
+     * <p>
+     * Icons, template files, and other resources of jpackage can be over-ridden by adding replacement resources to
+     * this directory.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions resourceDir(File path) {
+        put("--resource-dir", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Path to override jpackage resources.
+     * <p>
+     * Icons, template files, and other resources of jpackage can be over-ridden by adding replacement resources to
+     * this directory.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions resourceDir(Path path) {
+        put("--resource-dir", path.toString());
+        return this;
+    }
+
+    /**
      * Path of the predefined runtime image that will be copied into the application image.
      * <p>
      * If not specified, jpackage will run jlink to create the runtime image using options:
@@ -643,6 +907,43 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions runtimeImage(String path) {
         put("--runtime-image", path);
+        return this;
+    }
+
+    /**
+     * Path of the predefined runtime image that will be copied into the application image.
+     * <p>
+     * If not specified, jpackage will run jlink to create the runtime image using options:
+     * {@link JlinkOptions#stripNativeCommands(boolean) stripNativeCommands}
+     * {@link JlinkOptions#stripDebug(boolean) stripDebug} {@link JlinkOptions#noManPages(boolean) noManPages}
+     * {@link JlinkOptions#noHeaderFiles(boolean) noHeaderFiles}
+     * <p>
+     * Option is required when creating a runtime package.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions runtimeImage(File path) {
+        put("--runtime-image", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Path of the predefined runtime image that will be copied into the application image.
+     * <p>
+     * If not specified, jpackage will run jlink to create the runtime image using options:
+     * {@link JlinkOptions#stripNativeCommands(boolean) stripNativeCommands}
+     * {@link JlinkOptions#stripDebug(boolean) stripDebug} {@link JlinkOptions#noManPages(boolean) noManPages}
+     * {@link JlinkOptions#noHeaderFiles(boolean) noHeaderFiles}
+     * <p>
+     * Option is required when creating a runtime package.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions runtimeImage(Path path) {
+        put("--runtime-image", path.toString());
         return this;
     }
 
@@ -673,6 +974,37 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     public JpackageOptions temp(String path) {
         put("--temp", path);
+        return this;
+    }
+
+    /**
+     * Path of a new or empty directory used to create temporary files.
+     * <p>
+     * If specified, the temp dir will not be removed upon the task completion and must be removed manually.
+     * <p>
+     * If not specified, a temporary directory will be created and removed upon the task completion.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions temp(File path) {
+        put("--temp", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Path of a new or empty directory used to create temporary files.
+     * <p>
+     * If specified, the temp dir will not be removed upon the task completion and must be removed manually.
+     * <p>
+     * If not specified, a temporary directory will be created and removed upon the task completion.
+     *
+     * @param path absolute path or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions temp(Path path) {
+        put("--temp", path.toString());
         return this;
     }
 
@@ -867,22 +1199,5 @@ public class JpackageOptions extends HashMap<String, String> {
         PackageType(String type) {
             this.type = type;
         }
-    }
-
-    /**
-     * Name of launcher, and a path to a Properties file that contains a list of key, value pairs.
-     * <p>
-     * The keys {@code module}, {@code main-jar}, {@code main-class}, {@code description},
-     * {@code arguments}, {@code java-options}, {@code app-version}, {@code icon},
-     * {@code launcher-as-service}, {@code win-console}, {@code win-shortcut}, {@code win-menu},
-     * {@code linux-app-category}, and {@code linux-shortcut} can be used.
-     * <p>
-     * These options are added to, or used to overwrite, the original command line options to build an additional
-     * alternative launcher.
-     *
-     * @param name the name
-     * @param path absolute path or relative to the current directory
-     */
-    public record Launcher(String name, String path) {
     }
 }
