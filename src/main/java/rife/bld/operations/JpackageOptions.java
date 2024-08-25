@@ -779,7 +779,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("JavadocDeclaration")
     public JpackageOptions module(String name, String mainClass) {
-        put("--module-name", name + "/" + mainClass);
+        put("--module", name + "/" + mainClass);
         return this;
     }
 

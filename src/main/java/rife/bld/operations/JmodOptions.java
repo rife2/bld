@@ -47,6 +47,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @param path the location
      * @return this map of options
      */
+    @SuppressWarnings("UnusedReturnValue")
     public JmodOptions cmds(File path) {
         put("--cmds", path.getAbsolutePath());
         return this;
@@ -76,6 +77,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @param compression the {@link ZipCompression compression} level
      * @return this map of options
      */
+    @SuppressWarnings("UnusedReturnValue")
     public JmodOptions compress(ZipCompression compression) {
         put("--compress", compression.level);
         return this;
@@ -237,6 +239,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @param path the location
      * @return this map of options
      */
+    @SuppressWarnings("UnusedReturnValue")
     public JmodOptions headerFiles(File path) {
         put("--header-files", path.getAbsolutePath());
         return this;
@@ -270,6 +273,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @param path the location
      * @return this map of options
      */
+    @SuppressWarnings("UnusedReturnValue")
     public JmodOptions legalNotices(File path) {
         put("--legal-notices", path.getAbsolutePath());
         return this;
@@ -303,6 +307,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @param path the location
      * @return this map of options
      */
+    @SuppressWarnings("UnusedReturnValue")
     public JmodOptions libs(File path) {
         put("--libs", path.getAbsolutePath());
         return this;
@@ -347,6 +352,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @param path the location
      * @return this map of options
      */
+    @SuppressWarnings("UnusedReturnValue")
     public JmodOptions manPages(File path) {
         put("--man-pages", path.getAbsolutePath());
         return this;

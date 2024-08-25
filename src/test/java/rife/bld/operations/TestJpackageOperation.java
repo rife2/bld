@@ -371,7 +371,7 @@ public class TestJpackageOperation {
         assertEquals("name", options.get("--module"));
 
         options.module("name", "class");
-        assertEquals("name:class", options.get("--module"));
+        assertEquals("name/class", options.get("--module"));
     }
 
     @Test
