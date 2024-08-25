@@ -5,6 +5,7 @@
 package rife.bld.operations;
 
 import rife.bld.BaseProject;
+import rife.bld.instrument.ModuleMainClassAdapter;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.tools.FileUtils;
 
@@ -34,6 +35,7 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
     private final List<File> testSourceDirectories_ = new ArrayList<>();
     private final JavacOptions compileOptions_ = new JavacOptions();
     private final List<Diagnostic<? extends JavaFileObject>> diagnostics_ = new ArrayList<>();
+    private String moduleMainClass_;
 
     /**
      * Performs the compile operation.
@@ -135,6 +137,12 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
                 diagnostics_.addAll(diagnostics.getDiagnostics());
                 executeProcessDiagnostics(diagnostics);
             }
+            var module_info_class = new File(destination, "module-info.class");
+            if (module_info_class.exists() && moduleMainClass() != null) {
+                var orig_bytes = FileUtils.readBytes(module_info_class);
+                var transformed_bytes = ModuleMainClassAdapter.addModuleMainClassToBytes(orig_bytes, moduleMainClass());
+                FileUtils.writeBytes(transformed_bytes, module_info_class);
+            }
         }
     }
 
@@ -175,7 +183,8 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
             .compileMainModulePath(project.compileMainModulePath())
             .compileTestModulePath(project.compileTestModulePath())
             .mainSourceFiles(project.mainSourceFiles())
-            .testSourceFiles(project.testSourceFiles());
+            .testSourceFiles(project.testSourceFiles())
+            .moduleMainClass(project.mainClass());
         if (project.javaRelease() != null && !compileOptions().containsRelease()) {
             compileOptions().release(project.javaRelease());
         }
@@ -429,6 +438,18 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
     }
 
     /**
+     * Provides the main class to use if this compilation includes @{code module-info.java}.
+     *
+     * @param name the main class of the module
+     * @return this operation instance
+     * @since 2.1
+     */
+    public CompileOperation moduleMainClass(String name) {
+        moduleMainClass_ = name;
+        return this;
+    }
+
+    /**
      * Retrieves the main build destination directory.
      *
      * @return the main build destination
@@ -564,5 +585,16 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
      */
     public List<Diagnostic<? extends JavaFileObject>> diagnostics() {
         return diagnostics_;
+    }
+
+
+    /**
+     * Retrieves the main class to use if this compilation includes @{code module-info.java}.
+     *
+     * @return the main class to use for the module
+     * @since 2.1
+     */
+    public String moduleMainClass() {
+        return moduleMainClass_;
     }
 }

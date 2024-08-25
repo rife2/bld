@@ -199,7 +199,8 @@ public class TestRunOperation {
             var compile_operation = new CompileOperation()
                 .buildMainDirectory(build_main)
                 .compileMainClasspath(List.of(build_main.getAbsolutePath()))
-                .mainSourceFiles(List.of(source_file1, source_file2));
+                .mainSourceFiles(List.of(source_file1, source_file2))
+                .moduleMainClass("pkg.Source1");
             compile_operation.execute();
             assertTrue(compile_operation.diagnostics().isEmpty());
 
@@ -209,12 +210,11 @@ public class TestRunOperation {
                 .sourceDirectories(List.of(build_main))
                 .destinationDirectory(destination_dir)
                 .destinationFileName(destination_name)
-                .manifestAttribute(Attributes.Name.MAIN_CLASS, "pkg.Source1")
                 .execute();
 
             var output = new StringBuilder();
             var run_operation = new RunOperation()
-                .module("pkg/pkg.Source1")
+                .module("pkg")
                 .modulePath(new File(destination_dir, destination_name).getAbsolutePath())
                 .outputProcessor(s -> {
                     output.append(s);
