@@ -9,10 +9,10 @@ import rife.tools.FileUtils;
 import rife.tools.StringUtils;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Options for the standard javadoc tool.
@@ -178,8 +178,48 @@ public class JavadocOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavadocOptions extDirs(List<File> dirs) {
+        return extDirsStrings(dirs.stream().map(File::getAbsolutePath).toList());
+    }
+
+    /**
+     * Override location of installed extensions
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions extDirs(Path... dirs) {
+        return extDirsPaths(Arrays.asList(dirs));
+    }
+
+    /**
+     * Override location of installed extensions
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions extDirsPaths(List<Path> dirs) {
+        return extDirs(dirs.stream().map(Path::toFile).toList());
+    }
+
+    /**
+     * Override location of installed extensions
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions extDirs(String... dirs) {
+        return extDirsStrings(Arrays.asList(dirs));
+    }
+
+    /**
+     * Override location of installed extensions
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions extDirsStrings(List<String> dirs) {
         add("-extdirs");
-        add(dirs.stream().map(File::getAbsolutePath).collect(Collectors.joining(",")));
+        add(String.join(",", dirs));
         return this;
     }
 
@@ -256,8 +296,48 @@ public class JavadocOptions extends ArrayList<String> {
      * @since 1.6.3
      */
     public JavadocOptions modulePath(List<File> paths) {
+        return modulePathStrings(paths.stream().map(File::getAbsolutePath).toList());
+    }
+
+    /**
+     * Specify where to find application modules
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions modulePath(Path... paths) {
+        return modulePathPaths(Arrays.asList(paths));
+    }
+
+    /**
+     * Specify where to find application modules
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions modulePathPaths(List<Path> paths) {
+        return modulePath(paths.stream().map(Path::toFile).toList());
+    }
+
+    /**
+     * Specify where to find application modules
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions modulePath(String... paths) {
+        return modulePathStrings(Arrays.asList(paths));
+    }
+
+    /**
+     * Specify where to find application modules
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions modulePathStrings(List<String> paths) {
         add("--module-path");
-        add(FileUtils.joinPaths(paths.stream().map(File::getAbsolutePath).toList()));
+        add(FileUtils.joinPaths(paths));
         return this;
     }
 
@@ -268,8 +348,28 @@ public class JavadocOptions extends ArrayList<String> {
      * @since 1.6.3
      */
     public JavadocOptions moduleSourcePath(File path) {
+        return moduleSourcePath(path.getAbsolutePath());
+    }
+
+    /**
+     * Specify where to find input source files for multiple modules
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions moduleSourcePath(Path path) {
+        return moduleSourcePath(path.toFile());
+    }
+
+    /**
+     * Specify where to find input source files for multiple modules
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions moduleSourcePath(String path) {
         add("--module-source-path");
-        add(path.getAbsolutePath());
+        add(path);
         return this;
     }
 
@@ -425,9 +525,29 @@ public class JavadocOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.12
      */
-    public JavadocOptions addScript(File file) {
+    public JavadocOptions addScript(File path) {
+        return addScript(path.getAbsolutePath());
+    }
+
+    /**
+     * Add a script file to the generated documentation
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions addScript(Path path) {
+        return addScript(path.toFile());
+    }
+
+    /**
+     * Add a script file to the generated documentation
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions addScript(String path) {
         add("--add-script");
-        add(file.getAbsolutePath());
+        add(path);
         return this;
     }
 
@@ -437,9 +557,29 @@ public class JavadocOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.12
      */
-    public JavadocOptions addStylesheet(File file) {
+    public JavadocOptions addStylesheet(File path) {
+        return addStylesheet(path.getAbsolutePath());
+    }
+
+    /**
+     * Add a stylesheet file to the generated documentation
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions addStylesheet(Path path) {
+        return addStylesheet(path.toFile());
+    }
+
+    /**
+     * Add a stylesheet file to the generated documentation
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions addStylesheet(String path) {
         add("--add-stylesheet");
-        add(file.getAbsolutePath());
+        add(path);
         return this;
     }
 
@@ -578,9 +718,29 @@ public class JavadocOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.12
      */
-    public JavadocOptions stylesheet(File file) {
+    public JavadocOptions stylesheet(File path) {
+        return stylesheet(path.getAbsolutePath());
+    }
+
+    /**
+     * File to change style of the generated documentation
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions stylesheet(Path path) {
+        return stylesheet(path.toFile());
+    }
+
+    /**
+     * File to change style of the generated documentation
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions stylesheet(String path) {
         add("--main-stylesheet");
-        add(file.getAbsolutePath());
+        add(path);
         return this;
     }
 
@@ -735,9 +895,29 @@ public class JavadocOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavadocOptions overview(File htmlFile) {
+    public JavadocOptions overview(File path) {
+        return overview(path.getAbsolutePath());
+    }
+
+    /**
+     * Read overview documentation from HTML file
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions overview(Path path) {
+        return overview(path.toFile());
+    }
+
+    /**
+     * Read overview documentation from HTML file
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions overview(String path) {
         add("-overview");
-        add(htmlFile.getAbsolutePath());
+        add(path);
         return this;
     }
 
@@ -793,8 +973,28 @@ public class JavadocOptions extends ArrayList<String> {
      * @since 1.5.12
      */
     public JavadocOptions snippetPath(File path) {
+        return snippetPath(path.getAbsolutePath());
+    }
+
+    /**
+     * The path for external snippets
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions snippetPath(Path path) {
+        return snippetPath(path.toFile());
+    }
+
+    /**
+     * The path for external snippets
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions snippetPath(String path) {
         add("--snippet-path");
-        add(path.getAbsolutePath());
+        add(path);
         return this;
     }
 
@@ -852,8 +1052,28 @@ public class JavadocOptions extends ArrayList<String> {
      * @since 1.5.12
      */
     public JavadocOptions tagletPath(File path) {
+        return tagletPath(path.getAbsolutePath());
+    }
+
+    /**
+     * The path to Taglets
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions tagletPath(Path path) {
+        return tagletPath(path.toFile());
+    }
+
+    /**
+     * The path to Taglets
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavadocOptions tagletPath(String path) {
         add("-tagletpath");
-        add(path.getAbsolutePath());
+        add(path);
         return this;
     }
 

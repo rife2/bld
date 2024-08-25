@@ -5,12 +5,14 @@
 package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
+import rife.bld.NamedFile;
 import rife.tools.FileUtils;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.function.Function;
+import java.util.jar.Attributes;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,6 +28,7 @@ public class TestRunOperation {
         assertTrue(operation.javaOptions().isEmpty());
         assertTrue(operation.classpath().isEmpty());
         assertNull(operation.mainClass());
+        assertNull(operation.module());
         assertTrue(operation.runOptions().isEmpty());
         assertNull(operation.outputProcessor());
         assertNull(operation.errorProcessor());
@@ -45,6 +48,7 @@ public class TestRunOperation {
             var run_option1 = "runOption1";
             var run_option2 = "runOption2";
             var main_class = "mainClass";
+            var module = "module";
             Function<String, Boolean> run_output_consumer = (String) -> true;
             Function<String, Boolean> run_error_consumer = (String) -> true;
 
@@ -55,6 +59,7 @@ public class TestRunOperation {
                 .javaOptions(List.of(run_java_option1, run_java_option2))
                 .classpath(List.of(run_classpath1, run_classpath2))
                 .mainClass(main_class)
+                .module(module)
                 .runOptions(List.of(run_option1, run_option2))
                 .outputProcessor(run_output_consumer)
                 .errorProcessor(run_error_consumer);
@@ -66,6 +71,7 @@ public class TestRunOperation {
             assertTrue(operation1.classpath().contains(run_classpath1));
             assertTrue(operation1.classpath().contains(run_classpath2));
             assertEquals(main_class, operation1.mainClass());
+            assertEquals(module, operation1.module());
             assertTrue(operation1.runOptions().contains(run_option1));
             assertTrue(operation1.runOptions().contains(run_option2));
             assertSame(run_output_consumer, operation1.outputProcessor());
@@ -79,6 +85,7 @@ public class TestRunOperation {
             operation2.classpath().add(run_classpath1);
             operation2.classpath().add(run_classpath2);
             operation2.mainClass(main_class);
+            operation2.module(module);
             operation2.runOptions().add(run_option1);
             operation2.runOptions().add(run_option2);
             operation2.outputProcessor(run_output_consumer);
@@ -91,6 +98,7 @@ public class TestRunOperation {
             assertTrue(operation2.classpath().contains(run_classpath1));
             assertTrue(operation2.classpath().contains(run_classpath2));
             assertEquals(main_class, operation2.mainClass());
+            assertEquals(module, operation2.module());
             assertTrue(operation2.runOptions().contains(run_option1));
             assertTrue(operation2.runOptions().contains(run_option2));
             assertSame(run_output_consumer, operation2.outputProcessor());
@@ -143,6 +151,71 @@ public class TestRunOperation {
             var run_operation = new RunOperation()
                 .mainClass("Source1")
                 .classpath(List.of(build_main.getAbsolutePath()))
+                .outputProcessor(s -> {
+                    output.append(s);
+                    return true;
+                });
+            run_operation.execute();
+
+            assertEquals("source1", output.toString());
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testExecuteModule()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var pkg = new File(tmp, "pkg");
+            pkg.mkdirs();
+            var source_file1 = new File(pkg, "Source1.java");
+            var source_file2 = new File(pkg, "module-info.java");
+
+            FileUtils.writeString("""
+                package pkg;
+                
+                public class Source1 {
+                    public final String name_;
+                    public Source1() {
+                        name_ = "source1";
+                    }
+                    
+                    public static void main(String[] arguments)
+                    throws Exception {
+                        System.out.print(new Source1().name_);
+                    }
+                }
+                """, source_file1);
+
+            FileUtils.writeString("""
+                module pkg {
+                    requires java.desktop;
+                }
+                """, source_file2);
+            var build_main = new File(tmp, "buildMain");
+
+            var compile_operation = new CompileOperation()
+                .buildMainDirectory(build_main)
+                .compileMainClasspath(List.of(build_main.getAbsolutePath()))
+                .mainSourceFiles(List.of(source_file1, source_file2));
+            compile_operation.execute();
+            assertTrue(compile_operation.diagnostics().isEmpty());
+
+            var destination_dir = new File(tmp, "destination");
+            var destination_name = "pkg.jar";
+            new JarOperation()
+                .sourceDirectories(List.of(build_main))
+                .destinationDirectory(destination_dir)
+                .destinationFileName(destination_name)
+                .manifestAttribute(Attributes.Name.MAIN_CLASS, "pkg.Source1")
+                .execute();
+
+            var output = new StringBuilder();
+            var run_operation = new RunOperation()
+                .module("pkg/pkg.Source1")
+                .modulePath(new File(destination_dir, destination_name).getAbsolutePath())
                 .outputProcessor(s -> {
                     output.append(s);
                     return true;

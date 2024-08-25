@@ -61,6 +61,13 @@ public class BaseProject extends BuildExecutor {
      * @since 1.5
      */
     protected String mainClass = null;
+    /**
+     * The project's module.
+     *
+     * @see #module()
+     * @since 2.1
+     */
+    protected String module = null;
 
     /**
      * The project's repositories for dependency resolution.
@@ -1399,10 +1406,16 @@ public class BaseProject extends BuildExecutor {
      * @since 1.5
      */
     public String mainClass() {
-        if (mainClass == null) {
-            throw new IllegalStateException("The mainClass variable has to be set.");
-        }
         return mainClass;
+    }
+
+    /**
+     * Returns the project's module.
+     *
+     * @since 2.1
+     */
+    public String module() {
+        return module;
     }
 
     /**
@@ -1520,7 +1533,14 @@ public class BaseProject extends BuildExecutor {
      * @since 1.5
      */
     public String uberJarMainClass() {
-        return Objects.requireNonNullElseGet(uberJarMainClass, this::mainClass);
+        if (uberJarMainClass != null) {
+            return uberJarMainClass;
+        }
+        if (mainClass() != null) {
+            return mainClass();
+        }
+
+        throw new IllegalStateException("The mainClass variable has to be set.");
     }
 
     /**

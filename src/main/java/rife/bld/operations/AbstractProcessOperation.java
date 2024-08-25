@@ -29,6 +29,7 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
     protected final List<String> classpath_ = new ArrayList<>();
     protected final List<String> modulePath_ = new ArrayList<>();
     protected String mainClass_;
+    protected String module_;
     protected Function<String, Boolean> outputProcessor_;
     protected Function<String, Boolean> errorProcessor_;
     protected Process process_;
@@ -253,6 +254,18 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
     }
 
     /**
+     * Provides the module to launch with the java tool.
+     *
+     * @param name the module to launch
+     * @return this operation instance
+     * @since 2.1
+     */
+    public T module(String name) {
+        module_ = name;
+        return (T) this;
+    }
+
+    /**
      * Provides the processor that will be used to handle the process output.
      * <p>
      * It will be called for each line in the output.
@@ -344,6 +357,16 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      */
     public String mainClass() {
         return mainClass_;
+    }
+
+    /**
+     * Retrieves the module to launch with the java tool.
+     *
+     * @return the module to launch
+     * @since 2.1
+     */
+    public String module() {
+        return module_;
     }
 
     /**

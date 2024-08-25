@@ -33,7 +33,7 @@ public class TestWebProject {
         assertNull(project.version);
         assertThrows(IllegalStateException.class, project::version);
         assertNull(project.mainClass);
-        assertThrows(IllegalStateException.class, project::mainClass);
+        assertNull(project.module);
 
         assertNotNull(project.repositories);
         assertTrue(project.repositories.isEmpty());

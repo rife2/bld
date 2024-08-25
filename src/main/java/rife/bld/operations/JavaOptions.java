@@ -4,9 +4,11 @@
  */
 package rife.bld.operations;
 
+import rife.tools.FileUtils;
 import rife.tools.StringUtils;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,8 +40,8 @@ public class JavaOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavaOptions modulePath(File... modules) {
-        return modulePath(List.of(modules));
+    public JavaOptions modulePath(File... paths) {
+        return modulePath(List.of(paths));
     }
 
     /**
@@ -48,9 +50,49 @@ public class JavaOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavaOptions modulePath(List<File> modules) {
+    public JavaOptions modulePath(List<File> paths) {
+        return modulePathStrings(paths.stream().map(File::getAbsolutePath).toList());
+    }
+
+    /**
+     * A list of directories, each directory is a directory of modules.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions modulePath(Path... paths) {
+        return modulePathPaths(List.of(paths));
+    }
+
+    /**
+     * A list of directories, each directory is a directory of modules.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions modulePathPaths(List<Path> paths) {
+        return modulePath(paths.stream().map(Path::toFile).toList());
+    }
+
+    /**
+     * A list of directories, each directory is a directory of modules.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions modulePath(String... paths) {
+        return modulePathStrings(List.of(paths));
+    }
+
+    /**
+     * A list of directories, each directory is a directory of modules.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions modulePathStrings(List<String> paths) {
         add("--module-path");
-        add(StringUtils.join(modules, ":"));
+        add(FileUtils.joinPaths(paths));
         return this;
     }
 
@@ -61,8 +103,8 @@ public class JavaOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavaOptions upgradeModulePath(File... modulePath) {
-        return upgradeModulePath(List.of(modulePath));
+    public JavaOptions upgradeModulePath(File... paths) {
+        return upgradeModulePath(List.of(paths));
     }
 
     /**
@@ -72,9 +114,53 @@ public class JavaOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavaOptions upgradeModulePath(List<File> modulePath) {
+    public JavaOptions upgradeModulePath(List<File> paths) {
+        return upgradeModulePathStrings(paths.stream().map(File::getAbsolutePath).toList());
+    }
+
+    /**
+     * List of directories, each directory is a directory of modules
+     * that replace upgradeable modules in the runtime image
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions upgradeModulePath(Path... paths) {
+        return upgradeModulePathPaths(List.of(paths));
+    }
+
+    /**
+     * List of directories, each directory is a directory of modules
+     * that replace upgradeable modules in the runtime image
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions upgradeModulePathPaths(List<Path> paths) {
+        return upgradeModulePath(paths.stream().map(Path::toFile).toList());
+    }
+
+    /**
+     * List of directories, each directory is a directory of modules
+     * that replace upgradeable modules in the runtime image
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions upgradeModulePath(String... paths) {
+        return upgradeModulePathStrings(List.of(paths));
+    }
+
+    /**
+     * List of directories, each directory is a directory of modules
+     * that replace upgradeable modules in the runtime image
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions upgradeModulePathStrings(List<String> paths) {
         add("--upgrade-module-path");
-        add(StringUtils.join(modulePath, ":"));
+        add(FileUtils.joinPaths(paths));
         return this;
     }
 
@@ -256,7 +342,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions agentPath(File pathName) {
-        return agentPath(pathName, (String)null);
+        return agentPath(pathName.getAbsolutePath(), (String)null);
     }
 
     /**
@@ -266,8 +352,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions agentPath(File pathName, String options) {
-        add("-agentpath:" + pathName + (options == null ? "" : "=" + options));
-        return this;
+        return agentPath(pathName.getAbsolutePath(), options);
     }
 
     /**
@@ -277,7 +362,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.7.1
      */
     public JavaOptions agentPath(File pathName, String... options) {
-        return agentPath(pathName, List.of(options));
+        return agentPath(pathName.getAbsolutePath(), List.of(options));
     }
 
     /**
@@ -287,6 +372,87 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.7.1
      */
     public JavaOptions agentPath(File pathName, List<String> options) {
+        return agentPath(pathName.getAbsolutePath(), options);
+    }
+
+    /**
+     * Load native agent library by full pathname.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions agentPath(Path pathName) {
+        return agentPath(pathName.toFile(), (String)null);
+    }
+
+    /**
+     * Load native agent library by full pathname.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions agentPath(Path pathName, String options) {
+        return agentPath(pathName.toFile(), options);
+    }
+
+    /**
+     * Load native agent library by full pathname.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions agentPath(Path pathName, String... options) {
+        return agentPath(pathName.toFile(), List.of(options));
+    }
+
+    /**
+     * Load native agent library by full pathname.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions agentPath(Path pathName, List<String> options) {
+        return agentPath(pathName.toFile(), options);
+    }
+
+    /**
+     * Load native agent library by full pathname.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions agentPath(String pathName) {
+        return agentPath(pathName, (String)null);
+    }
+
+    /**
+     * Load native agent library by full pathname.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions agentPath(String pathName, String options) {
+        add("-agentpath:" + pathName + (options == null ? "" : "=" + options));
+        return this;
+    }
+
+    /**
+     * Load native agent library by full pathname.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions agentPath(String pathName, String... options) {
+        return agentPath(pathName, List.of(options));
+    }
+
+    /**
+     * Load native agent library by full pathname.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions agentPath(String pathName, List<String> options) {
         add("-agentpath:" + pathName + (options == null || options.isEmpty() ? "" : "=" + StringUtils.join(options, ",")));
         return this;
     }
@@ -298,7 +464,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions javaAgent(File jarPath) {
-        return javaAgent(jarPath, (String)null);
+        return javaAgent(jarPath.getAbsolutePath(), (String)null);
     }
 
     /**
@@ -308,8 +474,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavaOptions javaAgent(File jarPath, String options) {
-        add("-javaagent:" + jarPath + (options == null ? "" : "=" + options));
-        return this;
+        return javaAgent(jarPath.getAbsolutePath(), options);
     }
 
     /**
@@ -319,7 +484,7 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.7.1
      */
     public JavaOptions javaAgent(File jarPath, String... options) {
-        return javaAgent(jarPath, List.of(options));
+        return javaAgent(jarPath.getAbsolutePath(), List.of(options));
     }
 
     /**
@@ -329,6 +494,87 @@ public class JavaOptions extends ArrayList<String> {
      * @since 1.7.1
      */
     public JavaOptions javaAgent(File jarPath, List<String> options) {
+        return javaAgent(jarPath.getAbsolutePath(), options);
+    }
+
+    /**
+     * Load Java programming language agent.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions javaAgent(Path jarPath) {
+        return javaAgent(jarPath.toFile(), (String)null);
+    }
+
+    /**
+     * Load Java programming language agent.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions javaAgent(Path jarPath, String options) {
+        return javaAgent(jarPath.toFile(), options);
+    }
+
+    /**
+     * Load Java programming language agent.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions javaAgent(Path jarPath, String... options) {
+        return javaAgent(jarPath.toFile(), List.of(options));
+    }
+
+    /**
+     * Load Java programming language agent.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions javaAgent(Path jarPath, List<String> options) {
+        return javaAgent(jarPath.toFile(), options);
+    }
+
+    /**
+     * Load Java programming language agent.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions javaAgent(String jarPath) {
+        return javaAgent(jarPath, (String)null);
+    }
+
+    /**
+     * Load Java programming language agent.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions javaAgent(String jarPath, String options) {
+        add("-javaagent:" + jarPath + (options == null ? "" : "=" + options));
+        return this;
+    }
+
+    /**
+     * Load Java programming language agent.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions javaAgent(String jarPath, String... options) {
+        return javaAgent(jarPath, List.of(options));
+    }
+
+    /**
+     * Load Java programming language agent.
+     *
+     * @return this list of options
+     * @since 2.1
+     */
+    public JavaOptions javaAgent(String jarPath, List<String> options) {
         add("-javaagent:" + jarPath + (options == null || options.isEmpty() ? "" : "=" + StringUtils.join(options, ",")));
         return this;
     }
