@@ -173,8 +173,7 @@ public class JlinkOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JlinkOptions modulePath(File path) {
-        put("--module-path", path.getAbsolutePath());
-        return this;
+        return modulePath(path.getAbsolutePath());
     }
 
     /**
@@ -187,8 +186,7 @@ public class JlinkOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JlinkOptions modulePath(Path path) {
-        put("--module-path", path.toFile().getAbsolutePath());
-        return this;
+        return modulePath(path.toFile());
     }
 
     /**
@@ -239,8 +237,7 @@ public class JlinkOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JlinkOptions output(File path) {
-        put("--output", path.getAbsolutePath());
-        return this;
+        return output(path.getAbsolutePath());
     }
 
     /**
@@ -250,8 +247,7 @@ public class JlinkOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JlinkOptions output(Path path) {
-        put("--output", path.toFile().getAbsolutePath());
-        return this;
+        return output(path.toFile());
     }
 
     /**

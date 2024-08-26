@@ -8,6 +8,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Options for jpackage tool.
@@ -74,8 +75,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions appImage(File path) {
-        put("--app-image", path.getAbsolutePath());
-        return this;
+        return appImage(path.getAbsolutePath());
     }
 
     /**
@@ -86,8 +86,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions appImage(Path path) {
-        put("--app-image", path.toFile().getAbsolutePath());
-        return this;
+        return appImage(path.toFile());
     }
 
     /**
@@ -157,8 +156,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions dest(File path) {
-        put("--dest", path.getAbsolutePath());
-        return this;
+        return dest(path.getAbsolutePath());
     }
 
     /**
@@ -170,8 +168,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions dest(Path path) {
-        put("--dest", path.toFile().getAbsolutePath());
-        return this;
+        return dest(path.toFile());
     }
 
     /**
@@ -180,11 +177,24 @@ public class JpackageOptions extends HashMap<String, String> {
      * The keys {@code extension}, {@code mime-type}, {@code icon}, and {@code description} can be used to describe the
      * association.
      *
-     * @param path absolute path or relative to the current directory
+     * @param paths absolute paths or relative to the current directory
      * @return this map of options
      */
-    public JpackageOptions fileAssociations(String... path) {
-        put("--file-associations", String.join(",", path));
+    public JpackageOptions fileAssociations(String... paths) {
+        return fileAssociationsStrings(List.of(paths));
+    }
+
+    /**
+     * Path to a Properties file that contains list of key, value pairs.
+     * <p>
+     * The keys {@code extension}, {@code mime-type}, {@code icon}, and {@code description} can be used to describe the
+     * association.
+     *
+     * @param paths absolute paths or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions fileAssociationsStrings(List<String> paths) {
+        put("--file-associations", String.join(",", paths));
         return this;
     }
 
@@ -194,13 +204,12 @@ public class JpackageOptions extends HashMap<String, String> {
      * The keys {@code extension}, {@code mime-type}, {@code icon}, and {@code description} can be used to describe the
      * association.
      *
-     * @param path absolute path or relative to the current directory
+     * @param paths absolute path or relative to the current directory
      * @return this map of options
      */
     @SuppressWarnings("UnusedReturnValue")
-    public JpackageOptions fileAssociations(File... path) {
-        put("--file-associations", String.join(",", Arrays.stream(path).map(File::getAbsolutePath).toList()));
-        return this;
+    public JpackageOptions fileAssociations(File... paths) {
+        return fileAssociations(List.of(paths));
     }
 
     /**
@@ -209,13 +218,37 @@ public class JpackageOptions extends HashMap<String, String> {
      * The keys {@code extension}, {@code mime-type}, {@code icon}, and {@code description} can be used to describe the
      * association.
      *
-     * @param path absolute path or relative to the current directory
+     * @param paths absolute path or relative to the current directory
      * @return this map of options
      */
-    public JpackageOptions fileAssociations(Path... path) {
-        put("--file-associations", String.join(",",
-                Arrays.stream(path).map(Path::toFile).map(File::getAbsolutePath).toList()));
-        return this;
+    public JpackageOptions fileAssociations(List<File> paths) {
+        return fileAssociationsStrings(paths.stream().map(File::getAbsolutePath).toList());
+    }
+
+    /**
+     * Path to a Properties file that contains list of key, value pairs.
+     * <p>
+     * The keys {@code extension}, {@code mime-type}, {@code icon}, and {@code description} can be used to describe the
+     * association.
+     *
+     * @param paths absolute paths or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions fileAssociations(Path... paths) {
+        return fileAssociationsPaths(List.of(paths));
+    }
+
+    /**
+     * Path to a Properties file that contains list of key, value pairs.
+     * <p>
+     * The keys {@code extension}, {@code mime-type}, {@code icon}, and {@code description} can be used to describe the
+     * association.
+     *
+     * @param paths absolute paths or relative to the current directory
+     * @return this map of options
+     */
+    public JpackageOptions fileAssociationsPaths(List<Path> paths) {
+        return fileAssociations(paths.stream().map(Path::toFile).toList());
     }
 
     /**
@@ -237,8 +270,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions icon(File path) {
-        put("--icon", path.getAbsolutePath());
-        return this;
+        return icon(path.getAbsolutePath());
     }
 
     /**
@@ -248,8 +280,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions icon(Path path) {
-        put("--icon", path.toFile().getAbsolutePath());
-        return this;
+        return icon(path.toFile());
     }
 
     /**
@@ -274,8 +305,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions input(File path) {
-        put("--input", path.getAbsolutePath());
-        return this;
+        return input(path.getAbsolutePath());
     }
 
     /**
@@ -287,8 +317,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions input(Path path) {
-        put("--input", path.toFile().getAbsolutePath());
-        return this;
+        return input(path.toFile());
     }
 
     /**
@@ -310,8 +339,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions installDir(File path) {
-        put("--install-dir", path.getAbsolutePath());
-        return this;
+        return installDir(path.getAbsolutePath());
     }
 
     /**
@@ -321,8 +349,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions installDir(Path path) {
-        put("--install-dir", path.toFile().getAbsolutePath());
-        return this;
+        return installDir(path.toFile());
     }
 
     /**
@@ -388,8 +415,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions licenseFile(File path) {
-        put("--license-file", path.getAbsolutePath());
-        return this;
+        return licenseFile(path.getAbsolutePath());
     }
 
     /**
@@ -399,8 +425,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions licenseFile(Path path) {
-        put("--license-file", path.toFile().getAbsolutePath());
-        return this;
+        return licenseFile(path.toFile());
     }
 
     /**
@@ -598,8 +623,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions macEntitlements(File path) {
-        put("--mac-entitlements", path.getAbsolutePath());
-        return this;
+        return macEntitlements(path.getAbsolutePath());
     }
 
     /**
@@ -609,8 +633,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions macEntitlements(Path path) {
-        put("--mac-entitlements", path.toFile().getAbsolutePath());
-        return this;
+        return macEntitlements(path.toFile());
     }
 
     /**
@@ -792,11 +815,25 @@ public class JpackageOptions extends HashMap<String, String> {
      * <p>
      * Each path is absolute or relative to the current directory.
      *
-     * @param path one or more path
+     * @param paths one or more path
      * @return this map of options
      */
-    public JpackageOptions modulePath(String... path) {
-        put("--module-path", String.join(":", path));
+    public JpackageOptions modulePath(String... paths) {
+        return modulePathStrings(List.of(paths));
+    }
+
+    /**
+     * List of module paths.
+     * <p>
+     * Each path is either a directory of modules or the path to a modular jar.
+     * <p>
+     * Each path is absolute or relative to the current directory.
+     *
+     * @param paths one or more path
+     * @return this map of options
+     */
+    public JpackageOptions modulePathStrings(List<String> paths) {
+        put("--module-path", String.join(":", paths));
         return this;
     }
 
@@ -807,12 +844,11 @@ public class JpackageOptions extends HashMap<String, String> {
      * <p>
      * Each path is absolute or relative to the current directory.
      *
-     * @param path one or more path
+     * @param paths one or more path
      * @return this map of options
      */
-    public JpackageOptions modulePath(File... path) {
-        put("--module-path", String.join(":", Arrays.stream(path).map(File::getAbsolutePath).toList()));
-        return this;
+    public JpackageOptions modulePath(File... paths) {
+        return modulePath(List.of(paths));
     }
 
     /**
@@ -822,13 +858,39 @@ public class JpackageOptions extends HashMap<String, String> {
      * <p>
      * Each path is absolute or relative to the current directory.
      *
-     * @param path one or more path
+     * @param paths one or more path
      * @return this map of options
      */
-    public JpackageOptions modulePath(Path... path) {
-        put("--module-path", String.join(":",
-                Arrays.stream(path).map(Path::toFile).map(File::getAbsolutePath).toList()));
-        return this;
+    public JpackageOptions modulePath(List<File> paths) {
+        return modulePathStrings(paths.stream().map(File::getAbsolutePath).toList());
+    }
+
+    /**
+     * List of module paths.
+     * <p>
+     * Each path is either a directory of modules or the path to a modular jar.
+     * <p>
+     * Each path is absolute or relative to the current directory.
+     *
+     * @param paths one or more path
+     * @return this map of options
+     */
+    public JpackageOptions modulePath(Path... paths) {
+        return modulePathPaths(List.of(paths));
+    }
+
+    /**
+     * List of module paths.
+     * <p>
+     * Each path is either a directory of modules or the path to a modular jar.
+     * <p>
+     * Each path is absolute or relative to the current directory.
+     *
+     * @param paths one or more path
+     * @return this map of options
+     */
+    public JpackageOptions modulePathPaths(List<Path> paths) {
+        return modulePath(paths.stream().map(Path::toFile).toList());
     }
 
     /**
@@ -877,8 +939,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions resourceDir(File path) {
-        put("--resource-dir", path.getAbsolutePath());
-        return this;
+        return resourceDir(path.getAbsolutePath());
     }
 
     /**
@@ -891,8 +952,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions resourceDir(Path path) {
-        put("--resource-dir", path.toFile().getAbsolutePath());
-        return this;
+        return resourceDir(path.toFile());
     }
 
     /**
@@ -928,8 +988,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions runtimeImage(File path) {
-        put("--runtime-image", path.getAbsolutePath());
-        return this;
+        return runtimeImage(path.getAbsolutePath());
     }
 
     /**
@@ -946,8 +1005,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions runtimeImage(Path path) {
-        put("--runtime-image", path.toFile().getAbsolutePath());
-        return this;
+        return runtimeImage(path.toFile());
     }
 
     /**
@@ -992,8 +1050,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions temp(File path) {
-        put("--temp", path.getAbsolutePath());
-        return this;
+        return temp(path.getAbsolutePath());
     }
 
     /**
@@ -1007,8 +1064,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions temp(Path path) {
-        put("--temp", path.toFile().getAbsolutePath());
-        return this;
+        return temp(path.toFile());
     }
 
     /**
