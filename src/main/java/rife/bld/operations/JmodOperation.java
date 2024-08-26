@@ -36,36 +36,57 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
         return cmdFiles;
     }
 
+
     /**
      * Read options and/or mode from file(s).
      *
-     * @param file one or more file
+     * @param files one or more file
      * @return this operation instance
      */
-    public JmodOperation cmdFiles(String... file) {
-        cmdFiles.addAll(List.of(file));
+    public JmodOperation cmdFiles(String... files) {
+        return cmdFilesStrings(List.of(files));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more file
+     * @return this operation instance
+     */
+    public JmodOperation cmdFiles(File... files) {
+        cmdFiles.addAll(Arrays.stream(files).map(File::getAbsolutePath).toList());
         return this;
     }
 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param file one or more file
+     * @param files one or more file
      * @return this operation instance
      */
-    public JmodOperation cmdFiles(File... file) {
-        cmdFiles.addAll(Arrays.stream(file).map(File::getAbsolutePath).toList());
+    public JmodOperation cmdFiles(Path... files) {
+        return cmdFilesPaths(List.of(files));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more file
+     * @return this operation instance
+     */
+    public JmodOperation cmdFilesPaths(List<Path> files) {
+        cmdFiles.addAll(files.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
         return this;
     }
 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param file one or more file
+     * @param files one or more file
      * @return this operation instance
      */
-    public JmodOperation cmdFiles(Path... file) {
-        cmdFiles.addAll(Arrays.stream(file).map(Path::toFile).map(File::getAbsolutePath).toList());
+    public JmodOperation cmdFilesStrings(List<String> files) {
+        cmdFiles.addAll(files);
         return this;
     }
 
@@ -75,7 +96,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
             toolArgs(operationMode_.mode);
         }
 
-        toolArgsFromFile(cmdFiles);
+        toolArgsFromFileStrings(cmdFiles);
         toolArgs(jmodOptions_);
 
         if (jmodFile_ != null) {
@@ -129,8 +150,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      * @return this operation instance
      */
     public JmodOperation jmodFile(Path file) {
-        jmodFile_ = file.toFile().getAbsolutePath();
-        return this;
+        return jmodFile(file.toFile());
     }
 
     /**

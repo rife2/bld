@@ -7,7 +7,6 @@ package rife.bld.operations;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -34,44 +33,89 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
      * Additional alternative launchers can be built using this option, and this option can be used to build multiple
      * additional launchers.
      *
-     * @param launcher one or more {@link JpackageOperation.Launcher}
+     * @param launchers one or more {@link JpackageOperation.Launcher}
      * @return this operation instance
      */
-    public JpackageOperation addLauncher(Launcher... launcher) {
-        launchers_.addAll(Arrays.asList(launcher));
+    public JpackageOperation addLauncher(List<Launcher> launchers) {
+        launchers_.addAll(launchers);
+        return this;
+    }
+
+    /**
+     * List of application launchers.
+     * <p>
+     * The main application launcher will be built from the command line options.
+     * <p>
+     * Additional alternative launchers can be built using this option, and this option can be used to build multiple
+     * additional launchers.
+     *
+     * @param launchers one or more {@link JpackageOperation.Launcher}
+     * @return this operation instance
+     */
+    public JpackageOperation addLauncher(Launcher... launchers) {
+        return addLauncher(List.of(launchers));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more file
+     * @return this operation instance
+     */
+    public JpackageOperation cmdFiles(List<File> files) {
+        cmdFiles_.addAll(files.stream().map(File::getAbsolutePath).toList());
         return this;
     }
 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param file one or more file
+     * @param files one or more file
      * @return this operation instance
      */
-    public JpackageOperation cmdFiles(File... file) {
-        cmdFiles_.addAll(Arrays.stream(file).map(File::getAbsolutePath).toList());
+    public JpackageOperation cmdFiles(File... files) {
+        return cmdFiles(List.of(files));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more file
+     * @return this operation instance
+     */
+    public JpackageOperation cmdFiles(Path... files) {
+        return cmdFilesPaths(List.of(files));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more file
+     * @return this operation instance
+     */
+    public JpackageOperation cmdFiles(String... files) {
+        return cmdFilesStrings(List.of(files));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more file
+     * @return this operation instance
+     */
+    public JpackageOperation cmdFilesPaths(List<Path> files) {
+        cmdFiles_.addAll(files.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
         return this;
     }
 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param file one or more file
+     * @param files one or more file
      * @return this operation instance
      */
-    public JpackageOperation cmdFiles(Path... file) {
-        cmdFiles_.addAll(Arrays.stream(file).map(Path::toFile).map(File::getAbsolutePath).toList());
-        return this;
-    }
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param file one or more file
-     * @return this operation instance
-     */
-    public JpackageOperation cmdFiles(String... file) {
-        cmdFiles_.addAll(List.of(file));
+    public JpackageOperation cmdFilesStrings(List<String> files) {
+        cmdFiles_.addAll(files);
         return this;
     }
 
@@ -147,7 +191,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
         }
 
         public Launcher(String name, Path path) {
-            this(name, path.toFile().getAbsolutePath());
+            this(name, path.toFile());
         }
     }
 }

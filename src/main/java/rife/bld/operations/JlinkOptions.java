@@ -7,7 +7,7 @@ package rife.bld.operations;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -16,7 +16,7 @@ import java.util.List;
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
  * @since 2.1.0
  */
-public class JlinkOptions extends HashMap<String, String> {
+public class JlinkOptions extends LinkedHashMap<String, String> {
     /**
      * All Modules Path.
      */
@@ -31,9 +31,21 @@ public class JlinkOptions extends HashMap<String, String> {
      * @param modules one or more module
      * @return this map of options
      */
-    public JlinkOptions addModules(String... modules) {
+    public JlinkOptions addModules(List<String> modules) {
         put("--add-modules", String.join(",", modules));
         return this;
+    }
+
+    /**
+     * Root modules to resolve in addition to the initial modules.
+     * <p>
+     * Module can also be {@link #ALL_MODULE_PATH}
+     *
+     * @param modules one or more module
+     * @return this map of options
+     */
+    public JlinkOptions addModules(String... modules) {
+        return addModules(List.of(modules));
     }
 
     /**
@@ -141,12 +153,21 @@ public class JlinkOptions extends HashMap<String, String> {
     /**
      * Limit the universe of observable modules.
      *
-     * @param module one or more module
+     * @param modules one or more module
      * @return this map of options
      */
-    public JlinkOptions limitModule(String... module) {
-        put("--limit-modules", String.join(",", module));
+    public JlinkOptions limitModule(List<String> modules) {
+        put("--limit-modules", String.join(",", modules));
         return this;
+    }
+    /**
+     * Limit the universe of observable modules.
+     *
+     * @param modules one or more module
+     * @return this map of options
+     */
+    public JlinkOptions limitModule(String... modules) {
+        return limitModule(List.of(modules));
     }
 
     /**
@@ -304,12 +325,22 @@ public class JlinkOptions extends HashMap<String, String> {
     /**
      * Suggest providers that implement the given service types from the module path.
      *
-     * @param name one or more provider name
+     * @param names one or more provider name
      * @return this map of options
      */
-    public JlinkOptions suggestProviders(String... name) {
-        put("--suggest-providers", String.join(",", name));
+    public JlinkOptions suggestProviders(List<String> names) {
+        put("--suggest-providers", String.join(",", names));
         return this;
+    }
+
+    /**
+     * Suggest providers that implement the given service types from the module path.
+     *
+     * @param names one or more provider name
+     * @return this map of options
+     */
+    public JlinkOptions suggestProviders(String... names) {
+        return suggestProviders(List.of(names));
     }
 
     public List<String> toList() {

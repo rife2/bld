@@ -10,7 +10,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Options for jmod tool.
@@ -18,7 +19,7 @@ import java.util.HashMap;
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
  * @since 2.1.0
  */
-public class JmodOptions extends HashMap<String, String> {
+public class JmodOptions extends LinkedHashMap<String, String> {
     /**
      * Application jar files|dir containing classes.
      *
@@ -187,12 +188,12 @@ public class JmodOptions extends HashMap<String, String> {
     /**
      * Exclude files matching the supplied pattern list.
      *
-     * @param pattern one or more pattern
+     * @param patterns one or more pattern
      * @return the map of options
      */
-    public JmodOptions exclude(FilePattern... pattern) {
+    public JmodOptions exclude(List<FilePattern> patterns) {
         var args = new ArrayList<String>();
-        for (var p : pattern) {
+        for (var p : patterns) {
             if (p.type == FilePatternType.GLOB) {
                 args.add("glob:" + p.pattern);
             } else if (p.type == FilePatternType.REGEX) {
@@ -201,6 +202,16 @@ public class JmodOptions extends HashMap<String, String> {
         }
         put("--exclude", String.join(",", args));
         return this;
+    }
+
+    /**
+     * Exclude files matching the supplied pattern list.
+     *
+     * @param patterns one or more pattern
+     * @return the map of options
+     */
+    public JmodOptions exclude(FilePattern... patterns) {
+        return exclude(List.of(patterns));
     }
 
     /**

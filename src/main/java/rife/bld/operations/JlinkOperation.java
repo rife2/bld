@@ -7,7 +7,6 @@ package rife.bld.operations;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -29,33 +28,63 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     /**
      * Read options and/or mode from file(s).
      *
-     * @param file one or more file
+     * @param files one or more file
      * @return this operation instance
      */
-    public JlinkOperation cmdFiles(String... file) {
-        cmdFiles_.addAll(List.of(file));
+    public JlinkOperation cmdFiles(String... files) {
+        return cmdFilesStrings(List.of(files));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more file
+     * @return this operation instance
+     */
+    public JlinkOperation cmdFiles(List<File> files) {
+        cmdFiles_.addAll(files.stream().map(File::getAbsolutePath).toList());
         return this;
     }
 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param file one or more file
+     * @param files one or more file
      * @return this operation instance
      */
-    public JlinkOperation cmdFiles(File... file) {
-        cmdFiles_.addAll(Arrays.stream(file).map(File::getAbsolutePath).toList());
+    public JlinkOperation cmdFiles(File... files) {
+        return cmdFiles(List.of(files));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more file
+     * @return this operation instance
+     */
+    public JlinkOperation cmdFiles(Path... files) {
+        return cmdFilesPaths(List.of(files));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more file
+     * @return this operation instance
+     */
+    public JlinkOperation cmdFilesPaths(List<Path> files) {
+        cmdFiles_.addAll(files.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
         return this;
     }
 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param file one or more file
+     * @param files one or more file
      * @return this operation instance
      */
-    public JlinkOperation cmdFiles(Path... file) {
-        cmdFiles_.addAll(Arrays.stream(file).map(Path::toFile).map(File::getAbsolutePath).toList());
+    public JlinkOperation cmdFilesStrings(List<String> files) {
+        cmdFiles_.addAll(files);
         return this;
     }
 
@@ -69,19 +98,29 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     }
 
     /**
-     * Disable the plugin mentioned.
+     * Disable the plugin(s) mentioned.
      *
-     * @param plugin the plugin name
+     * @param plugins the plugin name(s)
      * @return this map of options
      */
-    public JlinkOperation disablePlugin(String... plugin) {
-        disabledPlugins_.addAll(List.of(plugin));
+    public JlinkOperation disablePlugin(List<String> plugins) {
+        disabledPlugins_.addAll(plugins);
         return this;
+    }
+
+    /**
+     * Disable the plugin(s) mentioned.
+     *
+     * @param plugins the plugin name(s)
+     * @return this map of options
+     */
+    public JlinkOperation disablePlugin(String... plugins) {
+        return disablePlugin(List.of(plugins));
     }
 
     @Override
     public void execute() throws Exception {
-        toolArgsFromFile(cmdFiles_);
+        toolArgsFromFileStrings(cmdFiles_);
         disabledPlugins_.forEach(plugin -> toolArgs("--disable-plugin", plugin));
         toolArgs(jlinkOptions_);
         super.execute();

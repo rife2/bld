@@ -6,8 +6,7 @@ package rife.bld.operations;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -16,7 +15,7 @@ import java.util.List;
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
  * @since 2.1.0
  */
-public class JpackageOptions extends HashMap<String, String> {
+public class JpackageOptions extends LinkedHashMap<String, String> {
     /**
      * URL of the application's home page.
      *
@@ -39,8 +38,36 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param modules one or more module
      * @return this map of options
      */
-    public JpackageOptions addModules(String... modules) {
+    public JpackageOptions addModules(List<String> modules) {
         put("--add-modules", String.join(",", modules));
+        return this;
+    }
+
+    /**
+     * List of modules to add.
+     * <p>
+     * This module list, along with the main module (if specified) will be passed to jlink as the
+     * {@link JlinkOptions#addModules(String...) addModules} argument. If not specified, either just the main module
+     * (if {@link #module(String, String) module} is specified), or the default set of modules (if
+     * {@link #mainJar(String) mainJar} is specified) are used.
+     *
+     * @param modules one or more module
+     * @return this map of options
+     */
+    public JpackageOptions addModules(String... modules) {
+        return addModules(List.of(modules));
+    }
+
+    /**
+     * List of paths to files and/or directories to add to the application payload.
+     * <p>
+     * <b>Requires Java 20 or higher</b>.
+     *
+     * @param additionalContents one or more path
+     * @return this map of options
+     */
+    public JpackageOptions appContent(List<String> additionalContents) {
+        put("--app-content", String.join(",", additionalContents));
         return this;
     }
 
@@ -49,12 +76,11 @@ public class JpackageOptions extends HashMap<String, String> {
      * <p>
      * <b>Requires Java 20 or higher</b>.
      *
-     * @param additionalContent one or more path
+     * @param additionalContents one or more path
      * @return this map of options
      */
-    public JpackageOptions appContent(String... additionalContent) {
-        put("--app-content", String.join(",", additionalContent));
-        return this;
+    public JpackageOptions appContent(String... additionalContents) {
+        return appContent(List.of(additionalContents));
     }
 
     /**
@@ -103,12 +129,22 @@ public class JpackageOptions extends HashMap<String, String> {
     /**
      * Command line arguments to pass to main class if no command line arguments are given to the launcher.
      *
-     * @param argument one or more argument
+     * @param arguments one or more argument
      * @return this map of options
      */
-    public JpackageOptions arguments(String... argument) {
-        put("--arguments", String.join(" ", argument));
+    public JpackageOptions arguments(List<String> arguments) {
+        put("--arguments", String.join(" ", arguments));
         return this;
+    }
+
+    /**
+     * Command line arguments to pass to main class if no command line arguments are given to the launcher.
+     *
+     * @param arguments one or more argument
+     * @return this map of options
+     */
+    public JpackageOptions arguments(String... arguments) {
+        return arguments(List.of(arguments));
     }
 
     /**
@@ -180,8 +216,9 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param paths absolute paths or relative to the current directory
      * @return this map of options
      */
-    public JpackageOptions fileAssociations(String... paths) {
-        return fileAssociationsStrings(List.of(paths));
+    public JpackageOptions fileAssociationsStrings(List<String> paths) {
+        put("--file-associations", String.join(",", paths));
+        return this;
     }
 
     /**
@@ -193,9 +230,8 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param paths absolute paths or relative to the current directory
      * @return this map of options
      */
-    public JpackageOptions fileAssociationsStrings(List<String> paths) {
-        put("--file-associations", String.join(",", paths));
-        return this;
+    public JpackageOptions fileAssociations(String... paths) {
+        return fileAssociationsStrings(List.of(paths));
     }
 
     /**
@@ -234,8 +270,8 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param paths absolute paths or relative to the current directory
      * @return this map of options
      */
-    public JpackageOptions fileAssociations(Path... paths) {
-        return fileAssociationsPaths(List.of(paths));
+    public JpackageOptions fileAssociationsPaths(List<Path> paths) {
+        return fileAssociations(paths.stream().map(Path::toFile).toList());
     }
 
     /**
@@ -247,8 +283,8 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param paths absolute paths or relative to the current directory
      * @return this map of options
      */
-    public JpackageOptions fileAssociationsPaths(List<Path> paths) {
-        return fileAssociations(paths.stream().map(Path::toFile).toList());
+    public JpackageOptions fileAssociations(Path... paths) {
+        return fileAssociationsPaths(List.of(paths));
     }
 
     /**
@@ -316,6 +352,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param path absolute path or relative to the current directory
      * @return this map of options
      */
+    @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions input(Path path) {
         return input(path.toFile());
     }
@@ -358,9 +395,19 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param options the options
      * @return this map of options
      */
-    public JpackageOptions javaOptions(String... options) {
+    public JpackageOptions javaOptions(List<String> options) {
         put("--java-options", String.join(" ", options));
         return this;
+    }
+
+    /**
+     * Options to pass to the Java runtime.
+     *
+     * @param options the options
+     * @return this map of options
+     */
+    public JpackageOptions javaOptions(String... options) {
+        return javaOptions(List.of(options));
     }
 
     /**
@@ -572,35 +619,66 @@ public class JpackageOptions extends HashMap<String, String> {
     /**
      * Include all the referenced content in the dmg.
      *
-     * @param additionalContent one or more path
+     * @param additionalContents one or more path
      * @return this map of options
      */
-    public JpackageOptions macDmgContent(String... additionalContent) {
-        put("--mac-dmg-content", String.join(",", additionalContent));
-        return this;
+    public JpackageOptions macDmgContent(String... additionalContents) {
+        return macDmgContentStrings(List.of(additionalContents));
     }
 
     /**
      * Include all the referenced content in the dmg.
      *
-     * @param additionalContent one or more path
+     * @param additionalContents one or more path
      * @return this map of options
      */
     @SuppressWarnings("UnusedReturnValue")
-    public JpackageOptions macDmgContent(File... additionalContent) {
-        put("--mac-dmg-content", String.join(",", Arrays.stream(additionalContent).map(File::getAbsolutePath).toList()));
+    public JpackageOptions macDmgContent(List<File> additionalContents) {
+        put("--mac-dmg-content", String.join(",", additionalContents.stream().map(File::getAbsolutePath).toList()));
         return this;
     }
 
     /**
      * Include all the referenced content in the dmg.
      *
-     * @param additionalContent one or more path
+     * @param additionalContents one or more path
      * @return this map of options
      */
-    public JpackageOptions macDmgContent(Path... additionalContent) {
+    @SuppressWarnings("UnusedReturnValue")
+    public JpackageOptions macDmgContent(File... additionalContents) {
+        return macDmgContent(List.of(additionalContents));
+    }
+
+    /**
+     * Include all the referenced content in the dmg.
+     *
+     * @param additionalContents one or more path
+     * @return this map of options
+     */
+    public JpackageOptions macDmgContentPaths(List<Path> additionalContents) {
         put("--mac-dmg-content", String.join(",",
-                Arrays.stream(additionalContent).map(Path::toFile).map(File::getAbsolutePath).toList()));
+                additionalContents.stream().map(Path::toFile).map(File::getAbsolutePath).toList()));
+        return this;
+    }
+
+    /**
+     * Include all the referenced content in the dmg.
+     *
+     * @param additionalContents one or more path
+     * @return this map of options
+     */
+    public JpackageOptions macDmgContentPaths(Path... additionalContents) {
+        return macDmgContentPaths(List.of(additionalContents));
+    }
+
+    /**
+     * Include all the referenced content in the dmg.
+     *
+     * @param additionalContents one or more path
+     * @return this map of options
+     */
+    public JpackageOptions macDmgContentStrings(List<String> additionalContents) {
+        put("--mac-dmg-content", String.join(",", additionalContents));
         return this;
     }
 
@@ -847,6 +925,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @param paths one or more path
      * @return this map of options
      */
+    @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions modulePath(File... paths) {
         return modulePath(List.of(paths));
     }
