@@ -6,9 +6,6 @@ package rife.bld.operations;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,7 +15,6 @@ import java.util.Map;
  * @since 2.1.0
  */
 public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> {
-    private final List<String> cmdFiles = new ArrayList<>();
     private final JmodOptions jmodOptions_ = new JmodOptions();
     private String jmodFile_;
     private OperationMode operationMode_;
@@ -27,76 +23,13 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
         super("jmod");
     }
 
-    /**
-     * Retrieves the list of files containing options or mode.
-     *
-     * @return the list of files
-     */
-    public List<String> cmdFiles() {
-        return cmdFiles;
-    }
-
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JmodOperation cmdFiles(String... files) {
-        return cmdFilesStrings(List.of(files));
-    }
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JmodOperation cmdFiles(File... files) {
-        cmdFiles.addAll(Arrays.stream(files).map(File::getAbsolutePath).toList());
-        return this;
-    }
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JmodOperation cmdFiles(Path... files) {
-        return cmdFilesPaths(List.of(files));
-    }
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JmodOperation cmdFilesPaths(List<Path> files) {
-        cmdFiles.addAll(files.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
-        return this;
-    }
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JmodOperation cmdFilesStrings(List<String> files) {
-        cmdFiles.addAll(files);
-        return this;
-    }
-
     @Override
     public void execute() throws Exception {
         if (operationMode_ != null) {
             toolArgs(operationMode_.mode);
         }
 
-        toolArgsFromFileStrings(cmdFiles);
+        toolArgsFromFiles();
         toolArgs(jmodOptions_);
 
         if (jmodFile_ != null) {

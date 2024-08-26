@@ -363,7 +363,7 @@ public class TestJpackageOperation {
         var barPath = Path.of("bar");
         var fooPath = Path.of("foo");
 
-        options = options.macDmgContentPaths(barPath, fooPath);
+        options = options.macDmgContent(barPath, fooPath);
         assertEquals(barPath.toFile().getAbsolutePath() + ',' + fooPath.toFile().getAbsolutePath(),
                 options.get("--mac-dmg-content"));
 

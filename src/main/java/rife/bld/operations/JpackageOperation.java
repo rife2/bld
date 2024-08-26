@@ -17,7 +17,6 @@ import java.util.Map;
  * @since 2.1.0
  */
 public class JpackageOperation extends AbstractToolProviderOperation<JpackageOperation> {
-    private final List<String> cmdFiles_ = new ArrayList<>();
     private final JpackageOptions jpackageOptions_ = new JpackageOptions();
     private final List<Launcher> launchers_ = new ArrayList<>();
 
@@ -56,81 +55,9 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
         return addLauncher(List.of(launchers));
     }
 
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JpackageOperation cmdFiles(List<File> files) {
-        cmdFiles_.addAll(files.stream().map(File::getAbsolutePath).toList());
-        return this;
-    }
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JpackageOperation cmdFiles(File... files) {
-        return cmdFiles(List.of(files));
-    }
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JpackageOperation cmdFiles(Path... files) {
-        return cmdFilesPaths(List.of(files));
-    }
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JpackageOperation cmdFiles(String... files) {
-        return cmdFilesStrings(List.of(files));
-    }
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JpackageOperation cmdFilesPaths(List<Path> files) {
-        cmdFiles_.addAll(files.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
-        return this;
-    }
-
-    /**
-     * Read options and/or mode from file(s).
-     *
-     * @param files one or more files
-     * @return this operation instance
-     */
-    public JpackageOperation cmdFilesStrings(List<String> files) {
-        cmdFiles_.addAll(files);
-        return this;
-    }
-
-    /**
-     * Retrieves the list of files containing options or mode.
-     *
-     * @return the list of files
-     */
-    public List<String> cmdFiles() {
-        return cmdFiles_;
-    }
-
     @Override
     public void execute() throws Exception {
-        toolArgs(cmdFiles_.stream().map(opt -> '@' + opt).toList());
+        toolArgs(cmdFiles().stream().map(opt -> '@' + opt).toList());
         for (var l : launchers_) {
             toolArgs("--add-launcher", l.name + '=' + l.path);
         }
