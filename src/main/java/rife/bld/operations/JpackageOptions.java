@@ -667,7 +667,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @param additionalContents one or more paths
      * @return this map of options
      */
-    public JpackageOptions macDmgContentPaths(Path... additionalContents) {
+    public JpackageOptions macDmgContent(Path... additionalContents) {
         return macDmgContentPaths(List.of(additionalContents));
     }
 
@@ -790,7 +790,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     }
 
     /**
-     * Team or user name portion in Apple signing identities.
+     * User or team name portion in Apple signing identities.
      * <p>
      * For direct control of the signing identity used to sign application images or installers use
      * {@link #macAppImageSignIdentity(String) macAppImageSignIdentity} and/or
@@ -1254,7 +1254,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     }
 
     /**
-     * Request to perform an install on a per-user basis.
+     * Request to perform an installation on a per-user basis.
      *
      * @param winPerUserInstall {@code true} for per-user install, {@code false} otherwise
      * @return this map of options

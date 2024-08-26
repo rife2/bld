@@ -27,6 +27,7 @@ import java.util.spi.ToolProvider;
  */
 public abstract class AbstractToolProviderOperation<T extends AbstractToolProviderOperation<T>>
         extends AbstractOperation<AbstractToolProviderOperation<T>> {
+    private final List<String> cmdFiles_ = new ArrayList<>();
     private final List<String> toolArgs_ = new ArrayList<>();
     private final String toolName_;
 
@@ -37,6 +38,81 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
      */
     public AbstractToolProviderOperation(String toolName) {
         toolName_ = toolName;
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more files
+     * @return this operation instance
+     */
+    public T cmdFiles(String... files) {
+        return cmdFilesStrings(List.of(files));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more files
+     * @return this operation instance
+     */
+    @SuppressWarnings({"unchecked"})
+    public T cmdFiles(List<File> files) {
+        cmdFiles_.addAll(files.stream().map(File::getAbsolutePath).toList());
+        return (T) this;
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more files
+     * @return this operation instance
+     */
+    public T cmdFiles(File... files) {
+        return cmdFiles(List.of(files));
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more files
+     * @return this operation instance
+     */
+    public T cmdFiles(Path... files) {
+        return cmdFilesPaths(List.of(files));
+    }
+
+    /**
+     * Retrieves the list of files containing options or mode.
+     *
+     * @return the list of files
+     */
+    public List<String> cmdFiles() {
+        return cmdFiles_;
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more files
+     * @return this operation instance
+     */
+    @SuppressWarnings({"unchecked"})
+    public T cmdFilesPaths(List<Path> files) {
+        cmdFiles_.addAll(files.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
+        return (T) this;
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param files one or more files
+     * @return this operation instance
+     */
+    @SuppressWarnings({"unchecked"})
+    public T cmdFilesStrings(List<String> files) {
+        cmdFiles_.addAll(files);
+        return (T) this;
     }
 
     /**
@@ -98,84 +174,20 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     }
 
     /**
-     * Parses arguments to pass to the tool from the given files.
+     * Parses arguments to pass to the tool from the {@link #cmdFiles() command files}.
      *
-     * @param files one or more files
-     * @return this operation instance
      * @throws FileNotFoundException if a file cannot be found
      */
-    public T toolArgsFromFile(String... files) throws IOException {
-        return toolArgsFromFileStrings(List.of(files));
-    }
-
-    /**
-     * Parses arguments to pass to the tool from the given files.
-     *
-     * @param files one or more files
-     * @return this operation instance
-     * @throws FileNotFoundException if a file cannot be found
-     */
-    public T toolArgsFromFile(Path... files) throws IOException {
-        return toolArgsFromFilePaths(List.of(files));
-    }
-
-    /**
-     * Parses arguments to pass to the tool from the given files.
-     *
-     * @param files the list of files
-     * @return this operation instance
-     * @throws FileNotFoundException if a file cannot be found
-     */
-    public T toolArgsFromFile(List<File> files) throws IOException {
-        return toolArgsFromFileStrings(files.stream().map(File::getAbsolutePath).toList());
-    }
-
-    /**
-     * Parses arguments to pass to the tool from the given files.
-     *
-     * @param files one or more files
-     * @return this operation instance
-     * @throws FileNotFoundException if a file cannot be found
-     */
-    public T toolArgsFromFile(File... files) throws IOException {
-        return toolArgsFromFile(List.of(files));
-    }
-
-    /**
-     * Parses arguments to pass to the tool from the given files.
-     *
-     * @param files the list of files
-     * @return this operation instance
-     * @throws FileNotFoundException if a file cannot be found
-     */
-    public T toolArgsFromFilePaths(List<Path> files) throws IOException {
-        return toolArgsFromFileStrings(files.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
-    }
-
-    /**
-     * Parses arguments to pass to the tool from the given files.
-     *
-     * @param files the list of files
-     * @return this operation instance
-     * @throws FileNotFoundException if a file cannot be found
-     */
-    @SuppressWarnings({"unchecked"})
-    public T toolArgsFromFileStrings(List<String> files) throws IOException {
-        var args = new ArrayList<String>();
-
-        for (var file : files) {
+    protected void toolArgsFromFiles() throws IOException {
+        for (var file : cmdFiles_) {
             try (var reader = Files.newBufferedReader(Paths.get(file), Charset.defaultCharset())) {
                 var tokenizer = new CommandLineTokenizer(reader);
                 String token;
                 while ((token = tokenizer.nextToken()) != null) {
-                    args.add(token);
+                    toolArgs_.add(token);
                 }
             }
         }
-
-        toolArgs(args);
-
-        return (T) this;
     }
 
     /**

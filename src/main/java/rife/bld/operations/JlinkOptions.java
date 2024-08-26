@@ -174,7 +174,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
      * Module path.
      * <p>
      * If not specified, the JDKs jmods directory will be used, if it exists. If specified, but it does not contain the
-     * java.base module, the JDKs jmods directory will be added, if it exists.
+     * {@code java.base} module, the JDKs jmods directory will be added, if it exists.
      *
      * @param path the module path
      * @return this map of options
@@ -188,7 +188,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
      * Module path.
      * <p>
      * If not specified, the JDKs jmods directory will be used, if it exists. If specified, but it does not contain the
-     * java.base module, the JDKs jmods directory will be added, if it exists.
+     * {@code java.base} module, the JDKs jmods directory will be added, if it exists.
      *
      * @param path the module path
      * @return this map of options
@@ -201,7 +201,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
      * Module path.
      * <p>
      * If not specified, the JDKs jmods directory will be used, if it exists. If specified, but it does not contain the
-     * java.base module, the JDKs jmods directory will be added, if it exists.
+     * {@code java.base} module, the JDKs jmods directory will be added, if it exists.
      *
      * @param path the module path
      * @return this map of options
