@@ -6,11 +6,13 @@ package rife.bld.operations;
 
 import rife.bld.operations.exceptions.ExitStatusException;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,25 +69,23 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     /**
      * Adds arguments to pass to the tool.
      *
-     * @param arg one or more argument
+     * @param args tbe list of arguments
      * @return this operation
      */
-    @SuppressWarnings("unchecked")
-    public T toolArgs(String... arg) {
-        toolArgs(List.of(arg));
+    @SuppressWarnings({"unchecked"})
+    public T toolArgs(List<String> args) {
+        toolArgs_.addAll(args);
         return (T) this;
     }
 
     /**
      * Adds arguments to pass to the tool.
      *
-     * @param args the argument to add
+     * @param args one or more arguments
      * @return this operation
      */
-    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
-    public T toolArgs(List<String> args) {
-        toolArgs_.addAll(args);
-        return (T) this;
+    public T toolArgs(String... args) {
+        return toolArgs(List.of(args));
     }
 
     /**
@@ -100,12 +100,67 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     /**
      * Parses arguments to pass to the tool from the given files.
      *
+     * @param files one or more files
+     * @return this operation instance
+     * @throws FileNotFoundException if a file cannot be found
+     */
+    public T toolArgsFromFile(String... files) throws IOException {
+        return toolArgsFromFileStrings(List.of(files));
+    }
+
+    /**
+     * Parses arguments to pass to the tool from the given files.
+     *
+     * @param files one or more files
+     * @return this operation instance
+     * @throws FileNotFoundException if a file cannot be found
+     */
+    public T toolArgsFromFile(Path... files) throws IOException {
+        return toolArgsFromFilePaths(List.of(files));
+    }
+
+    /**
+     * Parses arguments to pass to the tool from the given files.
+     *
      * @param files the list of files
      * @return this operation instance
      * @throws FileNotFoundException if a file cannot be found
      */
-    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
-    public T toolArgsFromFile(List<String> files) throws IOException {
+    public T toolArgsFromFile(List<File> files) throws IOException {
+        return toolArgsFromFileStrings(files.stream().map(File::getAbsolutePath).toList());
+    }
+
+    /**
+     * Parses arguments to pass to the tool from the given files.
+     *
+     * @param files one or more files
+     * @return this operation instance
+     * @throws FileNotFoundException if a file cannot be found
+     */
+    public T toolArgsFromFile(File... files) throws IOException {
+        return toolArgsFromFile(List.of(files));
+    }
+
+    /**
+     * Parses arguments to pass to the tool from the given files.
+     *
+     * @param files the list of files
+     * @return this operation instance
+     * @throws FileNotFoundException if a file cannot be found
+     */
+    public T toolArgsFromFilePaths(List<Path> files) throws IOException {
+        return toolArgsFromFileStrings(files.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
+    }
+
+    /**
+     * Parses arguments to pass to the tool from the given files.
+     *
+     * @param files the list of files
+     * @return this operation instance
+     * @throws FileNotFoundException if a file cannot be found
+     */
+    @SuppressWarnings({"unchecked"})
+    public T toolArgsFromFileStrings(List<String> files) throws IOException {
         var args = new ArrayList<String>();
 
         for (var file : files) {
