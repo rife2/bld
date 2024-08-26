@@ -33,32 +33,35 @@ public class TestJpackageOperation {
     void testAddLauncher() {
         var op = new JpackageOperation();
 
-        var foo = new Launcher("foo-name", "foo-path");
-        var bar = new Launcher("bar-name", Path.of("bar-path"));
-        assertEquals(bar.name(), "bar-name");
-        assertEquals(bar.path(), "bar-path");
+        var fooLauncher = new Launcher("foo-name", "foo-path");
+        var barPath = Path.of("bar-path");
+        var barLauncher = new Launcher("bar-name", barPath);
+        assertEquals("bar-name", barLauncher.name());
+        assertEquals(barPath.toFile().getAbsolutePath(), barLauncher.path());
 
-        var f = new File("foo/bar");
-        var foobar = new Launcher("foobar", f);
-        assertEquals(foobar.name(), "foobar");
-        assertEquals(foobar.path(), f.getAbsolutePath());
+        var fooFile = new File("foo/bar");
+        var foobarLauncher = new Launcher("foobar", fooFile);
+        assertEquals("foobar", foobarLauncher.name());
+        assertEquals(fooFile.getAbsolutePath(), foobarLauncher.path());
 
-        op = op.addLauncher(foo);
-        assertTrue(op.launchers().contains(foo), "foo not found");
-        op.addLauncher(bar);
-        assertTrue(op.launchers().contains(bar), "bar not found");
+        op = op.addLauncher(fooLauncher);
+        assertTrue(op.launchers().contains(fooLauncher), "foo not found");
+        op.addLauncher(barLauncher);
+        assertTrue(op.launchers().contains(barLauncher), "bar not found");
     }
 
     @Test
     void testAppImage() {
         var options = new JpackageOptions().appImage("foo");
         assertEquals("foo", options.get("--app-image"));
-        options.appImage(Path.of("bar"));
-        assertEquals("bar", options.get("--app-image"));
 
-        var foo = new File("foo");
-        options = options.appImage(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--app-image"));
+        var barPath = Path.of("bar");
+        options.appImage(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--app-image"));
+
+        var fooFile = new File("foo");
+        options = options.appImage(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--app-image"));
     }
 
     @Test
@@ -260,12 +263,14 @@ public class TestJpackageOperation {
     void testDest() {
         var options = new JpackageOptions().dest("foo");
         assertEquals("foo", options.get("--dest"));
-        options = options.dest(Path.of("bar"));
-        assertEquals("bar", options.get("--dest"));
 
-        var foo = new File("foo");
-        options.dest(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--dest"));
+        var barPath = Path.of("bar");
+        options = options.dest(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--dest"));
+
+        var fooFile = new File("foo");
+        options.dest(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--dest"));
     }
 
     @Test
@@ -273,13 +278,16 @@ public class TestJpackageOperation {
         var options = new JpackageOptions().fileAssociations("foo", "bar");
         assertEquals("foo,bar", options.get("--file-associations"));
 
-        options = options.fileAssociations(Path.of("bar"), Path.of("foo"));
-        assertEquals("bar,foo", options.get("--file-associations"));
+        var barPath = Path.of("bar");
+        var fooPath = Path.of("foo");
+        options = options.fileAssociations(barPath, fooPath);
+        assertEquals(barPath.toFile().getAbsolutePath() + ',' + fooPath.toFile().getAbsolutePath(),
+                options.get("--file-associations"));
 
-        var foo = new File("foo");
-        var bar = new File("bar");
-        options.fileAssociations(foo, bar);
-        assertEquals(foo.getAbsolutePath() + ',' + bar.getAbsolutePath(), options.get("--file-associations"));
+        var fooFile = new File("foo");
+        var barFile = new File("bar");
+        options.fileAssociations(fooFile, barFile);
+        assertEquals(fooFile.getAbsolutePath() + ',' + barFile.getAbsolutePath(), options.get("--file-associations"));
     }
 
     @Test
@@ -293,12 +301,14 @@ public class TestJpackageOperation {
     void testIcon() {
         var options = new JpackageOptions().icon("foo");
         assertEquals("foo", options.get("--icon"));
-        options = options.icon(Path.of("bar"));
-        assertEquals("bar", options.get("--icon"));
 
-        var foo = new File("foo");
-        options.icon(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--icon"));
+        var barPath = Path.of("bar");
+        options = options.icon(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--icon"));
+
+        var fooFile = new File("foo");
+        options.icon(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--icon"));
     }
 
     @Test
@@ -307,36 +317,42 @@ public class TestJpackageOperation {
 
         options.input("foo");
         assertEquals("foo", options.get("--input"));
-        options.input(Path.of("bar"));
-        assertEquals("bar", options.get("--input"));
 
-        var foo = new File("foo");
-        options.input(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--input"));
+        var barPath = Path.of("bar");
+        options.input(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--input"));
+
+        var fooFile = new File("foo");
+        options.input(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--input"));
     }
 
     @Test
     void testInstallDir() {
         var options = new JpackageOptions().installDir("foo");
         assertEquals("foo", options.get("--install-dir"));
-        options = options.installDir(Path.of("bar"));
-        assertEquals("bar", options.get("--install-dir"));
 
-        var foo = new File("foo");
-        options.installDir(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--install-dir"));
+        var barPath = Path.of("bar");
+        options = options.installDir(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--install-dir"));
+
+        var fooFile = new File("foo");
+        options.installDir(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--install-dir"));
     }
 
     @Test
     void testLicenseFile() {
         var options = new JpackageOptions().licenseFile("foo");
         assertEquals("foo", options.get("--license-file"));
-        options = options.licenseFile(Path.of("bar"));
-        assertEquals("bar", options.get("--license-file"));
 
-        var foo = new File("foo");
-        options.licenseFile(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--license-file"));
+        var barPath = Path.of("bar");
+        options = options.licenseFile(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--license-file"));
+
+        var fooFile = new File("foo");
+        options.licenseFile(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--license-file"));
     }
 
     @Test
@@ -344,25 +360,31 @@ public class TestJpackageOperation {
         var options = new JpackageOptions().macDmgContent("foo", "bar");
         assertEquals("foo,bar", options.get("--mac-dmg-content"));
 
-        options = options.macDmgContent(Path.of("bar"), Path.of("foo"));
-        assertEquals("bar,foo", options.get("--mac-dmg-content"));
+        var barPath = Path.of("bar");
+        var fooPath = Path.of("foo");
 
-        var foo = new File("foo");
-        var bar = new File("bar");
-        options.macDmgContent(foo, bar);
-        assertEquals(foo.getAbsolutePath() + ',' + bar.getAbsolutePath(), options.get("--mac-dmg-content"));
+        options = options.macDmgContent(barPath, fooPath);
+        assertEquals(barPath.toFile().getAbsolutePath() + ',' + fooPath.toFile().getAbsolutePath(),
+                options.get("--mac-dmg-content"));
+
+        var fooFile = new File("foo");
+        var barFile = new File("bar");
+        options.macDmgContent(fooFile, barFile);
+        assertEquals(fooFile.getAbsolutePath() + ',' + barFile.getAbsolutePath(), options.get("--mac-dmg-content"));
     }
 
     @Test
     void testMacEntitlements() {
         var options = new JpackageOptions().macEntitlements("foo");
         assertEquals("foo", options.get("--mac-entitlements"));
-        options = options.macEntitlements(Path.of("bar"));
-        assertEquals("bar", options.get("--mac-entitlements"));
 
-        var foo = new File("foo");
-        options.macEntitlements(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--mac-entitlements"));
+        var barPath = Path.of("bar");
+        options = options.macEntitlements(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--mac-entitlements"));
+
+        var fooFile = new File("foo");
+        options.macEntitlements(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--mac-entitlements"));
     }
 
     @Test
@@ -378,12 +400,14 @@ public class TestJpackageOperation {
     void testModulePath() {
         var options = new JpackageOptions().modulePath("foo");
         assertEquals("foo", options.get("--module-path"));
-        options = options.modulePath(Path.of("bar"));
-        assertEquals("bar", options.get("--module-path"));
 
-        var foo = new File("foo");
-        options.modulePath(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--module-path"));
+        var barPath = Path.of("bar");
+        options = options.modulePath(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--module-path"));
+
+        var fooFile = new File("foo");
+        options.modulePath(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--module-path"));
     }
 
     @Test
@@ -398,36 +422,42 @@ public class TestJpackageOperation {
     void testResourceDir() {
         var options = new JpackageOptions().resourceDir("foo");
         assertEquals("foo", options.get("--resource-dir"));
-        options = options.resourceDir(Path.of("bar"));
-        assertEquals("bar", options.get("--resource-dir"));
 
-        var foo = new File("foo");
-        options.resourceDir(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--resource-dir"));
+        var barPath = Path.of("bar");
+        options = options.resourceDir(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--resource-dir"));
+
+        var fooFile = new File("foo");
+        options.resourceDir(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--resource-dir"));
     }
 
     @Test
     void testRuntimeImage() {
         var options = new JpackageOptions().runtimeImage("foo");
         assertEquals("foo", options.get("--runtime-image"));
-        options = options.runtimeImage(Path.of("bar"));
-        assertEquals("bar", options.get("--runtime-image"));
 
-        var foo = new File("foo");
-        options.runtimeImage(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--runtime-image"));
+        var barPath = Path.of("bar");
+        options = options.runtimeImage(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--runtime-image"));
+
+        var fooFile = new File("foo");
+        options.runtimeImage(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--runtime-image"));
     }
 
     @Test
     void testTemp() {
         var options = new JpackageOptions().temp("foo");
         assertEquals("foo", options.get("--temp"));
-        options = options.temp(Path.of("bar"));
-        assertEquals("bar", options.get("--temp"));
 
-        var foo = new File("foo");
-        options.temp(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--temp"));
+        var barPath = Path.of("bar");
+        options = options.temp(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--temp"));
+
+        var fooFile = new File("foo");
+        options.temp(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--temp"));
     }
 
     @Test

@@ -26,7 +26,6 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
         super("jlink");
     }
 
-
     /**
      * Read options and/or mode from file(s).
      *
@@ -56,7 +55,7 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
      * @return this operation instance
      */
     public JlinkOperation cmdFiles(Path... file) {
-        cmdFiles_.addAll(Arrays.stream(file).map(Path::toString).toList());
+        cmdFiles_.addAll(Arrays.stream(file).map(Path::toFile).map(File::getAbsolutePath).toList());
         return this;
     }
 

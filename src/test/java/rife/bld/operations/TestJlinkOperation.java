@@ -158,15 +158,16 @@ public class TestJlinkOperation {
     @Test
     void testModulePath() {
         var options = new JlinkOptions();
-
         options.modulePath("foo");
         assertEquals("foo", options.get("--module-path"));
-        options.modulePath(Path.of("bar"));
-        assertEquals("bar", options.get("--module-path"));
 
-        var foo = new File("foo");
-        options.modulePath(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--module-path"));
+        var barPath = Path.of("bar");
+        options.modulePath(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--module-path"));
+
+        var fooFile = new File("foo");
+        options.modulePath(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--module-path"));
     }
 
     @Test
@@ -180,15 +181,16 @@ public class TestJlinkOperation {
     @Test
     void testOutput() {
         var options = new JlinkOptions();
-
         options.output("foo");
         assertEquals("foo", options.get("--output"));
-        options.output(Path.of("bar"));
-        assertEquals("bar", options.get("--output"));
 
-        var foo = new File("foo");
-        options.output(foo);
-        assertEquals(foo.getAbsolutePath(), options.get("--output"));
+        var barPath = Path.of("bar");
+        options.output(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--output"));
+
+        var fooFile = new File("foo");
+        options.output(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--output"));
     }
 
     @Test

@@ -65,7 +65,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      * @return this operation instance
      */
     public JmodOperation cmdFiles(Path... file) {
-        cmdFiles.addAll(Arrays.stream(file).map(Path::toString).toList());
+        cmdFiles.addAll(Arrays.stream(file).map(Path::toFile).map(File::getAbsolutePath).toList());
         return this;
     }
 
@@ -129,7 +129,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      * @return this operation instance
      */
     public JmodOperation jmodFile(Path file) {
-        jmodFile_ = file.toString();
+        jmodFile_ = file.toFile().getAbsolutePath();
         return this;
     }
 

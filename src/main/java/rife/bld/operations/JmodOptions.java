@@ -60,7 +60,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions cmds(Path path) {
-        put("--cmds", path.toString());
+        put("--cmds", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -112,7 +112,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions config(Path path) {
-        put("--config", path.toString());
+        put("--config", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -156,7 +156,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions dir(Path path) {
-        put("--dir", path.toString());
+        put("--dir", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -252,7 +252,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions headerFiles(Path path) {
-        put("--header-files", path.toString());
+        put("--header-files", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -286,7 +286,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions legalNotices(Path path) {
-        put("--legal-notices", path.toString());
+        put("--legal-notices", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -320,7 +320,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions libs(Path path) {
-        put("--libs", path.toString());
+        put("--libs", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -365,7 +365,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions manPages(Path path) {
-        put("--man-pages", path.toString());
+        put("--man-pages", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -398,7 +398,7 @@ public class JmodOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions modulePath(Path path) {
-        put("--module-path", path.toString());
+        put("--module-path", path.toFile().getAbsolutePath());
         return this;
     }
 

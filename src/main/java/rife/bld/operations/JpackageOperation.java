@@ -60,7 +60,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
      * @return this operation instance
      */
     public JpackageOperation cmdFiles(Path... file) {
-        cmdFiles_.addAll(Arrays.stream(file).map(Path::toString).toList());
+        cmdFiles_.addAll(Arrays.stream(file).map(Path::toFile).map(File::getAbsolutePath).toList());
         return this;
     }
 
@@ -147,7 +147,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
         }
 
         public Launcher(String name, Path path) {
-            this(name, path.toString());
+            this(name, path.toFile().getAbsolutePath());
         }
     }
 }

@@ -86,7 +86,7 @@ public class JpackageOptions extends HashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions appImage(Path path) {
-        put("--app-image", path.toString());
+        put("--app-image", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -170,7 +170,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions dest(Path path) {
-        put("--dest", path.toString());
+        put("--dest", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -213,7 +213,8 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions fileAssociations(Path... path) {
-        put("--file-associations", String.join(",", Arrays.stream(path).map(Path::toString).toList()));
+        put("--file-associations", String.join(",",
+                Arrays.stream(path).map(Path::toFile).map(File::getAbsolutePath).toList()));
         return this;
     }
 
@@ -247,7 +248,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions icon(Path path) {
-        put("--icon", path.toString());
+        put("--icon", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -286,7 +287,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions input(Path path) {
-        put("--input", path.toString());
+        put("--input", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -320,7 +321,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions installDir(Path path) {
-        put("--install-dir", path.toString());
+        put("--install-dir", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -398,7 +399,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions licenseFile(Path path) {
-        put("--license-file", path.toString());
+        put("--license-file", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -573,7 +574,8 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions macDmgContent(Path... additionalContent) {
-        put("--mac-dmg-content", String.join(",", Arrays.stream(additionalContent).map(Path::toString).toList()));
+        put("--mac-dmg-content", String.join(",",
+                Arrays.stream(additionalContent).map(Path::toFile).map(File::getAbsolutePath).toList()));
         return this;
     }
 
@@ -607,7 +609,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions macEntitlements(Path path) {
-        put("--mac-entitlements", path.toString());
+        put("--mac-entitlements", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -824,7 +826,8 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions modulePath(Path... path) {
-        put("--module-path", String.join(":", Arrays.stream(path).map(Path::toString).toList()));
+        put("--module-path", String.join(":",
+                Arrays.stream(path).map(Path::toFile).map(File::getAbsolutePath).toList()));
         return this;
     }
 
@@ -888,7 +891,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions resourceDir(Path path) {
-        put("--resource-dir", path.toString());
+        put("--resource-dir", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -943,7 +946,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions runtimeImage(Path path) {
-        put("--runtime-image", path.toString());
+        put("--runtime-image", path.toFile().getAbsolutePath());
         return this;
     }
 
@@ -1004,7 +1007,7 @@ public class JpackageOptions extends HashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions temp(Path path) {
-        put("--temp", path.toString());
+        put("--temp", path.toFile().getAbsolutePath());
         return this;
     }
 
