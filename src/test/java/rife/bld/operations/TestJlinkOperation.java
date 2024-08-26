@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -90,10 +91,20 @@ public class TestJlinkOperation {
     }
 
     @Test
+    void testCmdFilesPath() {
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jlink = new JlinkOperation().cmdFiles(Path.of("src/test/resources/jlink/options_verbose.txt"),
+                Path.of("src/test/resources/jlink/options_version.txt"));
+        assertDoesNotThrow(jlink::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
+    }
+
+    @Test
     void testCmdFilesVersion() {
         System.setOut(new PrintStream(outputStreamCaptor));
-        var jlink = new JlinkOperation().cmdFiles("src/test/resources/jlink/options_verbose.txt",
-                "src/test/resources/jlink/options_version.txt");
+        var jlink = new JlinkOperation().cmdFiles(new File("src/test/resources/jlink/options_verbose.txt"),
+                new File("src/test/resources/jlink/options_version.txt"));
         assertDoesNotThrow(jlink::execute);
         var out = outputStreamCaptor.toString();
         assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
@@ -118,10 +129,10 @@ public class TestJlinkOperation {
             var output = new File(tmpdir, "jlink");
 
             var options = new JlinkOptions()
-                    .modulePath("src/test/resources/jlink/build/jmod")
+                    .modulePath(new File("src/test/resources/jlink/build/jmod"))
                     .addModules("dev.mccue.tree")
                     .launcher("tree", "dev.mccue.tree", "dev.mccue.tree.Tree")
-                    .output(output.getAbsolutePath());
+                    .output(output);
             if (Runtime.version().version().get(0) >= 21) {
                 options.compress(ZipCompression.ZIP_6);
             } else {
@@ -145,11 +156,41 @@ public class TestJlinkOperation {
     }
 
     @Test
+    void testModulePath() {
+        var options = new JlinkOptions();
+        options.modulePath("foo");
+        assertEquals("foo", options.get("--module-path"));
+
+        var barPath = Path.of("bar");
+        options.modulePath(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--module-path"));
+
+        var fooFile = new File("foo");
+        options.modulePath(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--module-path"));
+    }
+
+    @Test
     void testNoArguments() {
         var jlink = new JlinkOperation();
         assertTrue(jlink.jlinkOptions().isEmpty(), "jlink options not empty");
         assertTrue(jlink.cmdFiles().isEmpty(), "file options not empty");
         assertThrows(ExitStatusException.class, jlink::execute);
+    }
+
+    @Test
+    void testOutput() {
+        var options = new JlinkOptions();
+        options.output("foo");
+        assertEquals("foo", options.get("--output"));
+
+        var barPath = Path.of("bar");
+        options.output(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--output"));
+
+        var fooFile = new File("foo");
+        options.output(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--output"));
     }
 
     @Test

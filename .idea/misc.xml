@@ -1,4 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="EntryPointsManager">
+    <entry_points version="2.0">
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JpackageOptions.PackageType APP_IMAGE" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JpackageOptions.PackageType DMG" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JpackageOptions.PackageType MSI" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JpackageOptions.PackageType PKG" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JpackageOptions.PackageType RPM" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JlinkOptions.CompressionLevel CONSTANT_STRING_SHARING" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JlinkOptions.CompressionLevel NO_COMPRESSION" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JlinkOptions.Endian LITTLE" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JmodOperation.OperationMode EXTRACT" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JmodOperation.OperationMode HASH" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JmodOptions.ResolvedReason DEPRECATED_FOR_REMOVAL" />
+      <entry_point TYPE="field" FQNAME="rife.bld.operations.JmodOptions.ResolvedReason INCUBATING" />
+    </entry_points>
+    <pattern value="rife.bld.operations.JpackageOptions.PackageType" />
+    <pattern value="rife.bld.operations.JlinkOptions.CompressionLevel" />
+    <pattern value="rife.bld.operations.JlinkOptions.Endian" />
+    <pattern value="rife.bld.operations.JmodOperation.OperationMode" />
+    <pattern value="rife.bld.operations.JmodOptions.ResolvedReason" />
+  </component>
   <component name="PDMPlugin">
     <option name="skipTestSources" value="false" />
   </component>

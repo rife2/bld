@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -84,7 +85,7 @@ public class TestJmodOperation {
     @Test
     void testCmdFiles() {
         System.setOut(new PrintStream(outputStreamCaptor));
-        var jmod = new JmodOperation().cmdFiles("src/test/resources/jlink/options_version.txt");
+        var jmod = new JmodOperation().cmdFiles(new File("src/test/resources/jlink/options_version.txt"));
         assertDoesNotThrow(jmod::execute);
         var out = outputStreamCaptor.toString();
         assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
@@ -98,13 +99,50 @@ public class TestJmodOperation {
 
             var jmod = new JmodOperation()
                     .cmdFiles("src/test/resources/jlink/options_jmod.txt")
-                    .jmodFile(mod.getAbsolutePath());
+                    .jmodFile(mod);
 
             assertDoesNotThrow(jmod::execute);
             assertTrue(mod.exists(), "mod does not exist");
         } finally {
             FileUtils.deleteDirectory(tmpdir);
         }
+    }
+
+    @Test
+    void testCmdFilesPath() {
+        System.setOut(new PrintStream(outputStreamCaptor));
+        var jmod = new JmodOperation().cmdFiles(Path.of("src/test/resources/jlink/options_version.txt"));
+        assertDoesNotThrow(jmod::execute);
+        var out = outputStreamCaptor.toString();
+        assertTrue(out.matches("[\\d.]+[\\r\\n]+"), out);
+    }
+
+    @Test
+    void testCmds() {
+        var options = new JmodOptions().cmds("foo");
+        assertEquals("foo", options.get("--cmds"));
+
+        var barPath = Path.of("bar");
+        options = options.cmds(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--cmds"));
+
+        var fooFile = new File("foo");
+        options.cmds(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--cmds"));
+    }
+
+    @Test
+    void testConfig() {
+        var options = new JmodOptions().config("foo");
+        assertEquals("foo", options.get("--config"));
+
+        var barPath = Path.of("bar");
+        options = options.config(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--config"));
+
+        var fooFile = new File("foo");
+        options.config(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--config"));
     }
 
     @Test
@@ -119,7 +157,7 @@ public class TestJmodOperation {
                     .classpath("src/test/resources/jlink/build/jar/dev.mccue.apple.jar");
             var jmod = new JmodOperation()
                     .operationMode(OperationMode.CREATE)
-                    .jmodFile(mod.getAbsolutePath())
+                    .jmodFile(mod)
                     .jmodOptions(options);
 
             assertDoesNotThrow(jmod::execute);
@@ -127,6 +165,20 @@ public class TestJmodOperation {
         } finally {
             FileUtils.deleteDirectory(tmpdir);
         }
+    }
+
+    @Test
+    void testDir() {
+        var options = new JmodOptions().dir("foo");
+        assertEquals("foo", options.get("--dir"));
+
+        var barPath = Path.of("bar");
+        options = options.dir(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--dir"));
+
+        var fooFile = new File("foo");
+        options.dir(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--dir"));
     }
 
     @Test
@@ -142,7 +194,7 @@ public class TestJmodOperation {
 
             var jmod = new JmodOperation()
                     .operationMode(OperationMode.CREATE)
-                    .jmodFile(mod.getAbsolutePath())
+                    .jmodFile(mod)
                     .jmodOptions(options);
 
             assertDoesNotThrow(jmod::execute);
@@ -166,10 +218,94 @@ public class TestJmodOperation {
     }
 
     @Test
+    void testHeaderFiles() {
+        var options = new JmodOptions().headerFiles("foo");
+        assertEquals("foo", options.get("--header-files"));
+
+        var barPath = Path.of("bar");
+        options = options.headerFiles(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--header-files"));
+
+        var fooFile = new File("foo");
+        options.headerFiles(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--header-files"));
+    }
+
+    @Test
     void testHelp() {
         var jmod = new JmodOperation().toolArgs("--help-extra");
         assertDoesNotThrow(jmod::execute);
         assertTrue(jmod.toolArgs().isEmpty(), "args not empty");
+    }
+
+    @Test
+    void testJmodFile() {
+        var op = new JmodOperation().jmodFile("foo");
+        assertEquals("foo", op.jmodFile());
+
+        var barPath = Path.of("bar");
+        op = op.jmodFile(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), op.jmodFile());
+
+        var fooFile = new File("foo");
+        op.jmodFile(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), op.jmodFile());
+    }
+
+    @Test
+    void testLegalNotices() {
+        var options = new JmodOptions().legalNotices("foo");
+        assertEquals("foo", options.get("--legal-notices"));
+
+        var barPath = Path.of("bar");
+        options = options.legalNotices(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--legal-notices"));
+
+        var fooFile = new File("foo");
+        options.legalNotices(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--legal-notices"));
+    }
+
+    @Test
+    void testLibs() {
+        var options = new JmodOptions().libs("foo");
+        assertEquals("foo", options.get("--libs"));
+
+        var barPath = Path.of("bar");
+        options = options.libs(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--libs"));
+
+        var fooFile = new File("foo");
+        options.libs(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--libs"));
+    }
+
+    @Test
+    void testManPages() {
+        var options = new JmodOptions().manPages("foo");
+        assertEquals("foo", options.get("--man-pages"));
+
+        var barPath = Path.of("bar");
+        options = options.manPages(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--man-pages"));
+
+        var fooFile = new File("foo");
+        options.manPages(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--man-pages"));
+    }
+
+    @Test
+    void testModulePath() {
+        var options = new JmodOptions().modulePath("foo");
+        assertEquals("foo", options.get("--module-path"));
+
+        var barPath = Path.of("bar");
+        options = options.modulePath(barPath);
+        assertEquals(barPath.toFile().getAbsolutePath(), options.get("--module-path"));
+
+        var fooFile = new File("foo");
+        options.modulePath(fooFile);
+        assertEquals(fooFile.getAbsolutePath(), options.get("--module-path"));
     }
 
     @Test

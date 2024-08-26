@@ -4,6 +4,8 @@
  */
 package rife.bld.operations;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -162,6 +164,34 @@ public class JlinkOptions extends HashMap<String, String> {
     }
 
     /**
+     * Module path.
+     * <p>
+     * If not specified, the JDKs jmods directory will be used, if it exists. If specified, but it does not contain the
+     * java.base module, the JDKs jmods directory will be added, if it exists.
+     *
+     * @param path the module path
+     * @return this map of options
+     */
+    public JlinkOptions modulePath(File path) {
+        put("--module-path", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Module path.
+     * <p>
+     * If not specified, the JDKs jmods directory will be used, if it exists. If specified, but it does not contain the
+     * java.base module, the JDKs jmods directory will be added, if it exists.
+     *
+     * @param path the module path
+     * @return this map of options
+     */
+    public JlinkOptions modulePath(Path path) {
+        put("--module-path", path.toFile().getAbsolutePath());
+        return this;
+    }
+
+    /**
      * Exclude include header files.
      *
      * @param noHeaderFiles {@code true} to exclude header files, {@code false} otherwise
@@ -199,6 +229,28 @@ public class JlinkOptions extends HashMap<String, String> {
      */
     public JlinkOptions output(String path) {
         put("--output", path);
+        return this;
+    }
+
+    /**
+     * Location of output path.
+     *
+     * @param path the output path
+     * @return this map of options
+     */
+    public JlinkOptions output(File path) {
+        put("--output", path.getAbsolutePath());
+        return this;
+    }
+
+    /**
+     * Location of output path.
+     *
+     * @param path the output path
+     * @return this map of options
+     */
+    public JlinkOptions output(Path path) {
+        put("--output", path.toFile().getAbsolutePath());
         return this;
     }
 

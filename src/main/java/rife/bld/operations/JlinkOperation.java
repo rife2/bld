@@ -4,7 +4,10 @@
  */
 package rife.bld.operations;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +26,6 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
         super("jlink");
     }
 
-
     /**
      * Read options and/or mode from file(s).
      *
@@ -32,6 +34,28 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
      */
     public JlinkOperation cmdFiles(String... file) {
         cmdFiles_.addAll(List.of(file));
+        return this;
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param file one or more file
+     * @return this operation instance
+     */
+    public JlinkOperation cmdFiles(File... file) {
+        cmdFiles_.addAll(Arrays.stream(file).map(File::getAbsolutePath).toList());
+        return this;
+    }
+
+    /**
+     * Read options and/or mode from file(s).
+     *
+     * @param file one or more file
+     * @return this operation instance
+     */
+    public JlinkOperation cmdFiles(Path... file) {
+        cmdFiles_.addAll(Arrays.stream(file).map(Path::toFile).map(File::getAbsolutePath).toList());
         return this;
     }
 
