@@ -191,9 +191,9 @@ public class TestRunOperation {
 
             FileUtils.writeString("""
                 module pkg {
-                    requires java.desktop;
                 }
                 """, source_file2);
+
             var build_main = new File(tmp, "buildMain");
 
             var compile_operation = new CompileOperation()
@@ -246,6 +246,44 @@ public class TestRunOperation {
             var check_result = new StringBuilder();
             new RunOperation()
                 .fromProject(create_operation.project())
+                .outputProcessor(s -> {
+                    check_result.append(s);
+                    return true;
+                })
+                .execute();
+            assertEquals("Hello World!", check_result.toString());
+
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testFromProjectModule()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var create_operation = new CreateAppOperation()
+                .workDirectory(tmp)
+                .packageName("com.example")
+                .projectName("myapp")
+                .downloadDependencies(true);
+            create_operation.execute();
+
+            var source_module_info = new File(create_operation.project().srcMainJavaDirectory(), "module-info.java");
+            FileUtils.writeString("""
+                module com.example {
+                }
+                """, source_module_info);
+
+            new CompileOperation()
+                .fromProject(create_operation.project()).execute();
+
+            var check_result = new StringBuilder();
+            new RunOperation()
+                .fromProject(create_operation.project())
+                .modulePath(create_operation.project().buildMainDirectory().getAbsolutePath())
+                .module("com.example")
                 .outputProcessor(s -> {
                     check_result.append(s);
                     return true;
