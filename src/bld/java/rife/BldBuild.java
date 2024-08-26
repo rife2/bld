@@ -79,7 +79,10 @@ public class BldBuild extends AbstractRife2Build {
             .sourceFiles(FileUtils.getJavaFileList(core_src_main_java_dir))
             .javadocOptions()
                 .docTitle("<a href=\"https://rife2.com/bld\">bld</a> " + version())
-                .overview(new File(srcMainJavaDirectory(), "overview.html"));
+                .overview(new File(srcMainJavaDirectory(), "overview.html"))
+                .addAll(List.of("--allow-script-in-comments",
+                    "-group", "bld", "rife.bld*",
+                    "-group", "RIFE2/core", "rife:rife.cmf*:rife.config*:rife.database*:rife.datastructures*:rife.engine*:rife.forms*:rife.instrument*:rife.ioc*:rife.resources*:rife.selector*:rife.template*:rife.tools*:rife.validation*:rife.xml*"));
 
         publishOperation()
             .repository(version.isSnapshot() ? repository("rife2-snapshots") : repository("rife2-releases"))
@@ -107,14 +110,6 @@ public class BldBuild extends AbstractRife2Build {
                 .signPassphrase(property("sign.passphrase")))
             .artifacts(
                 new PublishArtifact(zipBldOperation.destinationFile(), "", "zip"));
-    }
-
-    @Override
-    public void javadoc()
-    throws Exception {
-        javadocOperation().executeOnce(() -> javadocOperation()
-            .fromProject(this)
-            .sourceFiles(FileUtils.getJavaFileList(buildGeneratedDir)));
     }
 
     final ZipOperation zipBldOperation = new ZipOperation();

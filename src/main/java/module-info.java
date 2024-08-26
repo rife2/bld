@@ -1,7 +1,10 @@
 /**
  * bld is a new build system that allows you to write your build logic in pure Java.
  * <p>
- * More information can be found on the <a href="https://rife2.com/bld">`bld` website</a>.
+ * More information can be found on the <a href="https://rife2.com/bld"><code>bld</code> website</a>.
+ * <p>
+ * Note that bld builds on top of the foundation that RIFE2 provides and includes the features
+ * of <a href="https://github.com/rife2/rife2-core">RIFE2/core</a>.
  *
  * @since 2.1.0
  */
@@ -19,6 +22,7 @@ module rife.bld {
     exports rife.bld.dependencies;
     exports rife.bld.dependencies.exceptions;
     exports rife.bld.help;
+    exports rife.bld.instrument;
     exports rife.bld.operations;
     exports rife.bld.operations.exceptions;
     exports rife.bld.publish;
