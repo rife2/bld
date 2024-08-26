@@ -69,7 +69,7 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     /**
      * Adds arguments to pass to the tool.
      *
-     * @param args the argument to add
+     * @param args tbe list of arguments
      * @return this operation
      */
     @SuppressWarnings({"unchecked"})
@@ -81,11 +81,11 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     /**
      * Adds arguments to pass to the tool.
      *
-     * @param arg one or more argument
+     * @param args one or more arguments
      * @return this operation
      */
-    public T toolArgs(String... arg) {
-        return toolArgs(List.of(arg));
+    public T toolArgs(String... args) {
+        return toolArgs(List.of(args));
     }
 
     /**
@@ -100,7 +100,7 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     /**
      * Parses arguments to pass to the tool from the given files.
      *
-     * @param files the list of files
+     * @param files one or more files
      * @return this operation instance
      * @throws FileNotFoundException if a file cannot be found
      */
@@ -111,7 +111,7 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     /**
      * Parses arguments to pass to the tool from the given files.
      *
-     * @param files the list of files
+     * @param files one or more files
      * @return this operation instance
      * @throws FileNotFoundException if a file cannot be found
      */
@@ -133,7 +133,7 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
     /**
      * Parses arguments to pass to the tool from the given files.
      *
-     * @param files the list of files
+     * @param files one or more files
      * @return this operation instance
      * @throws FileNotFoundException if a file cannot be found
      */

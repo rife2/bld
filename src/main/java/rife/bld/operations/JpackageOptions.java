@@ -35,7 +35,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * (if {@link #module(String, String) module} is specified), or the default set of modules (if
      * {@link #mainJar(String) mainJar} is specified) are used.
      *
-     * @param modules one or more module
+     * @param modules one or more modules
      * @return this map of options
      */
     public JpackageOptions addModules(List<String> modules) {
@@ -51,7 +51,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * (if {@link #module(String, String) module} is specified), or the default set of modules (if
      * {@link #mainJar(String) mainJar} is specified) are used.
      *
-     * @param modules one or more module
+     * @param modules one or more modules
      * @return this map of options
      */
     public JpackageOptions addModules(String... modules) {
@@ -63,7 +63,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * <p>
      * <b>Requires Java 20 or higher</b>.
      *
-     * @param additionalContents one or more path
+     * @param additionalContents one or more paths
      * @return this map of options
      */
     public JpackageOptions appContent(List<String> additionalContents) {
@@ -76,7 +76,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * <p>
      * <b>Requires Java 20 or higher</b>.
      *
-     * @param additionalContents one or more path
+     * @param additionalContents one or more paths
      * @return this map of options
      */
     public JpackageOptions appContent(String... additionalContents) {
@@ -129,7 +129,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     /**
      * Command line arguments to pass to main class if no command line arguments are given to the launcher.
      *
-     * @param arguments one or more argument
+     * @param arguments one or more arguments
      * @return this map of options
      */
     public JpackageOptions arguments(List<String> arguments) {
@@ -140,7 +140,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     /**
      * Command line arguments to pass to main class if no command line arguments are given to the launcher.
      *
-     * @param arguments one or more argument
+     * @param arguments one or more arguments
      * @return this map of options
      */
     public JpackageOptions arguments(String... arguments) {
@@ -619,7 +619,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     /**
      * Include all the referenced content in the dmg.
      *
-     * @param additionalContents one or more path
+     * @param additionalContents one or more paths
      * @return this map of options
      */
     public JpackageOptions macDmgContent(String... additionalContents) {
@@ -629,7 +629,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     /**
      * Include all the referenced content in the dmg.
      *
-     * @param additionalContents one or more path
+     * @param additionalContents one or more paths
      * @return this map of options
      */
     @SuppressWarnings("UnusedReturnValue")
@@ -641,7 +641,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     /**
      * Include all the referenced content in the dmg.
      *
-     * @param additionalContents one or more path
+     * @param additionalContents one or more paths
      * @return this map of options
      */
     @SuppressWarnings("UnusedReturnValue")
@@ -652,7 +652,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     /**
      * Include all the referenced content in the dmg.
      *
-     * @param additionalContents one or more path
+     * @param additionalContents one or more paths
      * @return this map of options
      */
     public JpackageOptions macDmgContentPaths(List<Path> additionalContents) {
@@ -664,7 +664,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     /**
      * Include all the referenced content in the dmg.
      *
-     * @param additionalContents one or more path
+     * @param additionalContents one or more paths
      * @return this map of options
      */
     public JpackageOptions macDmgContentPaths(Path... additionalContents) {
@@ -674,7 +674,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     /**
      * Include all the referenced content in the dmg.
      *
-     * @param additionalContents one or more path
+     * @param additionalContents one or more paths
      * @return this map of options
      */
     public JpackageOptions macDmgContentStrings(List<String> additionalContents) {
@@ -893,7 +893,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * <p>
      * Each path is absolute or relative to the current directory.
      *
-     * @param paths one or more path
+     * @param paths one or more paths
      * @return this map of options
      */
     public JpackageOptions modulePath(String... paths) {
@@ -907,7 +907,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * <p>
      * Each path is absolute or relative to the current directory.
      *
-     * @param paths one or more path
+     * @param paths one or more paths
      * @return this map of options
      */
     public JpackageOptions modulePathStrings(List<String> paths) {
@@ -922,7 +922,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * <p>
      * Each path is absolute or relative to the current directory.
      *
-     * @param paths one or more path
+     * @param paths one or more paths
      * @return this map of options
      */
     @SuppressWarnings("UnusedReturnValue")
@@ -937,7 +937,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * <p>
      * Each path is absolute or relative to the current directory.
      *
-     * @param paths one or more path
+     * @param paths one or more paths
      * @return this map of options
      */
     public JpackageOptions modulePath(List<File> paths) {
@@ -951,7 +951,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * <p>
      * Each path is absolute or relative to the current directory.
      *
-     * @param paths one or more path
+     * @param paths one or more paths
      * @return this map of options
      */
     public JpackageOptions modulePath(Path... paths) {
@@ -965,7 +965,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * <p>
      * Each path is absolute or relative to the current directory.
      *
-     * @param paths one or more path
+     * @param paths one or more paths
      * @return this map of options
      */
     public JpackageOptions modulePathPaths(List<Path> paths) {

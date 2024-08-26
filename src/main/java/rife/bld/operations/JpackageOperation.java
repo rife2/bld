@@ -33,7 +33,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
      * Additional alternative launchers can be built using this option, and this option can be used to build multiple
      * additional launchers.
      *
-     * @param launchers one or more {@link JpackageOperation.Launcher}
+     * @param launchers one or more {@link Launcher launchers}
      * @return this operation instance
      */
     public JpackageOperation addLauncher(List<Launcher> launchers) {
@@ -49,7 +49,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
      * Additional alternative launchers can be built using this option, and this option can be used to build multiple
      * additional launchers.
      *
-     * @param launchers one or more {@link JpackageOperation.Launcher}
+     * @param launchers one or more {@link Launcher launchers}
      * @return this operation instance
      */
     public JpackageOperation addLauncher(Launcher... launchers) {
@@ -59,7 +59,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JpackageOperation cmdFiles(List<File> files) {
@@ -70,7 +70,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JpackageOperation cmdFiles(File... files) {
@@ -80,7 +80,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JpackageOperation cmdFiles(Path... files) {
@@ -90,7 +90,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JpackageOperation cmdFiles(String... files) {
@@ -100,7 +100,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JpackageOperation cmdFilesPaths(List<Path> files) {
@@ -111,7 +111,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JpackageOperation cmdFilesStrings(List<String> files) {

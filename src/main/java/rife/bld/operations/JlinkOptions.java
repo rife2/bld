@@ -28,7 +28,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
      * <p>
      * Module can also be {@link #ALL_MODULE_PATH}
      *
-     * @param modules one or more module
+     * @param modules one or more modules
      * @return this map of options
      */
     public JlinkOptions addModules(List<String> modules) {
@@ -41,7 +41,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
      * <p>
      * Module can also be {@link #ALL_MODULE_PATH}
      *
-     * @param modules one or more module
+     * @param modules one or more modules
      * @return this map of options
      */
     public JlinkOptions addModules(String... modules) {
@@ -153,7 +153,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
     /**
      * Limit the universe of observable modules.
      *
-     * @param modules one or more module
+     * @param modules one or more modules
      * @return this map of options
      */
     public JlinkOptions limitModule(List<String> modules) {
@@ -163,7 +163,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
     /**
      * Limit the universe of observable modules.
      *
-     * @param modules one or more module
+     * @param modules one or more modules
      * @return this map of options
      */
     public JlinkOptions limitModule(String... modules) {
@@ -325,7 +325,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
     /**
      * Suggest providers that implement the given service types from the module path.
      *
-     * @param names one or more provider name
+     * @param names one or more provider names
      * @return this map of options
      */
     public JlinkOptions suggestProviders(List<String> names) {
@@ -336,7 +336,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
     /**
      * Suggest providers that implement the given service types from the module path.
      *
-     * @param names one or more provider name
+     * @param names one or more provider names
      * @return this map of options
      */
     public JlinkOptions suggestProviders(String... names) {

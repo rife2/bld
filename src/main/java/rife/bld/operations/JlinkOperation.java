@@ -28,7 +28,7 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JlinkOperation cmdFiles(String... files) {
@@ -38,7 +38,7 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JlinkOperation cmdFiles(List<File> files) {
@@ -49,7 +49,7 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JlinkOperation cmdFiles(File... files) {
@@ -59,7 +59,7 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JlinkOperation cmdFiles(Path... files) {
@@ -69,7 +69,7 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JlinkOperation cmdFilesPaths(List<Path> files) {
@@ -80,7 +80,7 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JlinkOperation cmdFilesStrings(List<String> files) {

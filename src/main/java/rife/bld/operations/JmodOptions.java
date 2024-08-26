@@ -188,7 +188,7 @@ public class JmodOptions extends LinkedHashMap<String, String> {
     /**
      * Exclude files matching the supplied pattern list.
      *
-     * @param patterns one or more pattern
+     * @param patterns one or more patterns
      * @return the map of options
      */
     public JmodOptions exclude(List<FilePattern> patterns) {
@@ -207,7 +207,7 @@ public class JmodOptions extends LinkedHashMap<String, String> {
     /**
      * Exclude files matching the supplied pattern list.
      *
-     * @param patterns one or more pattern
+     * @param patterns one or more patterns
      * @return the map of options
      */
     public JmodOptions exclude(FilePattern... patterns) {

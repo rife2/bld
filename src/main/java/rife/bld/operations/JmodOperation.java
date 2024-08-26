@@ -40,7 +40,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JmodOperation cmdFiles(String... files) {
@@ -50,7 +50,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JmodOperation cmdFiles(File... files) {
@@ -61,7 +61,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JmodOperation cmdFiles(Path... files) {
@@ -71,7 +71,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JmodOperation cmdFilesPaths(List<Path> files) {
@@ -82,7 +82,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
     /**
      * Read options and/or mode from file(s).
      *
-     * @param files one or more file
+     * @param files one or more files
      * @return this operation instance
      */
     public JmodOperation cmdFilesStrings(List<String> files) {
