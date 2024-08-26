@@ -55,14 +55,14 @@ public class BaseProject extends BuildExecutor {
      */
     protected VersionNumber version = null;
     /**
-     * The project's main class.
+     * The project's main class to execute.
      *
      * @see #mainClass()
      * @since 1.5
      */
     protected String mainClass = null;
     /**
-     * The project's module.
+     * The project's module to execute.
      *
      * @see #module()
      * @since 2.1
@@ -1401,7 +1401,7 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
-     * Returns the project's main class.
+     * Returns the project's main class to execute.
      *
      * @since 1.5
      */
@@ -1410,7 +1410,7 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
-     * Returns the project's module.
+     * Returns the project's module to execute.
      *
      * @since 2.1
      */
