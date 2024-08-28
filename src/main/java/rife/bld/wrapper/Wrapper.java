@@ -176,6 +176,7 @@ public class Wrapper {
         if (libraries_test.exists()) {
             try {
                 var content = FileUtils.readString(libraries_test);
+                content = JAR_DIRECTORY_LIB_PROVIDED_RECURSIVE_PATTERN.matcher(content).replaceAll("<jarDirectory url=\"file://\\$PROJECT_DIR\\$/lib/provided\" recursive=\"true\"");
                 content = JAR_DIRECTORY_LIB_TEST_RECURSIVE_PATTERN.matcher(content).replaceAll("<jarDirectory url=\"file://\\$PROJECT_DIR\\$/lib/test\" recursive=\"true\"");
                 FileUtils.writeString(content, libraries_test);
             } catch (FileUtilsErrorException e) {
