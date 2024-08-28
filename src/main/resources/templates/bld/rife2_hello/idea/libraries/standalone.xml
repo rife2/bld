@@ -7,7 +7,7 @@
     <SOURCES>
       <root url="file://$PROJECT_DIR$/lib/standalone" />
     </SOURCES>
-    <jarDirectory url="file://$PROJECT_DIR$/lib/standalone" recursive="false" />
-    <jarDirectory url="file://$PROJECT_DIR$/lib/standalone" recursive="false" type="SOURCES" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/standalone" recursive="true" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/standalone" recursive="true" type="SOURCES" />
   </library>
 </component>

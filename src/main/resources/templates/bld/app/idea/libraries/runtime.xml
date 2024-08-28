@@ -8,7 +8,7 @@
     <SOURCES>
       <root url="file://$PROJECT_DIR$/lib/runtime" />
     </SOURCES>
-    <jarDirectory url="file://$PROJECT_DIR$/lib/runtime" recursive="false" />
-    <jarDirectory url="file://$PROJECT_DIR$/lib/runtime" recursive="false" type="SOURCES" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/runtime" recursive="true" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/runtime" recursive="true" type="SOURCES" />
   </library>
 </component>

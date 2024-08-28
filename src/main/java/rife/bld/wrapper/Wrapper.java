@@ -120,6 +120,10 @@ public class Wrapper {
     private static final Pattern BLD_JAR_PATTERN = Pattern.compile("/\\.bld/dist/bld-[^\"/!]+(?<!sources)\\.jar");
     private static final Pattern BLD_SOURCES_JAR_PATTERN = Pattern.compile("/\\.bld/dist/bld-[^\"/!]+-sources\\.jar");
     private static final Pattern BLD_PROPERTY_VERSION_PATTERN = Pattern.compile(".*bld\\.version.*");
+    private static final Pattern JAR_DIRECTORY_LIB_COMPILE_RECURSIVE_PATTERN = Pattern.compile("<jarDirectory\\s+url=\"file://\\$PROJECT_DIR\\$/lib/compile\"\\s+recursive=\"false\"");
+    private static final Pattern JAR_DIRECTORY_LIB_PROVIDED_RECURSIVE_PATTERN = Pattern.compile("<jarDirectory\\s+url=\"file://\\$PROJECT_DIR\\$/lib/provided\"\\s+recursive=\"false\"");
+    private static final Pattern JAR_DIRECTORY_LIB_RUNTIME_RECURSIVE_PATTERN = Pattern.compile("<jarDirectory\\s+url=\"file://\\$PROJECT_DIR\\$/lib/runtime\"\\s+recursive=\"false\"");
+    private static final Pattern JAR_DIRECTORY_LIB_TEST_RECURSIVE_PATTERN = Pattern.compile("<jarDirectory\\s+url=\"file://\\$PROJECT_DIR\\$/lib/test\"\\s+recursive=\"false\"");
 
     /**
      * Upgraded the IDEA bld files that were generated with a previous version.
@@ -131,15 +135,49 @@ public class Wrapper {
      */
     public void upgradeIdeaBldLibrary(File destinationDirectory, String version)
     throws IOException {
-        var file = new File(destinationDirectory, Path.of("libraries", "bld.xml").toString());
-        if (file.exists()) {
+        var libraries_bld = new File(destinationDirectory, Path.of("libraries", "bld.xml").toString());
+        if (libraries_bld.exists()) {
             try {
-                var content = FileUtils.readString(file);
+                var content = FileUtils.readString(libraries_bld);
                 content = BLD_JAR_PATTERN.matcher(content).replaceAll("/.bld/dist/bld-" + version + ".jar");
                 content = BLD_SOURCES_JAR_PATTERN.matcher(content).replaceAll("/.bld/dist/bld-" + version + "-sources.jar");
                 content = RIFE2_JAR_PATTERN.matcher(content).replaceAll("/.bld/dist/bld-" + version + ".jar");
                 content = RIFE2_SOURCES_JAR_PATTERN.matcher(content).replaceAll("/.bld/dist/bld-" + version + "-sources.jar");
-                FileUtils.writeString(content, file);
+                FileUtils.writeString(content, libraries_bld);
+            } catch (FileUtilsErrorException e) {
+                throw new IOException(e);
+            }
+        }
+
+        var libraries_compile = new File(destinationDirectory, Path.of("libraries", "compile.xml").toString());
+        if (libraries_compile.exists()) {
+            try {
+                var content = FileUtils.readString(libraries_compile);
+                content = JAR_DIRECTORY_LIB_COMPILE_RECURSIVE_PATTERN.matcher(content).replaceAll("<jarDirectory url=\"file://\\$PROJECT_DIR\\$/lib/compile\" recursive=\"true\"");
+                content = JAR_DIRECTORY_LIB_PROVIDED_RECURSIVE_PATTERN.matcher(content).replaceAll("<jarDirectory url=\"file://\\$PROJECT_DIR\\$/lib/provided\" recursive=\"true\"");
+                FileUtils.writeString(content, libraries_compile);
+            } catch (FileUtilsErrorException e) {
+                throw new IOException(e);
+            }
+        }
+
+        var libraries_runtime = new File(destinationDirectory, Path.of("libraries", "runtime.xml").toString());
+        if (libraries_runtime.exists()) {
+            try {
+                var content = FileUtils.readString(libraries_runtime);
+                content = JAR_DIRECTORY_LIB_RUNTIME_RECURSIVE_PATTERN.matcher(content).replaceAll("<jarDirectory url=\"file://\\$PROJECT_DIR\\$/lib/runtime\" recursive=\"true\"");
+                FileUtils.writeString(content, libraries_runtime);
+            } catch (FileUtilsErrorException e) {
+                throw new IOException(e);
+            }
+        }
+
+        var libraries_test = new File(destinationDirectory, Path.of("libraries", "test.xml").toString());
+        if (libraries_test.exists()) {
+            try {
+                var content = FileUtils.readString(libraries_test);
+                content = JAR_DIRECTORY_LIB_TEST_RECURSIVE_PATTERN.matcher(content).replaceAll("<jarDirectory url=\"file://\\$PROJECT_DIR\\$/lib/test\" recursive=\"true\"");
+                FileUtils.writeString(content, libraries_test);
             } catch (FileUtilsErrorException e) {
                 throw new IOException(e);
             }

@@ -10,9 +10,9 @@
       <root url="file://$PROJECT_DIR$/lib/test" />
       <root url="file://$PROJECT_DIR$/lib/provided" />
     </SOURCES>
-    <jarDirectory url="file://$PROJECT_DIR$/lib/test" recursive="false" />
-    <jarDirectory url="file://$PROJECT_DIR$/lib/test" recursive="false" type="SOURCES" />
-    <jarDirectory url="file://$PROJECT_DIR$/lib/provided" recursive="false" />
-    <jarDirectory url="file://$PROJECT_DIR$/lib/provided" recursive="false" type="SOURCES" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/test" recursive="true" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/test" recursive="true" type="SOURCES" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/provided" recursive="true" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/provided" recursive="true" type="SOURCES" />
   </library>
 </component>
