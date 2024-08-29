@@ -130,10 +130,10 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
                 filenames = modules_names;
             }
             addTransferLocations(filenames, dependency);
-            if (preserveSources_) {
+            if (preserveSources_ && !dependency.excludedClassifiers().contains(CLASSIFIER_SOURCES)) {
                 addTransferLocations(filenames, dependency.withClassifier(CLASSIFIER_SOURCES));
             }
-            if (preserveJavadoc_) {
+            if (preserveJavadoc_ && !dependency.excludedClassifiers().contains(CLASSIFIER_JAVADOC)) {
                 addTransferLocations(filenames, dependency.withClassifier(CLASSIFIER_JAVADOC));
             }
         }

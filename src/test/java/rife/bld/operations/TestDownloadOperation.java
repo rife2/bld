@@ -240,10 +240,10 @@ public class TestDownloadOperation {
                 .downloadSources(true);
             operation.dependencies().scope(Scope.compile)
                 .include(new Dependency("org.apache.commons", "commons-lang3", new VersionNumber(3,12,0)))
-                .include(new Module("org.json", "json", new VersionNumber(20240303)));
+                .include(new Module("org.json", "json", new VersionNumber(20240303)).excludeSources());
             operation.dependencies().scope(Scope.provided)
                 .include(new Dependency("commons-codec", "commons-codec", new VersionNumber(1,17,0)))
-                .include(new Module("com.google.zxing", "javase", new VersionNumber(3,5,3)));
+                .include(new Module("com.google.zxing", "javase", new VersionNumber(3,5,3)).excludeJavadoc());
             operation.dependencies().scope(Scope.runtime)
                 .include(new Dependency("org.apache.commons", "commons-collections4", new VersionNumber(4,4)))
                 .include(new Module("org.postgresql", "postgresql", new VersionNumber(42,7,3)));
@@ -252,7 +252,7 @@ public class TestDownloadOperation {
                 .include(new Module("org.eclipse.jetty.ee10", "jetty-ee10-servlet", new VersionNumber(12,0,12)));
             operation.dependencies().scope(Scope.test)
                 .include(new Dependency("org.apache.httpcomponents.client5", "httpclient5", new VersionNumber(5,2,1)))
-                .include(new Module("org.jsoup", "jsoup", new VersionNumber(1,18,1)));
+                .include(new Module("org.jsoup", "jsoup", new VersionNumber(1,18,1)).excludeSources().excludeJavadoc());
 
             operation.execute();
 
@@ -299,8 +299,6 @@ public class TestDownloadOperation {
                     /dir4/slf4j-simple-2.0.6.jar
                     /dir5
                     /dir5/dir10
-                    /dir5/dir10/jsoup-1.18.1-javadoc.jar
-                    /dir5/dir10/jsoup-1.18.1-sources.jar
                     /dir5/dir10/jsoup-1.18.1.jar
                     /dir5/httpclient5-5.2.1-javadoc.jar
                     /dir5/httpclient5-5.2.1-sources.jar
@@ -316,7 +314,6 @@ public class TestDownloadOperation {
                     /dir5/slf4j-api-1.7.36.jar
                     /dir6
                     /dir6/json-20240303-javadoc.jar
-                    /dir6/json-20240303-sources.jar
                     /dir6/json-20240303.jar
                     /dir7
                     /dir7/core-3.5.3-javadoc.jar
@@ -325,7 +322,6 @@ public class TestDownloadOperation {
                     /dir7/jai-imageio-core-1.4.0-javadoc.jar
                     /dir7/jai-imageio-core-1.4.0-sources.jar
                     /dir7/jai-imageio-core-1.4.0.jar
-                    /dir7/javase-3.5.3-javadoc.jar
                     /dir7/javase-3.5.3-sources.jar
                     /dir7/javase-3.5.3.jar
                     /dir7/jcommander-1.82-javadoc.jar
@@ -366,7 +362,7 @@ public class TestDownloadOperation {
             project.repositories().add(Repository.MAVEN_CENTRAL);
             project.dependencies().scope(Scope.compile)
                 .include(new Dependency("org.apache.commons", "commons-lang3", new VersionNumber(3,12,0)))
-                .include(new Module("org.json", "json", new VersionNumber(20240303)));
+                .include(new Module("org.json", "json", new VersionNumber(20240303)).excludeSources());
             project.dependencies().scope(Scope.provided)
                 .include(new Dependency("commons-codec", "commons-codec", new VersionNumber(1,17,0)))
                 .include(new Module("com.google.zxing", "javase", new VersionNumber(3,5,3)));
@@ -392,7 +388,6 @@ public class TestDownloadOperation {
                     /lib/compile/commons-lang3-3.12.0-sources.jar
                     /lib/compile/commons-lang3-3.12.0.jar
                     /lib/compile/modules
-                    /lib/compile/modules/json-20240303-sources.jar
                     /lib/compile/modules/json-20240303.jar
                     /lib/provided
                     /lib/provided/commons-codec-1.17.0-sources.jar

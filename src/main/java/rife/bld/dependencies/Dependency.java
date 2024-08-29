@@ -4,6 +4,7 @@
  */
 package rife.bld.dependencies;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -46,6 +47,7 @@ public class Dependency {
     private final String type_;
     private final ExclusionSet exclusions_;
     private final Dependency parent_;
+    private final HashSet<String> excludedClassifiers_;
 
     public Dependency(String groupId, String artifactId) {
         this(groupId, artifactId, null, null, null);
@@ -82,6 +84,7 @@ public class Dependency {
         this.type_ = type;
         this.exclusions_ = (exclusions == null ? new ExclusionSet() : exclusions);
         this.parent_ = parent;
+        this.excludedClassifiers_ = new HashSet<>();
     }
 
     private static final Pattern DEPENDENCY_PATTERN = Pattern.compile("^(?<groupId>[^:@]+):(?<artifactId>[^:@]+)(?::(?<version>[^:@]+)(?::(?<classifier>[^:@]+))?)?(?:@(?<type>[^:@]+))?$");
@@ -150,6 +153,28 @@ public class Dependency {
      */
     public Dependency withClassifier(String classifier) {
         return new Dependency(groupId_, artifactId_, version_, classifier, type_);
+    }
+
+    /**
+     * Exclude the sources artifact from download operations.
+     *
+     * @return this dependency instance
+     * @since 2.1
+     */
+    public Dependency excludeSources() {
+        excludedClassifiers_.add(CLASSIFIER_SOURCES);
+        return this;
+    }
+
+    /**
+     * Exclude the javadoc artifact from download operations.
+     *
+     * @return this dependency instance
+     * @since 2.1
+     */
+    public Dependency excludeJavadoc() {
+        excludedClassifiers_.add(CLASSIFIER_JAVADOC);
+        return this;
     }
 
     /**
@@ -251,6 +276,10 @@ public class Dependency {
      */
     public ExclusionSet exclusions() {
         return exclusions_;
+    }
+
+    public HashSet<String> excludedClassifiers() {
+        return excludedClassifiers_;
     }
 
     /**

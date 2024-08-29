@@ -134,7 +134,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * @param repositories      the repositories to use for the download
      * @param directory         the directory to download the artifacts into
      * @param modulesDirectory  the directory to download the modules into
-     * @param classifiers  the additional classifiers to transfer
+     * @param classifiers       the additional classifiers to transfer
      * @return the list of artifacts that were transferred successfully
      * @throws DependencyTransferException when an error occurred during the transfer
      * @since 2.1
@@ -166,7 +166,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
 
             if (classifiers != null) {
                 for (var classifier : classifiers) {
-                    if (classifier != null) {
+                    if (classifier != null && !dependency.excludedClassifiers().contains(classifier)) {
                         var classifier_artifact = new DependencyResolver(resolution, retriever, repositories, dependency.withClassifier(classifier)).transferIntoDirectory(transfer_directory);
                         if (classifier_artifact != null) {
                             result.add(classifier_artifact);
