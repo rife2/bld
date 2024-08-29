@@ -60,7 +60,7 @@ public class JmodOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions cmds(Path path) {
-        return cmds(path.toFile());
+        return cmds(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -110,7 +110,7 @@ public class JmodOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions config(Path path) {
-        return config(path.toFile());
+        return config(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -152,7 +152,7 @@ public class JmodOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions dir(Path path) {
-        return dir(path.toFile());
+        return dir(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -256,7 +256,7 @@ public class JmodOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions headerFiles(Path path) {
-        return headerFiles(path.toFile());
+        return headerFiles(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -288,7 +288,7 @@ public class JmodOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions legalNotices(Path path) {
-        return legalNotices(path.toFile());
+        return legalNotices(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -320,7 +320,7 @@ public class JmodOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions libs(Path path) {
-        return libs(path.toFile());
+        return libs(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -363,7 +363,7 @@ public class JmodOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions manPages(Path path) {
-        return manPages(path.toFile());
+        return manPages(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -394,7 +394,7 @@ public class JmodOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JmodOptions modulePath(Path path) {
-        return modulePath(path.toFile());
+        return modulePath(path.toFile().getAbsolutePath());
     }
 
     /**

@@ -97,10 +97,8 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
      * @param files one or more files
      * @return this operation instance
      */
-    @SuppressWarnings({"unchecked"})
     public T cmdFilesPaths(List<Path> files) {
-        cmdFiles_.addAll(files.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
-        return (T) this;
+        return cmdFilesStrings(files.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
     }
 
     /**

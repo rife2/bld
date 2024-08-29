@@ -112,7 +112,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions appImage(Path path) {
-        return appImage(path.toFile());
+        return appImage(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -204,7 +204,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions dest(Path path) {
-        return dest(path.toFile());
+        return dest(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -271,7 +271,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions fileAssociationsPaths(List<Path> paths) {
-        return fileAssociations(paths.stream().map(Path::toFile).toList());
+        return fileAssociationsStrings(paths.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
     }
 
     /**
@@ -316,7 +316,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions icon(Path path) {
-        return icon(path.toFile());
+        return icon(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -354,7 +354,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions input(Path path) {
-        return input(path.toFile());
+        return input(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -386,7 +386,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions installDir(Path path) {
-        return installDir(path.toFile());
+        return installDir(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -472,7 +472,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions licenseFile(Path path) {
-        return licenseFile(path.toFile());
+        return licenseFile(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -634,8 +634,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      */
     @SuppressWarnings("UnusedReturnValue")
     public JpackageOptions macDmgContent(List<File> additionalContents) {
-        put("--mac-dmg-content", String.join(",", additionalContents.stream().map(File::getAbsolutePath).toList()));
-        return this;
+        return macDmgContentStrings(additionalContents.stream().map(File::getAbsolutePath).toList());
     }
 
     /**
@@ -656,9 +655,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions macDmgContentPaths(List<Path> additionalContents) {
-        put("--mac-dmg-content", String.join(",",
-                additionalContents.stream().map(Path::toFile).map(File::getAbsolutePath).toList()));
-        return this;
+       return macDmgContentStrings(additionalContents.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
     }
 
     /**
@@ -711,7 +708,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions macEntitlements(Path path) {
-        return macEntitlements(path.toFile());
+        return macEntitlements(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -969,7 +966,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions modulePathPaths(List<Path> paths) {
-        return modulePath(paths.stream().map(Path::toFile).toList());
+        return modulePathStrings(paths.stream().map(Path::toFile).map(File::getAbsolutePath).toList());
     }
 
     /**
@@ -1031,7 +1028,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions resourceDir(Path path) {
-        return resourceDir(path.toFile());
+        return resourceDir(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -1084,7 +1081,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions runtimeImage(Path path) {
-        return runtimeImage(path.toFile());
+        return runtimeImage(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -1143,7 +1140,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JpackageOptions temp(Path path) {
-        return temp(path.toFile());
+        return temp(path.toFile().getAbsolutePath());
     }
 
     /**

@@ -118,7 +118,7 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
         }
 
         public Launcher(String name, Path path) {
-            this(name, path.toFile());
+            this(name, path.toFile().getAbsolutePath());
         }
     }
 }
