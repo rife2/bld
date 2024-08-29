@@ -207,7 +207,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JlinkOptions modulePath(Path path) {
-        return modulePath(path.toFile());
+        return modulePath(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -268,7 +268,7 @@ public class JlinkOptions extends LinkedHashMap<String, String> {
      * @return this map of options
      */
     public JlinkOptions output(Path path) {
-        return output(path.toFile());
+        return output(path.toFile().getAbsolutePath());
     }
 
     /**

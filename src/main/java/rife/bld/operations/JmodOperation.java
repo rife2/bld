@@ -70,8 +70,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      * @return this operation instance
      */
     public JmodOperation jmodFile(File file) {
-        jmodFile_ = file.getAbsolutePath();
-        return this;
+        return jmodFile(file.getAbsolutePath());
     }
 
     /**
@@ -83,7 +82,7 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      * @return this operation instance
      */
     public JmodOperation jmodFile(Path file) {
-        return jmodFile(file.toFile());
+        return jmodFile(file.toFile().getAbsolutePath());
     }
 
     /**
