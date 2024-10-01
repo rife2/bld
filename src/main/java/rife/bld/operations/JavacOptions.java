@@ -30,7 +30,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     public enum Processing {
-        NONE, ONLY
+        FULL, NONE, ONLY
     }
 
     /**
