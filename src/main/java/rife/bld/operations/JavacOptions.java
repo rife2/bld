@@ -637,7 +637,6 @@ public class JavacOptions extends ArrayList<String> {
         return this;
     }
 
-
     /**
      * Override location of upgradeable modules
      *
