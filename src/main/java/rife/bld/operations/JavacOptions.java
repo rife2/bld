@@ -593,6 +593,41 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
+     * Specify the directory used to place the generated source files.
+     *
+     * @param path the source output directory path
+     * @return the list of options
+     * @since 2.1.1
+     */
+    public JavacOptions sourceOutput(String path) {
+        add("-s");
+        add(path);
+        return this;
+    }
+
+    /**
+     * Specify the directory used to place the generated source files.
+     *
+     * @param path the source output directory path
+     * @return the list of options
+     * @since 2.1.1
+     */
+    public JavacOptions sourceOutput(File path) {
+        return sourceOutput(path.getAbsolutePath());
+    }
+
+    /**
+     * Specify the directory used to place the generated source files.
+     *
+     * @param path the source output directory path
+     * @return the list of options
+     * @since 2.1.1
+     */
+    public JavacOptions sourceOutput(Path path) {
+        return sourceOutput(path.toFile());
+    }
+
+    /**
      * Override location of system modules. Option is &lt;jdk&gt; or none.
      *
      * @return this list of options
