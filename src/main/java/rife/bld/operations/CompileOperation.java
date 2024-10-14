@@ -23,6 +23,13 @@ import java.util.List;
  * @since 1.5
  */
 public class CompileOperation extends AbstractOperation<CompileOperation> {
+    static final String COMPILE_OPTION_D = "-d";
+    static final String COMPILE_OPTION_CP = "-cp";
+    static final String COMPILE_OPTION_CLASS_PATH = "--class-path";
+    static final String COMPILE_OPTION_CLASSPATH = "--classpath";
+    static final String COMPILE_OPTION_P = "-p";
+    static final String COMPILE_OPTION_MODULE_PATH = "--module-path";
+
     private File buildMainDirectory_;
     private File buildTestDirectory_;
     private final List<String> compileMainClasspath_ = new ArrayList<>();
@@ -124,19 +131,33 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
         try (var file_manager = compiler.getStandardFileManager(null, null, null)) {
             var compilation_units = file_manager.getJavaFileObjectsFromFiles(sources);
             var diagnostics = new DiagnosticCollector<JavaFileObject>();
-            var options = new ArrayList<>(List.of("-d", destination.getAbsolutePath()));
+            var options = new ArrayList<>(List.of(COMPILE_OPTION_D, destination.getAbsolutePath()));
+
             if (!classpath.isEmpty()) {
-                options.addAll(List.of("-cp", FileUtils.joinPaths(classpath)));
+                var class_path = FileUtils.joinPaths(classpath);
+                class_path = removeAndAppendCompileOptionPath(class_path, COMPILE_OPTION_CP);
+                class_path = removeAndAppendCompileOptionPath(class_path, COMPILE_OPTION_CLASS_PATH);
+                class_path = removeAndAppendCompileOptionPath(class_path, COMPILE_OPTION_CLASSPATH);
+
+                options.addAll(List.of(COMPILE_OPTION_CP, class_path));
             }
+
             if (!modulePath.isEmpty()) {
-                options.addAll(List.of("-p", FileUtils.joinPaths(modulePath)));
+                var module_path = FileUtils.joinPaths(modulePath);
+                module_path = removeAndAppendCompileOptionPath(module_path, COMPILE_OPTION_P);
+                module_path = removeAndAppendCompileOptionPath(module_path, COMPILE_OPTION_MODULE_PATH);
+
+                options.addAll(List.of(COMPILE_OPTION_P, module_path));
             }
+
             options.addAll(compileOptions());
+
             var compilation_task = compiler.getTask(null, file_manager, diagnostics, options, null, compilation_units);
             if (!compilation_task.call()) {
                 diagnostics_.addAll(diagnostics.getDiagnostics());
                 executeProcessDiagnostics(diagnostics);
             }
+
             var module_info_class = new File(destination, "module-info.class");
             if (module_info_class.exists() && moduleMainClass() != null) {
                 var orig_bytes = FileUtils.readBytes(module_info_class);
@@ -144,6 +165,16 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
                 FileUtils.writeBytes(transformed_bytes, module_info_class);
             }
         }
+    }
+
+    private String removeAndAppendCompileOptionPath(String basePath, String option) {
+        var index = compileOptions_.indexOf(option);
+        if (index != -1 && index + 1 < compileOptions_.size() - 1) {
+            compileOptions_.remove(index);
+            return basePath + File.pathSeparator + compileOptions_.remove(index);
+        }
+
+        return basePath;
     }
 
     /**

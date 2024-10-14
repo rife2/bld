@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static rife.bld.operations.CompileOperation.COMPILE_OPTION_MODULE_PATH;
+
 /**
  * Options for the standard javac tool.
  *
@@ -410,7 +412,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions modulePathStrings(List<String> paths) {
-        add("--module-path");
+        add(COMPILE_OPTION_MODULE_PATH);
         add(FileUtils.joinPaths(paths));
         return this;
     }
