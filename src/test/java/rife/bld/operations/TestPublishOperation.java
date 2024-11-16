@@ -51,8 +51,8 @@ public class TestPublishOperation {
     }
 
     static class PublishProject extends AppProjectBlueprint {
-        public PublishProject(File work, String packageName, String projectName, VersionNumber versionNumber) {
-            super(work, packageName, projectName, versionNumber);
+        public PublishProject(File work, String packageName, String projectName, String baseName, VersionNumber versionNumber) {
+            super(work, packageName, projectName, baseName, versionNumber);
             javaRelease = 17;
         }
     }
@@ -209,7 +209,7 @@ public class TestPublishOperation {
             // created an updated publication
             var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 0, 0));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), baseName(), new VersionNumber(1, 0, 0));
                 }
             }
                 .workDirectory(tmp2)
@@ -342,7 +342,7 @@ public class TestPublishOperation {
             // created an updated publication
             var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 0, 0));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), baseName(), new VersionNumber(1, 0, 0));
                 }
             }
                 .workDirectory(tmp2)
@@ -419,7 +419,7 @@ public class TestPublishOperation {
             // create a first publication
             var create_operation1 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), baseName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp1)
@@ -496,7 +496,7 @@ public class TestPublishOperation {
             // created an updated publication
             var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), baseName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp2)
@@ -589,7 +589,7 @@ public class TestPublishOperation {
             // create a first publication
             var create_operation1 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), baseName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp1)
@@ -645,7 +645,7 @@ public class TestPublishOperation {
             // created an updated publication
             var create_operation2 = new CreateAppOperation() {
                 protected Project createProjectBlueprint() {
-                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
+                    return new PublishProject(new File(workDirectory(), projectName()), packageName(), projectName(), baseName(), new VersionNumber(1, 2, 3, "SNAPSHOT"));
                 }
             }
                 .workDirectory(tmp2)

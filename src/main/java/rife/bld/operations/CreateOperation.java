@@ -33,6 +33,7 @@ public class CreateOperation {
         String type = null;
         String package_name = null;
         String project_name = null;
+        String base_name = null;
         if (!arguments.isEmpty()) {
             type = arguments.remove(0);
         }
@@ -42,8 +43,11 @@ public class CreateOperation {
         if (!arguments.isEmpty()) {
             project_name = arguments.remove(0);
         }
-        if ((type == null || package_name == null || project_name == null) && System.console() == null) {
-            throw new OperationOptionException("ERROR: Expecting the type, package and project names as the arguments.");
+        if (!arguments.isEmpty()) {
+            base_name = arguments.remove(0);
+        }
+        if ((package_name == null || project_name == null || base_name == null) && System.console() == null) {
+            throw new OperationOptionException("ERROR: Expecting the package, project and base names as the arguments.");
         }
 
         if (type == null || type.isEmpty()) {
@@ -87,21 +91,34 @@ public class CreateOperation {
         if (project_name == null || project_name.isEmpty()) {
             String name_example;
             if (LIB.equals(type)) {
-                name_example = "mylib";
+                name_example = "my-lib";
             } else if (RIFE2.equals(type)) {
-                name_example = "mywebapp";
+                name_example = "my-webapp";
             } else {
-                name_example = "myapp";
+                name_example = "my-app";
             }
-            System.out.printf("Please enter a project name (for instance: %s):%n", name_example);
+            System.out.println("Please enter a project name (for instance: " + name_example + ")");
             project_name = System.console().readLine();
         } else {
             System.out.println("Using project name: " + project_name);
         }
 
+        if (base_name == null || base_name.isEmpty()) {
+            var default_base_name = AbstractCreateOperation.generateBaseName(project_name);
+            System.out.println("Please enter the base name for generated project classes (default: " + default_base_name + "):");
+            base_name = System.console().readLine();
+            if (base_name == null || base_name.trim().isEmpty()) {
+                base_name = default_base_name;
+                System.out.println("Using base name: " + base_name);
+            }
+        } else {
+            System.out.println("Using base name: " + base_name);
+        }
+
         return create_operation.workDirectory(new File(System.getProperty("user.dir")))
             .packageName(package_name)
             .projectName(project_name)
+            .baseName(base_name)
             .downloadDependencies(true);
     }
 }

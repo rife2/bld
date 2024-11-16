@@ -21,7 +21,7 @@ public class CreateLibOperation extends AbstractCreateOperation<CreateLibOperati
     }
 
     protected Project createProjectBlueprint() {
-        return new LibProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName());
+        return new LibProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), baseName());
     }
 
     protected String projectMainClassName(String projectClassName) {

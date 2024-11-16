@@ -21,6 +21,6 @@ public class CreateAppOperation extends AbstractCreateOperation<CreateAppOperati
     }
 
     protected Project createProjectBlueprint() {
-        return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName());
+        return new AppProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), baseName());
     }
 }

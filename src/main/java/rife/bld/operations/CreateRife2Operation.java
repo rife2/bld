@@ -27,14 +27,14 @@ public class CreateRife2Operation extends AbstractCreateOperation<CreateRife2Ope
     }
 
     protected Rife2ProjectBlueprint createProjectBlueprint() {
-        return new Rife2ProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName());
+        return new Rife2ProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), baseName());
     }
 
     @Override
     protected void executeConfigure() {
         super.executeConfigure();
 
-        projectMainName_ = projectClassName_ + "Site";
+        projectMainName_ = baseName() + "Site";
         projectMainUberName_ = projectMainName_ + "Uber";
         srcMainWebappCssDirectory_ = new File(project_.srcMainWebappDirectory(), "css");
         srcMainWebappWebInfDirectory_ = new File(project_.srcMainWebappDirectory(), "WEB-INF");

@@ -23,16 +23,16 @@ import static rife.bld.dependencies.Scope.*;
  * @since 1.5
  */
 public class Rife2ProjectBlueprint extends WebProject {
-    public Rife2ProjectBlueprint(File work, String packageName, String projectName) {
-        this(work, packageName, projectName, new VersionNumber(0,0,1));
+    public Rife2ProjectBlueprint(File work, String packageName, String projectName, String baseName) {
+        this(work, packageName, projectName, baseName, new VersionNumber(0,0,1));
     }
 
-    public Rife2ProjectBlueprint(File work, String packageName, String projectName, VersionNumber versionNumber) {
+    public Rife2ProjectBlueprint(File work, String packageName, String projectName, String baseName, VersionNumber versionNumber) {
         workDirectory = work;
 
         pkg = packageName;
         name = projectName;
-        mainClass = packageName + "." + StringUtils.capitalize(projectName) + "Site";
+        mainClass = packageName + "." + baseName + "Site";
         uberJarMainClass = mainClass + "Uber";
         version = versionNumber;
 

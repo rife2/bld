@@ -21,10 +21,11 @@ public class CreateHelp implements CommandHelp {
     public String getDescription(String topic) {
         return StringUtils.replace("""
             Creates a new project from multiple choice.
-                        
-            Usage : ${topic} <type> <package> <name>
+            
+            Usage : ${topic} <type> <package> <name> <base>
               type     The type of project to create (app, base, lib, rife2)
               package  The package of the project to create
-              name     The name of the project to create""", "${topic}", topic);
+              name     The name of the project to create
+              base     The base name for generated project classes""", "${topic}", topic);
     }
 }

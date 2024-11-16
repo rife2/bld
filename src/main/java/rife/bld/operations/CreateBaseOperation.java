@@ -21,6 +21,6 @@ public class CreateBaseOperation extends AbstractCreateOperation<CreateBaseOpera
     }
 
     protected Project createProjectBlueprint() {
-        return new BaseProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName());
+        return new BaseProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), baseName());
     }
 }

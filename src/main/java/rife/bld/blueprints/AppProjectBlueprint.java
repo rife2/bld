@@ -22,16 +22,16 @@ import static rife.bld.dependencies.Scope.test;
  * @since 1.9
  */
 public class AppProjectBlueprint extends Project {
-    public AppProjectBlueprint(File work, String packageName, String projectName) {
-        this(work, packageName, projectName, new VersionNumber(0,0,1));
+    public AppProjectBlueprint(File work, String packageName, String projectName, String baseName) {
+        this(work, packageName, projectName, baseName, new VersionNumber(0,0,1));
     }
 
-    public AppProjectBlueprint(File work, String packageName, String projectName, VersionNumber versionNumber) {
+    public AppProjectBlueprint(File work, String packageName, String projectName, String baseName, VersionNumber versionNumber) {
         workDirectory = work;
 
         pkg = packageName;
         name = projectName;
-        mainClass = packageName + "." + StringUtils.capitalize(projectName) + "Main";
+        mainClass = packageName + "." + baseName + "Main";
         version = versionNumber;
 
         downloadSources = true;

@@ -26,11 +26,13 @@ import java.util.List;
  * @since 1.5
  */
 public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<T, P>, P extends Project> extends AbstractOperation<AbstractCreateOperation<T, P>> {
+    private String packageName_;
+    private String projectName_;
+    private String baseName_;
+
     final String templateBase_;
 
     File workDirectory_ = new File(System.getProperty("user.dir"));
-    String packageName_;
-    String projectName_;
     boolean downloadDependencies_;
 
     P project_;
@@ -98,10 +100,11 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
 
         // standard names
         projectClassName_ = StringUtils.capitalize(project_.name());
-        projectBuildName_ = projectBuildClassName(projectClassName_);
-        projectMainName_ = projectMainClassName(projectClassName_);
-        projectMainUberName_ = projectMainUberClassName(projectClassName_);
-        projectTestName_ = projectTestClassName(projectClassName_);
+        var base_name = baseName();
+        projectBuildName_ = projectBuildClassName(base_name);
+        projectMainName_ = projectMainClassName(base_name);
+        projectMainUberName_ = projectMainUberClassName(base_name);
+        projectTestName_ = projectTestClassName(base_name);
 
         // create the main project structure
         ideaDirectory_ = new File(project_.workDirectory(), ".idea");
@@ -375,14 +378,18 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
     public T fromArguments(List<String> arguments) {
         String package_name = null;
         String project_name = null;
+        String base_name = null;
         if (!arguments.isEmpty()) {
             package_name = arguments.remove(0);
         }
         if (!arguments.isEmpty()) {
             project_name = arguments.remove(0);
         }
-        if ((package_name == null || project_name == null) && System.console() == null) {
-            throw new OperationOptionException("ERROR: Expecting the package and project names as the arguments.");
+        if (!arguments.isEmpty()) {
+            base_name = arguments.remove(0);
+        }
+        if ((package_name == null || project_name == null || base_name == null) && System.console() == null) {
+            throw new OperationOptionException("ERROR: Expecting the package, project and base names as the arguments.");
         }
 
         if (package_name == null || package_name.isEmpty()) {
@@ -391,16 +398,30 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
         } else {
             System.out.println("Using package name: " + package_name);
         }
+
         if (project_name == null || project_name.isEmpty()) {
-            System.out.println("Please enter a project name (for instance: myapp):");
+            System.out.println("Please enter a project name (for instance: my-app):");
             project_name = System.console().readLine();
         } else {
             System.out.println("Using project name: " + project_name);
         }
 
+        if (base_name == null || base_name.isEmpty()) {
+            var default_base_name = generateBaseName(project_name);
+            System.out.println("Please enter the base name for generated project classes (default: " + default_base_name + "):");
+            base_name = System.console().readLine();
+            if (base_name == null || base_name.trim().isEmpty()) {
+                base_name = default_base_name;
+                System.out.println("Using base name: " + base_name);
+            }
+        } else {
+            System.out.println("Using base name: " + base_name);
+        }
+
         return workDirectory(new File(System.getProperty("user.dir")))
             .packageName(package_name)
             .projectName(project_name)
+            .baseName(base_name)
             .downloadDependencies(true);
     }
 
@@ -445,7 +466,6 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
             throw new OperationOptionException("ERROR: The package name is invalid.");
         }
 
-        packageName_ = name;
         return (T) this;
     }
 
@@ -462,10 +482,26 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
             throw new OperationOptionException("ERROR: The project name should not be blank.");
         }
 
-        if (!ValidityChecks.checkJavaIdentifier(projectName_)) {
-            throw new OperationOptionException("ERROR: The project name is invalid.");
+        return (T) this;
+    }
+
+    /**
+     * Provides the base name for the project classes to generate.
+     *
+     * @param name the base name
+     * @return this operation instance
+     * @since 2.2
+     */
+    public T baseName(String name) {
+        baseName_ = StringUtils.trim(name);
+        if (baseName_.isEmpty()) {
+            throw new OperationOptionException("ERROR: The base name should not be blank.");
         }
-        projectName_ = name;
+
+        if (!ValidityChecks.checkJavaIdentifier(baseName_)) {
+            throw new OperationOptionException("ERROR: The base name is invalid.");
+        }
+
         return (T) this;
     }
 
@@ -511,6 +547,33 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
      */
     public String projectName() {
         return projectName_;
+    }
+
+    static String generateBaseName(String projectName) {
+        if (projectName != null) {
+            var base_name = projectName.trim();
+            base_name = StringUtils.filterAsIdentifier(base_name);
+            base_name = StringUtils.capitalize(base_name);
+            return base_name;
+        }
+
+        return null;
+    }
+
+    /**
+     * Retrieves the base name for the project classes to generate.
+     * <p>
+     * If no base name was provided, one will be generated from the project name.
+     *
+     * @return the base name
+     * @since 2.2
+     */
+    public String baseName() {
+        if (baseName_ == null || baseName_.isEmpty()) {
+            return generateBaseName(projectName());
+        }
+
+        return baseName_;
     }
 
     /**

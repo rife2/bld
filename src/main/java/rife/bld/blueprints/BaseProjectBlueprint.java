@@ -21,16 +21,16 @@ import static rife.bld.dependencies.Repository.SONATYPE_SNAPSHOTS;
  * @since 1.5.20
  */
 public class BaseProjectBlueprint extends Project {
-    public BaseProjectBlueprint(File work, String packageName, String projectName) {
-        this(work, packageName, projectName, new VersionNumber(0,0,1));
+    public BaseProjectBlueprint(File work, String packageName, String projectName, String baseName) {
+        this(work, packageName, projectName, baseName, new VersionNumber(0,0,1));
     }
 
-    public BaseProjectBlueprint(File work, String packageName, String projectName, VersionNumber versionNumber) {
+    public BaseProjectBlueprint(File work, String packageName, String projectName, String baseName, VersionNumber versionNumber) {
         workDirectory = work;
 
         pkg = packageName;
         name = projectName;
-        mainClass = packageName + "." + StringUtils.capitalize(projectName) + "Main";
+        mainClass = packageName + "." + baseName + "Main";
         version = versionNumber;
 
         downloadSources = true;
