@@ -159,7 +159,7 @@ public class TestDownloadOperation {
                 .include(new Module("org.postgresql", "postgresql", new VersionNumber(42,7,3)));
             operation.dependencies().scope(Scope.standalone)
                 .include(new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2,0,6)))
-                .include(new Module("org.eclipse.jetty.ee10", "jetty-ee10-servlet", new VersionNumber(12,0,12)));
+                .include(new Module("org.eclipse.jetty.ee10", "jetty-ee10-servlet", new VersionNumber(12,0,16)));
             operation.dependencies().scope(Scope.test)
                 .include(new Dependency("org.apache.httpcomponents.client5", "httpclient5", new VersionNumber(5,2,1)))
                 .include(new Module("org.jsoup", "jsoup", new VersionNumber(1,18,1)));
@@ -174,14 +174,14 @@ public class TestDownloadOperation {
                     /dir4
                     /dir4/dir9
                     /dir4/dir9/jakarta.servlet-api-6.0.0.jar
-                    /dir4/dir9/jetty-ee10-servlet-12.0.12.jar
-                    /dir4/dir9/jetty-http-12.0.12.jar
-                    /dir4/dir9/jetty-io-12.0.12.jar
-                    /dir4/dir9/jetty-security-12.0.12.jar
-                    /dir4/dir9/jetty-server-12.0.12.jar
-                    /dir4/dir9/jetty-session-12.0.12.jar
-                    /dir4/dir9/jetty-util-12.0.12.jar
-                    /dir4/dir9/slf4j-api-2.0.13.jar
+                    /dir4/dir9/jetty-ee10-servlet-12.0.16.jar
+                    /dir4/dir9/jetty-http-12.0.16.jar
+                    /dir4/dir9/jetty-io-12.0.16.jar
+                    /dir4/dir9/jetty-security-12.0.16.jar
+                    /dir4/dir9/jetty-server-12.0.16.jar
+                    /dir4/dir9/jetty-session-12.0.16.jar
+                    /dir4/dir9/jetty-util-12.0.16.jar
+                    /dir4/dir9/slf4j-api-2.0.16.jar
                     /dir4/slf4j-simple-2.0.6.jar
                     /dir5
                     /dir5/dir10
@@ -249,7 +249,7 @@ public class TestDownloadOperation {
                 .include(new Module("org.postgresql", "postgresql", new VersionNumber(42,7,3)));
             operation.dependencies().scope(Scope.standalone)
                 .include(new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2,0,6)))
-                .include(new Module("org.eclipse.jetty.ee10", "jetty-ee10-servlet", new VersionNumber(12,0,12)));
+                .include(new Module("org.eclipse.jetty.ee10", "jetty-ee10-servlet", new VersionNumber(12,0,16)));
             operation.dependencies().scope(Scope.test)
                 .include(new Dependency("org.apache.httpcomponents.client5", "httpclient5", new VersionNumber(5,2,1)))
                 .include(new Module("org.jsoup", "jsoup", new VersionNumber(1,18,1)).excludeSources().excludeJavadoc());
@@ -270,30 +270,30 @@ public class TestDownloadOperation {
                     /dir4/dir9/jakarta.servlet-api-6.0.0-javadoc.jar
                     /dir4/dir9/jakarta.servlet-api-6.0.0-sources.jar
                     /dir4/dir9/jakarta.servlet-api-6.0.0.jar
-                    /dir4/dir9/jetty-ee10-servlet-12.0.12-javadoc.jar
-                    /dir4/dir9/jetty-ee10-servlet-12.0.12-sources.jar
-                    /dir4/dir9/jetty-ee10-servlet-12.0.12.jar
-                    /dir4/dir9/jetty-http-12.0.12-javadoc.jar
-                    /dir4/dir9/jetty-http-12.0.12-sources.jar
-                    /dir4/dir9/jetty-http-12.0.12.jar
-                    /dir4/dir9/jetty-io-12.0.12-javadoc.jar
-                    /dir4/dir9/jetty-io-12.0.12-sources.jar
-                    /dir4/dir9/jetty-io-12.0.12.jar
-                    /dir4/dir9/jetty-security-12.0.12-javadoc.jar
-                    /dir4/dir9/jetty-security-12.0.12-sources.jar
-                    /dir4/dir9/jetty-security-12.0.12.jar
-                    /dir4/dir9/jetty-server-12.0.12-javadoc.jar
-                    /dir4/dir9/jetty-server-12.0.12-sources.jar
-                    /dir4/dir9/jetty-server-12.0.12.jar
-                    /dir4/dir9/jetty-session-12.0.12-javadoc.jar
-                    /dir4/dir9/jetty-session-12.0.12-sources.jar
-                    /dir4/dir9/jetty-session-12.0.12.jar
-                    /dir4/dir9/jetty-util-12.0.12-javadoc.jar
-                    /dir4/dir9/jetty-util-12.0.12-sources.jar
-                    /dir4/dir9/jetty-util-12.0.12.jar
-                    /dir4/dir9/slf4j-api-2.0.13-javadoc.jar
-                    /dir4/dir9/slf4j-api-2.0.13-sources.jar
-                    /dir4/dir9/slf4j-api-2.0.13.jar
+                    /dir4/dir9/jetty-ee10-servlet-12.0.16-javadoc.jar
+                    /dir4/dir9/jetty-ee10-servlet-12.0.16-sources.jar
+                    /dir4/dir9/jetty-ee10-servlet-12.0.16.jar
+                    /dir4/dir9/jetty-http-12.0.16-javadoc.jar
+                    /dir4/dir9/jetty-http-12.0.16-sources.jar
+                    /dir4/dir9/jetty-http-12.0.16.jar
+                    /dir4/dir9/jetty-io-12.0.16-javadoc.jar
+                    /dir4/dir9/jetty-io-12.0.16-sources.jar
+                    /dir4/dir9/jetty-io-12.0.16.jar
+                    /dir4/dir9/jetty-security-12.0.16-javadoc.jar
+                    /dir4/dir9/jetty-security-12.0.16-sources.jar
+                    /dir4/dir9/jetty-security-12.0.16.jar
+                    /dir4/dir9/jetty-server-12.0.16-javadoc.jar
+                    /dir4/dir9/jetty-server-12.0.16-sources.jar
+                    /dir4/dir9/jetty-server-12.0.16.jar
+                    /dir4/dir9/jetty-session-12.0.16-javadoc.jar
+                    /dir4/dir9/jetty-session-12.0.16-sources.jar
+                    /dir4/dir9/jetty-session-12.0.16.jar
+                    /dir4/dir9/jetty-util-12.0.16-javadoc.jar
+                    /dir4/dir9/jetty-util-12.0.16-sources.jar
+                    /dir4/dir9/jetty-util-12.0.16.jar
+                    /dir4/dir9/slf4j-api-2.0.16-javadoc.jar
+                    /dir4/dir9/slf4j-api-2.0.16-sources.jar
+                    /dir4/dir9/slf4j-api-2.0.16.jar
                     /dir4/slf4j-simple-2.0.6-javadoc.jar
                     /dir4/slf4j-simple-2.0.6-sources.jar
                     /dir4/slf4j-simple-2.0.6.jar
@@ -371,7 +371,7 @@ public class TestDownloadOperation {
                 .include(new Module("org.postgresql", "postgresql", new VersionNumber(42,7,3)));
             project.dependencies().scope(Scope.standalone)
                 .include(new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2,0,6)))
-                .include(new Module("org.eclipse.jetty.ee10", "jetty-ee10-servlet", new VersionNumber(12,0,12)));
+                .include(new Module("org.eclipse.jetty.ee10", "jetty-ee10-servlet", new VersionNumber(12,0,16)));
             project.dependencies().scope(Scope.test)
                 .include(new Dependency("org.apache.httpcomponents.client5", "httpclient5", new VersionNumber(5,2,1)))
                 .include(new Module("org.jsoup", "jsoup", new VersionNumber(1,18,1)));
@@ -413,22 +413,22 @@ public class TestDownloadOperation {
                     /lib/standalone/modules
                     /lib/standalone/modules/jakarta.servlet-api-6.0.0-sources.jar
                     /lib/standalone/modules/jakarta.servlet-api-6.0.0.jar
-                    /lib/standalone/modules/jetty-ee10-servlet-12.0.12-sources.jar
-                    /lib/standalone/modules/jetty-ee10-servlet-12.0.12.jar
-                    /lib/standalone/modules/jetty-http-12.0.12-sources.jar
-                    /lib/standalone/modules/jetty-http-12.0.12.jar
-                    /lib/standalone/modules/jetty-io-12.0.12-sources.jar
-                    /lib/standalone/modules/jetty-io-12.0.12.jar
-                    /lib/standalone/modules/jetty-security-12.0.12-sources.jar
-                    /lib/standalone/modules/jetty-security-12.0.12.jar
-                    /lib/standalone/modules/jetty-server-12.0.12-sources.jar
-                    /lib/standalone/modules/jetty-server-12.0.12.jar
-                    /lib/standalone/modules/jetty-session-12.0.12-sources.jar
-                    /lib/standalone/modules/jetty-session-12.0.12.jar
-                    /lib/standalone/modules/jetty-util-12.0.12-sources.jar
-                    /lib/standalone/modules/jetty-util-12.0.12.jar
-                    /lib/standalone/modules/slf4j-api-2.0.13-sources.jar
-                    /lib/standalone/modules/slf4j-api-2.0.13.jar
+                    /lib/standalone/modules/jetty-ee10-servlet-12.0.16-sources.jar
+                    /lib/standalone/modules/jetty-ee10-servlet-12.0.16.jar
+                    /lib/standalone/modules/jetty-http-12.0.16-sources.jar
+                    /lib/standalone/modules/jetty-http-12.0.16.jar
+                    /lib/standalone/modules/jetty-io-12.0.16-sources.jar
+                    /lib/standalone/modules/jetty-io-12.0.16.jar
+                    /lib/standalone/modules/jetty-security-12.0.16-sources.jar
+                    /lib/standalone/modules/jetty-security-12.0.16.jar
+                    /lib/standalone/modules/jetty-server-12.0.16-sources.jar
+                    /lib/standalone/modules/jetty-server-12.0.16.jar
+                    /lib/standalone/modules/jetty-session-12.0.16-sources.jar
+                    /lib/standalone/modules/jetty-session-12.0.16.jar
+                    /lib/standalone/modules/jetty-util-12.0.16-sources.jar
+                    /lib/standalone/modules/jetty-util-12.0.16.jar
+                    /lib/standalone/modules/slf4j-api-2.0.16-sources.jar
+                    /lib/standalone/modules/slf4j-api-2.0.16.jar
                     /lib/standalone/slf4j-simple-2.0.6-sources.jar
                     /lib/standalone/slf4j-simple-2.0.6.jar
                     /lib/test

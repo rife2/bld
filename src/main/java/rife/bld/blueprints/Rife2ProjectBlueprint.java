@@ -39,15 +39,15 @@ public class Rife2ProjectBlueprint extends WebProject {
         downloadSources = true;
         repositories = List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS);
         scope(compile)
-            .include(dependency("com.uwyn.rife2", "rife2", version(1,8,0)));
+            .include(dependency("com.uwyn.rife2", "rife2", version(1,9,0)));
         scope(test)
             .include(dependency("org.jsoup", "jsoup", version(1,18,1)))
-            .include(dependency("org.junit.jupiter", "junit-jupiter", version(5,11,0)))
-            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1,11,0)));
+            .include(dependency("org.junit.jupiter", "junit-jupiter", version(5,11,4)))
+            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1,11,4)));
         scope(standalone)
-            .include(dependency("org.eclipse.jetty.ee10", "jetty-ee10", version(12,0,12)))
-            .include(dependency("org.eclipse.jetty.ee10", "jetty-ee10-servlet", version(12,0,12)))
-            .include(dependency("org.slf4j", "slf4j-simple", version(2,0,13)));
+            .include(dependency("org.eclipse.jetty.ee10", "jetty-ee10", version(12,0,16)))
+            .include(dependency("org.eclipse.jetty.ee10", "jetty-ee10-servlet", version(12,0,16)))
+            .include(dependency("org.slf4j", "slf4j-simple", version(2,0,16)));
 
         precompileOperation().templateTypes(TemplateType.HTML);
     }

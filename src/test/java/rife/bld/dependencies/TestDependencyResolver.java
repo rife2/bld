@@ -169,7 +169,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesJettyOverride1() {
-        var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.13")),
+        var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.16")),
             ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
@@ -178,7 +178,7 @@ public class TestDependencyResolver {
             org.eclipse.jetty.toolchain:jetty-jakarta-servlet-api:5.0.2
             org.eclipse.jetty:jetty-http:11.0.14
             org.eclipse.jetty:jetty-io:11.0.14
-            org.slf4j:slf4j-api:2.0.13""", StringUtils.join(dependencies, "\n"));
+            org.slf4j:slf4j-api:2.0.16""", StringUtils.join(dependencies, "\n"));
     }
 
     @Test
