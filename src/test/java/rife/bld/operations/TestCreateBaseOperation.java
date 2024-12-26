@@ -107,7 +107,7 @@ public class TestCreateBaseOperation {
                     /my-app/src/main/java
                     /my-app/src/main/java/com
                     /my-app/src/main/java/com/example
-                    /my-app/src/main/java/com/example/MyAppMain\\.java
+                    /my-app/src/main/java/com/example/MyApp\\.java
                     /my-app/src/main/resources
                     /my-app/src/main/resources/templates
                     /my-app/src/test
@@ -145,7 +145,7 @@ public class TestCreateBaseOperation {
                     /my-app/build/main
                     /my-app/build/main/com
                     /my-app/build/main/com/example
-                    /my-app/build/main/com/example/MyAppMain\\.class
+                    /my-app/build/main/com/example/MyApp\\.class
                     /my-app/build/test
                     /my-app/build/test/com
                     /my-app/build/test/com/example
@@ -173,7 +173,7 @@ public class TestCreateBaseOperation {
                     /my-app/src/main/java
                     /my-app/src/main/java/com
                     /my-app/src/main/java/com/example
-                    /my-app/src/main/java/com/example/MyAppMain\\.java
+                    /my-app/src/main/java/com/example/MyApp\\.java
                     /my-app/src/main/resources
                     /my-app/src/main/resources/templates
                     /my-app/src/test
@@ -253,7 +253,7 @@ public class TestCreateBaseOperation {
                     /your-thing/src/main/java
                     /your-thing/src/main/java/org
                     /your-thing/src/main/java/org/stuff
-                    /your-thing/src/main/java/org/stuff/YourThingMain.java
+                    /your-thing/src/main/java/org/stuff/YourThing.java
                     /your-thing/src/main/resources
                     /your-thing/src/main/resources/templates
                     /your-thing/src/test
@@ -292,7 +292,7 @@ public class TestCreateBaseOperation {
                     /your-thing/build/main
                     /your-thing/build/main/org
                     /your-thing/build/main/org/stuff
-                    /your-thing/build/main/org/stuff/YourThingMain.class
+                    /your-thing/build/main/org/stuff/YourThing.class
                     /your-thing/build/test
                     /your-thing/build/test/org
                     /your-thing/build/test/org/stuff
@@ -320,7 +320,7 @@ public class TestCreateBaseOperation {
                     /your-thing/src/main/java
                     /your-thing/src/main/java/org
                     /your-thing/src/main/java/org/stuff
-                    /your-thing/src/main/java/org/stuff/YourThingMain.java
+                    /your-thing/src/main/java/org/stuff/YourThing.java
                     /your-thing/src/main/resources
                     /your-thing/src/main/resources/templates
                     /your-thing/src/test

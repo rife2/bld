@@ -31,7 +31,7 @@ public class AppProjectBlueprint extends Project {
 
         pkg = packageName;
         name = projectName;
-        mainClass = packageName + "." + baseName + "Main";
+        mainClass = packageName + "." + baseName;
         version = versionNumber;
 
         downloadSources = true;

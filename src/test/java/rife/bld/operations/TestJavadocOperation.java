@@ -273,7 +273,7 @@ public class TestJavadocOperation {
             var javadoc_operation = new JavadocOperation()
                 .fromProject(create_operation.project());
 
-            var main_app_html = new File(new File(javadoc_operation.buildDirectory(), "tst"), "AppMain.html");
+            var main_app_html = new File(new File(javadoc_operation.buildDirectory(), "tst"), "App.html");
             var index_html = new File(javadoc_operation.buildDirectory(), "index.html");
             var index_all_html = new File(javadoc_operation.buildDirectory(), "index-all.html");
             assertFalse(main_app_html.exists());

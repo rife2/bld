@@ -7,6 +7,7 @@ package rife.bld.operations;
 import rife.bld.blueprints.Rife2ProjectBlueprint;
 import rife.template.TemplateFactory;
 import rife.tools.FileUtils;
+import rife.tools.StringUtils;
 import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.File;
@@ -63,7 +64,7 @@ public class CreateRife2Operation extends AbstractCreateOperation<CreateRife2Ope
 
         // project template
         var template_template = TemplateFactory.HTML.get(templateBase_ + "project_template");
-        template_template.setValue("project", projectClassName_);
+        template_template.setValue("project", StringUtils.capitalize(project_.name()));
         var project_template_file = new File(project_.srcMainResourcesTemplatesDirectory(), "hello.html");
         FileUtils.writeString(template_template.getContent(), project_template_file);
 

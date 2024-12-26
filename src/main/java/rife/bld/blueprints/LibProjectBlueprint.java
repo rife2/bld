@@ -31,7 +31,7 @@ public class LibProjectBlueprint extends Project {
 
         pkg = packageName;
         name = projectName;
-        mainClass = packageName + "." + baseName + "Lib";
+        mainClass = packageName + "." + baseName;
         version = versionNumber;
 
         downloadSources = true;

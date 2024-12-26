@@ -37,7 +37,6 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
 
     P project_;
 
-    String projectClassName_;
     String projectBuildName_;
     String projectMainName_;
     String projectMainUberName_;
@@ -99,7 +98,6 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
         project_ = createProjectBlueprint();
 
         // standard names
-        projectClassName_ = StringUtils.capitalize(project_.name());
         var base_name = baseName();
         projectBuildName_ = projectBuildClassName(base_name);
         projectMainName_ = projectMainClassName(base_name);
@@ -135,7 +133,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
      * @since 1.6
      */
     protected String projectMainClassName(String projectClassName) {
-        return projectClassName + "Main";
+        return projectClassName;
     }
 
     /**
@@ -145,7 +143,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
      * @since 1.6
      */
     protected String projectMainUberClassName(String projectClassName) {
-        return projectClassName + "Main";
+        return projectClassName;
     }
 
     /**
@@ -202,7 +200,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
         test_template.setValue("projectTest", projectTestName_);
         test_template.setValue("projectMain", projectMainName_);
         if (test_template.hasValueId("project")) {
-            test_template.setValue("project", projectClassName_);
+            test_template.setValue("project", project_.name());
         }
         var project_test_file = new File(testPackageDirectory_, projectTestName_ + ".java");
         FileUtils.writeString(test_template.getContent(), project_test_file);
@@ -214,7 +212,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
             build_template.setValue("package", project_.pkg());
         }
         if (build_template.hasValueId("project")) {
-            build_template.setValue("project", projectClassName_);
+            build_template.setValue("project", project_.name());
         }
         if (build_template.hasValueId("projectMain")) {
             build_template.setValue("projectMain", projectMainName_);
@@ -551,10 +549,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
 
     static String generateBaseName(String projectName) {
         if (projectName != null) {
-            var base_name = projectName.trim();
-            base_name = StringUtils.filterAsIdentifier(base_name);
-            base_name = StringUtils.capitalize(base_name);
-            return base_name;
+            return StringUtils.filterAsIdentifier(projectName.trim(), true);
         }
 
         return null;

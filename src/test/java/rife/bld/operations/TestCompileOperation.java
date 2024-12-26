@@ -223,7 +223,7 @@ public class TestCompileOperation {
             var compile_operation = new CompileOperation()
                 .fromProject(create_operation.project());
 
-            var main_app_class = new File(new File(compile_operation.buildMainDirectory(), "tst"), "AppMain.class");
+            var main_app_class = new File(new File(compile_operation.buildMainDirectory(), "tst"), "App.class");
             var test_app_class = new File(new File(compile_operation.buildTestDirectory(), "tst"), "AppTest.class");
             assertFalse(main_app_class.exists());
             assertFalse(test_app_class.exists());
