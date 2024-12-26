@@ -50,7 +50,7 @@ public class CreateOperation {
             throw new OperationOptionException("ERROR: Expecting the package, project and base names as the arguments.");
         }
 
-        if (type == null || type.isEmpty()) {
+        if (type == null || type.isBlank()) {
             System.out.println("Please enter a number for the project type:");
             System.out.printf("  1: %s   (Java baseline project)%n", BASE);
             System.out.printf("  2: %s    (Java application project)%n", APP);
@@ -81,14 +81,17 @@ public class CreateOperation {
             throw new OperationOptionException("ERROR: Unsupported project type.");
         }
 
-        if (package_name == null || package_name.isEmpty()) {
+        if (package_name == null || package_name.isBlank()) {
             System.out.println("Please enter a package name (for instance: com.example):");
             package_name = System.console().readLine();
+            if (package_name == null || package_name.isEmpty()) {
+                throw new OperationOptionException("ERROR: package name is required.");
+            }
         } else {
             System.out.println("Using package name: " + package_name);
         }
 
-        if (project_name == null || project_name.isEmpty()) {
+        if (project_name == null || project_name.isBlank()) {
             String name_example;
             if (LIB.equals(type)) {
                 name_example = "my-lib";
@@ -99,15 +102,18 @@ public class CreateOperation {
             }
             System.out.println("Please enter a project name (for instance: " + name_example + ")");
             project_name = System.console().readLine();
+            if (project_name == null || project_name.isEmpty()) {
+                throw new OperationOptionException("ERROR: project name is required.");
+            }
         } else {
             System.out.println("Using project name: " + project_name);
         }
 
-        if (base_name == null || base_name.isEmpty()) {
+        if (base_name == null || base_name.isBlank()) {
             var default_base_name = AbstractCreateOperation.generateBaseName(project_name);
             System.out.println("Please enter the base name for generated project classes (default: " + default_base_name + "):");
             base_name = System.console().readLine();
-            if (base_name == null || base_name.trim().isEmpty()) {
+            if (base_name == null || base_name.isBlank()) {
                 base_name = default_base_name;
                 System.out.println("Using base name: " + base_name);
             }
