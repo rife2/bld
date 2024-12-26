@@ -124,7 +124,7 @@ public class TestCreateLibOperation {
                 /my-app/src/main/java
                 /my-app/src/main/java/com
                 /my-app/src/main/java/com/example
-                /my-app/src/main/java/com/example/MyAppLib\\.java
+                /my-app/src/main/java/com/example/MyApp\\.java
                 /my-app/src/main/resources
                 /my-app/src/main/resources/templates
                 /my-app/src/test
@@ -161,7 +161,7 @@ public class TestCreateLibOperation {
                 /my-app/build/main
                 /my-app/build/main/com
                 /my-app/build/main/com/example
-                /my-app/build/main/com/example/MyAppLib\\.class
+                /my-app/build/main/com/example/MyApp\\.class
                 /my-app/build/test
                 /my-app/build/test/com
                 /my-app/build/test/com/example
@@ -207,7 +207,7 @@ public class TestCreateLibOperation {
                 /my-app/src/main/java
                 /my-app/src/main/java/com
                 /my-app/src/main/java/com/example
-                /my-app/src/main/java/com/example/MyAppLib\\.java
+                /my-app/src/main/java/com/example/MyApp\\.java
                 /my-app/src/main/resources
                 /my-app/src/main/resources/templates
                 /my-app/src/test

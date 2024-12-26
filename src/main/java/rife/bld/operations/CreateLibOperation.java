@@ -24,10 +24,6 @@ public class CreateLibOperation extends AbstractCreateOperation<CreateLibOperati
         return new LibProjectBlueprint(new File(workDirectory(), projectName()), packageName(), projectName(), baseName());
     }
 
-    protected String projectMainClassName(String projectClassName) {
-        return projectClassName + "Lib";
-    }
-
     protected boolean createIdeaRunMain() {
         return false;
     }
