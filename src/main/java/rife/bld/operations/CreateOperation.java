@@ -7,6 +7,7 @@ package rife.bld.operations;
 import rife.bld.operations.exceptions.OperationOptionException;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,14 +38,19 @@ public class CreateOperation {
         if (!arguments.isEmpty()) {
             type = arguments.remove(0);
         }
+
+        var create_operation_args = new ArrayList<String>();
         if (!arguments.isEmpty()) {
             package_name = arguments.remove(0);
+            create_operation_args.add(package_name);
         }
         if (!arguments.isEmpty()) {
             project_name = arguments.remove(0);
+            create_operation_args.add(project_name);
         }
         if (!arguments.isEmpty()) {
             base_name = arguments.remove(0);
+            create_operation_args.add(base_name);
         }
         if ((package_name == null || project_name == null || base_name == null) && System.console() == null) {
             throw new OperationOptionException("ERROR: Expecting the package, project and base names as the arguments.");
@@ -81,50 +87,6 @@ public class CreateOperation {
             throw new OperationOptionException("ERROR: Unsupported project type.");
         }
 
-        if (package_name == null || package_name.isBlank()) {
-            System.out.println("Please enter a package name (for instance: com.example):");
-            package_name = System.console().readLine();
-            if (package_name == null || package_name.isEmpty()) {
-                throw new OperationOptionException("ERROR: package name is required.");
-            }
-        } else {
-            System.out.println("Using package name: " + package_name);
-        }
-
-        if (project_name == null || project_name.isBlank()) {
-            String name_example;
-            if (LIB.equals(type)) {
-                name_example = "my-lib";
-            } else if (RIFE2.equals(type)) {
-                name_example = "my-webapp";
-            } else {
-                name_example = "my-app";
-            }
-            System.out.println("Please enter a project name (for instance: " + name_example + ")");
-            project_name = System.console().readLine();
-            if (project_name == null || project_name.isEmpty()) {
-                throw new OperationOptionException("ERROR: project name is required.");
-            }
-        } else {
-            System.out.println("Using project name: " + project_name);
-        }
-
-        if (base_name == null || base_name.isBlank()) {
-            var default_base_name = AbstractCreateOperation.generateBaseName(project_name);
-            System.out.println("Please enter the base name for generated project classes (default: " + default_base_name + "):");
-            base_name = System.console().readLine();
-            if (base_name == null || base_name.isBlank()) {
-                base_name = default_base_name;
-                System.out.println("Using base name: " + base_name);
-            }
-        } else {
-            System.out.println("Using base name: " + base_name);
-        }
-
-        return create_operation.workDirectory(new File(System.getProperty("user.dir")))
-            .packageName(package_name)
-            .projectName(project_name)
-            .baseName(base_name)
-            .downloadDependencies(true);
+        return create_operation.fromArguments(create_operation_args);
     }
 }
