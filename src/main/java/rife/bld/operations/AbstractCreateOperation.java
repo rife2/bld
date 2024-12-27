@@ -393,17 +393,20 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
         if (package_name == null || package_name.isBlank()) {
             System.out.println("Please enter a package name (for instance: com.example):");
             package_name = System.console().readLine();
-            if (package_name == null || package_name.isEmpty()) {
+            if (package_name == null || package_name.isBlank()) {
                 throw new OperationOptionException("ERROR: package name is required.");
             }
         } else {
             System.out.println("Using package name: " + package_name);
         }
+        if (!ValidityChecks.checkJavaPackage(package_name)) {
+            throw new OperationOptionException("ERROR: package name is invalid.");
+        }
 
         if (project_name == null || project_name.isBlank()) {
             System.out.println("Please enter a project name (for instance: my-app):");
             project_name = System.console().readLine();
-            if (project_name == null || project_name.isEmpty()) {
+            if (project_name == null || project_name.isBlank()) {
                 throw new OperationOptionException("ERROR: project name is required.");
             }
         } else {
@@ -420,6 +423,9 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
             }
         } else {
             System.out.println("Using base name: " + base_name);
+        }
+        if (!ValidityChecks.checkJavaIdentifier(base_name)) {
+            throw new OperationOptionException("ERROR: base name is invalid.");
         }
 
         return workDirectory(new File(System.getProperty("user.dir")))
