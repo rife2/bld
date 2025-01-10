@@ -250,6 +250,9 @@ class Xml2MavenPom extends Xml2Data {
                     if (isChildOfProject()) {
                         addProjectProperty(qName);
                     } else if (isChildOfParent() || isChildOfDependency()) {
+                        if (isChildOfProjectParent()) {
+                            addProjectParentProperty(qName);
+                        }
                         lastGroupId_ = getCharacterData();
                     } else if (collectExclusions_ && isChildOfExclusion()) {
                         lastExclusionGroupId_ = getCharacterData();
@@ -259,6 +262,9 @@ class Xml2MavenPom extends Xml2Data {
                     if (isChildOfProject()) {
                         addProjectProperty(qName);
                     } else if (isChildOfParent() || isChildOfDependency()) {
+                        if (isChildOfProjectParent()) {
+                            addProjectParentProperty(qName);
+                        }
                         lastArtifactId_ = getCharacterData();
                     } else if (collectExclusions_ && isChildOfExclusion()) {
                         lastExclusionArtifactId_ = getCharacterData();
@@ -269,6 +275,9 @@ class Xml2MavenPom extends Xml2Data {
                         addProjectProperty(qName);
                     } else if (isChildOfParent() || isChildOfDependency()) {
                         lastVersion_ = getCharacterData();
+                        if (isChildOfProjectParent()) {
+                            addProjectParentProperty(qName);
+                        }
                     }
                 }
                 case "type" -> {
@@ -306,6 +315,13 @@ class Xml2MavenPom extends Xml2Data {
         return "project".equals(elementStack_.peek());
     }
 
+    private boolean isChildOfProjectParent() {
+        if (elementStack_.size() < 2) {
+            return false;
+        }
+        return "parent".equals(elementStack_.peek()) && "project".equals(elementStack_.elementAt(elementStack_.size() - 2));
+    }
+
     private boolean isChildOfParent() {
         return "parent".equals(elementStack_.peek());
     }
@@ -320,6 +336,10 @@ class Xml2MavenPom extends Xml2Data {
 
     private void addProjectProperty(String name) {
         mavenProperties_.put("project." + name, getCharacterData());
+    }
+
+    private void addProjectParentProperty(String name) {
+        mavenProperties_.put("project.parent." + name, getCharacterData());
     }
 
     private String getCharacterData() {

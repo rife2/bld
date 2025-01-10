@@ -168,6 +168,26 @@ public class TestDependencyResolver {
     }
 
     @Test
+    void testGetCompileDependenciesSwagger() {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("io.swagger.core.v3", "swagger-core", new VersionNumber(2,2,27)));
+        var dependencies = resolver.getDirectDependencies(compile);
+        assertNotNull(dependencies);
+        assertEquals(11, dependencies.size());
+        assertEquals("""
+            jakarta.xml.bind:jakarta.xml.bind-api:2.3.3
+            org.apache.commons:commons-lang3:3.17.0
+            org.slf4j:slf4j-api:2.0.9
+            com.fasterxml.jackson.core:jackson-annotations:2.16.2
+            com.fasterxml.jackson.core:jackson-databind:2.16.2
+            com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.2
+            com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.2
+            io.swagger.core.v3:swagger-annotations:2.2.27
+            org.yaml:snakeyaml:2.3
+            io.swagger.core.v3:swagger-models:2.2.27
+            jakarta.validation:jakarta.validation-api:2.0.2""", StringUtils.join(dependencies, "\n"));
+    }
+
+    @Test
     void testGetCompileDependenciesJettyOverride1() {
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.16")),
             ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
@@ -1045,6 +1065,56 @@ public class TestDependencyResolver {
                 jetty-server-11.0.14.jar
                 jetty-util-11.0.14.jar
                 slf4j-api-2.0.5.jar""", StringUtils.join(files, "\n"));
+        } finally {
+            FileUtils.deleteDirectory(tmp1);
+            FileUtils.deleteDirectory(tmp2);
+        }
+    }
+
+    @Test
+    void testTransferDependencySwagger()
+    throws Exception {
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), new Dependency("io.swagger.core.v3", "swagger-core", new VersionNumber(2,2,27)));
+        var tmp1 = Files.createTempDirectory("transfers").toFile();
+        var tmp2 = Files.createTempDirectory("modules").toFile();
+        try {
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
+            assertEquals("""
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/swagger/core/v3/swagger-core/2.2.27/swagger-core-2.2.27.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api/2.3.3/jakarta.xml.bind-api-2.3.3.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.16.2/jackson-annotations-2.16.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.16.2/jackson-databind-2.16.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.16.2/jackson-dataformat-yaml-2.16.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.16.2/jackson-datatype-jsr310-2.16.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/swagger/core/v3/swagger-annotations/2.2.27/swagger-annotations-2.2.27.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/org/yaml/snakeyaml/2.3/snakeyaml-2.3.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/io/swagger/core/v3/swagger-models/2.2.27/swagger-models-2.2.27.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/jakarta/validation/jakarta.validation-api/2.0.2/jakarta.validation-api-2.0.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api/1.2.2/jakarta.activation-api-1.2.2.jar
+                https://repo1.maven.org/maven2/:https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.16.2/jackson-core-2.16.2.jar""", StringUtils.join(result, "\n"));
+
+            var files = FileUtils.getFileList(tmp1);
+            assertEquals(14, files.size());
+            Collections.sort(files);
+            assertEquals("""
+                commons-lang3-3.17.0.jar
+                jackson-annotations-2.16.2.jar
+                jackson-core-2.16.2.jar
+                jackson-databind-2.16.2.jar
+                jackson-dataformat-yaml-2.16.2.jar
+                jackson-datatype-jsr310-2.16.2.jar
+                jakarta.activation-api-1.2.2.jar
+                jakarta.validation-api-2.0.2.jar
+                jakarta.xml.bind-api-2.3.3.jar
+                slf4j-api-2.0.9.jar
+                snakeyaml-2.3.jar
+                swagger-annotations-2.2.27.jar
+                swagger-core-2.2.27.jar
+                swagger-models-2.2.27.jar""", StringUtils.join(files, "\n"));
+
+            assertTrue(FileUtils.getFileList(tmp2).isEmpty());
         } finally {
             FileUtils.deleteDirectory(tmp1);
             FileUtils.deleteDirectory(tmp2);
