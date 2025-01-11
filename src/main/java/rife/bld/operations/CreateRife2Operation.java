@@ -64,7 +64,7 @@ public class CreateRife2Operation extends AbstractCreateOperation<CreateRife2Ope
 
         // project template
         var template_template = TemplateFactory.HTML.get(templateBase_ + "project_template");
-        template_template.setValue("project", StringUtils.capitalize(project_.name()));
+        template_template.setValue("project", project_.name());
         var project_template_file = new File(project_.srcMainResourcesTemplatesDirectory(), "hello.html");
         FileUtils.writeString(template_template.getContent(), project_template_file);
 
