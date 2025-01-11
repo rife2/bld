@@ -174,7 +174,7 @@ public class TestUberJarOperation {
             assertThrows(ExitStatusException.class, run_operation::execute);
             Thread.sleep(2000);
 
-            assertTrue(check_result.toString().contains("<p>Hello World App</p>"));
+            assertTrue(check_result.toString().contains("<p>Hello World app</p>"));
         } finally {
             FileUtils.deleteDirectory(tmp);
         }

@@ -133,8 +133,8 @@ public class TestCreateRife2Operation {
                     /my-app/lib/test
                     /my-app/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /my-app/lib/test/apiguardian-api-1\\.1\\.2\\.jar
-                    /my-app/lib/test/jsoup-1\\.18\\.1-sources\\.jar
-                    /my-app/lib/test/jsoup-1\\.18\\.1\\.jar
+                    /my-app/lib/test/jsoup-1\\.18\\.3-sources\\.jar
+                    /my-app/lib/test/jsoup-1\\.18\\.3\\.jar
                     /my-app/lib/test/junit-jupiter-5\\.11\\.4-sources\\.jar
                     /my-app/lib/test/junit-jupiter-5\\.11\\.4\\.jar
                     /my-app/lib/test/junit-jupiter-api-5\\.11\\.4-sources\\.jar
@@ -252,8 +252,8 @@ public class TestCreateRife2Operation {
                     /my-app/lib/test
                     /my-app/lib/test/apiguardian-api-1\\.1\\.2-sources\\.jar
                     /my-app/lib/test/apiguardian-api-1\\.1\\.2\\.jar
-                    /my-app/lib/test/jsoup-1\\.18\\.1-sources\\.jar
-                    /my-app/lib/test/jsoup-1\\.18\\.1\\.jar
+                    /my-app/lib/test/jsoup-1\\.18\\.3-sources\\.jar
+                    /my-app/lib/test/jsoup-1\\.18\\.3\\.jar
                     /my-app/lib/test/junit-jupiter-5\\.11\\.4-sources\\.jar
                     /my-app/lib/test/junit-jupiter-5\\.11\\.4\\.jar
                     /my-app/lib/test/junit-jupiter-api-5\\.11\\.4-sources\\.jar
@@ -314,7 +314,7 @@ public class TestCreateRife2Operation {
             assertThrows(ExitStatusException.class, run_operation::execute);
             Thread.sleep(2000);
 
-            assertTrue(check_result.toString().contains("<p>Hello World My-app</p>"));
+            assertTrue(check_result.toString().contains("<p>Hello World my-app</p>"));
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
@@ -506,8 +506,8 @@ public class TestCreateRife2Operation {
                 /my-app/lib/local/jetty-session-12\\.0\\.16\\.jar
                 /my-app/lib/local/jetty-util-12\\.0\\.16-sources\\.jar
                 /my-app/lib/local/jetty-util-12\\.0\\.16\\.jar
-                /my-app/lib/local/jsoup-1\\.18\\.1-sources\\.jar
-                /my-app/lib/local/jsoup-1\\.18\\.1\\.jar
+                /my-app/lib/local/jsoup-1\\.18\\.3-sources\\.jar
+                /my-app/lib/local/jsoup-1\\.18\\.3\\.jar
                 /my-app/lib/local/junit-jupiter-5\\.11\\.4-sources\\.jar
                 /my-app/lib/local/junit-jupiter-5\\.11\\.4\\.jar
                 /my-app/lib/local/junit-jupiter-api-5\\.11\\.4-sources\\.jar
@@ -581,7 +581,7 @@ public class TestCreateRife2Operation {
             assertThrows(ExitStatusException.class, run_operation::execute);
             Thread.sleep(2000);
 
-            assertTrue(check_result.toString().contains("<p>Hello World My-app</p>"), check_result.toString());
+            assertTrue(check_result.toString().contains("<p>Hello World my-app</p>"), check_result.toString());
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
@@ -688,8 +688,8 @@ public class TestCreateRife2Operation {
                 /my-app/lib/local_test
                 /my-app/lib/local_test/apiguardian-api-1\\.1\\.2-sources\\.jar
                 /my-app/lib/local_test/apiguardian-api-1\\.1\\.2\\.jar
-                /my-app/lib/local_test/jsoup-1\\.18\\.1-sources\\.jar
-                /my-app/lib/local_test/jsoup-1\\.18\\.1\\.jar
+                /my-app/lib/local_test/jsoup-1\\.18\\.3-sources\\.jar
+                /my-app/lib/local_test/jsoup-1\\.18\\.3\\.jar
                 /my-app/lib/local_test/junit-jupiter-5\\.11\\.4-sources\\.jar
                 /my-app/lib/local_test/junit-jupiter-5\\.11\\.4\\.jar
                 /my-app/lib/local_test/junit-jupiter-api-5\\.11\\.4-sources\\.jar
@@ -757,7 +757,7 @@ public class TestCreateRife2Operation {
             assertThrows(ExitStatusException.class, run_operation::execute);
             Thread.sleep(2000);
 
-            assertTrue(check_result.toString().contains("<p>Hello World My-app</p>"));
+            assertTrue(check_result.toString().contains("<p>Hello World my-app</p>"));
         } finally {
             FileUtils.deleteDirectory(tmp);
         }

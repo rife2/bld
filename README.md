@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java](https://img.shields.io/badge/java-17%2B-blue)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-[![bld](https://img.shields.io/badge/2.1.0-FA9052?label=bld&labelColor=2392FF)](https://rife2.com/bld)
+[![bld](https://img.shields.io/badge/2.2.0-FA9052?label=bld&labelColor=2392FF)](https://rife2.com/bld)
 [![Release](https://img.shields.io/github/release/rife2/bld.svg)](https://github.com/rife2/bld/releases/latest)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.uwyn.rife2/bld/badge.svg?color=blue)](https://maven-badges.herokuapp.com/maven-central/com.uwyn.rife2/bld)
 [![Nexus Snapshot](https://img.shields.io/nexus/s/com.uwyn.rife2/bld?server=https%3A%2F%2Fs01.oss.sonatype.org%2F)](https://s01.oss.sonatype.org/content/repositories/snapshots/com/uwyn/rife2/bld/)
@@ -48,33 +48,29 @@ import java.util.List;
 import static rife.bld.dependencies.Repository.*;
 import static rife.bld.dependencies.Scope.*;
 
-public class MyappBuild extends Project {
-    public MyappBuild() {
+public class MyAppBuild extends Project {
+    public MyAppBuild() {
         pkg = "com.example";
-        name = "Myapp";
-        mainClass = "com.example.MyappMain";
+        name = "my-app";
+        mainClass = "com.example.MyApp";
         version = version(0,1,0);
 
         downloadSources = true;
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
         scope(test)
-            .include(dependency("org.junit.jupiter",
-                                "junit-jupiter",
-                                version(5,11,0)))
-            .include(dependency("org.junit.platform",
-                                "junit-platform-console-standalone",
-                                version(1,11,0)));
+            .include(dependency("org.junit.jupiter", "junit-jupiter", version(5,11,4)))
+            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1,11,4)));
     }
 
     public static void main(String[] args) {
-        new MyappBuild().start(args);
+        new MyAppBuild().start(args);
     }
 }
 ```
 
 > **NOTE:** `bld` supports different ways to describe dependencies,
-> `dependency("org.junit.jupiter", "junit-jupiter", version(5,11,0))` can for instance also
-> be written as `dependency("org.junit.jupiter:junit-jupiter:5.11.0")`. Which format you use,
+> `dependency("org.junit.jupiter", "junit-jupiter", version(5,11,4))` can for instance also
+> be written as `dependency("org.junit.jupiter:junit-jupiter:5.11.4")`. Which format you use,
 > is a matter of personal taste.
 
 # Where does `bld` fit?
