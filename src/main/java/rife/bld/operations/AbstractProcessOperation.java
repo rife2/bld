@@ -11,7 +11,9 @@ import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -24,6 +26,7 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
     public static final String DEFAULT_JAVA_TOOL = "java";
 
     protected File workDirectory_ = new File(System.getProperty("user.dir"));
+    protected final Map<String, String> environment_ = new HashMap<>();
     protected String javaTool_ = DEFAULT_JAVA_TOOL;
     protected final JavaOptions javaOptions_ = new JavaOptions();
     protected final List<String> classpath_ = new ArrayList<>();
@@ -86,6 +89,10 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
     throws IOException {
         var builder = new ProcessBuilder(executeConstructProcessCommandList());
         builder.directory(workDirectory());
+
+        if (!environment_.isEmpty()) {
+            builder.environment().putAll(environment_);
+        }
 
         builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
 
@@ -160,6 +167,18 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
         }
 
         workDirectory_ = directory;
+        return (T) this;
+    }
+
+    /**
+     * Provides environment variable entries to use for the operation.
+     *
+     * @param environment environment entries for the operation
+     * @return this operation instance
+     * @since 2.2.1
+     */
+    public T environment(Map<String, String> environment) {
+        environment_.putAll(environment);
         return (T) this;
     }
 
@@ -301,6 +320,18 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      */
     public File workDirectory() {
         return workDirectory_;
+    }
+
+    /**
+     * Retrieves the environment to use for the operation.
+     * <p>
+     * This is a modifiable map that can be retrieved and changed.
+     *
+     * @return the operation's environment
+     * @since 2.2.1
+     */
+    public Map<String, String> environment() {
+        return environment_;
     }
 
     /**
