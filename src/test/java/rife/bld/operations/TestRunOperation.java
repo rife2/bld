@@ -187,7 +187,7 @@ public class TestRunOperation {
                 public class Source1 {
                     public final String name_;
                     public Source1() {
-                        name_ = "source1";
+                        name_ = System.getenv("execute_name");
                     }
                     
                     public static void main(String[] arguments)
@@ -222,6 +222,7 @@ public class TestRunOperation {
 
             var output = new StringBuilder();
             var run_operation = new RunOperation()
+                .environment(Map.of("execute_name", "source1"))
                 .module("pkg")
                 .modulePath(new File(destination_dir, destination_name).getAbsolutePath())
                 .outputProcessor(s -> {

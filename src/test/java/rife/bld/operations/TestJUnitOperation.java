@@ -13,6 +13,7 @@ import rife.tools.StringUtils;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +26,7 @@ public class TestJUnitOperation {
         assertTrue(operation.workDirectory().exists());
         assertTrue(operation.workDirectory().isDirectory());
         assertTrue(operation.workDirectory().canWrite());
+        assertTrue(operation.environment().isEmpty());
         assertEquals("java", operation.javaTool());
         assertTrue(operation.javaOptions().isEmpty());
         assertTrue(operation.classpath().isEmpty());
@@ -37,6 +39,7 @@ public class TestJUnitOperation {
     @Test
     void testPopulation()
     throws Exception {
+        var environment = Map.of("env1", "val1", "env2", "val2", "env3", "val3");
         var work_directory = Files.createTempDirectory("test").toFile();
         try {
             var java_tool = "javatool";
@@ -53,6 +56,7 @@ public class TestJUnitOperation {
             var operation1 = new JUnitOperation();
             operation1
                 .workDirectory(work_directory)
+                .environment(environment)
                 .javaTool(java_tool)
                 .javaOptions(List.of(test_java_option1, test_java_option2))
                 .testToolOptions(List.of(test_tool_option1, test_tool_option2))
@@ -62,6 +66,7 @@ public class TestJUnitOperation {
                 .errorProcessor(test_error_consumer);
 
             assertEquals(work_directory, operation1.workDirectory());
+            assertEquals(environment, operation1.environment());
             assertEquals(java_tool, operation1.javaTool());
             assertTrue(operation1.javaOptions().contains(test_java_option1));
             assertTrue(operation1.javaOptions().contains(test_java_option2));
@@ -75,6 +80,7 @@ public class TestJUnitOperation {
 
             var operation2 = new JUnitOperation();
             operation2.workDirectory(work_directory);
+            operation2.environment(environment);
             operation2.javaTool(java_tool);
             operation2.javaOptions().add(test_java_option1);
             operation2.javaOptions().add(test_java_option2);
@@ -87,6 +93,7 @@ public class TestJUnitOperation {
             operation2.errorProcessor(test_error_consumer);
 
             assertEquals(work_directory, operation2.workDirectory());
+            assertEquals(environment, operation2.environment());
             assertEquals(java_tool, operation2.javaTool());
             assertTrue(operation2.javaOptions().contains(test_java_option1));
             assertTrue(operation2.javaOptions().contains(test_java_option2));
@@ -124,7 +131,7 @@ public class TestJUnitOperation {
                 public class Source1 {
                     public final String name_;
                     public Source1() {
-                        name_ = "source1";
+                        name_ = System.getenv("execute_name");
                     }
                     
                     public static void main(String[] arguments)
@@ -156,6 +163,7 @@ public class TestJUnitOperation {
 
             var output = new StringBuilder();
             var test_operation = new JUnitOperation()
+                .environment(Map.of("execute_name", "source1"))
                 .mainClass("Source2")
                 .classpath(List.of(build_main.getAbsolutePath(), build_test.getAbsolutePath()))
                 .outputProcessor(s -> {
