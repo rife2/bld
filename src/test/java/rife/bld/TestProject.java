@@ -29,10 +29,13 @@ public class TestProject {
         assertTrue(project.workDirectory().exists());
         assertTrue(project.workDirectory().isDirectory());
         assertNull(project.pkg);
+        assertFalse(project.hasPkg());
         assertThrows(IllegalStateException.class, project::pkg);
         assertNull(project.name);
+        assertFalse(project.hasName());
         assertThrows(IllegalStateException.class, project::name);
         assertNull(project.version);
+        assertFalse(project.hasVersion());
         assertThrows(IllegalStateException.class, project::version);
         assertNull(project.mainClass);
         assertNull(project.module);
@@ -137,6 +140,22 @@ public class TestProject {
             assertEquals("newcommand", getCurrentCommandName());
             assertNotNull(getCurrentCommandDefinition());
             result_.append("newcommand");
+        }
+    }
+
+    @Test
+    void testCustomProject()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var result = new StringBuilder();
+            var project = new CustomProject(tmp, result);
+
+            assertTrue(project.hasPkg());
+            assertTrue(project.hasName());
+            assertTrue(project.hasVersion());
+        } finally {
+            FileUtils.deleteDirectory(tmp);
         }
     }
 

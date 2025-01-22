@@ -1377,6 +1377,17 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns whether this project's package was set.
+     *
+     * @return {@code true} if the package was set; or
+     * {@code false} otherwise
+     * @since 2.2.1
+     */
+    public boolean hasPkg() {
+        return pkg != null;
+    }
+
+    /**
      * Returns the project's name.
      *
      * @since 1.5
@@ -1389,6 +1400,17 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Returns whether this project's name was set.
+     *
+     * @return {@code true} if the name was set; or
+     * {@code false} otherwise
+     * @since 2.2.1
+     */
+    public boolean hasName() {
+        return name != null;
+    }
+
+    /**
      * Returns the project's version.
      *
      * @since 1.5
@@ -1398,6 +1420,17 @@ public class BaseProject extends BuildExecutor {
             throw new IllegalStateException("The version variable has to be set.");
         }
         return version;
+    }
+
+    /**
+     * Returns whether this project's version was set.
+     *
+     * @return {@code true} if the version was set; or
+     * {@code false} otherwise
+     * @since 2.2.1
+     */
+    public boolean hasVersion() {
+        return version != null;
     }
 
     /**
