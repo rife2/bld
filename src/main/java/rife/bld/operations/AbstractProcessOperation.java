@@ -171,6 +171,19 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
     }
 
     /**
+     * Provides an environment variable to use for the operation.
+     *
+     * @param name the name of the environment variable
+     * @param value the value of the environment variable
+     * @return this operation instance
+     * @since 2.2.1
+     */
+    public T environment(String name, String value) {
+        environment_.put(name, value);
+        return (T) this;
+    }
+
+    /**
      * Provides environment variable entries to use for the operation.
      *
      * @param environment environment entries for the operation

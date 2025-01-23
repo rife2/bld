@@ -41,6 +41,7 @@ public class TestRunOperation {
     void testPopulation()
     throws Exception {
         var environment = Map.of("env1", "val1", "env2", "val2", "env3", "val3");
+        var environment_full = Map.of("env1", "val1", "env2", "val2", "env3", "val3", "env4", "val4");
         var work_directory = Files.createTempDirectory("test").toFile();
         try {
             var java_tool = "javatool";
@@ -59,6 +60,7 @@ public class TestRunOperation {
             operation1
                 .workDirectory(work_directory)
                 .environment(environment)
+                .environment("env4", "val4")
                 .javaTool(java_tool)
                 .javaOptions(List.of(run_java_option1, run_java_option2))
                 .classpath(List.of(run_classpath1, run_classpath2))
@@ -69,7 +71,7 @@ public class TestRunOperation {
                 .errorProcessor(run_error_consumer);
 
             assertEquals(work_directory, operation1.workDirectory());
-            assertEquals(environment, operation1.environment());
+            assertEquals(environment_full, operation1.environment());
             assertEquals(java_tool, operation1.javaTool());
             assertTrue(operation1.javaOptions().contains(run_java_option1));
             assertTrue(operation1.javaOptions().contains(run_java_option2));
@@ -85,6 +87,7 @@ public class TestRunOperation {
             var operation2 = new RunOperation();
             operation2.workDirectory(work_directory);
             operation2.environment(environment);
+            operation2.environment("env4", "val4");
             operation2.javaTool(java_tool);
             operation2.javaOptions().add(run_java_option1);
             operation2.javaOptions().add(run_java_option2);
@@ -98,7 +101,7 @@ public class TestRunOperation {
             operation2.errorProcessor(run_error_consumer);
 
             assertEquals(work_directory, operation2.workDirectory());
-            assertEquals(environment, operation2.environment());
+            assertEquals(environment_full, operation2.environment());
             assertEquals(java_tool, operation2.javaTool());
             assertTrue(operation2.javaOptions().contains(run_java_option1));
             assertTrue(operation2.javaOptions().contains(run_java_option2));
@@ -136,7 +139,7 @@ public class TestRunOperation {
                 public class Source1 {
                     public final String name_;
                     public Source1() {
-                        name_ = System.getenv("execute_name");
+                        name_ = System.getenv("execute_name") + System.getenv("execute_number");
                     }
                     
                     public static void main(String[] arguments)
@@ -156,7 +159,8 @@ public class TestRunOperation {
 
             var output = new StringBuilder();
             var run_operation = new RunOperation()
-                .environment(Map.of("execute_name", "source1"))
+                .environment(Map.of("execute_name", "source"))
+                .environment("execute_number", "1")
                 .mainClass("Source1")
                 .classpath(List.of(build_main.getAbsolutePath()))
                 .outputProcessor(s -> {
@@ -187,7 +191,7 @@ public class TestRunOperation {
                 public class Source1 {
                     public final String name_;
                     public Source1() {
-                        name_ = System.getenv("execute_name");
+                        name_ = System.getenv("execute_name") + System.getenv("execute_number");
                     }
                     
                     public static void main(String[] arguments)
@@ -222,7 +226,8 @@ public class TestRunOperation {
 
             var output = new StringBuilder();
             var run_operation = new RunOperation()
-                .environment(Map.of("execute_name", "source1"))
+                .environment(Map.of("execute_name", "source"))
+                .environment("execute_number", "1")
                 .module("pkg")
                 .modulePath(new File(destination_dir, destination_name).getAbsolutePath())
                 .outputProcessor(s -> {
