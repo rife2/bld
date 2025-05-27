@@ -129,7 +129,7 @@ bash -c "$(curl -fsSL https://rife2.com/bld/create.sh)"
 If you have any questions, suggestions, ideas or just want to chat, feel free
 to post on the [forums](https://forum.uwyn.com) or to join  us on [Discord](https://discord.gg/zDG6anEXQX).
 
-Read more in the [full documentation](https://github.com/rife2/bld/wiki) and [bld Javadocs](https://rife2.github.io/bld/).
+Read more in the [full documentation](https://github.com/rife2/bld/wiki) and [bld Javadocs](https://apidia.net/mvn/com.uwyn.rife2/bld/).
 
 # Building `bld`
 
