@@ -140,7 +140,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
                 System.out.println("This is expected for a first publication or for publication to a staging repository.");
             }
 
-            // adapt the actual version that's use by the artifacts
+            // adapt the actual version used by the artifacts
             var snapshot_qualifier = snapshot_timestamp + "-" + snapshot_build_number;
             actual_version = info().version().withQualifier(snapshot_qualifier);
 
@@ -181,7 +181,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
                 artifact_name.append('-').append(artifact.classifier());
             }
             var type = artifact.type();
-            if (type == null || TYPE_JAR.equals(type) || TYPE_MODULAR_JAR.equals(type) || TYPE_CLASSPATH_JAR.equals(type)) {
+            if (TYPE_JAR.equals(type) || TYPE_MODULAR_JAR.equals(type) || TYPE_CLASSPATH_JAR.equals(type)) {
                 type = TYPE_JAR;
             }
             artifact_name.append('.').append(type);
@@ -493,7 +493,9 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
                 response.statusCode() < 300) {
                 System.out.print("done");
             } else {
-                System.out.print("failed");
+                System.out.println("failed");
+                System.out.println(response.body());
+                System.out.print(response.headers().toString());
                 throw new UploadException(url, response.statusCode());
             }
         } finally {
