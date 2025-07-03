@@ -86,7 +86,7 @@ public class BldBuild extends AbstractRife2Build {
 
         publishOperation()
             .repository(version.isSnapshot() ? repository("rife2-snapshots") : repository("rife2-releases"))
-            .repository(version.isSnapshot() ? repository("sonatype-snapshots") : repository("sonatype-releases"))
+            .repository(version.isSnapshot() ? repository("central-snapshots") : repository("central-releases"))
             .repository(repository("github"))
             .info(new PublishInfo()
                 .groupId("com.uwyn.rife2")

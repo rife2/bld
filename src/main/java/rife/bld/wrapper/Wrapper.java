@@ -45,9 +45,9 @@ public class Wrapper {
     public static final String WRAPPER_PROPERTIES = WRAPPER_PREFIX + ".properties";
 
     static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2/";
-    static final String SONATYPE_SNAPSHOTS = "https://s01.oss.sonatype.org/content/repositories/snapshots/";
+    static final String CENTRAL_SNAPSHOTS = "https://central.sonatype.com/repository/maven-snapshots/";
     static final String DOWNLOAD_LOCATION = MAVEN_CENTRAL + "com/uwyn/rife2/bld/${version}/";
-    static final String DOWNLOAD_LOCATION_SNAPSHOT = SONATYPE_SNAPSHOTS + "com/uwyn/rife2/bld/${version}/";
+    static final String DOWNLOAD_LOCATION_SNAPSHOT = CENTRAL_SNAPSHOTS + "com/uwyn/rife2/bld/${version}/";
     static final String BLD_CACHE = "bld.cache";
     static final String BLD_FILENAME = "bld-${version}.jar";
     static final String BLD_SOURCES_FILENAME = "bld-${version}-sources.jar";

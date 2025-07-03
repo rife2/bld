@@ -32,6 +32,8 @@ public record Repository(String location, String username, String password) {
     public static final Repository SONATYPE_RELEASES_LEGACY = new Repository("https://oss.sonatype.org/service/local/staging/deploy/maven2/");
     public static final Repository SONATYPE_SNAPSHOTS = new Repository("https://s01.oss.sonatype.org/content/repositories/snapshots/");
     public static final Repository SONATYPE_SNAPSHOTS_LEGACY = new Repository("https://oss.sonatype.org/content/repositories/snapshots/");
+    public static final Repository CENTRAL_RELEASES = new Repository("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/");
+    public static final Repository CENTRAL_SNAPSHOTS = new Repository("https://central.sonatype.com/repository/maven-snapshots/");
     public static final Repository RIFE2_RELEASES = new Repository("https://repo.rife2.com/releases/");
     public static final Repository RIFE2_SNAPSHOTS = new Repository("https://repo.rife2.com/snapshots/");
 
@@ -98,6 +100,8 @@ public record Repository(String location, String username, String password) {
             case "SONATYPE_RELEASES_LEGACY" -> Repository.SONATYPE_RELEASES_LEGACY;
             case "SONATYPE_SNAPSHOTS" -> Repository.SONATYPE_SNAPSHOTS;
             case "SONATYPE_SNAPSHOTS_LEGACY" -> Repository.SONATYPE_SNAPSHOTS_LEGACY;
+            case "CENTRAL_RELEASES" -> Repository.CENTRAL_RELEASES;
+            case "CENTRAL_SNAPSHOTS" -> Repository.CENTRAL_SNAPSHOTS;
             default -> new Repository(locationOrName);
         };
     }

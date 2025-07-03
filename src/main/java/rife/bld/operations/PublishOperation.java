@@ -133,7 +133,11 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
                 var resolution = new VersionResolution(properties());
                 var resolver = new DependencyResolver(resolution, artifactRetriever(), List.of(repository), new Dependency(info().groupId(), info().artifactId(), info().version()));
                 var snapshot_meta = resolver.getSnapshotMavenMetadata();
-                snapshot_build_number = snapshot_meta.getSnapshotBuildNumber() + 1;
+                var build_number_meta = snapshot_meta.getSnapshotBuildNumber();
+                if (build_number_meta == null) {
+                    throw new DependencyException("Snapshot metadata build number doesn't exist.");
+                }
+                snapshot_build_number = build_number_meta + 1;
             } catch (DependencyException e) {
                 // start the build number from the beginning
                 System.out.println("Unable to retrieve previous snapshot metadata, using first build number.");
@@ -161,7 +165,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
                 .info(info())
                 .updated(moment)
                 .build(),
-            info().version() + "/" + repository.getMetadataName(), true);
+            info().version() + "/" + repository.getMetadataName(), false);
         return actual_version;
     }
 
@@ -493,9 +497,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
                 response.statusCode() < 300) {
                 System.out.print("done");
             } else {
-                System.out.println("failed");
-                System.out.println(response.body());
-                System.out.print(response.headers().toString());
+                System.out.print("failed");
                 throw new UploadException(url, response.statusCode());
             }
         } finally {
