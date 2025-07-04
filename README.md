@@ -3,7 +3,7 @@
 [![bld](https://img.shields.io/badge/2.2.1-FA9052?label=bld&labelColor=2392FF)](https://rife2.com/bld)
 [![Release](https://img.shields.io/github/release/rife2/bld.svg)](https://github.com/rife2/bld/releases/latest)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.uwyn.rife2/bld/badge.svg?color=blue)](https://maven-badges.herokuapp.com/maven-central/com.uwyn.rife2/bld)
-[![Nexus Snapshot](https://img.shields.io/nexus/s/com.uwyn.rife2/bld?server=https%3A%2F%2Fcentral.sonatype.com%2F)](https://central.sonatype.com/repository/maven-snapshots/com/uwyn/rife2/bld/)
+[![GitHub Snapshot](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fcom%2Fuwyn%2Frife2%2Fbld%2Fmaven-metadata.xml&label=snapshot)](https://github.com/rife2/bld/packages/2214741/versions)
 [![gradle-ci](https://github.com/rife2/bld/actions/workflows/bld.yml/badge.svg)](https://github.com/rife2/bld/actions/workflows/bld.yml)
 [![Tests](https://rife2.com/tests-badge/badge/com.uwyn.rife2/bld)](https://github.com/rife2/rife2/actions/workflows/bld.yml)
 
