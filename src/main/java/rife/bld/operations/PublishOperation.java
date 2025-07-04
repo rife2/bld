@@ -517,7 +517,6 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
             "(" + System.getProperty("java.vendor") + " " + System.getProperty("java.vm.name") + "; " + System.getProperty("java.version") + "; " + System.getProperty("java.vm.version") + ")";
     }
 
-
     private static void applyAuthorization(Repository repository, HttpRequest.Builder builder) {
         if (repository.username() != null && repository.password() != null) {
             builder.header(HEADER_AUTHORIZATION, basicAuthorizationHeader(repository.username(), repository.password()));
@@ -588,7 +587,13 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
                         response_close.statusCode() < 300) {
                         System.out.print("done");
                     } else {
-                        System.out.print("failed");
+                        System.out.println("failed");
+                        var pattern_error = Pattern.compile("\\s*\"error\"\\s*:\\s*\"([^\"]*)\"");
+                        var matcher_error = pattern_error.matcher(response_close.body());
+                        if (matcher_error.find()) {
+                            var error = matcher_error.group(1);
+                            System.out.print(error.translateEscapes());
+                        }
                         throw new RestApiException(url_close, response_close.statusCode());
                     }
                 }
