@@ -9,6 +9,7 @@ import rife.bld.BldVersion;
 import rife.bld.dependencies.*;
 import rife.bld.dependencies.exceptions.DependencyException;
 import rife.bld.operations.exceptions.OperationOptionException;
+import rife.bld.operations.exceptions.RestApiException;
 import rife.bld.operations.exceptions.SignException;
 import rife.bld.operations.exceptions.UploadException;
 import rife.bld.publish.*;
@@ -27,6 +28,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static rife.bld.dependencies.Dependency.*;
 import static rife.bld.publish.MetadataBuilder.SNAPSHOT_TIMESTAMP_FORMATTER;
@@ -40,6 +42,9 @@ import static rife.tools.StringUtils.encodeHexLower;
  * @since 1.5.7
  */
 public class PublishOperation extends AbstractOperation<PublishOperation> {
+    private static final String OSSRH_STAGING_MANUAL_SEARCH = "https://" + Repository.OSSRH_STAGING_API_DOMAIN + "/manual/search/repositories";
+    private static final String OSSRH_STAGING_MANUAL_UPLOAD = "https://" + Repository.OSSRH_STAGING_API_DOMAIN + "/manual/upload/repository/";
+
     private boolean offline_ = false;
     private HierarchicalProperties properties_ = null;
     private ArtifactRetriever retriever_ = null;
@@ -87,6 +92,11 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
             executePublishArtifacts(repository, actual_version);
             executePublishPom(repository, actual_version);
             executePublishMetadata(repository, moment);
+
+            if (!info().version().isSnapshot() &&
+                repository.location().contains(Repository.OSSRH_STAGING_API_DOMAIN)) {
+                executeCloseOSSRHStagingRepository(repository);
+            }
         }
         if (!silent()) {
             System.out.println("Publishing finished successfully.");
@@ -474,12 +484,8 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
             var builder = HttpRequest.newBuilder()
                 .PUT(body)
                 .uri(URI.create(url))
-                .header(HEADER_USER_AGENT, "bld/" + BldVersion.getVersion() +
-                    " (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + "; " + System.getProperty("os.arch") + ") " +
-                    "(" + System.getProperty("java.vendor") + " " + System.getProperty("java.vm.name") + "; " + System.getProperty("java.version") + "; " + System.getProperty("java.vm.version") + ")");
-            if (repository.username() != null && repository.password() != null) {
-                builder.header(HEADER_AUTHORIZATION, basicAuthorizationHeader(repository.username(), repository.password()));
-            }
+                .header(HEADER_USER_AGENT, constructBldUserAgent());
+            applyAuthorization(repository, builder);
             var request = builder.build();
 
             HttpResponse<String> response;
@@ -499,6 +505,100 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
             } else {
                 System.out.print("failed");
                 throw new UploadException(url, response.statusCode());
+            }
+        } finally {
+            System.out.println();
+        }
+    }
+
+    private static String constructBldUserAgent() {
+        return "bld/" + BldVersion.getVersion() +
+            " (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + "; " + System.getProperty("os.arch") + ") " +
+            "(" + System.getProperty("java.vendor") + " " + System.getProperty("java.vm.name") + "; " + System.getProperty("java.version") + "; " + System.getProperty("java.vm.version") + ")";
+    }
+
+
+    private static void applyAuthorization(Repository repository, HttpRequest.Builder builder) {
+        if (repository.username() != null && repository.password() != null) {
+            builder.header(HEADER_AUTHORIZATION, basicAuthorizationHeader(repository.username(), repository.password()));
+        }
+    }
+
+    /**
+     * Part of the {@link #execute} operation, closes the OSSRH staging API repository.
+     *
+     * @param repository the repository to close a staging repository in
+     * @since 2.2.2
+     */
+    protected void executeCloseOSSRHStagingRepository(Repository repository) {
+        var url_search = OSSRH_STAGING_MANUAL_SEARCH;
+        System.out.print("Finding open staging repositories at: " + url_search + " ... ");
+        System.out.flush();
+        try {
+            var builder_search = HttpRequest.newBuilder()
+                .GET()
+                .uri(URI.create(url_search))
+                .header(HEADER_USER_AGENT, constructBldUserAgent());
+            applyAuthorization(repository, builder_search);
+            var request_list = builder_search.build();
+
+            HttpResponse<String> response_search;
+            try {
+                response_search = client_.send(request_list, HttpResponse.BodyHandlers.ofString());
+            } catch (IOException e) {
+                System.out.print("I/O error");
+                throw new RestApiException(url_search, e);
+            } catch (InterruptedException e) {
+                System.out.print("interrupted");
+                throw new RestApiException(url_search, e);
+            }
+
+            if (response_search.statusCode() >= 200 &&
+                response_search.statusCode() < 300) {
+                System.out.println("done");
+
+                var pattern_key = Pattern.compile("\\{\\s*\"key\"\\s*:\\s*\"([^\"]+)\"\\s*,\\s*\"state\"\\s*:\\s*\"open\"");
+                var matcher_key = pattern_key.matcher(response_search.body());
+                if (matcher_key.find()) {
+                    var key = matcher_key.group(1);
+                    System.out.println("Found open staging repository with key: " + key);
+
+                    var url_close = OSSRH_STAGING_MANUAL_UPLOAD + key;
+                    System.out.print("Closing the staging repository at: " + url_close + " ... ");
+                    System.out.flush();
+                    var builder_close = HttpRequest.newBuilder()
+                        .POST(BodyPublishers.ofString(""))
+                        .uri(URI.create(url_close))
+                        .header(HEADER_USER_AGENT, constructBldUserAgent());
+                    applyAuthorization(repository, builder_close);
+                    var request_close = builder_close.build();
+
+                    HttpResponse<String> response_close;
+                    try {
+                        response_close = client_.send(request_close, HttpResponse.BodyHandlers.ofString());
+                    } catch (IOException e) {
+                        System.out.print("I/O error");
+                        throw new RestApiException(url_close, e);
+                    } catch (InterruptedException e) {
+                        System.out.print("interrupted");
+                        throw new RestApiException(url_close, e);
+                    }
+
+                    if (response_close.statusCode() >= 200 &&
+                        response_close.statusCode() < 300) {
+                        System.out.print("done");
+                    } else {
+                        System.out.print("failed");
+                        throw new RestApiException(url_close, response_close.statusCode());
+                    }
+                }
+                else {
+                    System.out.print("No open staging repository found.");
+                    throw new RestApiException(url_search);
+                }
+            } else {
+                System.out.print("failed");
+                throw new RestApiException(url_search, response_search.statusCode());
             }
         } finally {
             System.out.println();

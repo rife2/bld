@@ -32,7 +32,8 @@ public record Repository(String location, String username, String password) {
     public static final Repository SONATYPE_RELEASES_LEGACY = new Repository("https://oss.sonatype.org/service/local/staging/deploy/maven2/");
     public static final Repository SONATYPE_SNAPSHOTS = new Repository("https://s01.oss.sonatype.org/content/repositories/snapshots/");
     public static final Repository SONATYPE_SNAPSHOTS_LEGACY = new Repository("https://oss.sonatype.org/content/repositories/snapshots/");
-    public static final Repository CENTRAL_RELEASES = new Repository("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/");
+    public static final String OSSRH_STAGING_API_DOMAIN = "ossrh-staging-api.central.sonatype.com";
+    public static final Repository CENTRAL_RELEASES = new Repository("https://" + OSSRH_STAGING_API_DOMAIN + "/service/local/staging/deploy/maven2/");
     public static final Repository CENTRAL_SNAPSHOTS = new Repository("https://central.sonatype.com/repository/maven-snapshots/");
     public static final Repository RIFE2_RELEASES = new Repository("https://repo.rife2.com/releases/");
     public static final Repository RIFE2_SNAPSHOTS = new Repository("https://repo.rife2.com/snapshots/");
