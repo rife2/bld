@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java](https://img.shields.io/badge/java-17%2B-blue)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-[![bld](https://img.shields.io/badge/2.2.1-FA9052?label=bld&labelColor=2392FF)](https://rife2.com/bld)
+[![bld](https://img.shields.io/badge/2.3.0-FA9052?label=bld&labelColor=2392FF)](https://rife2.com/bld)
 [![Release](https://img.shields.io/github/release/rife2/bld.svg)](https://github.com/rife2/bld/releases/latest)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.uwyn.rife2/bld/badge.svg?color=blue)](https://maven-badges.herokuapp.com/maven-central/com.uwyn.rife2/bld)
 [![GitHub Snapshot](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fcom%2Fuwyn%2Frife2%2Fbld%2Fmaven-metadata.xml&label=snapshot)](https://github.com/rife2/bld/packages/2214741/versions)
