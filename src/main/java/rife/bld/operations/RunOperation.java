@@ -42,16 +42,14 @@ public class RunOperation extends AbstractProcessOperation<RunOperation> {
             args.add(FileUtils.joinPaths(modulePath()));
         }
 
-        if (module() != null && !module().isEmpty()) {
-            args.add("-m");
-            args.add(module());
-        }
-        else if (mainClass() != null && !mainClass().isEmpty()){
-            args.add(mainClass());
+        if (mainClass() != null && !mainClass().isEmpty()) {
+            if (module() != null && !module().isEmpty()) {
+                args.add("-m");
+                args.add(module() + "/" + mainClass());
+            } else args.add(mainClass());
         }
 
         args.addAll(runOptions());
-
         return args;
     }
 
