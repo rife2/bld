@@ -49,6 +49,9 @@ public class RunOperation extends AbstractProcessOperation<RunOperation> {
         else if (mainClass() != null && !mainClass().isEmpty()){
             args.add(mainClass());
         }
+        else if (!silent()) {
+            System.err.println("No main class or module specified.");
+        }
 
         args.addAll(runOptions());
 
