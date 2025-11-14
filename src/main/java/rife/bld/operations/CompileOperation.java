@@ -87,11 +87,18 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
         for (var directory : mainSourceDirectories()) {
             sources.addAll(FileUtils.getJavaFileList(directory));
         }
-        executeBuildSources(
-            compileMainClasspath(),
-            compileMainModulePath(),
-            sources,
-            buildMainDirectory());
+
+        if (sources.isEmpty()) {
+            if (!silent()) {
+                System.err.println("No main source files found.");
+            }
+        } else {
+            executeBuildSources(
+                    compileMainClasspath(),
+                    compileMainModulePath(),
+                    sources,
+                    buildMainDirectory());
+        }
     }
 
     /**
@@ -105,11 +112,18 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
         for (var directory : testSourceDirectories()) {
             sources.addAll(FileUtils.getJavaFileList(directory));
         }
-        executeBuildSources(
-            compileTestClasspath(),
-            compileTestModulePath(),
-            sources,
-            buildTestDirectory());
+
+        if (sources.isEmpty()) {
+            if (!silent()) {
+                System.err.println("No test source files found.");
+            }
+        } else {
+            executeBuildSources(
+                    compileTestClasspath(),
+                    compileTestModulePath(),
+                    sources,
+                    buildTestDirectory());
+        }
     }
 
     /**
