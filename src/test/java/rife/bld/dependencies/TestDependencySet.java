@@ -359,19 +359,19 @@ public class TestDependencySet {
     @Test
     void testGenerateDependencyTreeCompileRuntime() {
         var dependencies = new DependencySet()
-            .include(new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(0, 9, 4, "SNAPSHOT")));
+            .include(new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(2, 0, 0)));
         assertEquals(StringUtils.convertLineSeparator("""
-            └─ net.thauvin.erik:bitly-shorten:0.9.4-SNAPSHOT
-               ├─ org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22
-               │  ├─ org.jetbrains.kotlin:kotlin-stdlib:1.8.22
-               │  │  ├─ org.jetbrains.kotlin:kotlin-stdlib-common:1.8.22
-               │  │  └─ org.jetbrains:annotations:13.0
-               │  └─ org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22
-               ├─ com.squareup.okhttp3:okhttp:4.11.0
-               │  └─ com.squareup.okio:okio:3.2.0
-               │     └─ com.squareup.okio:okio-jvm:3.2.0
-               ├─ com.squareup.okhttp3:logging-interceptor:4.11.0
-               └─ org.json:json:20230618
-            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS_LEGACY), compile, runtime));
+            └─ net.thauvin.erik:bitly-shorten:2.0.0
+               ├─ org.jetbrains.kotlin:kotlin-stdlib:2.1.10
+               │  └─ org.jetbrains:annotations:13.0
+               ├─ org.jetbrains.kotlin:kotlin-stdlib-common:2.1.10
+               ├─ org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.10
+               │  └─ org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.1.10
+               ├─ com.squareup.okhttp3:okhttp:4.12.0
+               │  └─ com.squareup.okio:okio:3.6.0
+               │     └─ com.squareup.okio:okio-jvm:3.6.0
+               ├─ com.squareup.okhttp3:logging-interceptor:4.12.0
+               └─ org.json:json:20250107
+            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), compile, runtime));
     }
 }
