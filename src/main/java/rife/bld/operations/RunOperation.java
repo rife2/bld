@@ -42,17 +42,19 @@ public class RunOperation extends AbstractProcessOperation<RunOperation> {
             args.add(FileUtils.joinPaths(modulePath()));
         }
 
-        if (mainClass() != null && !mainClass().isEmpty()) {
-            if (module() != null && !module().isEmpty()) {
-                args.add("-m");
-                args.add(module() + "/" + mainClass());
-            } else args.add(mainClass());
+        if (module() != null && !module().isEmpty()) {
+            args.add("-m");
+            args.add(module());
+        }
+        else if (mainClass() != null && !mainClass().isEmpty()){
+            args.add(mainClass());
         }
         else if (!silent()) {
             System.err.println("No main class or module specified.");
         }
 
         args.addAll(runOptions());
+
         return args;
     }
 
