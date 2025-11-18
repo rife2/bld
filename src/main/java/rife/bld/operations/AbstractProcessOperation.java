@@ -10,10 +10,7 @@ import rife.bld.operations.exceptions.OperationOptionException;
 import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -234,6 +231,18 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
     }
 
     /**
+     * Provides classpath entries to use for the operation.
+     *
+     * @param classpath classpath entries for the operation
+     * @return this operation instance
+     * @since 2.3.1
+     *
+     */
+    public T classpath(File... classpath) {
+        return classpath(List.of(classpath));
+    }
+
+    /**
      * Provides a list of classpath entries to use for the  operation.
      * <p>
      * A copy will be created to allow this list to be independently modifiable.
@@ -244,6 +253,20 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      */
     public T classpath(List<String> classpath) {
         classpath_.addAll(classpath);
+        return (T) this;
+    }
+
+    /**
+     * Provides a list of classpath entries to use for the  operation.
+     * <p>
+     * A copy will be created to allow this list to be independently modifiable.
+     *
+     * @param classpath a list of classpath entries for the operation
+     * @return this operation instance
+     * @since 2.3.1
+     */
+    public T classpath(Collection<File> classpath) {
+        classpath_.addAll(classpath.stream().map(File::getAbsolutePath).toList());
         return (T) this;
     }
 
@@ -260,6 +283,17 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
     }
 
     /**
+     * Provides module path entries to use for the operation.
+     *
+     * @param modulePath module path entries for the operation
+     * @return this operation instance
+     * @since 2.3.1
+     */
+    public T modulePath(File... modulePath) {
+        return modulePath(List.of(modulePath));
+    }
+
+    /**
      * Provides a list of module path entries to use for the operation.
      * <p>
      * A copy will be created to allow this list to be independently modifiable.
@@ -270,6 +304,20 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      */
     public T modulePath(List<String> modulePath) {
         modulePath_.addAll(modulePath);
+        return (T) this;
+    }
+
+    /**
+     * Provides a list of module path entries to use for the operation.
+     * <p>
+     * A copy will be created to allow this list to be independently modifiable.
+     *
+     * @param modulePath a list of module path entries for the operation
+     * @return this operation instance
+     * @since 2.3.1
+     */
+    public T modulePath(Collection<File> modulePath) {
+        modulePath_.addAll(modulePath.stream().map(File::getAbsolutePath).toList());
         return (T) this;
     }
 
