@@ -47,6 +47,32 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
+     * Specifies a package to be considered as exported from its defining
+     * module to additional modules or to all unnamed modules when the value
+     * of other-module is ALL-UNNAMED.
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions addExports(String... modules) {
+        return addExports(Arrays.asList(modules));
+    }
+
+    /**
+     * Specifies a package to be considered as exported from its defining
+     * module to additional modules or to all unnamed modules when the value
+     * of other-module is ALL-UNNAMED.
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions addExports(List<String> modules) {
+        add("--add-exports");
+        add(StringUtils.join(modules, ","));
+        return this;
+    }
+
+    /**
      * Root modules to resolve in addition to the initial modules,
      * or all modules on the module path if a module is
      * ALL-MODULE-PATH.
