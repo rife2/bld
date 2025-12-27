@@ -254,6 +254,30 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
+     * Provide source compatibility with the specified Java SE release.
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions source(int version) {
+        add("--source");
+        add(Convert.toString(version));
+        return this;
+    }
+
+    /**
+     * Generate class files suitable for the specified Java SE release.
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions target(int version) {
+        add("--target");
+        add(Convert.toString(version));
+        return this;
+    }
+
+    /**
      * Generate debugging info
      *
      * @return this list of options
