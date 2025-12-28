@@ -2,6 +2,9 @@ name: bld-ci
 
 on: [push, pull_request, workflow_dispatch]
 
+env:
+  REPORTS_DIR: "build/test-results/test/"
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -104,12 +107,24 @@ jobs:
           java-version: ${{ matrix.java-version }}
           check-latest: true
 
+      - name: Download dependencies
+        run: ./bld clean download
+
+      - name: Compile source
+        run: ./bld compile
+
       - name: Run tests
+        id: tests
         run: >-
-          ./bld clean download compile test
+          ./bld test
           -Dtest.postgres=true -Dtest.mysql=true -Dtest.mariadb=true -Dtest.oracle=true -Dtest.oracle-free=true
           -DtestsBadgeUrl=https://rife2.com/tests-badge/update/com.uwyn.rife2/bld
           -DtestsBadgeApiKey=${{ secrets.TESTS_BADGE_API_KEY }}
+          --reports-dir=${{ env.REPORTS_DIR }}
+
+      - name: Run reporter
+        if: always() && steps.tests.outcome == 'failure'
+        run: ./bld reporter --all
 
   build-macos:
     runs-on: macos-latest
@@ -133,9 +148,19 @@ jobs:
           java-version: ${{ matrix.java-version }}
           check-latest: true
 
+      - name: Download dependencies
+        run: ./bld clean download
+
+      - name: Compile source
+        run: ./bld compile
+
       - name: Run tests
-        run: >-
-          ./bld clean download compile test
+        id: tests
+        run: ./bld test --reports-dir=${{ env.REPORTS_DIR }}
+
+      - name: Run reporter
+        if: always() && steps.tests.outcome == 'failure'
+        run: ./bld reporter --all
 
   build-windows:
     runs-on: windows-latest
@@ -162,6 +187,16 @@ jobs:
           java-version: ${{ matrix.java-version }}
           check-latest: true
 
+      - name: Download dependencies
+        run: .\bld.bat clean download
+
+      - name: Compile source
+        run: .\bld.bat compile
+
       - name: Run tests
-        run: >-
-          .\bld.bat clean download compile test
+        id: tests
+        run: .\bld.bat test --reports-dir=${{ env.REPORTS_DIR }}
+
+      - name: Run reporter
+        if: always() && steps.tests.outcome == 'failure'
+        run: .\bld.bat reporter --all
