@@ -301,7 +301,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public boolean containsRelease() {
-        return contains("-release");
+        return contains("--release");
     }
 
     /**
