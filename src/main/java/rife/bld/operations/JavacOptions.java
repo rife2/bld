@@ -73,6 +73,30 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
+     * Specifies additional modules to be considered as required by a given
+     * module
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions addReads(String... modules) {
+        return addReads(Arrays.asList(modules));
+    }
+
+    /**
+     * Specifies additional modules to be considered as required by a given
+     * module
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions addReads(List<String> modules) {
+        add("--add-reads");
+        add(StringUtils.join(modules, ","));
+        return this;
+    }
+
+    /**
      * Root modules to resolve in addition to the initial modules,
      * or all modules on the module path if a module is
      * ALL-MODULE-PATH.
@@ -107,6 +131,19 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions encoding(String name) {
         add("-encoding");
         add(name);
+        return this;
+    }
+
+    /**
+     * Fallback target module for files created by annotation processors,
+     * if none specified or inferred
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions defaultModuleForCreatedFiles(String module) {
+        add("--default-module-for-created-files");
+        add(module);
         return this;
     }
 
@@ -265,6 +302,18 @@ public class JavacOptions extends ArrayList<String> {
      */
     public boolean containsRelease() {
         return contains("-release");
+    }
+
+    /**
+     * Overrides or augments a module with classes and resources in JAR files or directories
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions patchModule(String module) {
+        add("--patch-module");
+        add(module);
+        return this;
     }
 
     /**
