@@ -49,7 +49,7 @@ public class JavacOptions extends ArrayList<String> {
     /**
      * Specifies a package to be considered as exported from its defining
      * module to additional modules or to all unnamed modules when the value
-     * of other-module is ALL-UNNAMED.
+     * of other-module is ALL-UNNAMED
      *
      * @return this list of options
      * @since 2.3.1
@@ -61,7 +61,7 @@ public class JavacOptions extends ArrayList<String> {
     /**
      * Specifies a package to be considered as exported from its defining
      * module to additional modules or to all unnamed modules when the value
-     * of other-module is ALL-UNNAMED.
+     * of other-module is ALL-UNNAMED
      *
      * @return this list of options
      * @since 2.3.1
@@ -73,8 +73,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Specifies additional modules to be considered as required by a given
-     * module
+     * Specifies additional modules to be considered as required by a given module
      *
      * @return this list of options
      * @since 2.3.1
@@ -84,8 +83,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Specifies additional modules to be considered as required by a given
-     * module
+     * Specifies additional modules to be considered as required by a given module
      *
      * @return this list of options
      * @since 2.3.1
@@ -98,8 +96,7 @@ public class JavacOptions extends ArrayList<String> {
 
     /**
      * Root modules to resolve in addition to the initial modules,
-     * or all modules on the module path if a module is
-     * ALL-MODULE-PATH.
+     * or all modules on the module path if a module is ALL-MODULE-PATH
      *
      * @return this list of options
      * @since 1.5.18
@@ -110,8 +107,7 @@ public class JavacOptions extends ArrayList<String> {
 
     /**
      * Root modules to resolve in addition to the initial modules,
-     * or all modules on the module path if a module is
-     * ALL-MODULE-PATH.
+     * or all modules on the module path if a module is ALL-MODULE-PATH
      *
      * @return this list of options
      * @since 1.5.18
@@ -159,7 +155,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Enable preview language features. To be used in conjunction with {@link #release}.
+     * Enable preview language features. To be used in conjunction with {@link #release}
      *
      * @return this list of options
      * @since 1.5.18
@@ -294,7 +290,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Indicates whether the Java SE release was set.
+     * Indicates whether the Java SE release was set
      *
      * @return {@code true} if the release was set; or
      * {@code false} otherwise
@@ -317,7 +313,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Compile for the specified Java SE release.
+     * Compile for the specified Java SE release
      *
      * @return this list of options
      * @since 1.5.18
@@ -329,7 +325,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Provide source compatibility with the specified Java SE release.
+     * Provide source compatibility with the specified Java SE release
      *
      * @return this list of options
      * @since 2.3.1
@@ -341,7 +337,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Generate class files suitable for the specified Java SE release.
+     * Generate class files suitable for the specified Java SE release
      *
      * @return this list of options
      * @since 2.3.1
@@ -583,7 +579,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Control whether annotation processing and/or compilation is done.
+     * Control whether annotation processing and/or compilation is done
      *
      * @return this list of options
      * @since 1.5.18
