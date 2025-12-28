@@ -35,6 +35,49 @@ public class JavacOptions extends ArrayList<String> {
         FULL, NONE, ONLY
     }
 
+    public enum XLintKey {
+        ALL,
+        AUXILIARYCLASS,
+        CAST,
+        CLASSFILE,
+        DANGLING_DOC_COMMENTS,
+        DEP_ANN,
+        DEPRECATION,
+        DIVZERO,
+        EMPTY,
+        EXPORTS,
+        FALLTHROUGH,
+        FINALLY,
+        IDENTITY,
+        INCUBATING,
+        LOSSY_CONVERSIONS,
+        MISSING_EXPLICIT_CTOR,
+        MODULE,
+        NONE,
+        OPENS,
+        OPTIONS,
+        OUTPUT_FILE_CLASH,
+        OVERLOADS,
+        OVERRIDES,
+        PATH,
+        PREVIEW,
+        PROCESSING,
+        RAWTYPES,
+        REMOVAL,
+        REQUIRES_AUTOMATIC,
+        REQUIRES_TRANSITIVE_AUTOMATIC,
+        RESTRICTED,
+        SERIAL,
+        STATIC,
+        STRICTFP,
+        SYNCHRONIZATION,
+        TEXT_BLOCKS,
+        THIS_ESCAPE,
+        TRY,
+        UNCHECKED,
+        VARARGS
+    }
+
     /**
      * Option to pass to annotation processors
      *
@@ -774,6 +817,58 @@ public class JavacOptions extends ArrayList<String> {
      */
     public JavacOptions warningError() {
         add("-Werror");
+        return this;
+    }
+
+    /**
+     * Enable recommended warning categories
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions xLint() {
+        add("-Xlint");
+        return this;
+    }
+
+    /**
+     * Warning categories to enable
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions xLint(XLintKey... keys) {
+        return xLint(Arrays.asList(keys));
+    }
+
+    /**
+     * Warning categories to enable
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions xLint(List<XLintKey> keys) {
+        add("-Xlint:" + StringUtils.join(keys, ",").replaceAll("_", "-").toLowerCase());
+        return this;
+    }
+
+    /**
+     * Warning categories to disable
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions xLintDisable(XLintKey... keys) {
+        return xLintDisable(Arrays.asList(keys));
+    }
+    /**
+     * Warning categories to disable
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions xLintDisable(List<XLintKey> keys) {
+        add("-Xlint:-" + StringUtils.join(keys, ",-").replaceAll("_", "-").toLowerCase());
         return this;
     }
 }
