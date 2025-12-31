@@ -7,6 +7,7 @@ package rife;
 import rife.bld.BuildCommand;
 import rife.bld.Cli;
 import rife.bld.dependencies.VersionNumber;
+import rife.bld.extension.JUnitReporterOperation;
 import rife.bld.extension.ZipOperation;
 import rife.bld.operations.*;
 import rife.bld.publish.*;
@@ -159,6 +160,14 @@ public class BldBuild extends AbstractRife2Build {
         jarSources();
         jarJavadoc();
         zipBld();
+    }
+
+    @BuildCommand(summary = "Runs the JUnit reporter")
+    public void reporter() throws Exception {
+        new JUnitReporterOperation()
+                .fromProject(this)
+                .failOnSummary(true)
+                .execute();
     }
 
     public void publish()

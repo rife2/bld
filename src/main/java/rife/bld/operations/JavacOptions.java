@@ -35,6 +35,49 @@ public class JavacOptions extends ArrayList<String> {
         FULL, NONE, ONLY
     }
 
+    public enum XLintKey {
+        ALL,
+        AUXILIARYCLASS,
+        CAST,
+        CLASSFILE,
+        DANGLING_DOC_COMMENTS,
+        DEP_ANN,
+        DEPRECATION,
+        DIVZERO,
+        EMPTY,
+        EXPORTS,
+        FALLTHROUGH,
+        FINALLY,
+        IDENTITY,
+        INCUBATING,
+        LOSSY_CONVERSIONS,
+        MISSING_EXPLICIT_CTOR,
+        MODULE,
+        NONE,
+        OPENS,
+        OPTIONS,
+        OUTPUT_FILE_CLASH,
+        OVERLOADS,
+        OVERRIDES,
+        PATH,
+        PREVIEW,
+        PROCESSING,
+        RAWTYPES,
+        REMOVAL,
+        REQUIRES_AUTOMATIC,
+        REQUIRES_TRANSITIVE_AUTOMATIC,
+        RESTRICTED,
+        SERIAL,
+        STATIC,
+        STRICTFP,
+        SYNCHRONIZATION,
+        TEXT_BLOCKS,
+        THIS_ESCAPE,
+        TRY,
+        UNCHECKED,
+        VARARGS
+    }
+
     /**
      * Option to pass to annotation processors
      *
@@ -47,9 +90,56 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
+     * Specifies a package to be considered as exported from its defining
+     * module to additional modules or to all unnamed modules when the value
+     * of other-module is ALL-UNNAMED
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions addExports(String... modules) {
+        return addExports(Arrays.asList(modules));
+    }
+
+    /**
+     * Specifies a package to be considered as exported from its defining
+     * module to additional modules or to all unnamed modules when the value
+     * of other-module is ALL-UNNAMED
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions addExports(List<String> modules) {
+        add("--add-exports");
+        add(StringUtils.join(modules, ","));
+        return this;
+    }
+
+    /**
+     * Specifies additional modules to be considered as required by a given module
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions addReads(String... modules) {
+        return addReads(Arrays.asList(modules));
+    }
+
+    /**
+     * Specifies additional modules to be considered as required by a given module
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions addReads(List<String> modules) {
+        add("--add-reads");
+        add(StringUtils.join(modules, ","));
+        return this;
+    }
+
+    /**
      * Root modules to resolve in addition to the initial modules,
-     * or all modules on the module path if a module is
-     * ALL-MODULE-PATH.
+     * or all modules on the module path if a module is ALL-MODULE-PATH
      *
      * @return this list of options
      * @since 1.5.18
@@ -60,8 +150,7 @@ public class JavacOptions extends ArrayList<String> {
 
     /**
      * Root modules to resolve in addition to the initial modules,
-     * or all modules on the module path if a module is
-     * ALL-MODULE-PATH.
+     * or all modules on the module path if a module is ALL-MODULE-PATH
      *
      * @return this list of options
      * @since 1.5.18
@@ -85,6 +174,19 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
+     * Fallback target module for files created by annotation processors,
+     * if none specified or inferred
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions defaultModuleForCreatedFiles(String module) {
+        add("--default-module-for-created-files");
+        add(module);
+        return this;
+    }
+
+    /**
      * Output source locations where deprecated APIs are used
      *
      * @return this list of options
@@ -96,7 +198,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Enable preview language features. To be used in conjunction with {@link #release}.
+     * Enable preview language features. To be used in conjunction with {@link #release}
      *
      * @return this list of options
      * @since 1.5.18
@@ -231,24 +333,60 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Indicates whether the Java SE release was set.
+     * Indicates whether the Java SE release was set
      *
      * @return {@code true} if the release was set; or
      * {@code false} otherwise
      * @since 1.5.18
      */
     public boolean containsRelease() {
-        return contains("-release");
+        return contains("--release");
     }
 
     /**
-     * Compile for the specified Java SE release.
+     * Overrides or augments a module with classes and resources in JAR files or directories
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions patchModule(String module) {
+        add("--patch-module");
+        add(module);
+        return this;
+    }
+
+    /**
+     * Compile for the specified Java SE release
      *
      * @return this list of options
      * @since 1.5.18
      */
     public JavacOptions release(int version) {
         add("--release");
+        add(Convert.toString(version));
+        return this;
+    }
+
+    /**
+     * Provide source compatibility with the specified Java SE release
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions source(int version) {
+        add("--source");
+        add(Convert.toString(version));
+        return this;
+    }
+
+    /**
+     * Generate class files suitable for the specified Java SE release
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions target(int version) {
+        add("--target");
         add(Convert.toString(version));
         return this;
     }
@@ -484,7 +622,7 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
-     * Control whether annotation processing and/or compilation is done.
+     * Control whether annotation processing and/or compilation is done
      *
      * @return this list of options
      * @since 1.5.18
@@ -679,6 +817,58 @@ public class JavacOptions extends ArrayList<String> {
      */
     public JavacOptions warningError() {
         add("-Werror");
+        return this;
+    }
+
+    /**
+     * Enable recommended warning categories
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions xLint() {
+        add("-Xlint");
+        return this;
+    }
+
+    /**
+     * Warning categories to enable
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions xLint(XLintKey... keys) {
+        return xLint(Arrays.asList(keys));
+    }
+
+    /**
+     * Warning categories to enable
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions xLint(List<XLintKey> keys) {
+        add("-Xlint:" + StringUtils.join(keys, ",").replaceAll("_", "-").toLowerCase());
+        return this;
+    }
+
+    /**
+     * Warning categories to disable
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions xLintDisable(XLintKey... keys) {
+        return xLintDisable(Arrays.asList(keys));
+    }
+    /**
+     * Warning categories to disable
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions xLintDisable(List<XLintKey> keys) {
+        add("-Xlint:-" + StringUtils.join(keys, ",-").replaceAll("_", "-").toLowerCase());
         return this;
     }
 }
