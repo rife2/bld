@@ -781,8 +781,14 @@ class TestJavacOptions {
             List<XLintKey> emptyList = List.of();
             options.xLintDisable(emptyList);
 
-            assertEquals(1, options.size());
-            assertEquals("-Xlint:-", options.get(0));
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testXLintDisableNullList() {
+            options.xLintDisable((List<XLintKey>) null);
+
+            assertEquals(0, options.size());
         }
 
         @Test
@@ -829,8 +835,7 @@ class TestJavacOptions {
             List<XLintKey> emptyList = List.of();
             options.xLint(emptyList);
 
-            assertEquals(1, options.size());
-            assertEquals("-Xlint:", options.get(0));
+            assertEquals(0, options.size());
         }
 
         @Test
@@ -850,6 +855,12 @@ class TestJavacOptions {
             options.xLint(NONE);
 
             assertTrue(options.contains("-Xlint:none"));
+        }
+
+        @Test
+        void testXLintNullList() {
+            options.xLint((List<XLintKey>) null);
+            assertEquals(0, options.size());
         }
 
         @Test

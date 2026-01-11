@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static rife.bld.operations.CompileOperation.COMPILE_OPTION_MODULE_PATH;
 
@@ -848,8 +849,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions xLint(List<XLintKey> keys) {
-        add("-Xlint:" + StringUtils.join(keys, ",").replaceAll("_", "-").toLowerCase());
-        return this;
+        return addXLintOption(keys, "");
     }
 
     /**
@@ -868,7 +868,21 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions xLintDisable(List<XLintKey> keys) {
-        add("-Xlint:-" + StringUtils.join(keys, ",-").replaceAll("_", "-").toLowerCase());
+        return addXLintOption(keys, "-");
+    }
+
+
+    private JavacOptions addXLintOption(List<XLintKey> keys, String prefix) {
+        if (keys == null || keys.isEmpty()) {
+            return this;
+        }
+
+        var formattedKeys = keys.stream()
+                .map(key -> prefix + key.name().replace('_', '-').toLowerCase())
+                .collect(Collectors.joining(",", "-Xlint:", ""));
+
+        add(formattedKeys);
         return this;
     }
+
 }
