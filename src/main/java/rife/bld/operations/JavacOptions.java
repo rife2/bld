@@ -12,6 +12,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -562,8 +563,10 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavacOptions moduleSourcePath(File path) {
-        return moduleSourcePath(path.getAbsolutePath());
+    public JavacOptions moduleSourcePath(File... paths) {
+        return moduleSourcePath(Arrays.stream(paths)
+                .map(File::getAbsolutePath)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -572,8 +575,10 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 2.1
      */
-    public JavacOptions moduleSourcePath(Path path) {
-        return moduleSourcePath(path.toFile());
+    public JavacOptions moduleSourcePath(Path... paths) {
+        return moduleSourcePath(Arrays.stream(paths)
+                .map(Path::toString)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -582,9 +587,19 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 2.1
      */
-    public JavacOptions moduleSourcePath(String path) {
+    public JavacOptions moduleSourcePath(String... paths) {
+        return moduleSourcePath(Arrays.asList(paths));
+    }
+
+    /**
+     * Specify where to find input source files for multiple modules
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions moduleSourcePath(Collection<String> paths) {
         add("--module-source-path");
-        add(path);
+        add(String.join(File.pathSeparator, paths));
         return this;
     }
 
@@ -649,7 +664,7 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavacOptions processors(List<String> classnames) {
+    public JavacOptions processors(Collection<String> classnames) {
         add("-processor");
         add(StringUtils.join(classnames, ","));
         return this;
@@ -661,8 +676,10 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavacOptions processorModulePath(File path) {
-        return processorModulePath(path.getAbsolutePath());
+    public JavacOptions processorModulePath(File... paths) {
+        return processorModulePath(Arrays.stream(paths)
+                .map(File::getAbsolutePath)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -671,8 +688,10 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 2.1
      */
-    public JavacOptions processorModulePath(Path path) {
-        return processorModulePath(path.toFile());
+    public JavacOptions processorModulePath(Path... paths) {
+        return processorModulePath(Arrays.stream(paths)
+                .map(Path::toString)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -681,9 +700,19 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 2.1
      */
-    public JavacOptions processorModulePath(String path) {
+    public JavacOptions processorModulePath(String... paths) {
+        return processorModulePath(Arrays.asList(paths));
+    }
+
+    /**
+     * Specify a module path where to find annotation processors
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions processorModulePath(Collection<String> paths) {
         add("--processor-module-path");
-        add(path);
+        add(String.join(File.pathSeparator, paths));
         return this;
     }
 
@@ -693,8 +722,8 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavacOptions processorPath(File path) {
-        return processorPath(path.getAbsolutePath());
+    public JavacOptions processorPath(String... paths) {
+        return processorPath(Arrays.asList(paths));
     }
 
     /**
@@ -703,8 +732,10 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 2.1
      */
-    public JavacOptions processorPath(Path path) {
-        return processorPath(path.toFile());
+    public JavacOptions processorPath(File... paths) {
+        return processorPath(Arrays.stream(paths)
+                .map(File::getAbsolutePath)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -713,9 +744,21 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 2.1
      */
-    public JavacOptions processorPath(String path) {
+    public JavacOptions processorPath(Path... paths) {
+        return processorPath(Arrays.stream(paths)
+                .map(Path::toString)
+                .collect(Collectors.toList()));
+    }
+
+    /**
+     * Specify where to find annotation processors
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions processorPath(Collection<String> paths) {
         add("--processor-path");
-        add(path);
+        add(String.join(File.pathSeparator, paths));
         return this;
     }
 
@@ -784,8 +827,10 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 1.5.18
      */
-    public JavacOptions upgradeModulePath(File path) {
-        return upgradeModulePath(path.getAbsolutePath());
+    public JavacOptions upgradeModulePath(File... paths) {
+        return upgradeModulePath(Arrays.stream(paths)
+                .map(File::getAbsolutePath)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -794,8 +839,10 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 2.1
      */
-    public JavacOptions upgradeModulePath(Path path) {
-        return upgradeModulePath(path.toFile());
+    public JavacOptions upgradeModulePath(Path... paths) {
+        return upgradeModulePath(Arrays.stream(paths)
+                .map(Path::toString)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -804,9 +851,19 @@ public class JavacOptions extends ArrayList<String> {
      * @return this list of options
      * @since 2.1
      */
-    public JavacOptions upgradeModulePath(String path) {
+    public JavacOptions upgradeModulePath(String... paths) {
+        return upgradeModulePath(Arrays.asList(paths));
+    }
+
+    /**
+     * Override location of upgradeable modules
+     *
+     * @return this list of options
+     * @since 2.3.1
+     */
+    public JavacOptions upgradeModulePath(Collection<String> paths) {
         add("--upgrade-module-path");
-        add(path);
+        add(String.join(File.pathSeparator, paths));
         return this;
     }
 
@@ -861,6 +918,7 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions xLintDisable(XLintKey... keys) {
         return xLintDisable(Arrays.asList(keys));
     }
+
     /**
      * Warning categories to disable
      *
@@ -870,7 +928,6 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions xLintDisable(List<XLintKey> keys) {
         return addXLintOption(keys, "-");
     }
-
 
     private JavacOptions addXLintOption(List<XLintKey> keys, String prefix) {
         if (keys == null || keys.isEmpty()) {
@@ -884,5 +941,4 @@ public class JavacOptions extends ArrayList<String> {
         add(formattedKeys);
         return this;
     }
-
 }
