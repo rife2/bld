@@ -566,7 +566,7 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions moduleSourcePath(File... paths) {
         return moduleSourcePath(Arrays.stream(paths)
                 .map(File::getAbsolutePath)
-                .collect(Collectors.toList()));
+                .toArray(String[]::new));
     }
 
     /**
@@ -578,7 +578,7 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions moduleSourcePath(Path... paths) {
         return moduleSourcePath(Arrays.stream(paths)
                 .map(Path::toString)
-                .collect(Collectors.toList()));
+                .toArray(String[]::new));
     }
 
     /**
@@ -588,7 +588,9 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions moduleSourcePath(String... paths) {
-        return moduleSourcePath(Arrays.asList(paths));
+        add("--module-source-path");
+        add(String.join(File.pathSeparator, paths));
+        return this;
     }
 
     /**
@@ -598,9 +600,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions moduleSourcePath(Collection<String> paths) {
-        add("--module-source-path");
-        add(String.join(File.pathSeparator, paths));
-        return this;
+        return moduleSourcePath(paths.toArray(new String[0]));
     }
 
     /**
@@ -679,7 +679,7 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions processorModulePath(File... paths) {
         return processorModulePath(Arrays.stream(paths)
                 .map(File::getAbsolutePath)
-                .collect(Collectors.toList()));
+                .toArray(String[]::new));
     }
 
     /**
@@ -691,7 +691,7 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions processorModulePath(Path... paths) {
         return processorModulePath(Arrays.stream(paths)
                 .map(Path::toString)
-                .collect(Collectors.toList()));
+                .toArray(String[]::new));
     }
 
     /**
@@ -701,7 +701,9 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions processorModulePath(String... paths) {
-        return processorModulePath(Arrays.asList(paths));
+        add("--processor-module-path");
+        add(String.join(File.pathSeparator, paths));
+        return this;
     }
 
     /**
@@ -711,9 +713,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions processorModulePath(Collection<String> paths) {
-        add("--processor-module-path");
-        add(String.join(File.pathSeparator, paths));
-        return this;
+        return processorModulePath(paths.toArray(new String[0]));
     }
 
     /**
@@ -723,7 +723,9 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions processorPath(String... paths) {
-        return processorPath(Arrays.asList(paths));
+        add("--processor-path");
+        add(String.join(File.pathSeparator, paths));
+        return this;
     }
 
     /**
@@ -735,7 +737,7 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions processorPath(File... paths) {
         return processorPath(Arrays.stream(paths)
                 .map(File::getAbsolutePath)
-                .collect(Collectors.toList()));
+                .toArray(String[]::new));
     }
 
     /**
@@ -747,7 +749,7 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions processorPath(Path... paths) {
         return processorPath(Arrays.stream(paths)
                 .map(Path::toString)
-                .collect(Collectors.toList()));
+                .toArray(String[]::new));
     }
 
     /**
@@ -757,9 +759,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions processorPath(Collection<String> paths) {
-        add("--processor-path");
-        add(String.join(File.pathSeparator, paths));
-        return this;
+        return processorPath(paths.toArray(new String[0]));
     }
 
     /**
@@ -830,7 +830,7 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions upgradeModulePath(File... paths) {
         return upgradeModulePath(Arrays.stream(paths)
                 .map(File::getAbsolutePath)
-                .collect(Collectors.toList()));
+                .toArray(String[]::new));
     }
 
     /**
@@ -842,7 +842,7 @@ public class JavacOptions extends ArrayList<String> {
     public JavacOptions upgradeModulePath(Path... paths) {
         return upgradeModulePath(Arrays.stream(paths)
                 .map(Path::toString)
-                .collect(Collectors.toList()));
+                .toArray(String[]::new));
     }
 
     /**
@@ -852,7 +852,9 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions upgradeModulePath(String... paths) {
-        return upgradeModulePath(Arrays.asList(paths));
+        add("--upgrade-module-path");
+        add(String.join(File.pathSeparator, paths));
+        return this;
     }
 
     /**
@@ -862,9 +864,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions upgradeModulePath(Collection<String> paths) {
-        add("--upgrade-module-path");
-        add(String.join(File.pathSeparator, paths));
-        return this;
+        return upgradeModulePath(paths.toArray(new String[0]));
     }
 
     /**
