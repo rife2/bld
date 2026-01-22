@@ -75,18 +75,14 @@ class TestJavacOptions {
         void testAddExportsWithEmptyList() {
             options.addExports(List.of());
 
-            assertEquals(2, options.size());
-            assertEquals("--add-exports", options.get(0));
-            assertEquals("", options.get(1));
+            assertEquals(0, options.size());
         }
 
         @Test
         void testAddExportsWithEmptyVarargs() {
             options.addExports();
 
-            assertEquals(2, options.size());
-            assertEquals("--add-exports", options.get(0));
-            assertEquals("", options.get(1));
+            assertEquals(0, options.size());
         }
 
         @Test
@@ -157,18 +153,14 @@ class TestJavacOptions {
         void testAddReadsWithEmptyList() {
             options.addReads(List.of());
 
-            assertEquals(2, options.size());
-            assertEquals("--add-reads", options.get(0));
-            assertEquals("", options.get(1));
+            assertEquals(0, options.size());
         }
 
         @Test
         void testAddReadsWithEmptyVarargs() {
             options.addReads();
 
-            assertEquals(2, options.size());
-            assertEquals("--add-reads", options.get(0));
-            assertEquals("", options.get(1));
+            assertEquals(0, options.size());
         }
 
         @Test
@@ -966,25 +958,95 @@ class TestJavacOptions {
     @Nested
     class ModuleSourcePathTests {
         @Test
-        void testModuleSourcePathMethodChaining() {
-            options.moduleSourcePath("src/module1", "src/module2")
-                    .parameters()
-                    .deprecation();
+        void testModuleSourcePathWithFile() {
+            var file = new File("src/modules");
+            options.moduleSourcePath(file);
 
-            assertEquals(4, options.size());
-            assertTrue(options.contains("--module-source-path"));
-            assertTrue(options.contains("-parameters"));
-            assertTrue(options.contains("-deprecation"));
+            assertEquals(2, options.size());
+            assertEquals("--module-source-path", options.get(0));
+            assertEquals(file.getPath(), options.get(1));
         }
 
         @Test
-        void testModuleSourcePathMultipleCalls() {
-            options.moduleSourcePath("src/module1")
-                    .moduleSourcePath("src/module2");
+        void testModuleSourcePathWithMultipleFiles() {
+            var file1 = new File("src/module1");
+            var file2 = new File("src/module2");
+            options.moduleSourcePath(file1, file2);
 
-            assertEquals(4, options.size());
+            assertEquals(2, options.size());
             assertEquals("--module-source-path", options.get(0));
-            assertEquals("--module-source-path", options.get(2));
+            assertTrue(options.get(1).contains(file1.getPath()));
+            assertTrue(options.get(1).contains(file2.getPath()));
+        }
+
+        @Test
+        void testModuleSourcePathWithFileCollection() {
+            var files = Arrays.asList(
+                    new File("src/mod1"),
+                    new File("src/mod2"),
+                    new File("src/mod3")
+            );
+            options.moduleSourcePath(files);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-source-path", options.get(0));
+            var paths = options.get(1).split(File.pathSeparator);
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testModuleSourcePathWithPath() {
+            var path = Path.of("src/modules");
+            options.moduleSourcePath(path);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-source-path", options.get(0));
+            assertEquals(path.toString(), options.get(1));
+        }
+
+        @Test
+        void testModuleSourcePathWithMultiplePaths() {
+            var path1 = Path.of("src/module1");
+            var path2 = Path.of("src/module2");
+            options.moduleSourcePath(path1, path2);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-source-path", options.get(0));
+            assertTrue(options.get(1).contains(path1.toString()));
+            assertTrue(options.get(1).contains(path2.toString()));
+        }
+
+        @Test
+        void testModuleSourcePathPathsCollection() {
+            var paths = Arrays.asList(
+                    Path.of("src/mod1"),
+                    Path.of("src/mod2"),
+                    Path.of("src/mod3")
+            );
+            options.moduleSourcePathPaths(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-source-path", options.get(0));
+            var pathArray = options.get(1).split(File.pathSeparator);
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testModuleSourcePathStringsCollection() {
+            var paths = Arrays.asList("src/mod1", "src/mod2", "src/mod3");
+            options.moduleSourcePathStrings(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-source-path", options.get(0));
+            var pathArray = options.get(1).split(File.pathSeparator);
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testModuleSourcePathWithEmptyCollection() {
+            options.moduleSourcePathStrings(List.of());
+
+            assertEquals(0, options.size());
         }
 
         @Test
@@ -994,97 +1056,141 @@ class TestJavacOptions {
         }
 
         @Test
-        void testModuleSourcePathWithCollection() {
-            var paths = Arrays.asList("src/mod1", "src/mod2", "src/mod3");
-            options.moduleSourcePath(paths);
+        void testModuleSourcePathMethodChaining() {
+            options.moduleSourcePath("src/modules")
+                    .modulePath("lib/modules")
+                    .release(17);
 
-            assertEquals(2, options.size());
-            assertEquals("--module-source-path", options.get(0));
-            assertTrue(options.get(1).contains("src/mod1"));
-            assertTrue(options.get(1).contains("src/mod2"));
-            assertTrue(options.get(1).contains("src/mod3"));
+            assertEquals(6, options.size());
+            assertTrue(options.contains("--module-source-path"));
+            assertTrue(options.contains("--module-path"));
+            assertTrue(options.containsRelease());
         }
 
         @Test
-        void testModuleSourcePathWithEmptyCollection() {
-            options.moduleSourcePath(List.of());
+        void testMultipleModuleSourcePathCalls() {
+            options.moduleSourcePath("src/mod1")
+                    .moduleSourcePath("src/mod2");
 
-            assertEquals(2, options.size());
+            assertEquals(4, options.size());
             assertEquals("--module-source-path", options.get(0));
-            assertEquals("", options.get(1));
-        }
-
-        @Test
-        void testModuleSourcePathWithEmptyVarargs() {
-            options.moduleSourcePath("");
-
-            assertEquals(2, options.size());
-            assertEquals("--module-source-path", options.get(0));
-        }
-
-        @Test
-        void testModuleSourcePathWithFile() {
-            options.moduleSourcePath(new File("src/modules"));
-
-            assertEquals(2, options.size());
-            assertEquals("--module-source-path", options.get(0));
-            assertTrue(options.get(1).contains("src"));
-            assertTrue(options.get(1).contains("modules"));
-        }
-
-        @Test
-        void testModuleSourcePathWithPath() {
-            options.moduleSourcePath(Path.of("src/modules"));
-
-            assertEquals(2, options.size());
-            assertEquals("--module-source-path", options.get(0));
-            assertTrue(options.get(1).contains("src"));
-            assertTrue(options.get(1).contains("modules"));
-        }
-
-        @Test
-        void testModuleSourcePathWithSingleString() {
-            options.moduleSourcePath("src/modules");
-
-            assertEquals(2, options.size());
-            assertEquals("--module-source-path", options.get(0));
-            assertEquals("src/modules", options.get(1));
-        }
-
-        @Test
-        void testModuleSourcePathWithVarargs() {
-            options.moduleSourcePath("src/mod1", "src/mod2", "src/mod3");
-
-            assertEquals(2, options.size());
-            assertEquals("--module-source-path", options.get(0));
-            assertTrue(options.get(1).contains("src/mod1"));
-            assertTrue(options.get(1).contains("src/mod2"));
-            assertTrue(options.get(1).contains("src/mod3"));
+            assertEquals("src/mod1", options.get(1));
+            assertEquals("--module-source-path", options.get(2));
+            assertEquals("src/mod2", options.get(3));
         }
     }
 
     @Nested
     class ProcessorModulePathTests {
         @Test
-        void testProcessorModulePathMethodChaining() {
-            options.processorModulePath("lib/processors")
-                    .parameters()
-                    .deprecation();
+        void testProcessorModulePathWithFile() {
+            var file = new File("lib/processor-modules");
+            options.processorModulePath(file);
 
-            assertEquals(4, options.size());
-            assertTrue(options.contains("--processor-module-path"));
-            assertTrue(options.contains("-parameters"));
-            assertTrue(options.contains("-deprecation"));
+            assertEquals(2, options.size());
+            assertEquals("--processor-module-path", options.get(0));
+            assertEquals(file.getAbsolutePath(), options.get(1));
         }
 
         @Test
-        void testProcessorModulePathMultipleCalls() {
-            options.processorModulePath("lib/proc1")
-                    .processorModulePath("lib/proc2");
+        void testProcessorModulePathWithMultipleFiles() {
+            var file1 = new File("lib/proc1");
+            var file2 = new File("lib/proc2");
+            options.processorModulePath(file1, file2);
 
-            assertEquals(4, options.size());
+            assertEquals(2, options.size());
             assertEquals("--processor-module-path", options.get(0));
-            assertEquals("--processor-module-path", options.get(2));
+            assertTrue(options.get(1).contains(file1.getAbsolutePath()));
+            assertTrue(options.get(1).contains(file2.getAbsolutePath()));
+        }
+
+        @Test
+        void testProcessorModulePathWithFileCollection() {
+            var files = Arrays.asList(
+                    new File("lib/proc1"),
+                    new File("lib/proc2"),
+                    new File("lib/proc3")
+            );
+            options.processorModulePath(files);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-module-path", options.get(0));
+            var paths = options.get(1).split(File.pathSeparator);
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testProcessorModulePathWithPath() {
+            var path = Path.of("lib/processor-modules");
+            options.processorModulePath(path);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-module-path", options.get(0));
+            assertEquals(path.toString(), options.get(1));
+        }
+
+        @Test
+        void testProcessorModulePathWithMultiplePaths() {
+            var path1 = Path.of("lib/proc1");
+            var path2 = Path.of("lib/proc2");
+            options.processorModulePath(path1, path2);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-module-path", options.get(0));
+            assertTrue(options.get(1).contains(path1.toString()));
+            assertTrue(options.get(1).contains(path2.toString()));
+        }
+
+        @Test
+        void testProcessorModulePathPathsCollection() {
+            var paths = Arrays.asList(
+                    Path.of("lib/proc1"),
+                    Path.of("lib/proc2"),
+                    Path.of("lib/proc3")
+            );
+            options.processorModulePathPaths(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-module-path", options.get(0));
+            var pathArray = options.get(1).split(File.pathSeparator);
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testProcessorModulePathWithString() {
+            options.processorModulePath("lib/processors");
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-module-path", options.get(0));
+            assertEquals("lib/processors", options.get(1));
+        }
+
+        @Test
+        void testProcessorModulePathWithMultipleStrings() {
+            options.processorModulePath("lib/proc1", "lib/proc2", "lib/proc3");
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-module-path", options.get(0));
+            var paths = options.get(1).split(File.pathSeparator);
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testProcessorModulePathStringsCollection() {
+            var paths = Arrays.asList("lib/proc1", "lib/proc2", "lib/proc3");
+            options.processorModulePathStrings(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-module-path", options.get(0));
+            var pathArray = options.get(1).split(File.pathSeparator);
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testProcessorModulePathWithEmptyCollection() {
+            options.processorModulePathStrings(List.of());
+
+            assertEquals(0, options.size());
         }
 
         @Test
@@ -1094,96 +1200,141 @@ class TestJavacOptions {
         }
 
         @Test
-        void testProcessorModulePathWithCollection() {
-            var paths = Arrays.asList("lib/proc1", "lib/proc2", "lib/proc3");
-            options.processorModulePath(paths);
+        void testProcessorModulePathMethodChaining() {
+            options.processorModulePath("lib/proc-modules")
+                    .processors("com.example.Processor")
+                    .deprecation();
 
-            assertEquals(2, options.size());
-            assertEquals("--processor-module-path", options.get(0));
-            assertTrue(options.get(1).contains("lib/proc1"));
-            assertTrue(options.get(1).contains("lib/proc2"));
-            assertTrue(options.get(1).contains("lib/proc3"));
+            assertEquals(5, options.size());
+            assertTrue(options.contains("--processor-module-path"));
+            assertTrue(options.contains("-processor"));
+            assertTrue(options.contains("-deprecation"));
         }
 
         @Test
-        void testProcessorModulePathWithEmptyCollection() {
-            options.processorModulePath(List.of());
+        void testMultipleProcessorModulePathCalls() {
+            options.processorModulePath("lib/proc1")
+                    .processorModulePath("lib/proc2");
 
-            assertEquals(2, options.size());
+            assertEquals(4, options.size());
             assertEquals("--processor-module-path", options.get(0));
-            assertEquals("", options.get(1));
-        }
-
-        @Test
-        void testProcessorModulePathWithEmptyVarargs() {
-            options.processorModulePath(new String[]{});
-
-            assertEquals(2, options.size());
-            assertEquals("--processor-module-path", options.get(0));
-        }
-
-        @Test
-        void testProcessorModulePathWithFile() {
-            options.processorModulePath(new File("lib/processors"));
-
-            assertEquals(2, options.size());
-            assertEquals("--processor-module-path", options.get(0));
-            assertTrue(options.get(1).contains("lib"));
-            assertTrue(options.get(1).contains("processors"));
-        }
-
-        @Test
-        void testProcessorModulePathWithPath() {
-            options.processorModulePath(Path.of("lib/processors"));
-
-            assertEquals(2, options.size());
-            assertEquals("--processor-module-path", options.get(0));
-            assertTrue(options.get(1).contains("lib"));
-            assertTrue(options.get(1).contains("processors"));
-        }
-
-        @Test
-        void testProcessorModulePathWithSingleString() {
-            options.processorModulePath("lib/processors");
-
-            assertEquals(2, options.size());
-            assertEquals("--processor-module-path", options.get(0));
-            assertEquals("lib/processors", options.get(1));
-        }
-
-        @Test
-        void testProcessorModulePathWithVarargs() {
-            options.processorModulePath("lib/proc1", "lib/proc2");
-
-            assertEquals(2, options.size());
-            assertEquals("--processor-module-path", options.get(0));
-            assertTrue(options.get(1).contains("lib/proc1"));
-            assertTrue(options.get(1).contains("lib/proc2"));
+            assertEquals("lib/proc1", options.get(1));
+            assertEquals("--processor-module-path", options.get(2));
+            assertEquals("lib/proc2", options.get(3));
         }
     }
 
     @Nested
     class ProcessorPathTests {
         @Test
-        void testProcessorPathMethodChaining() {
-            options.processorPath("lib/processors.jar")
-                    .parameters()
-                    .deprecation();
+        void testProcessorPathWithString() {
+            options.processorPath("lib/processors.jar");
 
-            assertEquals(4, options.size());
-            assertTrue(options.contains("--processor-path"));
-            assertTrue(options.contains("-parameters"));
-            assertTrue(options.contains("-deprecation"));
+            assertEquals(2, options.size());
+            assertEquals("--processor-path", options.get(0));
+            assertEquals("lib/processors.jar", options.get(1));
         }
 
         @Test
-        void testProcessorPathMultipleCalls() {
-            options.processorPath("lib/proc1.jar")
-                    .processorPath("lib/proc2.jar");
+        void testProcessorPathWithMultipleStrings() {
+            options.processorPath("lib/proc1.jar", "lib/proc2.jar", "lib/proc3.jar");
 
-            assertEquals(4, options.size());
+            assertEquals(2, options.size());
             assertEquals("--processor-path", options.get(0));
-            assertEquals("--processor-path", options.get(2));
+            var paths = options.get(1).split(File.pathSeparator);
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testProcessorPathStringsCollection() {
+            var paths = Arrays.asList("lib/proc1.jar", "lib/proc2.jar", "lib/proc3.jar");
+            options.processorPathStrings(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-path", options.get(0));
+            var pathArray = options.get(1).split(File.pathSeparator);
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testProcessorPathWithFile() {
+            var file = new File("lib/processors.jar");
+            options.processorPath(file);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-path", options.get(0));
+            assertEquals(file.getAbsolutePath(), options.get(1));
+        }
+
+        @Test
+        void testProcessorPathWithMultipleFiles() {
+            var file1 = new File("lib/proc1.jar");
+            var file2 = new File("lib/proc2.jar");
+            options.processorPath(file1, file2);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-path", options.get(0));
+            assertTrue(options.get(1).contains(file1.getAbsolutePath()));
+            assertTrue(options.get(1).contains(file2.getAbsolutePath()));
+        }
+
+        @Test
+        void testProcessorPathWithFileCollection() {
+            var files = Arrays.asList(
+                    new File("lib/proc1.jar"),
+                    new File("lib/proc2.jar"),
+                    new File("lib/proc3.jar")
+            );
+            options.processorPath(files);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-path", options.get(0));
+            var paths = options.get(1).split(File.pathSeparator);
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testProcessorPathWithPath() {
+            var path = Path.of("lib/processors.jar");
+            options.processorPath(path);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-path", options.get(0));
+            assertEquals(path.toString(), options.get(1));
+        }
+
+        @Test
+        void testProcessorPathWithMultiplePaths() {
+            var path1 = Path.of("lib/proc1.jar");
+            var path2 = Path.of("lib/proc2.jar");
+            options.processorPath(path1, path2);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-path", options.get(0));
+            assertTrue(options.get(1).contains(path1.toString()));
+            assertTrue(options.get(1).contains(path2.toString()));
+        }
+
+        @Test
+        void testProcessorPathPathsCollection() {
+            var paths = Arrays.asList(
+                    Path.of("lib/proc1.jar"),
+                    Path.of("lib/proc2.jar"),
+                    Path.of("lib/proc3.jar")
+            );
+            options.processorPathPaths(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("--processor-path", options.get(0));
+            var pathArray = options.get(1).split(File.pathSeparator);
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testProcessorPathWithEmptyCollection() {
+            options.processorPathStrings(List.of());
+
+            assertEquals(0, options.size());
         }
 
         @Test
@@ -1193,96 +1344,151 @@ class TestJavacOptions {
         }
 
         @Test
-        void testProcessorPathWithCollection() {
-            var paths = Arrays.asList("lib/proc1.jar", "lib/proc2.jar", "lib/proc3.jar");
-            options.processorPath(paths);
+        void testProcessorPathMethodChaining() {
+            options.processorPath("lib/processors.jar")
+                    .processors("com.example.Processor")
+                    .process(JavacOptions.Processing.ONLY);
 
-            assertEquals(2, options.size());
-            assertEquals("--processor-path", options.get(0));
-            assertTrue(options.get(1).contains("lib/proc1.jar"));
-            assertTrue(options.get(1).contains("lib/proc2.jar"));
-            assertTrue(options.get(1).contains("lib/proc3.jar"));
+            assertEquals(5, options.size());
+            assertTrue(options.contains("--processor-path"));
+            assertTrue(options.contains("-processor"));
+            assertTrue(options.contains("-proc:only"));
         }
 
         @Test
-        void testProcessorPathWithEmptyCollection() {
-            options.processorPath(List.of());
+        void testMultipleProcessorPathCalls() {
+            options.processorPath("lib/proc1.jar")
+                    .processorPath("lib/proc2.jar");
 
-            assertEquals(2, options.size());
+            assertEquals(4, options.size());
             assertEquals("--processor-path", options.get(0));
-            assertEquals("", options.get(1));
+            assertEquals("lib/proc1.jar", options.get(1));
+            assertEquals("--processor-path", options.get(2));
+            assertEquals("lib/proc2.jar", options.get(3));
         }
 
         @Test
-        void testProcessorPathWithEmptyVarargs() {
-            options.processorPath(new String[]{});
+        void testProcessorPathWithDirectoryAndJar() {
+            options.processorPath("lib/processors", "lib/extra-processors.jar");
 
             assertEquals(2, options.size());
             assertEquals("--processor-path", options.get(0));
-        }
-
-        @Test
-        void testProcessorPathWithFile() {
-            options.processorPath(new File("lib/processors.jar"));
-
-            assertEquals(2, options.size());
-            assertEquals("--processor-path", options.get(0));
-            assertTrue(options.get(1).contains("lib"));
-            assertTrue(options.get(1).contains("processors.jar"));
-        }
-
-        @Test
-        void testProcessorPathWithPath() {
-            options.processorPath(Path.of("lib/processors.jar"));
-
-            assertEquals(2, options.size());
-            assertEquals("--processor-path", options.get(0));
-            assertTrue(options.get(1).contains("lib"));
-            assertTrue(options.get(1).contains("processors.jar"));
-        }
-
-        @Test
-        void testProcessorPathWithSingleString() {
-            options.processorPath("lib/processors.jar");
-
-            assertEquals(2, options.size());
-            assertEquals("--processor-path", options.get(0));
-            assertEquals("lib/processors.jar", options.get(1));
-        }
-
-        @Test
-        void testProcessorPathWithVarargs() {
-            options.processorPath("lib/proc1.jar", "lib/proc2.jar");
-
-            assertEquals(2, options.size());
-            assertEquals("--processor-path", options.get(0));
-            assertTrue(options.get(1).contains("lib/proc1.jar"));
-            assertTrue(options.get(1).contains("lib/proc2.jar"));
+            var paths = options.get(1).split(File.pathSeparator);
+            assertEquals(2, paths.length);
         }
     }
 
     @Nested
     class UpgradeModulePathTests {
         @Test
-        void testUpgradeModulePathMethodChaining() {
-            options.upgradeModulePath("lib/upgrades")
-                    .parameters()
-                    .deprecation();
+        void testUpgradeModulePathWithFile() {
+            var file = new File("lib/upgrades");
+            options.upgradeModulePath(file);
 
-            assertEquals(4, options.size());
-            assertTrue(options.contains("--upgrade-module-path"));
-            assertTrue(options.contains("-parameters"));
-            assertTrue(options.contains("-deprecation"));
+            assertEquals(2, options.size());
+            assertEquals("--upgrade-module-path", options.get(0));
+            assertEquals(file.getAbsolutePath(), options.get(1));
         }
 
         @Test
-        void testUpgradeModulePathMultipleCalls() {
-            options.upgradeModulePath("lib/upgrade1")
-                    .upgradeModulePath("lib/upgrade2");
+        void testUpgradeModulePathWithMultipleFiles() {
+            var file1 = new File("lib/upgrade1");
+            var file2 = new File("lib/upgrade2");
+            options.upgradeModulePath(file1, file2);
 
-            assertEquals(4, options.size());
+            assertEquals(2, options.size());
             assertEquals("--upgrade-module-path", options.get(0));
-            assertEquals("--upgrade-module-path", options.get(2));
+            assertTrue(options.get(1).contains(file1.getAbsolutePath()));
+            assertTrue(options.get(1).contains(file2.getAbsolutePath()));
+        }
+
+        @Test
+        void testUpgradeModulePathWithFileCollection() {
+            var files = Arrays.asList(
+                    new File("lib/upgrade1"),
+                    new File("lib/upgrade2"),
+                    new File("lib/upgrade3")
+            );
+            options.upgradeModulePath(files);
+
+            assertEquals(2, options.size());
+            assertEquals("--upgrade-module-path", options.get(0));
+            var paths = options.get(1).split(File.pathSeparator);
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testUpgradeModulePathWithPath() {
+            var path = Path.of("lib/upgrades");
+            options.upgradeModulePath(path);
+
+            assertEquals(2, options.size());
+            assertEquals("--upgrade-module-path", options.get(0));
+            assertEquals(path.toString(), options.get(1));
+        }
+
+        @Test
+        void testUpgradeModulePathWithMultiplePaths() {
+            var path1 = Path.of("lib/upgrade1");
+            var path2 = Path.of("lib/upgrade2");
+            options.upgradeModulePath(path1, path2);
+
+            assertEquals(2, options.size());
+            assertEquals("--upgrade-module-path", options.get(0));
+            assertTrue(options.get(1).contains(path1.toString()));
+            assertTrue(options.get(1).contains(path2.toString()));
+        }
+
+        @Test
+        void testUpgradeModulePathPathsCollection() {
+            var paths = Arrays.asList(
+                    Path.of("lib/upgrade1"),
+                    Path.of("lib/upgrade2"),
+                    Path.of("lib/upgrade3")
+            );
+            options.upgradeModulePathPaths(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("--upgrade-module-path", options.get(0));
+            var pathArray = options.get(1).split(File.pathSeparator);
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testUpgradeModulePathWithString() {
+            options.upgradeModulePath("lib/upgrades");
+
+            assertEquals(2, options.size());
+            assertEquals("--upgrade-module-path", options.get(0));
+            assertEquals("lib/upgrades", options.get(1));
+        }
+
+        @Test
+        void testUpgradeModulePathWithMultipleStrings() {
+            options.upgradeModulePath("lib/upgrade1", "lib/upgrade2", "lib/upgrade3");
+
+            assertEquals(2, options.size());
+            assertEquals("--upgrade-module-path", options.get(0));
+            var paths = options.get(1).split(File.pathSeparator);
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testUpgradeModulePathStringsCollection() {
+            var paths = Arrays.asList("lib/upgrade1", "lib/upgrade2", "lib/upgrade3");
+            options.upgradeModulePathStrings(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("--upgrade-module-path", options.get(0));
+            var pathArray = options.get(1).split(File.pathSeparator);
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testUpgradeModulePathWithEmptyCollection() {
+            options.upgradeModulePathStrings(List.of());
+
+            assertEquals(0, options.size());
         }
 
         @Test
@@ -1292,71 +1498,1301 @@ class TestJavacOptions {
         }
 
         @Test
-        void testUpgradeModulePathWithCollection() {
-            var paths = Arrays.asList("lib/upg1", "lib/upg2", "lib/upg3");
-            options.upgradeModulePath(paths);
+        void testUpgradeModulePathMethodChaining() {
+            options.upgradeModulePath("lib/upgrades")
+                    .modulePath("lib/modules")
+                    .release(17);
 
-            assertEquals(2, options.size());
-            assertEquals("--upgrade-module-path", options.get(0));
-            assertTrue(options.get(1).contains("lib/upg1"));
-            assertTrue(options.get(1).contains("lib/upg2"));
-            assertTrue(options.get(1).contains("lib/upg3"));
+            assertEquals(6, options.size());
+            assertTrue(options.contains("--upgrade-module-path"));
+            assertTrue(options.contains("--module-path"));
+            assertTrue(options.containsRelease());
         }
 
         @Test
-        void testUpgradeModulePathWithEmptyCollection() {
-            options.upgradeModulePath(List.of());
+        void testMultipleUpgradeModulePathCalls() {
+            options.upgradeModulePath("lib/upgrade1")
+                    .upgradeModulePath("lib/upgrade2");
 
-            assertEquals(2, options.size());
+            assertEquals(4, options.size());
             assertEquals("--upgrade-module-path", options.get(0));
-            assertEquals("", options.get(1));
+            assertEquals("lib/upgrade1", options.get(1));
+            assertEquals("--upgrade-module-path", options.get(2));
+            assertEquals("lib/upgrade2", options.get(3));
         }
 
         @Test
-        void testUpgradeModulePathWithEmptyVarargs() {
-            options.upgradeModulePath(new String[]{});
+        void testUpgradeModulePathWithSystem() {
+            options.upgradeModulePath("lib/upgrades")
+                    .system("none")
+                    .addModules("java.sql");
 
-            assertEquals(2, options.size());
-            assertEquals("--upgrade-module-path", options.get(0));
+            assertEquals(6, options.size());
+            assertTrue(options.contains("--upgrade-module-path"));
+            assertTrue(options.contains("--system"));
+            assertTrue(options.contains("--add-modules"));
+        }
+    }
+
+    @Nested
+    class AnnotationOptionTests {
+        @Test
+        void testAnnotationOptionWithKeyValue() {
+            options.annotationOption("debug", "true");
+
+            assertEquals(1, options.size());
+            assertEquals("-Adebug=true", options.get(0));
         }
 
         @Test
-        void testUpgradeModulePathWithFile() {
-            options.upgradeModulePath(new File("lib/upgrades"));
+        void testAnnotationOptionMultipleCalls() {
+            options.annotationOption("debug", "true")
+                    .annotationOption("verbose", "false");
 
             assertEquals(2, options.size());
-            assertEquals("--upgrade-module-path", options.get(0));
-            assertTrue(options.get(1).contains("lib"));
-            assertTrue(options.get(1).contains("upgrades"));
+            assertEquals("-Adebug=true", options.get(0));
+            assertEquals("-Averbose=false", options.get(1));
         }
 
         @Test
-        void testUpgradeModulePathWithPath() {
-            options.upgradeModulePath(Path.of("lib/upgrades"));
-
-            assertEquals(2, options.size());
-            assertEquals("--upgrade-module-path", options.get(0));
-            assertTrue(options.get(1).contains("lib"));
-            assertTrue(options.get(1).contains("upgrades"));
+        void testAnnotationOptionReturnsThis() {
+            var result = options.annotationOption("key", "value");
+            assertSame(options, result);
         }
 
         @Test
-        void testUpgradeModulePathWithSingleString() {
-            options.upgradeModulePath("lib/upgrades");
+        void testAnnotationOptionWithComplexValue() {
+            options.annotationOption("outputDir", "/path/to/output");
 
-            assertEquals(2, options.size());
-            assertEquals("--upgrade-module-path", options.get(0));
-            assertEquals("lib/upgrades", options.get(1));
+            assertEquals(1, options.size());
+            assertEquals("-AoutputDir=/path/to/output", options.get(0));
         }
 
         @Test
-        void testUpgradeModulePathWithVarargs() {
-            options.upgradeModulePath("lib/upg1", "lib/upg2");
+        void testAnnotationOptionMethodChaining() {
+            options.annotationOption("debug", "true")
+                    .processors("com.example.Processor")
+                    .deprecation();
+
+            assertEquals(4, options.size());
+            assertTrue(options.contains("-Adebug=true"));
+            assertTrue(options.contains("-processor"));
+            assertTrue(options.contains("-deprecation"));
+        }
+    }
+
+    @Nested
+    class AddModulesTests {
+        @Test
+        void testAddModulesWithSingleModule() {
+            options.addModules("java.sql");
 
             assertEquals(2, options.size());
-            assertEquals("--upgrade-module-path", options.get(0));
-            assertTrue(options.get(1).contains("lib/upg1"));
-            assertTrue(options.get(1).contains("lib/upg2"));
+            assertEquals("--add-modules", options.get(0));
+            assertEquals("java.sql", options.get(1));
+        }
+
+        @Test
+        void testAddModulesWithVarargs() {
+            options.addModules("java.sql", "java.xml", "java.desktop");
+
+            assertEquals(2, options.size());
+            assertEquals("--add-modules", options.get(0));
+            assertEquals("java.sql,java.xml,java.desktop", options.get(1));
+        }
+
+        @Test
+        void testAddModulesWithList() {
+            var modules = Arrays.asList("java.sql", "java.xml", "java.desktop");
+            options.addModules(modules);
+
+            assertEquals(2, options.size());
+            assertEquals("--add-modules", options.get(0));
+            assertEquals("java.sql,java.xml,java.desktop", options.get(1));
+        }
+
+        @Test
+        void testAddModulesWithEmptyVarargs() {
+            options.addModules();
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testAddModulesWithEmptyList() {
+            options.addModules(List.of());
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testAddModulesReturnsThis() {
+            var result = options.addModules("java.sql");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testAddModulesMethodChaining() {
+            options.addModules("java.sql")
+                    .modulePath("lib/modules")
+                    .release(17);
+
+            assertEquals(6, options.size());
+            assertTrue(options.contains("--add-modules"));
+            assertTrue(options.contains("--module-path"));
+            assertTrue(options.containsRelease());
+        }
+
+        @Test
+        void testAddModulesWithAllModulePath() {
+            options.addModules("ALL-MODULE-PATH");
+
+            assertEquals(2, options.size());
+            assertEquals("--add-modules", options.get(0));
+            assertEquals("ALL-MODULE-PATH", options.get(1));
+        }
+    }
+
+    @Nested
+    class EncodingTests {
+        @Test
+        void testEncodingWithUTF8() {
+            options.encoding("UTF-8");
+
+            assertEquals(2, options.size());
+            assertEquals("-encoding", options.get(0));
+            assertEquals("UTF-8", options.get(1));
+        }
+
+        @Test
+        void testEncodingWithISO88591() {
+            options.encoding("ISO-8859-1");
+
+            assertEquals(2, options.size());
+            assertEquals("-encoding", options.get(0));
+            assertEquals("ISO-8859-1", options.get(1));
+        }
+
+        @Test
+        void testEncodingReturnsThis() {
+            var result = options.encoding("UTF-8");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testEncodingMethodChaining() {
+            options.encoding("UTF-8")
+                    .deprecation()
+                    .parameters();
+
+            assertEquals(4, options.size());
+            assertTrue(options.contains("-encoding"));
+            assertTrue(options.contains("-deprecation"));
+            assertTrue(options.contains("-parameters"));
+        }
+
+        @Test
+        void testMultipleEncodingCalls() {
+            options.encoding("UTF-8")
+                    .encoding("ISO-8859-1");
+
+            assertEquals(4, options.size());
+            assertEquals("-encoding", options.get(0));
+            assertEquals("UTF-8", options.get(1));
+            assertEquals("-encoding", options.get(2));
+            assertEquals("ISO-8859-1", options.get(3));
+        }
+    }
+
+    @Nested
+    class DeprecationTests {
+        @Test
+        void testDeprecation() {
+            options.deprecation();
+
+            assertEquals(1, options.size());
+            assertTrue(options.contains("-deprecation"));
+        }
+
+        @Test
+        void testDeprecationReturnsThis() {
+            var result = options.deprecation();
+            assertSame(options, result);
+        }
+
+        @Test
+        void testDeprecationMethodChaining() {
+            options.deprecation()
+                    .parameters()
+                    .warningError();
+
+            assertEquals(3, options.size());
+            assertTrue(options.contains("-deprecation"));
+            assertTrue(options.contains("-parameters"));
+            assertTrue(options.contains("-Werror"));
+        }
+    }
+
+    @Nested
+    class EnablePreviewTests {
+        @Test
+        void testEnablePreview() {
+            options.enablePreview();
+
+            assertEquals(1, options.size());
+            assertTrue(options.contains("--enable-preview"));
+        }
+
+        @Test
+        void testEnablePreviewReturnsThis() {
+            var result = options.enablePreview();
+            assertSame(options, result);
+        }
+
+        @Test
+        void testEnablePreviewWithRelease() {
+            options.release(21)
+                    .enablePreview();
+
+            assertEquals(3, options.size());
+            assertTrue(options.containsRelease());
+            assertTrue(options.contains("--enable-preview"));
+        }
+    }
+
+    @Nested
+    class EndorsedDirsTests {
+        @Test
+        void testEndorsedDirsWithFile() {
+            var file = new File("lib/endorsed");
+            options.endorsedDirs(file);
+
+            assertEquals(2, options.size());
+            assertEquals("-endorseddirs", options.get(0));
+            assertEquals(file.getAbsolutePath(), options.get(1));
+        }
+
+        @Test
+        void testEndorsedDirsWithMultipleFiles() {
+            var file1 = new File("lib/endorsed1");
+            var file2 = new File("lib/endorsed2");
+            options.endorsedDirs(file1, file2);
+
+            assertEquals(2, options.size());
+            assertEquals("-endorseddirs", options.get(0));
+            assertTrue(options.get(1).contains(file1.getAbsolutePath()));
+            assertTrue(options.get(1).contains(file2.getAbsolutePath()));
+        }
+
+        @Test
+        void testEndorsedDirsWithFileCollection() {
+            var files = Arrays.asList(
+                    new File("lib/endorsed1"),
+                    new File("lib/endorsed2"),
+                    new File("lib/endorsed3")
+            );
+            options.endorsedDirs(files);
+
+            assertEquals(2, options.size());
+            assertEquals("-endorseddirs", options.get(0));
+            var paths = options.get(1).split(",");
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testEndorsedDirsWithPath() {
+            var path = Path.of("lib/endorsed");
+            options.endorsedDirs(path);
+
+            assertEquals(2, options.size());
+            assertEquals("-endorseddirs", options.get(0));
+        }
+
+        @Test
+        void testEndorsedDirsWithMultiplePaths() {
+            var path1 = Path.of("lib/endorsed1");
+            var path2 = Path.of("lib/endorsed2");
+            options.endorsedDirs(path1, path2);
+
+            assertEquals(2, options.size());
+            assertEquals("-endorseddirs", options.get(0));
+        }
+
+        @Test
+        void testEndorsedDirsPathsCollection() {
+            var paths = Arrays.asList(
+                    Path.of("lib/endorsed1"),
+                    Path.of("lib/endorsed2"),
+                    Path.of("lib/endorsed3")
+            );
+            options.endorsedDirsPaths(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("-endorseddirs", options.get(0));
+            var pathArray = options.get(1).split(",");
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testEndorsedDirsWithString() {
+            options.endorsedDirs("lib/endorsed");
+
+            assertEquals(2, options.size());
+            assertEquals("-endorseddirs", options.get(0));
+            assertEquals("lib/endorsed", options.get(1));
+        }
+
+        @Test
+        void testEndorsedDirsWithMultipleStrings() {
+            options.endorsedDirs("lib/endorsed1", "lib/endorsed2", "lib/endorsed3");
+
+            assertEquals(2, options.size());
+            assertEquals("-endorseddirs", options.get(0));
+            var paths = options.get(1).split(",");
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testEndorsedDirsStringsCollection() {
+            var paths = Arrays.asList("lib/endorsed1", "lib/endorsed2", "lib/endorsed3");
+            options.endorsedDirsStrings(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("-endorseddirs", options.get(0));
+            var pathArray = options.get(1).split(",");
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testEndorsedDirsWithEmptyCollection() {
+            options.endorsedDirsStrings(List.of());
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testEndorsedDirsReturnsThis() {
+            var result = options.endorsedDirs("lib/endorsed");
+            assertSame(options, result);
+        }
+    }
+
+    @Nested
+    class ExtDirsTests {
+        @Test
+        void testExtDirsWithFile() {
+            var file = new File("lib/ext");
+            options.extDirs(file);
+
+            assertEquals(2, options.size());
+            assertEquals("-extdirs", options.get(0));
+            assertEquals(file.getAbsolutePath(), options.get(1));
+        }
+
+        @Test
+        void testExtDirsWithMultipleFiles() {
+            var file1 = new File("lib/ext1");
+            var file2 = new File("lib/ext2");
+            options.extDirs(file1, file2);
+
+            assertEquals(2, options.size());
+            assertEquals("-extdirs", options.get(0));
+            assertTrue(options.get(1).contains(file1.getAbsolutePath()));
+            assertTrue(options.get(1).contains(file2.getAbsolutePath()));
+        }
+
+        @Test
+        void testExtDirsWithFileCollection() {
+            var files = Arrays.asList(
+                    new File("lib/ext1"),
+                    new File("lib/ext2"),
+                    new File("lib/ext3")
+            );
+            options.extDirs(files);
+
+            assertEquals(2, options.size());
+            assertEquals("-extdirs", options.get(0));
+            var paths = options.get(1).split(",");
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testExtDirsWithPath() {
+            var path = Path.of("lib/ext");
+            options.extDirs(path);
+
+            assertEquals(2, options.size());
+            assertEquals("-extdirs", options.get(0));
+        }
+
+        @Test
+        void testExtDirsWithMultiplePaths() {
+            var path1 = Path.of("lib/ext1");
+            var path2 = Path.of("lib/ext2");
+            options.extDirs(path1, path2);
+
+            assertEquals(2, options.size());
+            assertEquals("-extdirs", options.get(0));
+        }
+
+        @Test
+        void testExtDirsPathsCollection() {
+            var paths = Arrays.asList(
+                    Path.of("lib/ext1"),
+                    Path.of("lib/ext2"),
+                    Path.of("lib/ext3")
+            );
+            options.extDirsPaths(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("-extdirs", options.get(0));
+            var pathArray = options.get(1).split(",");
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testExtDirsWithString() {
+            options.extDirs("lib/ext");
+
+            assertEquals(2, options.size());
+            assertEquals("-extdirs", options.get(0));
+            assertEquals("lib/ext", options.get(1));
+        }
+
+        @Test
+        void testExtDirsWithMultipleStrings() {
+            options.extDirs("lib/ext1", "lib/ext2", "lib/ext3");
+
+            assertEquals(2, options.size());
+            assertEquals("-extdirs", options.get(0));
+            var paths = options.get(1).split(",");
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testExtDirsStringsCollection() {
+            var paths = Arrays.asList("lib/ext1", "lib/ext2", "lib/ext3");
+            options.extDirsStrings(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("-extdirs", options.get(0));
+            var pathArray = options.get(1).split(",");
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testExtDirsWithEmptyCollection() {
+            options.extDirsStrings(List.of());
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testExtDirsReturnsThis() {
+            var result = options.extDirs("lib/ext");
+            assertSame(options, result);
+        }
+    }
+
+    @Nested
+    class DebuggingInfoTests {
+        @Test
+        void testDebuggingInfoAll() {
+            options.debuggingInfo(JavacOptions.DebuggingInfo.ALL);
+
+            assertEquals(1, options.size());
+            assertEquals("-g", options.get(0));
+        }
+
+        @Test
+        void testDebuggingInfoNone() {
+            options.debuggingInfo(JavacOptions.DebuggingInfo.NONE);
+
+            assertEquals(1, options.size());
+            assertEquals("-g:none", options.get(0));
+        }
+
+        @Test
+        void testDebuggingInfoLines() {
+            options.debuggingInfo(JavacOptions.DebuggingInfo.LINES);
+
+            assertEquals(1, options.size());
+            assertEquals("-g:lines", options.get(0));
+        }
+
+        @Test
+        void testDebuggingInfoVar() {
+            options.debuggingInfo(JavacOptions.DebuggingInfo.VAR);
+
+            assertEquals(1, options.size());
+            assertEquals("-g:var", options.get(0));
+        }
+
+        @Test
+        void testDebuggingInfoSource() {
+            options.debuggingInfo(JavacOptions.DebuggingInfo.SOURCE);
+
+            assertEquals(1, options.size());
+            assertEquals("-g:source", options.get(0));
+        }
+
+        @Test
+        void testDebuggingInfoReturnsThis() {
+            var result = options.debuggingInfo(JavacOptions.DebuggingInfo.ALL);
+            assertSame(options, result);
+        }
+
+        @Test
+        void testDebuggingInfoMethodChaining() {
+            options.debuggingInfo(JavacOptions.DebuggingInfo.LINES)
+                    .deprecation()
+                    .parameters();
+
+            assertEquals(3, options.size());
+            assertTrue(options.contains("-g:lines"));
+            assertTrue(options.contains("-deprecation"));
+            assertTrue(options.contains("-parameters"));
+        }
+    }
+
+    @Nested
+    class NativeHeadersTests {
+        @Test
+        void testNativeHeadersWithFile() {
+            var file = new File("build/headers");
+            options.nativeHeaders(file);
+
+            assertEquals(2, options.size());
+            assertEquals("-h", options.get(0));
+            assertEquals(file.getAbsolutePath(), options.get(1));
+        }
+
+        @Test
+        void testNativeHeadersWithPath() {
+            var path = Path.of("build/headers");
+            options.nativeHeaders(path);
+
+            assertEquals(2, options.size());
+            assertEquals("-h", options.get(0));
+            assertEquals(path.toFile().getAbsolutePath(), options.get(1));
+        }
+
+        @Test
+        void testNativeHeadersWithString() {
+            options.nativeHeaders("build/headers");
+
+            assertEquals(2, options.size());
+            assertEquals("-h", options.get(0));
+            assertEquals("build/headers", options.get(1));
+        }
+
+        @Test
+        void testNativeHeadersReturnsThis() {
+            var result = options.nativeHeaders("build/headers");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testNativeHeadersMethodChaining() {
+            options.nativeHeaders("build/headers")
+                    .deprecation()
+                    .parameters();
+
+            assertEquals(4, options.size());
+            assertTrue(options.contains("-h"));
+            assertTrue(options.contains("-deprecation"));
+            assertTrue(options.contains("-parameters"));
+        }
+    }
+
+    @Nested
+    class ImplicitTests {
+        @Test
+        void testImplicitNone() {
+            options.implicit(JavacOptions.Implicit.NONE);
+
+            assertEquals(1, options.size());
+            assertEquals("-implicit:none", options.get(0));
+        }
+
+        @Test
+        void testImplicitClass() {
+            options.implicit(JavacOptions.Implicit.CLASS);
+
+            assertEquals(1, options.size());
+            assertEquals("-implicit:class", options.get(0));
+        }
+
+        @Test
+        void testImplicitReturnsThis() {
+            var result = options.implicit(JavacOptions.Implicit.NONE);
+            assertSame(options, result);
+        }
+
+        @Test
+        void testImplicitMethodChaining() {
+            options.implicit(JavacOptions.Implicit.CLASS)
+                    .deprecation()
+                    .parameters();
+
+            assertEquals(3, options.size());
+            assertTrue(options.contains("-implicit:class"));
+            assertTrue(options.contains("-deprecation"));
+            assertTrue(options.contains("-parameters"));
+        }
+    }
+
+    @Nested
+    class LimitModulesTests {
+        @Test
+        void testLimitModulesWithSingleModule() {
+            options.limitModules("java.base");
+
+            assertEquals(2, options.size());
+            assertEquals("--limit-modules", options.get(0));
+            assertEquals("java.base", options.get(1));
+        }
+
+        @Test
+        void testLimitModulesWithVarargs() {
+            options.limitModules("java.base", "java.sql", "java.xml");
+
+            assertEquals(2, options.size());
+            assertEquals("--limit-modules", options.get(0));
+            assertEquals("java.base,java.sql,java.xml", options.get(1));
+        }
+
+        @Test
+        void testLimitModulesWithList() {
+            var modules = Arrays.asList("java.base", "java.sql", "java.xml");
+            options.limitModules(modules);
+
+            assertEquals(2, options.size());
+            assertEquals("--limit-modules", options.get(0));
+            assertEquals("java.base,java.sql,java.xml", options.get(1));
+        }
+
+        @Test
+        void testLimitModulesWithEmptyVarargs() {
+            options.limitModules();
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testLimitModulesWithEmptyList() {
+            options.limitModules(List.of());
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testLimitModulesReturnsThis() {
+            var result = options.limitModules("java.base");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testLimitModulesMethodChaining() {
+            options.limitModules("java.base")
+                    .modulePath("lib/modules")
+                    .release(17);
+
+            assertEquals(6, options.size());
+            assertTrue(options.contains("--limit-modules"));
+            assertTrue(options.contains("--module-path"));
+            assertTrue(options.containsRelease());
+        }
+    }
+
+    @Nested
+    class ModuleTests {
+        @Test
+        void testModuleWithSingleModule() {
+            options.module("com.example.myapp");
+
+            assertEquals(2, options.size());
+            assertEquals("--module", options.get(0));
+            assertEquals("com.example.myapp", options.get(1));
+        }
+
+        @Test
+        void testModuleWithVarargs() {
+            options.module("com.example.module1", "com.example.module2", "com.example.module3");
+
+            assertEquals(2, options.size());
+            assertEquals("--module", options.get(0));
+            assertEquals("com.example.module1,com.example.module2,com.example.module3", options.get(1));
+        }
+
+        @Test
+        void testModuleWithList() {
+            var modules = Arrays.asList("com.example.module1", "com.example.module2", "com.example.module3");
+            options.module(modules);
+
+            assertEquals(2, options.size());
+            assertEquals("--module", options.get(0));
+            assertEquals("com.example.module1,com.example.module2,com.example.module3", options.get(1));
+        }
+
+        @Test
+        void testModuleWithEmptyVarargs() {
+            options.module();
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testModuleWithEmptyList() {
+            options.module(List.of());
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testModuleReturnsThis() {
+            var result = options.module("com.example.myapp");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testModuleMethodChaining() {
+            options.module("com.example.myapp")
+                    .modulePath("lib/modules")
+                    .release(17);
+
+            assertEquals(6, options.size());
+            assertTrue(options.contains("--module"));
+            assertTrue(options.contains("--module-path"));
+            assertTrue(options.containsRelease());
+        }
+    }
+
+    @Nested
+    class ModulePathTests {
+        @Test
+        void testModulePathWithFile() {
+            var file = new File("lib/modules");
+            options.modulePath(file);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-path", options.get(0));
+            assertEquals(file.getAbsolutePath(), options.get(1));
+        }
+
+        @Test
+        void testModulePathWithMultipleFiles() {
+            var file1 = new File("lib/modules1");
+            var file2 = new File("lib/modules2");
+            options.modulePath(file1, file2);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-path", options.get(0));
+            assertTrue(options.get(1).contains(file1.getAbsolutePath()));
+            assertTrue(options.get(1).contains(file2.getAbsolutePath()));
+        }
+
+        @Test
+        void testModulePathWithFileCollection() {
+            var files = Arrays.asList(
+                    new File("lib/modules1"),
+                    new File("lib/modules2"),
+                    new File("lib/modules3")
+            );
+            options.modulePath(files);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-path", options.get(0));
+            var paths = options.get(1).split(File.pathSeparator);
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testModulePathWithPath() {
+            var path = Path.of("lib/modules");
+            options.modulePath(path);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-path", options.get(0));
+            assertEquals(path.toString(), options.get(1));
+        }
+
+        @Test
+        void testModulePathWithMultiplePaths() {
+            var path1 = Path.of("lib/modules1");
+            var path2 = Path.of("lib/modules2");
+            options.modulePath(path1, path2);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-path", options.get(0));
+            assertTrue(options.get(1).contains(path1.toString()));
+            assertTrue(options.get(1).contains(path2.toString()));
+        }
+
+        @Test
+        void testModulePathPathsCollection() {
+            var paths = Arrays.asList(
+                    Path.of("lib/modules1"),
+                    Path.of("lib/modules2"),
+                    Path.of("lib/modules3")
+            );
+            options.modulePathPaths(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-path", options.get(0));
+            var pathArray = options.get(1).split(File.pathSeparator);
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testModulePathWithString() {
+            options.modulePath("lib/modules");
+
+            assertEquals(2, options.size());
+            assertEquals("--module-path", options.get(0));
+            assertEquals("lib/modules", options.get(1));
+        }
+
+        @Test
+        void testModulePathWithMultipleStrings() {
+            options.modulePath("lib/modules1", "lib/modules2", "lib/modules3");
+
+            assertEquals(2, options.size());
+            assertEquals("--module-path", options.get(0));
+            var paths = options.get(1).split(File.pathSeparator);
+            assertEquals(3, paths.length);
+        }
+
+        @Test
+        void testModulePathStringsCollection() {
+            var paths = Arrays.asList("lib/modules1", "lib/modules2", "lib/modules3");
+            options.modulePathStrings(paths);
+
+            assertEquals(2, options.size());
+            assertEquals("--module-path", options.get(0));
+            var pathArray = options.get(1).split(File.pathSeparator);
+            assertEquals(3, pathArray.length);
+        }
+
+        @Test
+        void testModulePathWithEmptyCollection() {
+            options.modulePathStrings(List.of());
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testModulePathReturnsThis() {
+            var result = options.modulePath("lib/modules");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testModulePathMethodChaining() {
+            options.modulePath("lib/modules")
+                    .addModules("java.sql")
+                    .release(17);
+
+            assertEquals(6, options.size());
+            assertTrue(options.contains("--module-path"));
+            assertTrue(options.contains("--add-modules"));
+            assertTrue(options.containsRelease());
+        }
+    }
+
+    @Nested
+    class ModuleVersionTests {
+        @Test
+        void testModuleVersion() {
+            options.moduleVersion("1.0.0");
+
+            assertEquals(2, options.size());
+            assertEquals("--module-version", options.get(0));
+            assertEquals("1.0.0", options.get(1));
+        }
+
+        @Test
+        void testModuleVersionReturnsThis() {
+            var result = options.moduleVersion("1.0.0");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testModuleVersionMethodChaining() {
+            options.moduleVersion("1.0.0")
+                    .module("com.example.myapp")
+                    .release(17);
+
+            assertEquals(6, options.size());
+            assertTrue(options.contains("--module-version"));
+            assertTrue(options.contains("--module"));
+            assertTrue(options.containsRelease());
+        }
+
+        @Test
+        void testMultipleModuleVersionCalls() {
+            options.moduleVersion("1.0.0")
+                    .moduleVersion("2.0.0");
+
+            assertEquals(4, options.size());
+            assertEquals("--module-version", options.get(0));
+            assertEquals("1.0.0", options.get(1));
+            assertEquals("--module-version", options.get(2));
+            assertEquals("2.0.0", options.get(3));
+        }
+    }
+
+    @Nested
+    class NoWarnTests {
+        @Test
+        void testNoWarn() {
+            options.noWarn();
+
+            assertEquals(1, options.size());
+            assertTrue(options.contains("-nowarn"));
+        }
+
+        @Test
+        void testNoWarnReturnsThis() {
+            var result = options.noWarn();
+            assertSame(options, result);
+        }
+
+        @Test
+        void testNoWarnMethodChaining() {
+            options.noWarn()
+                    .parameters()
+                    .deprecation();
+
+            assertEquals(3, options.size());
+            assertTrue(options.contains("-nowarn"));
+            assertTrue(options.contains("-parameters"));
+            assertTrue(options.contains("-deprecation"));
+        }
+    }
+
+    @Nested
+    class ParametersTests {
+        @Test
+        void testParameters() {
+            options.parameters();
+
+            assertEquals(1, options.size());
+            assertTrue(options.contains("-parameters"));
+        }
+
+        @Test
+        void testParametersReturnsThis() {
+            var result = options.parameters();
+            assertSame(options, result);
+        }
+
+        @Test
+        void testParametersMethodChaining() {
+            options.parameters()
+                    .deprecation()
+                    .warningError();
+
+            assertEquals(3, options.size());
+            assertTrue(options.contains("-parameters"));
+            assertTrue(options.contains("-deprecation"));
+            assertTrue(options.contains("-Werror"));
+        }
+    }
+
+    @Nested
+    class ProcessTests {
+        @Test
+        void testProcessFull() {
+            options.process(JavacOptions.Processing.FULL);
+
+            assertEquals(1, options.size());
+            assertEquals("-proc:full", options.get(0));
+        }
+
+        @Test
+        void testProcessNone() {
+            options.process(JavacOptions.Processing.NONE);
+
+            assertEquals(1, options.size());
+            assertEquals("-proc:none", options.get(0));
+        }
+
+        @Test
+        void testProcessOnly() {
+            options.process(JavacOptions.Processing.ONLY);
+
+            assertEquals(1, options.size());
+            assertEquals("-proc:only", options.get(0));
+        }
+
+        @Test
+        void testProcessReturnsThis() {
+            var result = options.process(JavacOptions.Processing.ONLY);
+            assertSame(options, result);
+        }
+
+        @Test
+        void testProcessMethodChaining() {
+            options.process(JavacOptions.Processing.ONLY)
+                    .processors("com.example.Processor")
+                    .deprecation();
+
+            assertEquals(4, options.size());
+            assertTrue(options.contains("-proc:only"));
+            assertTrue(options.contains("-processor"));
+            assertTrue(options.contains("-deprecation"));
+        }
+    }
+
+    @Nested
+    class ProcessorsTests {
+        @Test
+        void testProcessorsWithSingleProcessor() {
+            options.processors("com.example.MyProcessor");
+
+            assertEquals(2, options.size());
+            assertEquals("-processor", options.get(0));
+            assertEquals("com.example.MyProcessor", options.get(1));
+        }
+
+        @Test
+        void testProcessorsWithVarargs() {
+            options.processors("com.example.Processor1", "com.example.Processor2", "com.example.Processor3");
+
+            assertEquals(2, options.size());
+            assertEquals("-processor", options.get(0));
+            assertEquals("com.example.Processor1,com.example.Processor2,com.example.Processor3", options.get(1));
+        }
+
+        @Test
+        void testProcessorsWithList() {
+            var processors = Arrays.asList("com.example.Processor1", "com.example.Processor2", "com.example.Processor3");
+            options.processors(processors);
+
+            assertEquals(2, options.size());
+            assertEquals("-processor", options.get(0));
+            assertEquals("com.example.Processor1,com.example.Processor2,com.example.Processor3", options.get(1));
+        }
+
+        @Test
+        void testProcessorsWithEmptyVarargs() {
+            options.processors();
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testProcessorsWithEmptyList() {
+            options.processors(List.of());
+
+            assertEquals(0, options.size());
+        }
+
+        @Test
+        void testProcessorsReturnsThis() {
+            var result = options.processors("com.example.MyProcessor");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testProcessorsMethodChaining() {
+            options.processors("com.example.MyProcessor")
+                    .processorPath("lib/processors.jar")
+                    .deprecation();
+
+            assertEquals(5, options.size());
+            assertTrue(options.contains("-processor"));
+            assertTrue(options.contains("--processor-path"));
+            assertTrue(options.contains("-deprecation"));
+        }
+    }
+
+    @Nested
+    class ProfileTests {
+        @Test
+        void testProfile() {
+            options.profile("compact1");
+
+            assertEquals(2, options.size());
+            assertEquals("-profile", options.get(0));
+            assertEquals("compact1", options.get(1));
+        }
+
+        @Test
+        void testProfileCompact2() {
+            options.profile("compact2");
+
+            assertEquals(2, options.size());
+            assertEquals("-profile", options.get(0));
+            assertEquals("compact2", options.get(1));
+        }
+
+        @Test
+        void testProfileCompact3() {
+            options.profile("compact3");
+
+            assertEquals(2, options.size());
+            assertEquals("-profile", options.get(0));
+            assertEquals("compact3", options.get(1));
+        }
+
+        @Test
+        void testProfileReturnsThis() {
+            var result = options.profile("compact1");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testProfileMethodChaining() {
+            options.profile("compact1")
+                    .deprecation()
+                    .parameters();
+
+            assertEquals(4, options.size());
+            assertTrue(options.contains("-profile"));
+            assertTrue(options.contains("-deprecation"));
+            assertTrue(options.contains("-parameters"));
+        }
+    }
+
+    @Nested
+    class SourceOutputTests {
+        @Test
+        void testSourceOutputWithString() {
+            options.sourceOutput("generated/sources");
+
+            assertEquals(2, options.size());
+            assertEquals("-s", options.get(0));
+            assertEquals("generated/sources", options.get(1));
+        }
+
+        @Test
+        void testSourceOutputWithFile() {
+            var file = new File("generated/sources");
+            options.sourceOutput(file);
+
+            assertEquals(2, options.size());
+            assertEquals("-s", options.get(0));
+            assertEquals(file.getAbsolutePath(), options.get(1));
+        }
+
+        @Test
+        void testSourceOutputWithPath() {
+            var path = Path.of("generated/sources");
+            options.sourceOutput(path);
+
+            assertEquals(2, options.size());
+            assertEquals("-s", options.get(0));
+            assertEquals(path.toFile().getAbsolutePath(), options.get(1));
+        }
+
+        @Test
+        void testSourceOutputReturnsThis() {
+            var result = options.sourceOutput("generated/sources");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testSourceOutputMethodChaining() {
+            options.sourceOutput("generated/sources")
+                    .processors("com.example.Processor")
+                    .deprecation();
+
+            assertEquals(5, options.size());
+            assertTrue(options.contains("-s"));
+            assertTrue(options.contains("-processor"));
+            assertTrue(options.contains("-deprecation"));
+        }
+    }
+
+    @Nested
+    class SystemTests {
+        @Test
+        void testSystemWithJdk() {
+            options.system("jdk");
+
+            assertEquals(2, options.size());
+            assertEquals("--system", options.get(0));
+            assertEquals("jdk", options.get(1));
+        }
+
+        @Test
+        void testSystemWithNone() {
+            options.system("none");
+
+            assertEquals(2, options.size());
+            assertEquals("--system", options.get(0));
+            assertEquals("none", options.get(1));
+        }
+
+        @Test
+        void testSystemReturnsThis() {
+            var result = options.system("none");
+            assertSame(options, result);
+        }
+
+        @Test
+        void testSystemMethodChaining() {
+            options.system("none")
+                    .modulePath("lib/modules")
+                    .release(17);
+
+            assertEquals(6, options.size());
+            assertTrue(options.contains("--system"));
+            assertTrue(options.contains("--module-path"));
+            assertTrue(options.containsRelease());
+        }
+
+        @Test
+        void testMultipleSystemCalls() {
+            options.system("none")
+                    .system("jdk");
+
+            assertEquals(4, options.size());
+            assertEquals("--system", options.get(0));
+            assertEquals("none", options.get(1));
+            assertEquals("--system", options.get(2));
+            assertEquals("jdk", options.get(3));
+        }
+    }
+
+    @Nested
+    class WarningErrorTests {
+        @Test
+        void testWarningError() {
+            options.warningError();
+
+            assertEquals(1, options.size());
+            assertTrue(options.contains("-Werror"));
+        }
+
+        @Test
+        void testWarningErrorReturnsThis() {
+            var result = options.warningError();
+            assertSame(options, result);
+        }
+
+        @Test
+        void testWarningErrorMethodChaining() {
+            options.warningError()
+                    .deprecation()
+                    .parameters();
+
+            assertEquals(3, options.size());
+            assertTrue(options.contains("-Werror"));
+            assertTrue(options.contains("-deprecation"));
+            assertTrue(options.contains("-parameters"));
+        }
+
+        @Test
+        void testWarningErrorWithXLint() {
+            options.xLint(UNCHECKED, DEPRECATION)
+                    .warningError();
+
+            assertEquals(2, options.size());
+            assertTrue(options.contains("-Xlint:unchecked,deprecation"));
+            assertTrue(options.contains("-Werror"));
         }
     }
 }
