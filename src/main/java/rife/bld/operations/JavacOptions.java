@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static rife.bld.operations.CompileOperation.COMPILE_OPTION_MODULE_PATH;
@@ -89,25 +90,33 @@ public class JavacOptions extends ArrayList<String> {
     }
 
     /**
+     * Helper method to add delimited options
+     */
+    private JavacOptions addDelimitedOption(String option, Collection<String> values, String separator) {
+        if (isNotEmpty(values)) {
+            var joined = values.stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining(separator));
+            if (!joined.isEmpty()) {
+                add(option);
+                add(joined);
+            }
+        }
+        return this;
+    }
+
+    /**
      * Helper method to add path-based options
      */
     private JavacOptions addPathOption(String option, Collection<String> paths) {
-        if (isNotEmpty(paths)) {
-            add(option);
-            add(String.join(File.pathSeparator, paths));
-        }
-        return this;
+        return addDelimitedOption(option, paths, File.pathSeparator);
     }
 
     /**
      * Helper method to add comma-separated options
      */
     private JavacOptions addCommaSeparatedOption(String option, Collection<String> values) {
-        if (isNotEmpty(values)) {
-            add(option);
-            add(String.join(",", values));
-        }
-        return this;
+        return addDelimitedOption(option, values, ",");
     }
 
     /**
@@ -324,11 +333,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions endorsedDirsStrings(Collection<String> dirs) {
-        if (isNotEmpty(dirs)) {
-            add("-endorseddirs");
-            add(String.join(",", dirs));
-        }
-        return this;
+        return addCommaSeparatedOption("-endorseddirs", dirs);
     }
 
     /**
@@ -403,11 +408,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions extDirsStrings(Collection<String> dirs) {
-        if (isNotEmpty(dirs)) {
-            add("-extdirs");
-            add(String.join(",", dirs));
-        }
-        return this;
+        return addCommaSeparatedOption("-extdirs", dirs);
     }
 
     /**
