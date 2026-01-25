@@ -145,7 +145,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions addExports(Collection<String> modules) {
-        return addCommaSeparatedOption("--add-exports", modules);
+        if (isNotEmpty(modules)) {
+            return addCommaSeparatedOption("--add-exports", modules);
+        }
+        return this;
     }
 
     /**
@@ -168,7 +171,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions addReads(Collection<String> modules) {
-        return addCommaSeparatedOption("--add-reads", modules);
+        if (isNotEmpty(modules)) {
+            return addCommaSeparatedOption("--add-reads", modules);
+        }
+        return this;
     }
 
     /**
@@ -193,7 +199,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions addModules(Collection<String> modules) {
-        return addCommaSeparatedOption("--add-modules", modules);
+        if (isNotEmpty(modules)) {
+            return addCommaSeparatedOption("--add-modules", modules);
+        }
+        return this;
     }
 
     /**
@@ -263,7 +272,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions endorsedDirs(Collection<File> dirs) {
-        return endorsedDirsStrings(dirs.stream().map(File::getAbsolutePath).toList());
+        if (isNotEmpty(dirs)) {
+            return endorsedDirsStrings(dirs.stream().map(File::getAbsolutePath).toList());
+        }
+        return this;
     }
 
     /**
@@ -286,7 +298,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions endorsedDirsPaths(Collection<Path> dirs) {
-        return endorsedDirs(dirs.stream().map(Path::toFile).toList());
+        if (isNotEmpty(dirs)) {
+            return endorsedDirs(dirs.stream().map(Path::toFile).toList());
+        }
+        return this;
     }
 
     /**
@@ -336,7 +351,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions extDirs(Collection<File> dirs) {
-        return extDirsStrings(dirs.stream().map(File::getAbsolutePath).toList());
+        if (isNotEmpty(dirs)) {
+            return extDirsStrings(dirs.stream().map(File::getAbsolutePath).toList());
+        }
+        return this;
     }
 
     /**
@@ -359,7 +377,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions extDirsPaths(Collection<Path> dirs) {
-        return extDirs(dirs.stream().map(Path::toFile).toList());
+        if (isNotEmpty(dirs)) {
+            return extDirs(dirs.stream().map(Path::toFile).toList());
+        }
+        return this;
     }
 
     /**
@@ -526,7 +547,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions limitModules(Collection<String> modules) {
-        return addCommaSeparatedOption("--limit-modules", modules);
+        if (isNotEmpty(modules)) {
+            return addCommaSeparatedOption("--limit-modules", modules);
+        }
+        return this;
     }
 
     /**
@@ -549,7 +573,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions module(Collection<String> modules) {
-        return addCommaSeparatedOption("--module", modules);
+        if (isNotEmpty(modules)) {
+            return addCommaSeparatedOption("--module", modules);
+        }
+        return this;
     }
 
     /**
@@ -573,7 +600,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.6.2
      */
     public JavacOptions modulePath(Collection<File> paths) {
-        return modulePathStrings(paths.stream().map(File::getAbsolutePath).toList());
+        if (isNotEmpty(paths)) {
+            return modulePathStrings(paths.stream().map(File::getAbsolutePath).toList());
+        }
+        return this;
     }
 
     /**
@@ -596,7 +626,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions modulePathPaths(Collection<Path> paths) {
-        return modulePathStrings(paths.stream().map(Path::toString).toList());
+        if (isNotEmpty(paths)) {
+            return modulePathStrings(paths.stream().map(Path::toString).toList());
+        }
+        return this;
     }
 
     /**
@@ -619,7 +652,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions modulePathStrings(Collection<String> paths) {
-        return addPathOption(COMPILE_OPTION_MODULE_PATH, paths);
+        if (isNotEmpty(paths)) {
+            return addPathOption(COMPILE_OPTION_MODULE_PATH, paths);
+        }
+        return this;
     }
 
     /**
@@ -629,7 +665,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions moduleSourcePathStrings(Collection<String> paths) {
-        return addPathOption("--module-source-path", paths);
+        if (isNotEmpty(paths)) {
+            return addPathOption("--module-source-path", paths);
+        }
+        return this;
     }
 
     /**
@@ -639,7 +678,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions moduleSourcePathPaths(Collection<Path> paths) {
-        return moduleSourcePathStrings(paths.stream().map(Path::toString).toList());
+        if (isNotEmpty(paths)) {
+            return moduleSourcePathStrings(paths.stream().map(Path::toString).toList());
+        }
+        return this;
     }
 
     /**
@@ -649,7 +691,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions moduleSourcePath(Collection<File> paths) {
-        return moduleSourcePathStrings(paths.stream().map(File::getPath).toList());
+        if (isNotEmpty(paths)) {
+            return moduleSourcePathStrings(paths.stream().map(File::getPath).toList());
+        }
+        return this;
     }
 
     /**
@@ -756,7 +801,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions processors(Collection<String> classnames) {
-        return addCommaSeparatedOption("-processor", classnames);
+        if (isNotEmpty(classnames)) {
+            return addCommaSeparatedOption("-processor", classnames);
+        }
+        return this;
     }
 
     /**
@@ -805,7 +853,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions processorModulePathPaths(Collection<Path> paths) {
-        return processorModulePathStrings(paths.stream().map(Path::toString).toList());
+        if (isNotEmpty(paths)) {
+            return processorModulePathStrings(paths.stream().map(Path::toString).toList());
+        }
+        return this;
     }
 
     /**
@@ -815,7 +866,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions processorModulePathStrings(Collection<String> paths) {
-        return addPathOption("--processor-module-path", paths);
+        if (isNotEmpty(paths)) {
+            return addPathOption("--processor-module-path", paths);
+        }
+        return this;
     }
 
     /**
@@ -825,7 +879,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions processorModulePath(Collection<File> paths) {
-        return processorModulePathStrings(paths.stream().map(File::getAbsolutePath).toList());
+        if (isNotEmpty(paths)) {
+            return processorModulePathStrings(paths.stream().map(File::getAbsolutePath).toList());
+        }
+        return this;
     }
 
     /**
@@ -874,7 +931,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions processorPathStrings(Collection<String> paths) {
-        return addPathOption("--processor-path", paths);
+        if (isNotEmpty(paths)) {
+            return addPathOption("--processor-path", paths);
+        }
+        return this;
     }
 
     /**
@@ -884,7 +944,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions processorPath(Collection<File> paths) {
-        return processorPathStrings(paths.stream().map(File::getAbsolutePath).toList());
+        if (isNotEmpty(paths)) {
+            return processorPathStrings(paths.stream().map(File::getAbsolutePath).toList());
+        }
+        return this;
     }
 
     /**
@@ -894,7 +957,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions processorPathPaths(Collection<Path> paths) {
-        return processorPathStrings(paths.stream().map(Path::toString).toList());
+        if (isNotEmpty(paths)) {
+            return processorPathStrings(paths.stream().map(Path::toString).toList());
+        }
+        return this;
     }
 
     /**
@@ -1002,7 +1068,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions upgradeModulePathStrings(Collection<String> paths) {
-        return addPathOption("--upgrade-module-path", paths);
+        if (isNotEmpty(paths)) {
+            return addPathOption("--upgrade-module-path", paths);
+        }
+        return this;
     }
 
     /**
@@ -1012,7 +1081,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions upgradeModulePath(Collection<File> paths) {
-        return upgradeModulePathStrings(paths.stream().map(File::getAbsolutePath).toList());
+        if (isNotEmpty(paths)) {
+            return upgradeModulePathStrings(paths.stream().map(File::getAbsolutePath).toList());
+        }
+        return this;
     }
 
     /**
@@ -1022,7 +1094,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions upgradeModulePathPaths(Collection<Path> paths) {
-        return upgradeModulePathStrings(paths.stream().map(Path::toString).toList());
+        if (isNotEmpty(paths)) {
+            return upgradeModulePathStrings(paths.stream().map(Path::toString).toList());
+        }
+        return this;
     }
 
     /**
@@ -1067,7 +1142,10 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions xLint(Collection<XLintKey> keys) {
-        return addXLintOption(keys, "");
+        if (isNotEmpty(keys)) {
+            return addXLintOption(keys, "");
+        }
+        return this;
     }
 
     /**
