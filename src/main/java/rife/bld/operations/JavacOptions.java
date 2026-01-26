@@ -154,10 +154,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions addExports(Collection<String> modules) {
-        if (isNotEmpty(modules)) {
-            return addCommaSeparatedOption("--add-exports", modules);
-        }
-        return this;
+        return addCommaSeparatedOption("--add-exports", modules);
     }
 
     /**
@@ -180,10 +177,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions addReads(Collection<String> modules) {
-        if (isNotEmpty(modules)) {
-            return addCommaSeparatedOption("--add-reads", modules);
-        }
-        return this;
+        return addCommaSeparatedOption("--add-reads", modules);
     }
 
     /**
@@ -208,10 +202,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions addModules(Collection<String> modules) {
-        if (isNotEmpty(modules)) {
-            return addCommaSeparatedOption("--add-modules", modules);
-        }
-        return this;
+        return addCommaSeparatedOption("--add-modules", modules);
     }
 
     /**
@@ -548,10 +539,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions limitModules(Collection<String> modules) {
-        if (isNotEmpty(modules)) {
-            return addCommaSeparatedOption("--limit-modules", modules);
-        }
-        return this;
+        return addCommaSeparatedOption("--limit-modules", modules);
     }
 
     /**
@@ -574,10 +562,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions module(Collection<String> modules) {
-        if (isNotEmpty(modules)) {
-            return addCommaSeparatedOption("--module", modules);
-        }
-        return this;
+        return addCommaSeparatedOption("--module", modules);
     }
 
     /**
@@ -653,10 +638,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.1
      */
     public JavacOptions modulePathStrings(Collection<String> paths) {
-        if (isNotEmpty(paths)) {
-            return addPathOption(COMPILE_OPTION_MODULE_PATH, paths);
-        }
-        return this;
+        return addPathOption(COMPILE_OPTION_MODULE_PATH, paths);
     }
 
     /**
@@ -666,10 +648,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions moduleSourcePathStrings(Collection<String> paths) {
-        if (isNotEmpty(paths)) {
-            return addPathOption("--module-source-path", paths);
-        }
-        return this;
+        return addPathOption("--module-source-path", paths);
     }
 
     /**
@@ -802,10 +781,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 1.5.18
      */
     public JavacOptions processors(Collection<String> classnames) {
-        if (isNotEmpty(classnames)) {
-            return addCommaSeparatedOption("-processor", classnames);
-        }
-        return this;
+        return addCommaSeparatedOption("-processor", classnames);
     }
 
     /**
@@ -867,10 +843,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions processorModulePathStrings(Collection<String> paths) {
-        if (isNotEmpty(paths)) {
-            return addPathOption("--processor-module-path", paths);
-        }
-        return this;
+        return addPathOption("--processor-module-path", paths);
     }
 
     /**
@@ -932,10 +905,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions processorPathStrings(Collection<String> paths) {
-        if (isNotEmpty(paths)) {
-            return addPathOption("--processor-path", paths);
-        }
-        return this;
+        return addPathOption("--processor-path", paths);
     }
 
     /**
@@ -1069,10 +1039,7 @@ public class JavacOptions extends ArrayList<String> {
      * @since 2.3.1
      */
     public JavacOptions upgradeModulePathStrings(Collection<String> paths) {
-        if (isNotEmpty(paths)) {
-            return addPathOption("--upgrade-module-path", paths);
-        }
-        return this;
+        return addPathOption("--upgrade-module-path", paths);
     }
 
     /**
