@@ -5,6 +5,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.uwyn.rife2/bld/badge.svg?color=blue)](https://maven-badges.herokuapp.com/maven-central/com.uwyn.rife2/bld)
 [![GitHub Snapshot](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fcom%2Fuwyn%2Frife2%2Fbld%2Fmaven-metadata.xml)](https://github.com/rife2/bld/packages/2214741/versions)
 [![gradle-ci](https://github.com/rife2/bld/actions/workflows/bld.yml/badge.svg)](https://github.com/rife2/bld/actions/workflows/bld.yml)
+[![libs.tech recommends](https://libs.tech/project/638725478/badge.svg)](https://libs.tech/project/638725478/bld)
 [![Tests](https://rife2.com/tests-badge/badge/com.uwyn.rife2/bld)](https://github.com/rife2/rife2/actions/workflows/bld.yml)
 
 <br>
