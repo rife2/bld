@@ -25,6 +25,9 @@ public record Repository(String location, String username, String password) {
     public static Repository MAVEN_LOCAL = null;
     public static final Repository APACHE = new Repository("https://repo.maven.apache.org/maven2/");
     public static final Repository GOOGLE = new Repository("https://maven.google.com/");
+    public static final Repository GOOGLE_MAVEN_CENTRAL = new Repository("https://maven-central.storage-download.googleapis.com/maven2/");
+    public static final Repository GOOGLE_MAVEN_CENTRAL_EU = new Repository("https://maven-central-eu.storage-download.googleapis.com/maven2/");
+    public static final Repository GOOGLE_MAVEN_CENTRAL_ASIA = new Repository("https://maven-central-asia.storage-download.googleapis.com/maven2/");
     public static final Repository MAVEN_CENTRAL = new Repository("https://repo1.maven.org/maven2/");
     public static final Repository SECURECHAIN_REBUILT = new Repository("https://nexus-repo.corp.cloudlinux.com/repository/tuxcare_rebuilt");
     public static final Repository SECURECHAIN_VETTED = new Repository("https://nexus-repo.corp.cloudlinux.com/repository/tuxcare_vetted");
@@ -91,6 +94,9 @@ public record Repository(String location, String username, String password) {
         return switch (locationOrName) {
             case "APACHE" -> Repository.APACHE;
             case "GOOGLE" -> Repository.GOOGLE;
+            case "GOOGLE_MAVEN_CENTRAL" -> Repository.GOOGLE_MAVEN_CENTRAL;
+            case "GOOGLE_MAVEN_CENTRAL_EU" -> Repository.GOOGLE_MAVEN_CENTRAL_EU;
+            case "GOOGLE_MAVEN_CENTRAL_ASIA" -> Repository.GOOGLE_MAVEN_CENTRAL_ASIA;
             case "MAVEN_CENTRAL" -> Repository.MAVEN_CENTRAL;
             case "MAVEN_LOCAL" -> Repository.MAVEN_LOCAL;
             case "RIFE2_RELEASES" -> Repository.RIFE2_RELEASES;
