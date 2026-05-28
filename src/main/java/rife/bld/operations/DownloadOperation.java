@@ -25,6 +25,7 @@ import static rife.bld.dependencies.Dependency.CLASSIFIER_SOURCES;
  * @since 1.5
  */
 public class DownloadOperation extends AbstractOperation<DownloadOperation> {
+    public static final String AUTO_OPTION = "--auto";
     private boolean offline_ = false;
     private HierarchicalProperties properties_ = null;
     private ArtifactRetriever retriever_ = null;

@@ -5,7 +5,7 @@
 package rife.bld.help;
 
 import rife.bld.CommandHelp;
-import rife.tools.StringUtils;
+import rife.bld.operations.DownloadOperation;
 
 /**
  * Provides help for the download command.
@@ -15,13 +15,13 @@ import rife.tools.StringUtils;
  */
 public class DownloadHelp implements CommandHelp {
     public String getSummary() {
-        return "Downloads all dependencies of the project";
+        return "Downloads all dependencies of the project (take option)";
     }
 
     public String getDescription(String topic) {
-        return StringUtils.replace("""
-            Downloads all dependencies of the project
-                        
-            Usage : ${topic}""", "${topic}", topic);
+        return String.format("""
+                Downloads all dependencies of the project
+                
+                Usage : %s [%s]""", topic, DownloadOperation.AUTO_OPTION);
     }
 }

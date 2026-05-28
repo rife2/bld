@@ -534,7 +534,22 @@ public class BaseProject extends BuildExecutor {
     @BuildCommand(help = DownloadHelp.class)
     public void download()
     throws Exception {
-        downloadOperation().executeOnce(() -> downloadOperation().fromProject(this));
+        var auto = false;
+        var arguments = this.arguments();
+        while (!arguments.isEmpty()) {
+            var argument = arguments.get(0);
+            if (DownloadOperation.AUTO_OPTION.equals(argument)) {
+                arguments.remove(0);
+                auto = true;
+            } else {
+                break;
+            }
+        }
+        if (auto) {
+            performAutoDownloadPurge();
+        } else {
+            downloadOperation().executeOnce(() -> downloadOperation().fromProject(this));
+        }
     }
 
     /**
