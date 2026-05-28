@@ -1,0 +1,27 @@
+name: purge-cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes" to confirm purging all bld caches'
+        required: true
+        default: 'no'
+
+jobs:
+  clear-cache:
+    if: github.event.inputs.confirm == 'yes'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      actions: write
+    steps:
+      - name: Purge bld caches for ${{ runner.os }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Purging all caches with key ${{ runner.os }}-bld-"
+          gh cache delete --all --key "${{ runner.os }}-bld-"
+          echo "Done for ${{ runner.os }}"
