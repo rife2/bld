@@ -1,0 +1,49 @@
+name: publish-snapshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-bld-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check version is SNAPSHOT
+        shell: bash
+        run: |
+          VERSION=$(tr -d '[:space:]' < src/main/resources/BLD_VERSION)
+          echo "Current version: $VERSION"
+          if ! echo "$VERSION" | grep -q 'SNAPSHOT$'; then
+            echo "::error:: Version '$VERSION' is not a SNAPSHOT. Aborting publish."
+            exit 1
+          fi
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      - name: Download dependencies
+        run: ./bld download
+
+      - name: Import key
+        run: echo "${{ secrets.SIGN_SECRET_KEY }}" | gpg --batch --import
+
+      - name: Publish
+        run: >-
+          ./bld compile test publish
+          -Drife2Username=${{ secrets.RIFE2_USERNAME }}
+          -Drife2Password=${{ secrets.RIFE2_PASSWORD }}
+          -DsonatypeUser=${{ secrets.SONATYPE_USER }}
+          -DsonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
+          -DsignKey=${{ secrets.SIGN_KEY }}
+          -DsignPassphrase=${{ secrets.SIGN_PASSPHRASE }}
+
+      - name: Delete GnuPG data
+        run: rm -rfv $HOME/.gnupg
