@@ -85,7 +85,14 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
     throws IOException {
         var sources = new ArrayList<>(mainSourceFiles());
         for (var directory : mainSourceDirectories()) {
-            sources.addAll(FileUtils.getJavaFileList(directory));
+            var found = FileUtils.getJavaFileList(directory);
+            if (verbose()) {
+                var dir_abs = directory.getAbsoluteFile();
+                for (var source : found) {
+                    System.out.println("Found main source file '" + dir_abs.toPath().relativize(source.toPath()) + "' in '" + dir_abs + "'");
+                }
+            }
+            sources.addAll(found);
         }
 
         if (sources.isEmpty()) {
@@ -110,7 +117,14 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
     throws IOException {
         var sources = new ArrayList<>(testSourceFiles());
         for (var directory : testSourceDirectories()) {
-            sources.addAll(FileUtils.getJavaFileList(directory));
+            var found = FileUtils.getJavaFileList(directory);
+            if (verbose()) {
+                var dir_abs = directory.getAbsoluteFile();
+                for (var source : found) {
+                    System.out.println("Found test source file '" + dir_abs.toPath().relativize(source.toPath()) + "' in '" + dir_abs + "'");
+                }
+            }
+            sources.addAll(found);
         }
 
         if (sources.isEmpty()) {
@@ -139,6 +153,12 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
     throws IOException {
         if (sources.isEmpty() || destination == null) {
             return;
+        }
+
+        if (verbose()) {
+            for (var source : sources) {
+                System.out.println("Compiling source '" + source.getAbsolutePath() + "' into '" + destination.getAbsolutePath() + "'");
+            }
         }
 
         var compiler = ToolProvider.getSystemJavaCompiler();
@@ -221,7 +241,8 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
      * @since 1.5
      */
     public CompileOperation fromProject(BaseProject project) {
-        var operation = buildMainDirectory(project.buildMainDirectory())
+        var operation = verbose(project.verbose())
+            .buildMainDirectory(project.buildMainDirectory())
             .buildTestDirectory(project.buildTestDirectory())
             .compileMainClasspath(project.compileMainClasspath())
             .compileTestClasspath(project.compileTestClasspath())

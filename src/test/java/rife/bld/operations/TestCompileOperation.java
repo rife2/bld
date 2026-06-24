@@ -10,7 +10,9 @@ import rife.tools.FileUtils;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -203,6 +205,83 @@ public class TestCompileOperation {
             assertTrue(build_main_class1.exists());
             assertTrue(build_main_class2.exists());
             assertTrue(build_test_class3.exists());
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testVerbose()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var main_dir = new File(tmp, "main");
+            var package_dir = new File(main_dir, "tst");
+            package_dir.mkdirs();
+            var source_file = new File(package_dir, "Source.java");
+            FileUtils.writeString("""
+                package tst;
+                public class Source {
+                }
+                """, source_file);
+
+            var build_main = new File(tmp, "buildMain");
+
+            var orig_out = System.out;
+            var captured = new ByteArrayOutputStream();
+            try {
+                System.setOut(new PrintStream(captured, true));
+
+                new CompileOperation()
+                    .verbose(true)
+                    .buildMainDirectory(build_main)
+                    .mainSourceDirectories(List.of(main_dir))
+                    .execute();
+            } finally {
+                System.setOut(orig_out);
+            }
+
+            var output = captured.toString();
+            assertTrue(output.contains("Found main source file '" + new File("tst", "Source.java") + "' in '" + main_dir.getAbsoluteFile() + "'"), output);
+            assertTrue(output.contains("Compiling source '" + source_file.getAbsolutePath() + "' into '" + build_main.getAbsolutePath() + "'"), output);
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testNotVerbose()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var main_dir = new File(tmp, "main");
+            var package_dir = new File(main_dir, "tst");
+            package_dir.mkdirs();
+            var source_file = new File(package_dir, "Source.java");
+            FileUtils.writeString("""
+                package tst;
+                public class Source {
+                }
+                """, source_file);
+
+            var build_main = new File(tmp, "buildMain");
+
+            var orig_out = System.out;
+            var captured = new ByteArrayOutputStream();
+            try {
+                System.setOut(new PrintStream(captured, true));
+
+                new CompileOperation()
+                    .buildMainDirectory(build_main)
+                    .mainSourceDirectories(List.of(main_dir))
+                    .execute();
+            } finally {
+                System.setOut(orig_out);
+            }
+
+            var output = captured.toString();
+            assertFalse(output.contains("Found main source file"), output);
+            assertFalse(output.contains("Compiling source"), output);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }

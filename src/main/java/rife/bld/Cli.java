@@ -32,7 +32,7 @@ public class Cli extends BuildExecutor {
     @BuildCommand(help = CreateHelp.class)
     public void create()
     throws Exception {
-        createOperation_.fromArguments(arguments()).execute();
+        createOperation_.fromArguments(arguments()).verbose(verbose()).execute();
     }
 
     /**
@@ -44,7 +44,7 @@ public class Cli extends BuildExecutor {
     @BuildCommand(value = "create-app", alias = "create-blank", help = CreateAppHelp.class)
     public void createApp()
     throws Exception {
-        createAppOperation_.executeOnce(() -> createAppOperation_.fromArguments(arguments()));
+        createAppOperation_.executeOnce(() -> createAppOperation_.verbose(verbose()).fromArguments(arguments()));
     }
 
     /**
@@ -56,7 +56,7 @@ public class Cli extends BuildExecutor {
     @BuildCommand(value = "create-base", help = CreateBaseHelp.class)
     public void createBase()
     throws Exception {
-        createBaseOperation_.executeOnce(() -> createBaseOperation_.fromArguments(arguments()));
+        createBaseOperation_.executeOnce(() -> createBaseOperation_.verbose(verbose()).fromArguments(arguments()));
     }
 
     /**
@@ -68,7 +68,7 @@ public class Cli extends BuildExecutor {
     @BuildCommand(value = "create-lib", help = CreateLibHelp.class)
     public void createLib()
     throws Exception {
-        createLibOperation_.executeOnce(() -> createLibOperation_.fromArguments(arguments()));
+        createLibOperation_.executeOnce(() -> createLibOperation_.verbose(verbose()).fromArguments(arguments()));
     }
 
     /**
@@ -80,7 +80,7 @@ public class Cli extends BuildExecutor {
     @BuildCommand(value = "create-rife2", help = CreateRife2Help.class)
     public void createRife2()
     throws Exception {
-        createRife2Operation_.executeOnce(() -> createRife2Operation_.fromArguments(arguments()));
+        createRife2Operation_.executeOnce(() -> createRife2Operation_.verbose(verbose()).fromArguments(arguments()));
     }
 
     /**

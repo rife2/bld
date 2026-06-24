@@ -65,7 +65,8 @@ public class RunOperation extends AbstractProcessOperation<RunOperation> {
      * @since 1.5
      */
     public RunOperation fromProject(BaseProject project) {
-        var operation = workDirectory(project.workDirectory())
+        var operation = verbose(project.verbose())
+                .workDirectory(project.workDirectory())
                 .javaTool(project.javaTool())
                 .classpath(project.runClasspath())
                 .modulePath(project.runModulePath())

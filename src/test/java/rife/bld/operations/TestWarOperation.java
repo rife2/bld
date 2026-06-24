@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import rife.bld.NamedFile;
 import rife.tools.FileUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.jar.JarFile;
@@ -104,6 +106,51 @@ public class TestWarOperation {
         assertEquals(web_xml_file, operation3.webXmlFile());
         assertEquals(destination_directory, operation3.destinationDirectory());
         assertEquals(destination_fileName, operation3.destinationFileName());
+    }
+
+    @Test
+    void testVerbose()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var webapp_dir = new File(tmp, "webapp");
+            webapp_dir.mkdirs();
+            FileUtils.writeString("body { }", new File(webapp_dir, "style.css"));
+
+            var jar_file = new File(tmp, "lib.jar");
+            FileUtils.writeString("not really a jar", jar_file);
+
+            var web_xml_file = new File(tmp, "web.xml");
+            FileUtils.writeString("<web-app/>", web_xml_file);
+
+            var destination_dir = new File(tmp, "destination");
+
+            var orig_out = System.out;
+            var captured = new ByteArrayOutputStream();
+            try {
+                System.setOut(new PrintStream(captured, true));
+
+                new WarOperation()
+                    .verbose(true)
+                    .webappDirectory(webapp_dir)
+                    .jarSourceFiles(new NamedFile("lib.jar", jar_file))
+                    .webXmlFile(web_xml_file)
+                    .destinationDirectory(destination_dir)
+                    .destinationFileName("archive.war")
+                    .execute();
+            } finally {
+                System.setOut(orig_out);
+            }
+
+            var output = captured.toString();
+            assertTrue(output.contains("Copying webapp directory '" + webapp_dir.getAbsolutePath() + "'"), output);
+            assertTrue(output.contains("Copying jar '" + jar_file.getAbsolutePath() + "' into 'WEB-INF/lib' as 'lib.jar'"), output);
+            assertTrue(output.contains("Copying web.xml file '" + web_xml_file.getAbsolutePath() + "' into 'WEB-INF'"), output);
+            // the internal jar operation also runs verbosely
+            assertTrue(output.contains("' to jar as '"), output);
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
     }
 
     @Test

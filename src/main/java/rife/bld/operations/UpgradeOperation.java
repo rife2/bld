@@ -23,9 +23,25 @@ public class UpgradeOperation extends AbstractOperation<UpgradeOperation> {
      */
     public void execute()
     throws IOException {
-        new Wrapper().createWrapperFiles(Path.of("lib", "bld").toFile(), BldVersion.getVersion());
-        new Wrapper().upgradeIdeaBldLibrary(new File(".idea"), BldVersion.getVersion());
-        new Wrapper().upgradeVscodeSettings(new File(".vscode"), BldVersion.getVersion());
+        var bld_dir = Path.of("lib", "bld").toFile();
+        var idea_dir = new File(".idea");
+        var vscode_dir = new File(".vscode");
+
+        if (verbose()) {
+            System.out.println("Creating wrapper files in '" + bld_dir.getAbsolutePath() + "'");
+        }
+        new Wrapper().createWrapperFiles(bld_dir, BldVersion.getVersion());
+
+        if (verbose()) {
+            System.out.println("Upgrading IDEA bld library in '" + idea_dir.getAbsolutePath() + "'");
+        }
+        new Wrapper().upgradeIdeaBldLibrary(idea_dir, BldVersion.getVersion());
+
+        if (verbose()) {
+            System.out.println("Upgrading VSCode settings in '" + vscode_dir.getAbsolutePath() + "'");
+        }
+        new Wrapper().upgradeVscodeSettings(vscode_dir, BldVersion.getVersion());
+
         if (!silent()) {
             System.out.println("The wrapper was successfully upgraded to " + BldVersion.getVersion() + ".");
         }

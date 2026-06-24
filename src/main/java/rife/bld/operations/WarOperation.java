@@ -77,6 +77,9 @@ public class WarOperation extends AbstractOperation<WarOperation> {
     protected void executeCopyWebappDirectory(File stagingDirectory)
     throws FileUtilsErrorException {
         if (webappDirectory() != null) {
+            if (verbose()) {
+                System.out.println("Copying webapp directory '" + webappDirectory().getAbsolutePath() + "'");
+            }
             FileUtils.copyDirectory(webappDirectory(), stagingDirectory);
         }
     }
@@ -92,6 +95,9 @@ public class WarOperation extends AbstractOperation<WarOperation> {
         if (!libSourceDirectories().isEmpty()) {
             web_inf_lib_dir.mkdirs();
             for (var dir : libSourceDirectories()) {
+                if (verbose()) {
+                    System.out.println("Copying lib directory '" + dir.getAbsolutePath() + "' into 'WEB-INF/lib'");
+                }
                 FileUtils.copyDirectory(dir, web_inf_lib_dir);
             }
         }
@@ -99,6 +105,9 @@ public class WarOperation extends AbstractOperation<WarOperation> {
         if (!jarSourceFiles().isEmpty()) {
             web_inf_lib_dir.mkdirs();
             for (var file : jarSourceFiles()) {
+                if (verbose()) {
+                    System.out.println("Copying jar '" + file.file().getAbsolutePath() + "' into 'WEB-INF/lib' as '" + file.name() + "'");
+                }
                 FileUtils.copy(file.file(), new File(web_inf_lib_dir, file.name()));
             }
         }
@@ -115,6 +124,9 @@ public class WarOperation extends AbstractOperation<WarOperation> {
         if (!classesSourceDirectories().isEmpty()) {
             web_inf_classes_dir.mkdirs();
             for (var dir : classesSourceDirectories()) {
+                if (verbose()) {
+                    System.out.println("Copying classes directory '" + dir.getAbsolutePath() + "' into 'WEB-INF/classes'");
+                }
                 FileUtils.copyDirectory(dir, web_inf_classes_dir);
             }
         }
@@ -128,6 +140,9 @@ public class WarOperation extends AbstractOperation<WarOperation> {
     protected void executeCopyWebXmlFile(File stagingWebInfDirectory)
     throws FileUtilsErrorException {
         if (webXmlFile() != null) {
+            if (verbose()) {
+                System.out.println("Copying web.xml file '" + webXmlFile().getAbsolutePath() + "' into 'WEB-INF'");
+            }
             FileUtils.copy(webXmlFile(), new File(stagingWebInfDirectory, "web.xml"));
         }
     }
@@ -140,6 +155,7 @@ public class WarOperation extends AbstractOperation<WarOperation> {
     protected void executeCreateWarArchive(File stagingDirectory)
     throws IOException {
         new JarOperation()
+            .verbose(verbose())
             .sourceDirectories(stagingDirectory)
             .destinationDirectory(destinationDirectory())
             .destinationFileName(destinationFileName())
@@ -165,7 +181,8 @@ public class WarOperation extends AbstractOperation<WarOperation> {
             jar_source_files.add(new NamedFile(jar_file.getName(), jar_file));
         }
 
-        return jarSourceFiles(jar_source_files)
+        return verbose(project.verbose())
+            .jarSourceFiles(jar_source_files)
             .webappDirectory(project.srcMainWebappDirectory())
             .destinationDirectory(project.buildDistDirectory())
             .destinationFileName(project.warFileName());

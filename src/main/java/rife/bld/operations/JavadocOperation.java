@@ -102,6 +102,12 @@ public class JavadocOperation extends AbstractOperation<JavadocOperation> {
             }
         }
 
+        if (verbose()) {
+            for (var source : filtered_sources) {
+                System.out.println("Documenting source '" + source.getAbsolutePath() + "' into '" + destination.getAbsolutePath() + "'");
+            }
+        }
+
         var documentation = ToolProvider.getSystemDocumentationTool();
         try (var file_manager = documentation.getStandardFileManager(null, null, null)) {
             var compilation_units = file_manager.getJavaFileObjectsFromFiles(filtered_sources);
@@ -152,7 +158,8 @@ public class JavadocOperation extends AbstractOperation<JavadocOperation> {
      * @since 1.5.10
      */
     public JavadocOperation fromProject(BaseProject project) {
-        var operation = buildDirectory(project.buildJavadocDirectory())
+        var operation = verbose(project.verbose())
+            .buildDirectory(project.buildJavadocDirectory())
             .classpath(project.compileMainClasspath())
             .classpath(project.buildMainDirectory().getAbsolutePath())
             .modulePath(project.compileMainModulePath())

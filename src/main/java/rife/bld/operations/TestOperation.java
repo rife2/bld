@@ -72,7 +72,8 @@ public class TestOperation<T extends TestOperation<T, O>, O extends List<String>
      * @since 1.5
      */
     public T fromProject(BaseProject project) {
-        var operation = workDirectory(project.workDirectory())
+        var operation = verbose(project.verbose())
+            .workDirectory(project.workDirectory())
             .javaTool(project.javaTool())
             .classpath(project.testClasspath())
             .modulePath(project.testModulePath());

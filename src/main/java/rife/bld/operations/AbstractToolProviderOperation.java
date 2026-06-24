@@ -130,6 +130,10 @@ public abstract class AbstractToolProviderOperation<T extends AbstractToolProvid
         var tool = ToolProvider.findFirst(toolName_).orElseThrow(() ->
                 new IllegalStateException("No " + toolName_ + " tool found."));
 
+        if (verbose()) {
+            System.out.println("Executing command: " + tool.name() + ' ' + String.join(" ", toolArgs_));
+        }
+
         var status = tool.run(System.out, System.err, toolArgs_.toArray(new String[0]));
         if (status != 0) {
             System.out.println(tool.name() + ' ' + String.join(" ", toolArgs_));

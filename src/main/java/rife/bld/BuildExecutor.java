@@ -37,10 +37,13 @@ public class BuildExecutor {
     private static final String ARG_HELP3 = "-?";
     private static final String ARG_STACKTRACE1 = "--stacktrace";
     private static final String ARG_STACKTRACE2 = "-s";
+    private static final String ARG_VERBOSE1 = "--verbose";
+    private static final String ARG_VERBOSE2 = "-v";
 
     private final HierarchicalProperties properties_;
     private List<String> arguments_ = Collections.emptyList();
     private boolean offline_ = false;
+    private boolean verbose_ = false;
     private Map<String, CommandDefinition> buildCommands_ = null;
     private Map<String, String> buildAliases_ = null;
     private final AtomicReference<String> currentCommandName_ = new AtomicReference<>();
@@ -136,6 +139,18 @@ public class BuildExecutor {
     }
 
     /**
+     * Returns whether the bld execution should output detailed information
+     * about the operations it performs.
+     *
+     * @return {@code true} if the execution is verbose;
+     *         or {@code false} otherwise
+     * @since 2.3.1
+     */
+    public boolean verbose() {
+        return verbose_;
+    }
+
+    /**
      * Returns the properties uses for bld execution.
      *
      * @return the instance of {@code HierarchicalProperties} that is used
@@ -227,6 +242,7 @@ public class BuildExecutor {
         var show_help = false;
         show_help |= arguments_.removeAll(List.of(ARG_HELP1, ARG_HELP2, ARG_HELP3));
         showStacktrace = arguments_.removeAll(List.of(ARG_STACKTRACE1, ARG_STACKTRACE2));
+        verbose_ = arguments_.removeAll(List.of(ARG_VERBOSE1, ARG_VERBOSE2));
 
         if (show_help) {
             new HelpOperation(this, Collections.emptyList()).execute();

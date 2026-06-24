@@ -43,6 +43,9 @@ public class CleanOperation extends AbstractOperation<CleanOperation> {
      */
     protected void executeCleanDirectory(File directory) {
         try {
+            if (verbose() && directory.exists()) {
+                System.out.println("Deleting directory '" + directory.getAbsolutePath() + "'");
+            }
             FileUtils.deleteDirectory(directory);
         } catch (FileUtilsErrorException e) {
             // no-op
@@ -56,8 +59,9 @@ public class CleanOperation extends AbstractOperation<CleanOperation> {
      * @since 1.5
      */
     public CleanOperation fromProject(BaseProject project) {
-        return directories(project.buildDirectory()
-            .listFiles(f -> !f.equals(project.buildBldDirectory())));
+        return verbose(project.verbose())
+            .directories(project.buildDirectory()
+                .listFiles(f -> !f.equals(project.buildBldDirectory())));
     }
 
     /**

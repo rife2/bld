@@ -193,6 +193,7 @@ public class HelpOperation {
                   -?, -h, --help    Shows the help
                   -D<name>=<value>  Sets a JVM system property
                   -s, --stacktrace  Prints out the stacktrace for exceptions
+                  -v, --verbose     Prints out detailed information about the operations
                 """);
     }
 }

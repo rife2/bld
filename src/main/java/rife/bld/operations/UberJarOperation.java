@@ -60,6 +60,9 @@ public class UberJarOperation extends AbstractOperation<UberJarOperation> {
     protected void executeCollectSourceJarContents(File stagingDirectory)
     throws FileUtilsErrorException {
         for (var jar : jarSourceFiles()) {
+            if (verbose()) {
+                System.out.println("Unpacking jar '" + jar.getAbsolutePath() + "'");
+            }
             FileUtils.unzipFile(jar, stagingDirectory);
         }
     }
@@ -73,6 +76,9 @@ public class UberJarOperation extends AbstractOperation<UberJarOperation> {
     throws FileUtilsErrorException {
         for (var named_file : sourceDirectories()) {
             if (named_file.file().exists()) {
+                if (verbose()) {
+                    System.out.println("Collecting resources from '" + named_file.file().getAbsolutePath() + "'");
+                }
                 var destination_file = new File(stagingDirectory, named_file.name());
                 destination_file.mkdirs();
                 FileUtils.copyDirectory(named_file.file(), destination_file);
@@ -91,6 +97,7 @@ public class UberJarOperation extends AbstractOperation<UberJarOperation> {
         existing_manifest.delete();
 
         new JarOperation()
+            .verbose(verbose())
             .manifestAttributes(Map.of(
                 Attributes.Name.MANIFEST_VERSION, "1.0",
                 Attributes.Name.MAIN_CLASS, mainClass()))
@@ -115,7 +122,8 @@ public class UberJarOperation extends AbstractOperation<UberJarOperation> {
         jars.addAll(project.runtimeClasspathJars());
         jars.add(new File(project.buildDistDirectory(), project.jarFileName()));
 
-        return jarSourceFiles(jars)
+        return verbose(project.verbose())
+            .jarSourceFiles(jars)
             .destinationDirectory(project.buildDistDirectory())
             .destinationFileName(project.uberJarFileName())
             .mainClass(project.uberJarMainClass());

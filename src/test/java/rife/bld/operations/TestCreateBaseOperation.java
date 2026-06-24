@@ -7,6 +7,9 @@ package rife.bld.operations;
 import org.junit.jupiter.api.Test;
 import rife.tools.FileUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.regex.Pattern;
 
@@ -340,6 +343,37 @@ public class TestCreateBaseOperation {
                 })
                 .execute();
             assertEquals("Hello World!", check_result.toString());
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testVerbose()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var orig_out = System.out;
+            var captured = new ByteArrayOutputStream();
+            try {
+                System.setOut(new PrintStream(captured, true));
+
+                new CreateBaseOperation()
+                    .verbose(true)
+                    .workDirectory(tmp)
+                    .packageName("org.stuff")
+                    .projectName("your-thing")
+                    .baseName("YourThing")
+                    .execute();
+            } finally {
+                System.setOut(orig_out);
+            }
+
+            var output = captured.toString();
+            var bld_file = new File(tmp, "your-thing/src/bld/java/org/stuff/YourThingBuild.java");
+            var main_package_dir = new File(tmp, "your-thing/src/main/java/org/stuff");
+            assertTrue(output.contains("Creating directory '" + main_package_dir.getAbsolutePath() + "'"), output);
+            assertTrue(output.contains("Creating file '" + bld_file.getAbsolutePath() + "'"), output);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }

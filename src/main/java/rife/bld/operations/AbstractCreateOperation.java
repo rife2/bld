@@ -164,14 +164,44 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
     protected void executeCreateProjectStructure() {
         project_.createProjectStructure();
 
-        bldPackageDirectory_.mkdirs();
-        mainPackageDirectory_.mkdirs();
-        testPackageDirectory_.mkdirs();
+        executeCreateDirectory(bldPackageDirectory_);
+        executeCreateDirectory(mainPackageDirectory_);
+        executeCreateDirectory(testPackageDirectory_);
 
-        ideaDirectory_.mkdirs();
-        ideaLibrariesDirectory_.mkdirs();
-        ideaRunConfigurationsDirectory_.mkdirs();
-        vscodeDirectory_.mkdirs();
+        executeCreateDirectory(ideaDirectory_);
+        executeCreateDirectory(ideaLibrariesDirectory_);
+        executeCreateDirectory(ideaRunConfigurationsDirectory_);
+        executeCreateDirectory(vscodeDirectory_);
+    }
+
+    /**
+     * Part of the {@link #execute} operation, creates a directory and all its
+     * parents, outputting the location when the operation is {@link #verbose()}.
+     *
+     * @param directory the directory to create
+     * @since 2.3.1
+     */
+    protected void executeCreateDirectory(File directory) {
+        if (verbose()) {
+            System.out.println("Creating directory '" + directory.getAbsolutePath() + "'");
+        }
+        directory.mkdirs();
+    }
+
+    /**
+     * Part of the {@link #execute} operation, writes the content of a project
+     * file, outputting the location when the operation is {@link #verbose()}.
+     *
+     * @param content the content to write
+     * @param file    the file to write the content into
+     * @since 2.3.1
+     */
+    protected void executeWriteProjectFile(String content, File file)
+    throws FileUtilsErrorException {
+        if (verbose()) {
+            System.out.println("Creating file '" + file.getAbsolutePath() + "'");
+        }
+        FileUtils.writeString(content, file);
     }
 
 
@@ -183,7 +213,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
     protected void executePopulateProjectStructure()
     throws IOException {
         // project gitignore
-        FileUtils.writeString(
+        executeWriteProjectFile(
             TemplateFactory.TXT.get(templateBase_ + "project_gitignore").getContent(),
             new File(project_.workDirectory(), ".gitignore"));
 
@@ -192,7 +222,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
         site_template.setValue("package", project_.pkg());
         site_template.setValue("projectMain", projectMainName_);
         var project_main_file = new File(mainPackageDirectory_, projectMainName_ + ".java");
-        FileUtils.writeString(site_template.getContent(), project_main_file);
+        executeWriteProjectFile(site_template.getContent(), project_main_file);
 
         // project test
         var test_template = TemplateFactory.TXT.get(templateBase_ + "project_test");
@@ -203,7 +233,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
             test_template.setValue("project", project_.name());
         }
         var project_test_file = new File(testPackageDirectory_, projectTestName_ + ".java");
-        FileUtils.writeString(test_template.getContent(), project_test_file);
+        executeWriteProjectFile(test_template.getContent(), project_test_file);
 
         // project build
         var build_template = TemplateFactory.TXT.get(templateBase_ + "project_build");
@@ -247,23 +277,26 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
             build_template.appendBlock("scopes", "scope");
         }
         var project_build_file = new File(bldPackageDirectory_, projectBuildName_ + ".java");
-        FileUtils.writeString(build_template.getContent(), project_build_file);
+        executeWriteProjectFile(build_template.getContent(), project_build_file);
 
         // build shell scripts
         var build_sh_template = TemplateFactory.TXT.get("bld.bld");
         build_sh_template.setValue("projectBuild", projectBuildName_);
         build_sh_template.setValue("package", project_.pkg());
         var build_sh_file = new File(project_.workDirectory(), "bld");
-        FileUtils.writeString(build_sh_template.getContent(), build_sh_file);
+        executeWriteProjectFile(build_sh_template.getContent(), build_sh_file);
         build_sh_file.setExecutable(true);
 
         var build_bat_template = TemplateFactory.TXT.get("bld.bld_bat");
         build_bat_template.setValue("projectBuild", projectBuildName_);
         build_bat_template.setValue("package", project_.pkg());
         var build_bat_file = new File(project_.workDirectory(), "bld.bat");
-        FileUtils.writeString(build_bat_template.getContent(), build_bat_file);
+        executeWriteProjectFile(build_bat_template.getContent(), build_bat_file);
 
         // create the wrapper files
+        if (verbose()) {
+            System.out.println("Creating wrapper files in '" + project_.libBldDirectory().getAbsolutePath() + "'");
+        }
         new Wrapper().createWrapperFiles(project_.libBldDirectory(), BldVersion.getVersion());
     }
 
@@ -275,31 +308,31 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
     protected void executePopulateIdeaProject()
     throws FileUtilsErrorException {
         // IDEA project files
-        FileUtils.writeString(
+        executeWriteProjectFile(
             TemplateFactory.XML.get(templateBase_ + "idea.app_iml").getContent(),
             new File(ideaDirectory_, "app.iml"));
-        FileUtils.writeString(
+        executeWriteProjectFile(
             TemplateFactory.XML.get(templateBase_ + "idea.bld_iml").getContent(),
             new File(ideaDirectory_, "bld.iml"));
-        FileUtils.writeString(
+        executeWriteProjectFile(
             TemplateFactory.XML.get(templateBase_ + "idea.misc").getContent(),
             new File(ideaDirectory_, "misc.xml"));
-        FileUtils.writeString(
+        executeWriteProjectFile(
             TemplateFactory.XML.get(templateBase_ + "idea.modules").getContent(),
             new File(ideaDirectory_, "modules.xml"));
 
         var bld_xml_template = TemplateFactory.XML.get(templateBase_ + "idea.libraries.bld");
         bld_xml_template.setValue("version", BldVersion.getVersion());
         var bld_xml_file = new File(ideaLibrariesDirectory_, "bld.xml");
-        FileUtils.writeString(bld_xml_template.getContent(), bld_xml_file);
+        executeWriteProjectFile(bld_xml_template.getContent(), bld_xml_file);
 
-        FileUtils.writeString(
+        executeWriteProjectFile(
             TemplateFactory.XML.get(templateBase_ + "idea.libraries.compile").getContent(),
             new File(ideaLibrariesDirectory_, "compile.xml"));
-        FileUtils.writeString(
+        executeWriteProjectFile(
             TemplateFactory.XML.get(templateBase_ + "idea.libraries.runtime").getContent(),
             new File(ideaLibrariesDirectory_, "runtime.xml"));
-        FileUtils.writeString(
+        executeWriteProjectFile(
             TemplateFactory.XML.get(templateBase_ + "idea.libraries.test").getContent(),
             new File(ideaLibrariesDirectory_, "test.xml"));
 
@@ -309,7 +342,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
             run_site_template.setValue("package", project_.pkg());
             run_site_template.setValue("projectMain", projectMainName_);
             var run_site_file = new File(ideaRunConfigurationsDirectory_, "Run Main.xml");
-            FileUtils.writeString(run_site_template.getContent(), run_site_file);
+            executeWriteProjectFile(run_site_template.getContent(), run_site_file);
         }
 
         // IDEA run tests
@@ -319,7 +352,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
             run_tests_template.setValue("projectTest", projectTestName_);
         }
         var run_tests_file = new File(ideaRunConfigurationsDirectory_, "Run Tests.xml");
-        FileUtils.writeString(run_tests_template.getContent(), run_tests_file);
+        executeWriteProjectFile(run_tests_template.getContent(), run_tests_file);
     }
 
     /**
@@ -347,14 +380,14 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
             launch_template.setValue("projectTest", projectTestName_);
         }
         var launch_file = new File(vscodeDirectory_, "launch.json");
-        FileUtils.writeString(launch_template.getContent(), launch_file);
+        executeWriteProjectFile(launch_template.getContent(), launch_file);
 
         var settings_template = TemplateFactory.JSON.get(templateBase_ + "vscode.settings");
         if (settings_template.hasValueId("version")) {
             settings_template.setValue("version", BldVersion.getVersion());
         }
         var settings_file = new File(vscodeDirectory_, "settings.json");
-        FileUtils.writeString(settings_template.getContent(), settings_file);
+        executeWriteProjectFile(settings_template.getContent(), settings_file);
     }
 
     /**

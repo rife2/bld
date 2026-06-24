@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import rife.bld.NamedFile;
 import rife.tools.FileUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
@@ -172,6 +174,41 @@ public class TestJarOperation {
                 source3.text
                 src6.txt
                 """, content.toString());
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testVerbose()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var source_dir = new File(tmp, "source");
+            var destination_dir = new File(tmp, "destination");
+            var destination_name = "archive.jar";
+
+            source_dir.mkdirs();
+            var source1 = new File(source_dir, "source1.text");
+            FileUtils.writeString("source1", source1);
+
+            var orig_out = System.out;
+            var captured = new ByteArrayOutputStream();
+            try {
+                System.setOut(new PrintStream(captured, true));
+
+                new JarOperation()
+                    .verbose(true)
+                    .sourceDirectories(List.of(source_dir))
+                    .destinationDirectory(destination_dir)
+                    .destinationFileName(destination_name)
+                    .execute();
+            } finally {
+                System.setOut(orig_out);
+            }
+
+            var output = captured.toString();
+            assertTrue(output.contains("Adding '" + source1.getAbsolutePath() + "' to jar as 'source1.text'"), output);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }

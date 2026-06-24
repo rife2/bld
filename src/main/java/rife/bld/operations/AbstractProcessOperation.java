@@ -84,7 +84,13 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      */
     protected Process executeStartProcess()
     throws IOException {
-        var builder = new ProcessBuilder(executeConstructProcessCommandList());
+        var command = executeConstructProcessCommandList();
+
+        if (verbose()) {
+            System.out.println("Executing command: " + String.join(" ", command));
+        }
+
+        var builder = new ProcessBuilder(command);
         builder.directory(workDirectory());
 
         if (!environment_.isEmpty()) {

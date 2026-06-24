@@ -12,6 +12,7 @@ package rife.bld.operations;
  */
 public abstract class AbstractOperation<T extends AbstractOperation<T>> {
     private boolean silent_ = false;
+    private boolean verbose_ = false;
     private boolean executed_ = false;
 
     /**
@@ -38,6 +39,39 @@ public abstract class AbstractOperation<T extends AbstractOperation<T>> {
      */
     public boolean silent() {
         return silent_;
+    }
+
+    /**
+     * Changes whether the operation should output detailed information about
+     * what it's doing.
+     * <p>
+     * Defaults to not verbose.
+     * <p>
+     * Verbosity is independent from silence: the {@code silent} setting
+     * suppresses an operation's regular output, while the {@code verbose}
+     * setting adds detailed output about the individual steps an operation
+     * performs.
+     *
+     * @param verbose {@code true} if the operation should be verbose;
+     *                {@code false} otherwise
+     * @return this operation instance
+     * @since 2.3.1
+     */
+    public T verbose(boolean verbose) {
+        verbose_ = verbose;
+        return (T) this;
+    }
+
+    /**
+     * Indicates whether the operation should output detailed information about
+     * what it's doing.
+     *
+     * @return {@code true} if the operation should be verbose;
+     * {@code false} otherwise
+     * @since 2.3.1
+     */
+    public boolean verbose() {
+        return verbose_;
     }
 
     /**

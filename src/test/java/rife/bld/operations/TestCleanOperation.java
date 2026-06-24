@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import rife.bld.WebProject;
 import rife.tools.FileUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -85,6 +87,37 @@ public class TestCleanOperation {
             assertTrue(dir3.exists());
 
             assertEquals(1, dir3.list().length);
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testVerbose()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var dir1 = new File(tmp, "dir1");
+            var dir2 = new File(tmp, "dir2");
+            dir1.mkdirs();
+            dir2.mkdirs();
+
+            var orig_out = System.out;
+            var captured = new ByteArrayOutputStream();
+            try {
+                System.setOut(new PrintStream(captured, true));
+
+                new CleanOperation()
+                    .verbose(true)
+                    .directories(List.of(dir1, dir2))
+                    .execute();
+            } finally {
+                System.setOut(orig_out);
+            }
+
+            var output = captured.toString();
+            assertTrue(output.contains("Deleting directory '" + dir1.getAbsolutePath() + "'"), output);
+            assertTrue(output.contains("Deleting directory '" + dir2.getAbsolutePath() + "'"), output);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }

@@ -108,6 +108,10 @@ public class JarOperation extends AbstractOperation<JarOperation> {
      */
     protected void executeAddFileToJar(JarOutputStream jar, NamedFile file)
     throws IOException {
+        if (verbose()) {
+            System.out.println("Adding '" + file.file().getAbsolutePath() + "' to jar as '" + file.name().replace('\\', '/') + "'");
+        }
+
         var entry = new JarEntry(file.name().replace('\\', '/'));
         entry.setTime(file.file().lastModified());
         jar.putNextEntry(entry);
@@ -128,7 +132,8 @@ public class JarOperation extends AbstractOperation<JarOperation> {
      * @since 1.5
      */
     public JarOperation fromProject(BaseProject project) {
-        return manifestAttributes(Map.of(Attributes.Name.MANIFEST_VERSION, "1.0"))
+        return verbose(project.verbose())
+            .manifestAttributes(Map.of(Attributes.Name.MANIFEST_VERSION, "1.0"))
             .sourceDirectories(project.buildMainDirectory(), project.srcMainResourcesDirectory())
             .destinationDirectory(project.buildDistDirectory())
             .destinationFileName(project.jarFileName())

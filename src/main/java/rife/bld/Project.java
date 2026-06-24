@@ -147,6 +147,7 @@ public class Project extends BaseProject {
     public void jarSources()
     throws Exception {
         jarSourcesOperation().executeOnce(() -> jarSourcesOperation()
+            .verbose(verbose())
             .manifestAttributes(Map.of(Attributes.Name.MANIFEST_VERSION, "1.0"))
             .sourceDirectories(List.of(srcMainJavaDirectory()))
             .destinationDirectory(buildDistDirectory())
@@ -163,7 +164,9 @@ public class Project extends BaseProject {
     throws Exception {
         compile();
         javadoc();
-        jarJavadocOperation().executeOnce(() -> jarJavadocOperation().manifestAttributes(Map.of(Attributes.Name.MANIFEST_VERSION, "1.0"))
+        jarJavadocOperation().executeOnce(() -> jarJavadocOperation()
+            .verbose(verbose())
+            .manifestAttributes(Map.of(Attributes.Name.MANIFEST_VERSION, "1.0"))
             .sourceDirectories(List.of(buildJavadocDirectory()))
             .destinationDirectory(buildDistDirectory())
             .destinationFileName(javadocJarFileName()));
