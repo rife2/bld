@@ -115,11 +115,8 @@ jobs:
           key: ${{ runner.os }}-bld-java${{ matrix.java-version}}-lib
           restore-keys: ${{ runner.os }}-bld-java${{ matrix.java-version}}-lib
 
-      - name: Download dependencies
-        run: ./bld clean download
-
       - name: Compile source
-        run: ./bld compile
+        run: ./bld clean compile
 
       - name: Run tests
         id: tests
