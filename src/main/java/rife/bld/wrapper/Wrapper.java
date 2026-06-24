@@ -830,7 +830,7 @@ public class Wrapper {
     throws IOException {
         var connection = url.openConnection();
         connection.setUseCaches(false);
-        connection.setRequestProperty("User-Agent", "bld " + version);
+        connection.setRequestProperty(HttpUtils.HEADER_USER_AGENT, Product.BLD.toUserAgent(version));
         try (var in = connection.getInputStream()) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }

@@ -94,7 +94,7 @@ jobs:
 
     steps:
       - name: Checkout source repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           clean: true
           submodules: 'true'
@@ -115,11 +115,8 @@ jobs:
           key: ${{ runner.os }}-bld-java${{ matrix.java-version}}-lib
           restore-keys: ${{ runner.os }}-bld-java${{ matrix.java-version}}-lib
 
-      - name: Download dependencies
-        run: ./bld clean download
-
       - name: Compile source
-        run: ./bld compile
+        run: ./bld clean compile
 
       - name: Run tests
         id: tests
@@ -143,7 +140,7 @@ jobs:
 
     steps:
       - name: Checkout source repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           clean: true
           submodules: 'true'
@@ -190,7 +187,7 @@ jobs:
         run: git config --global core.autocrlf input
 
       - name: Checkout source repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           clean: true
           submodules: 'true'
