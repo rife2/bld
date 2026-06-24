@@ -258,6 +258,7 @@ public class Wrapper {
             addClassToJar(jar, FileUtils.class);
             addClassToJar(jar, FileUtilsErrorException.class);
             addClassToJar(jar, InnerClassException.class);
+            addClassToJar(jar, Product.class);
             addFileToJar(jar, BLD_VERSION);
             jar.flush();
         }
