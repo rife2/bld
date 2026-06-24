@@ -6,6 +6,8 @@ package rife.bld.dependencies;
 
 import rife.bld.BldVersion;
 import rife.tools.FileUtils;
+import rife.tools.HttpUtils;
+import rife.tools.Product;
 import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.File;
@@ -191,7 +193,7 @@ public abstract class ArtifactRetriever {
     private static URLConnection openUrlConnection(RepositoryArtifact artifact) throws IOException {
         var connection = new URL(artifact.location()).openConnection();
         connection.setUseCaches(false);
-        connection.setRequestProperty("User-Agent", "bld " + BldVersion.getVersion());
+        connection.setRequestProperty(HttpUtils.HEADER_USER_AGENT, Product.BLD.toUserAgent(BldVersion.getVersion()));
         return connection;
     }
 
