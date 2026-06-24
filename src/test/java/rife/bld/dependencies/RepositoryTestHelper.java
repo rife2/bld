@@ -4,10 +4,9 @@
  */
 package rife.bld.dependencies;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static rife.bld.dependencies.Repository.*;
 
@@ -20,17 +19,17 @@ public final class RepositoryTestHelper {
             GOOGLE_MAVEN_CENTRAL_ASIA
     );
 
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
     private RepositoryTestHelper() {
     }
 
-    public static Repository getRandomRepository() {
-        int index = SECURE_RANDOM.nextInt(MAVEN_CENTRAL_REPOSITORIES.size());
+    public static Repository getNextRepository() {
+        var index = COUNTER.getAndIncrement() % MAVEN_CENTRAL_REPOSITORIES.size();
         return MAVEN_CENTRAL_REPOSITORIES.get(index);
     }
 
-    public static List<Repository> getRandomRepositories(int count) {
+    public static List<Repository> getNextRepositories(int count) {
         if (count < 0) {
             throw new IllegalArgumentException("count cannot be negative");
         }
@@ -39,12 +38,15 @@ public final class RepositoryTestHelper {
                     + MAVEN_CENTRAL_REPOSITORIES.size());
         }
 
-        List<Repository> shuffled = new ArrayList<>(MAVEN_CENTRAL_REPOSITORIES);
-        Collections.shuffle(shuffled, SECURE_RANDOM);
-        return Collections.unmodifiableList(shuffled.subList(0, count));
+        var start = COUNTER.getAndAdd(count) % MAVEN_CENTRAL_REPOSITORIES.size();
+        var result = new ArrayList<Repository>(count);
+        for (var i = 0; i < count; i++) {
+            result.add(MAVEN_CENTRAL_REPOSITORIES.get((start + i) % MAVEN_CENTRAL_REPOSITORIES.size()));
+        }
+        return List.copyOf(result);
     }
 
-    public static List<Repository> getRandomRepositories() {
-        return getRandomRepositories(2);
+    public static List<Repository> getNextRepositories() {
+        return getNextRepositories(2);
     }
 }

@@ -27,6 +27,13 @@ import static rife.tools.FileUtils.JAR_FILE_PATTERN;
  */
 public class BaseProject extends BuildExecutor {
     /**
+     * The CLI option to trigger automatic dependency download and purge.
+     *
+     * @since 2.3.1
+     */
+    public static final String AUTO_DOWNLOAD_PURGE_OPTION = "--auto-download-purge";
+
+    /**
      * The work directory of the project.
      *
      * @see #workDirectory()
@@ -534,22 +541,7 @@ public class BaseProject extends BuildExecutor {
     @BuildCommand(help = DownloadHelp.class)
     public void download()
     throws Exception {
-        var auto = false;
-        var arguments = this.arguments();
-        while (!arguments.isEmpty()) {
-            var argument = arguments.get(0);
-            if (DownloadOperation.AUTO_OPTION.equals(argument)) {
-                arguments.remove(0);
-                auto = true;
-            } else {
-                break;
-            }
-        }
-        if (auto) {
-            performAutoDownloadPurge();
-        } else {
-            downloadOperation().executeOnce(() -> downloadOperation().fromProject(this));
-        }
+        downloadOperation().executeOnce(() -> downloadOperation().fromProject(this));
     }
 
     /**
@@ -2026,11 +2018,14 @@ public class BaseProject extends BuildExecutor {
 
     @Override
     public int execute(String[] arguments) {
+        var remainingArguments = new ArrayList<>(List.of(arguments));
+        var auto = remainingArguments.remove(AUTO_DOWNLOAD_PURGE_OPTION);
+
         if (!offline() &&
-            autoDownloadPurge()) {
+            (autoDownloadPurge() || auto)) {
             performAutoDownloadPurge();
         }
 
-        return super.execute(arguments);
+        return super.execute(remainingArguments.toArray(new String[0]));
     }
 }
