@@ -51,7 +51,7 @@ jobs:
       - name: Publish
         run: >-
           ./bld publish
-          -Dbld.repo.github=https://maven.pkg.github.com/rife2/bld
+          -Dbld.repo.github=https://maven.pkg.github.com/rife2/bld-antlr4
           -Dbld.repo.github.username=${{ secrets.GH_USERNAME }}
           -Dbld.repo.github.password=${{ secrets.GH_PASSWORD }}      
           -Dbld.repo.rife2-snapshots=https://repo.rife2.com/snapshots/
