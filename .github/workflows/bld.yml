@@ -90,20 +90,20 @@ jobs:
 
     strategy:
       matrix:
-        java-version: [ 17, 20, 21, 22, 23, 24, 25 ]
+        java-version: [17, 20, 21, 22, 23, 24, 25]
 
     steps:
       - name: Checkout source repository
         uses: actions/checkout@v7
         with:
           clean: true
-          submodules: 'true'
+          submodules: "true"
           fetch-depth: 0
 
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v5
         with:
-          distribution: 'corretto'
+          distribution: "corretto"
           java-version: ${{ matrix.java-version }}
           check-latest: true
 
@@ -128,27 +128,27 @@ jobs:
 
       - name: Run reporter
         if: always() && steps.tests.outcome == 'failure'
-        run: ./bld reporter --all
+        run: ./bld --offline reporter --all
 
   build-macos:
     runs-on: macos-latest
 
     strategy:
       matrix:
-        java-version: [ 17, 20, 21, 22, 23, 24, 25 ]
+        java-version: [17, 20, 21, 22, 23, 24, 25]
 
     steps:
       - name: Checkout source repository
         uses: actions/checkout@v7
         with:
           clean: true
-          submodules: 'true'
+          submodules: "true"
           fetch-depth: 0
 
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v5
         with:
-          distribution: 'corretto'
+          distribution: "corretto"
           java-version: ${{ matrix.java-version }}
           check-latest: true
 
@@ -169,14 +169,14 @@ jobs:
 
       - name: Run reporter
         if: always() && steps.tests.outcome == 'failure'
-        run: ./bld reporter --all
+        run: ./bld --offline reporter --all
 
   build-windows:
     runs-on: windows-latest
 
     strategy:
       matrix:
-        java-version: [ 17, 20, 21, 22, 23, 24, 25 ]
+        java-version: [17, 20, 21, 22, 23, 24, 25]
 
     steps:
       - name: Configure git line endings
@@ -186,13 +186,13 @@ jobs:
         uses: actions/checkout@v7
         with:
           clean: true
-          submodules: 'true'
+          submodules: "true"
           fetch-depth: 0
 
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v5
         with:
-          distribution: 'corretto'
+          distribution: "corretto"
           java-version: ${{ matrix.java-version }}
           check-latest: true
 
@@ -213,4 +213,4 @@ jobs:
 
       - name: Run reporter
         if: always() && steps.tests.outcome == 'failure'
-        run: .\bld.bat reporter --all
+        run: .\bld.bat --offline reporter --all
