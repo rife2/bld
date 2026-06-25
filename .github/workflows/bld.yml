@@ -4,10 +4,6 @@ on: [ push, pull_request, workflow_dispatch ]
 
 env:
   REPORTS_DIR: "build/test-results/test/"
-  DB_NAME: unittests
-  DB_USER: unittests
-  DB_PASSWORD: password
-
   # Test flags for DB runs
   DB_TEST_FLAGS: >-
     -Dtest.postgres=true
@@ -30,7 +26,10 @@ jobs:
           - os: ubuntu-latest
             run-db-tests: true
             bld-cmd: ./bld
-            # Only ubuntu gets DB services
+            # DB config only for ubuntu jobs
+            DB_NAME: unittests
+            DB_USER: unittests
+            DB_PASSWORD: password
             POSTGRES_IMAGE: "postgres:15"
             MYSQL_IMAGE: "mysql:8"
             MARIADB_IMAGE: "mariadb:10.9"
@@ -43,15 +42,13 @@ jobs:
             run-db-tests: false
             bld-cmd: .\bld.bat
 
-    # Only define services when run-db-tests is true
-    # GitHub skips this whole block if matrix doesn't define the images
     services:
       oracle:
         image: ${{ matrix.ORACLE_XE_IMAGE }}
         env:
           ORACLE_RANDOM_PASSWORD: true
-          APP_USER: ${{ env.DB_USER }}
-          APP_USER_PASSWORD: ${{ env.DB_PASSWORD }}
+          APP_USER: ${{ matrix.DB_USER }}
+          APP_USER_PASSWORD: ${{ matrix.DB_PASSWORD }}
         ports:
           - 1521:1521
         options: >-
@@ -64,8 +61,8 @@ jobs:
         image: ${{ matrix.ORACLE_FREE_IMAGE }}
         env:
           ORACLE_RANDOM_PASSWORD: true
-          APP_USER: ${{ env.DB_USER }}
-          APP_USER_PASSWORD: ${{ env.DB_PASSWORD }}
+          APP_USER: ${{ matrix.DB_USER }}
+          APP_USER_PASSWORD: ${{ matrix.DB_PASSWORD }}
         ports:
           - 1522:1521
         options: >-
@@ -77,9 +74,9 @@ jobs:
       mysql:
         image: ${{ matrix.MYSQL_IMAGE }}
         env:
-          MYSQL_DATABASE: ${{ env.DB_NAME }}
-          MYSQL_USER: ${{ env.DB_USER }}
-          MYSQL_PASSWORD: ${{ env.DB_PASSWORD }}
+          MYSQL_DATABASE: ${{ matrix.DB_NAME }}
+          MYSQL_USER: ${{ matrix.DB_USER }}
+          MYSQL_PASSWORD: ${{ matrix.DB_PASSWORD }}
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
@@ -92,9 +89,9 @@ jobs:
       mariadb:
         image: ${{ matrix.MARIADB_IMAGE }}
         env:
-          MARIADB_DATABASE: ${{ env.DB_NAME }}
-          MARIADB_USER: ${{ env.DB_USER }}
-          MARIADB_PASSWORD: ${{ env.DB_PASSWORD }}
+          MARIADB_DATABASE: ${{ matrix.DB_NAME }}
+          MARIADB_USER: ${{ matrix.DB_USER }}
+          MARIADB_PASSWORD: ${{ matrix.DB_PASSWORD }}
           MARIADB_ROOT_PASSWORD: root
         ports:
           - 3307:3306
@@ -107,21 +104,16 @@ jobs:
       postgres:
         image: ${{ matrix.POSTGRES_IMAGE }}
         env:
-          POSTGRES_DB: ${{ env.DB_NAME }}
-          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
-          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_DB: ${{ matrix.DB_NAME }}
+          POSTGRES_PASSWORD: ${{ matrix.DB_PASSWORD }}
+          POSTGRES_USER: ${{ matrix.DB_USER }}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries=5
         ports:
           - 5432:5432
-
-    env:
-      MYSQL_DATABASE: ${{ env.DB_NAME }}
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
 
     steps:
       - name: Configure git line endings for Windows
