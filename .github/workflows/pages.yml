@@ -49,7 +49,6 @@ jobs:
         with:
           path: lib
           key: ${{ runner.os }}-bld-pages-lib
-          restore-keys: ${{ runner.os }}-bld-pages-lib
 
       - name: Build Javadocs
         run: ./bld clean compile javadoc
