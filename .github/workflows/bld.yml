@@ -4,6 +4,27 @@ on: [ push, pull_request, workflow_dispatch ]
 
 env:
   REPORTS_DIR: "build/test-results/test/"
+  # Database versions - change these to upgrade
+  POSTGRES_IMAGE: "postgres:15"
+  MYSQL_IMAGE: "mysql:8"
+  MARIADB_IMAGE: "mariadb:10.9"
+  ORACLE_XE_IMAGE: "gvenzl/oracle-xe:18-slim"
+  ORACLE_FREE_IMAGE: "gvenzl/oracle-free:latest"
+
+  # DB credentials
+  DB_NAME: unittests
+  DB_USER: unittests
+  DB_PASSWORD: password
+
+  # Test flags for DB runs
+  DB_TEST_FLAGS: >-
+    -Dtest.postgres=true
+    -Dtest.mysql=true
+    -Dtest.mariadb=true
+    -Dtest.oracle=true
+    -Dtest.oracle-free=true
+    -DtestsBadgeUrl=https://rife2.com/tests-badge/update/com.uwyn.rife2/bld
+    -DtestsBadgeApiKey=${{ secrets.TESTS_BADGE_API_KEY }}
 
 jobs:
   build:
@@ -26,11 +47,11 @@ jobs:
 
     services:
       oracle:
-        image: ${{ matrix.run-db-tests && 'gvenzl/oracle-xe:18-slim' || '' }}
+        image: ${{ matrix.run-db-tests && env.ORACLE_XE_IMAGE || '' }}
         env:
           ORACLE_RANDOM_PASSWORD: true
-          APP_USER: unittests
-          APP_USER_PASSWORD: password
+          APP_USER: ${{ env.DB_USER }}
+          APP_USER_PASSWORD: ${{ env.DB_PASSWORD }}
         ports:
           - 1521:1521
         options: >-
@@ -40,11 +61,11 @@ jobs:
           --health-retries 10
 
       oracle-free:
-        image: ${{ matrix.run-db-tests && 'gvenzl/oracle-free:latest' || '' }}
+        image: ${{ matrix.run-db-tests && env.ORACLE_FREE_IMAGE || '' }}
         env:
           ORACLE_RANDOM_PASSWORD: true
-          APP_USER: unittests
-          APP_USER_PASSWORD: password
+          APP_USER: ${{ env.DB_USER }}
+          APP_USER_PASSWORD: ${{ env.DB_PASSWORD }}
         ports:
           - 1522:1521
         options: >-
@@ -54,11 +75,11 @@ jobs:
           --health-retries 10
 
       mysql:
-        image: ${{ matrix.run-db-tests && 'mysql:8' || '' }}
+        image: ${{ matrix.run-db-tests && env.MYSQL_IMAGE || '' }}
         env:
-          MYSQL_DATABASE: unittests
-          MYSQL_USER: unittests
-          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: ${{ env.DB_NAME }}
+          MYSQL_USER: ${{ env.DB_USER }}
+          MYSQL_PASSWORD: ${{ env.DB_PASSWORD }}
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
@@ -69,11 +90,11 @@ jobs:
           --health-retries=3
 
       mariadb:
-        image: ${{ matrix.run-db-tests && 'mariadb:10.9' || '' }}
+        image: ${{ matrix.run-db-tests && env.MARIADB_IMAGE || '' }}
         env:
-          MARIADB_DATABASE: unittests
-          MARIADB_USER: unittests
-          MARIADB_PASSWORD: password
+          MARIADB_DATABASE: ${{ env.DB_NAME }}
+          MARIADB_USER: ${{ env.DB_USER }}
+          MARIADB_PASSWORD: ${{ env.DB_PASSWORD }}
           MARIADB_ROOT_PASSWORD: root
         ports:
           - 3307:3306
@@ -84,11 +105,11 @@ jobs:
           --health-retries=3
 
       postgres:
-        image: ${{ matrix.run-db-tests && 'postgres:15' || '' }}
+        image: ${{ matrix.run-db-tests && env.POSTGRES_IMAGE || '' }}
         env:
-          POSTGRES_DB: unittests
-          POSTGRES_PASSWORD: password
-          POSTGRES_USER: unittests
+          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
+          POSTGRES_USER: ${{ env.DB_USER }}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -98,7 +119,7 @@ jobs:
           - 5432:5432
 
     env:
-      MYSQL_DATABASE: unittests
+      MYSQL_DATABASE: ${{ env.DB_NAME }}
       MYSQL_USER: root
       MYSQL_PASSWORD: root
 
@@ -134,8 +155,8 @@ jobs:
         id: tests
         run: >-
           ${{ matrix.bld-cmd }} test
-          ${{ matrix.run-db-tests && '-Dtest.postgres=true -Dtest.mysql=true -Dtest.mariadb=true -Dtest.oracle=true -Dtest.oracle-free=true -DtestsBadgeUrl=https://rife2.com/tests-badge/update/com.uwyn.rife2/bld -DtestsBadgeApiKey=${{ secrets.TESTS_BADGE_API_KEY }}' || '' }}
           --reports-dir=${{ env.REPORTS_DIR }}
+          ${{ matrix.run-db-tests && env.DB_TEST_FLAGS || '' }}
 
       - name: Run reporter
         if: always() && steps.tests.outcome == 'failure'
