@@ -4,14 +4,6 @@ on: [ push, pull_request, workflow_dispatch ]
 
 env:
   REPORTS_DIR: "build/test-results/test/"
-  # Database versions - change these to upgrade
-  POSTGRES_IMAGE: "postgres:15"
-  MYSQL_IMAGE: "mysql:8"
-  MARIADB_IMAGE: "mariadb:10.9"
-  ORACLE_XE_IMAGE: "gvenzl/oracle-xe:18-slim"
-  ORACLE_FREE_IMAGE: "gvenzl/oracle-free:latest"
-
-  # DB credentials
   DB_NAME: unittests
   DB_USER: unittests
   DB_PASSWORD: password
@@ -38,6 +30,12 @@ jobs:
           - os: ubuntu-latest
             run-db-tests: true
             bld-cmd: ./bld
+            # Only ubuntu gets DB services
+            POSTGRES_IMAGE: "postgres:15"
+            MYSQL_IMAGE: "mysql:8"
+            MARIADB_IMAGE: "mariadb:10.9"
+            ORACLE_XE_IMAGE: "gvenzl/oracle-xe:18-slim"
+            ORACLE_FREE_IMAGE: "gvenzl/oracle-free:latest"
           - os: macos-latest
             run-db-tests: false
             bld-cmd: ./bld
@@ -45,9 +43,11 @@ jobs:
             run-db-tests: false
             bld-cmd: .\bld.bat
 
+    # Only define services when run-db-tests is true
+    # GitHub skips this whole block if matrix doesn't define the images
     services:
       oracle:
-        image: ${{ matrix.run-db-tests && env.ORACLE_XE_IMAGE || '' }}
+        image: ${{ matrix.ORACLE_XE_IMAGE }}
         env:
           ORACLE_RANDOM_PASSWORD: true
           APP_USER: ${{ env.DB_USER }}
@@ -61,7 +61,7 @@ jobs:
           --health-retries 10
 
       oracle-free:
-        image: ${{ matrix.run-db-tests && env.ORACLE_FREE_IMAGE || '' }}
+        image: ${{ matrix.ORACLE_FREE_IMAGE }}
         env:
           ORACLE_RANDOM_PASSWORD: true
           APP_USER: ${{ env.DB_USER }}
@@ -75,7 +75,7 @@ jobs:
           --health-retries 10
 
       mysql:
-        image: ${{ matrix.run-db-tests && env.MYSQL_IMAGE || '' }}
+        image: ${{ matrix.MYSQL_IMAGE }}
         env:
           MYSQL_DATABASE: ${{ env.DB_NAME }}
           MYSQL_USER: ${{ env.DB_USER }}
@@ -90,7 +90,7 @@ jobs:
           --health-retries=3
 
       mariadb:
-        image: ${{ matrix.run-db-tests && env.MARIADB_IMAGE || '' }}
+        image: ${{ matrix.MARIADB_IMAGE }}
         env:
           MARIADB_DATABASE: ${{ env.DB_NAME }}
           MARIADB_USER: ${{ env.DB_USER }}
@@ -105,7 +105,7 @@ jobs:
           --health-retries=3
 
       postgres:
-        image: ${{ matrix.run-db-tests && env.POSTGRES_IMAGE || '' }}
+        image: ${{ matrix.POSTGRES_IMAGE }}
         env:
           POSTGRES_DB: ${{ env.DB_NAME }}
           POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
@@ -129,21 +129,21 @@ jobs:
         run: git config --global core.autocrlf input
 
       - name: Checkout source repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           clean: true
           submodules: "true"
           fetch-depth: 0
 
       - name: Set up JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: "corretto"
           java-version: ${{ matrix.java-version }}
           check-latest: true
 
       - name: Cache bld dependencies
-        uses: actions/cache@v6
+        uses: actions/cache@v4
         with:
           path: lib
           key: ${{ runner.os }}-bld-java${{ matrix.java-version }}-lib
