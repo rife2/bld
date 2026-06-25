@@ -11,6 +11,8 @@ jobs:
       - name: Checkout source repository
         uses: actions/checkout@v7
         with:
+          clean: true
+          submodules: 'true'
           fetch-depth: 0
 
       - name: Check version is SNAPSHOT
