@@ -1,17 +1,32 @@
 name: bld-ci
 
-on: [push, pull_request, workflow_dispatch]
+on: [ push, pull_request, workflow_dispatch ]
 
 env:
   REPORTS_DIR: "build/test-results/test/"
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        java-version: [ 17, 22, 24, 26 ]
+        include:
+          - os: ubuntu-latest
+            run-db-tests: true
+            bld-cmd: ./bld
+          - os: macos-latest
+            run-db-tests: false
+            bld-cmd: ./bld
+          - os: windows-latest
+            run-db-tests: false
+            bld-cmd: .\bld.bat
 
     services:
       oracle:
-        image: gvenzl/oracle-xe:18-slim
+        image: ${{ matrix.run-db-tests && 'gvenzl/oracle-xe:18-slim' || '' }}
         env:
           ORACLE_RANDOM_PASSWORD: true
           APP_USER: unittests
@@ -25,7 +40,7 @@ jobs:
           --health-retries 10
 
       oracle-free:
-        image: gvenzl/oracle-free:latest
+        image: ${{ matrix.run-db-tests && 'gvenzl/oracle-free:latest' || '' }}
         env:
           ORACLE_RANDOM_PASSWORD: true
           APP_USER: unittests
@@ -39,7 +54,7 @@ jobs:
           --health-retries 10
 
       mysql:
-        image: mysql:8
+        image: ${{ matrix.run-db-tests && 'mysql:8' || '' }}
         env:
           MYSQL_DATABASE: unittests
           MYSQL_USER: unittests
@@ -54,7 +69,7 @@ jobs:
           --health-retries=3
 
       mariadb:
-        image: mariadb:10.9
+        image: ${{ matrix.run-db-tests && 'mariadb:10.9' || '' }}
         env:
           MARIADB_DATABASE: unittests
           MARIADB_USER: unittests
@@ -69,11 +84,10 @@ jobs:
           --health-retries=3
 
       postgres:
-        image: postgres:15
+        image: ${{ matrix.run-db-tests && 'postgres:15' || '' }}
         env:
           POSTGRES_DB: unittests
           POSTGRES_PASSWORD: password
-          POSTGRES_PORT: 5432
           POSTGRES_USER: unittests
         options: >-
           --health-cmd pg_isready
@@ -88,98 +102,9 @@ jobs:
       MYSQL_USER: root
       MYSQL_PASSWORD: root
 
-    strategy:
-      matrix:
-        java-version: [17, 22, 24, 26]
-
     steps:
-      - name: Checkout source repository
-        uses: actions/checkout@v7
-        with:
-          clean: true
-          submodules: "true"
-          fetch-depth: 0
-
-      - name: Set up JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@v5
-        with:
-          distribution: "corretto"
-          java-version: ${{ matrix.java-version }}
-          check-latest: true
-
-      - name: Cache bld dependencies
-        id: cache-bld
-        uses: actions/cache@v6
-        with:
-          path: lib
-          key: ${{ runner.os }}-bld-java${{ matrix.java-version}}-lib
-
-      - name: Compile source
-        run: ./bld clean compile
-
-      - name: Run tests
-        id: tests
-        run: >-
-          ./bld test
-          -Dtest.postgres=true -Dtest.mysql=true -Dtest.mariadb=true -Dtest.oracle=true -Dtest.oracle-free=true
-          -DtestsBadgeUrl=https://rife2.com/tests-badge/update/com.uwyn.rife2/bld
-          -DtestsBadgeApiKey=${{ secrets.TESTS_BADGE_API_KEY }}
-          --reports-dir=${{ env.REPORTS_DIR }}
-
-      - name: Run reporter
-        if: always() && steps.tests.outcome == 'failure'
-        run: ./bld --offline reporter --all
-
-  build-macos:
-    runs-on: macos-latest
-
-    strategy:
-      matrix:
-        java-version: [17, 20, 21, 22, 23, 24, 25]
-
-    steps:
-      - name: Checkout source repository
-        uses: actions/checkout@v7
-        with:
-          clean: true
-          submodules: "true"
-          fetch-depth: 0
-
-      - name: Set up JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@v5
-        with:
-          distribution: "corretto"
-          java-version: ${{ matrix.java-version }}
-          check-latest: true
-
-      - name: Cache bld dependencies
-        id: cache-bld
-        uses: actions/cache@v5
-        with:
-          path: lib
-          key: ${{ runner.os }}-bld-java${{ matrix.java-version}}-lib
-          restore-keys: ${{ runner.os }}-bld-java${{ matrix.java-version}}-lib
-
-      - name: Compile source
-        run: ./bld clean compile
-
-      - name: Run tests
-        id: tests
-        run: ./bld test --reports-dir=${{ env.REPORTS_DIR }}
-
-      - name: Run reporter
-        if: always() && steps.tests.outcome == 'failure'
-        run: ./bld --offline reporter --all
-
-  build-windows:
-    runs-on: windows-latest
-
-    strategy:
-      matrix:
-        java-version: [17, 20, 21, 22, 23, 24, 25]
-
-    steps:
-      - name: Configure git line endings
+      - name: Configure git line endings for Windows
+        if: runner.os == 'Windows'
         run: git config --global core.autocrlf input
 
       - name: Checkout source repository
@@ -197,20 +122,21 @@ jobs:
           check-latest: true
 
       - name: Cache bld dependencies
-        id: cache-bld
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: lib
-          key: ${{ runner.os }}-bld-java${{ matrix.java-version}}-lib
-          restore-keys: ${{ runner.os }}-bld-java${{ matrix.java-version}}-lib
+          key: ${{ runner.os }}-bld-java${{ matrix.java-version }}-lib
 
       - name: Compile source
-        run: .\bld.bat clean compile
+        run: ${{ matrix.bld-cmd }} clean compile
 
       - name: Run tests
         id: tests
-        run: .\bld.bat test --reports-dir=${{ env.REPORTS_DIR }}
+        run: >-
+          ${{ matrix.bld-cmd }} test
+          ${{ matrix.run-db-tests && '-Dtest.postgres=true -Dtest.mysql=true -Dtest.mariadb=true -Dtest.oracle=true -Dtest.oracle-free=true -DtestsBadgeUrl=https://rife2.com/tests-badge/update/com.uwyn.rife2/bld -DtestsBadgeApiKey=${{ secrets.TESTS_BADGE_API_KEY }}' || '' }}
+          --reports-dir=${{ env.REPORTS_DIR }}
 
       - name: Run reporter
         if: always() && steps.tests.outcome == 'failure'
-        run: .\bld.bat --offline reporter --all
+        run: ${{ matrix.bld-cmd }} --offline reporter --all
