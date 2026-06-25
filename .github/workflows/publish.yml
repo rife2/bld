@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-bld-project:
+  publish-bld-project:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,15 +37,32 @@ jobs:
       - name: Import key
         run: echo "${{ secrets.SIGN_SECRET_KEY }}" | gpg --batch --import
 
+      - name: Compile source
+        run: ./bld clean compile
+
+      - name: Run tests
+        id: tests
+        run: ./bld test
+
+      - name: Run reporter
+        if: always() && steps.tests.outcome == 'failure'
+        run: ./bld --offline reporter --all
+
       - name: Publish
         run: >-
-          ./bld compile test publish
-          -Drife2Username=${{ secrets.RIFE2_USERNAME }}
-          -Drife2Password=${{ secrets.RIFE2_PASSWORD }}
-          -DsonatypeUser=${{ secrets.SONATYPE_USER }}
-          -DsonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
-          -DsignKey=${{ secrets.SIGN_KEY }}
-          -DsignPassphrase=${{ secrets.SIGN_PASSPHRASE }}
+          ./bld publish
+          -Dbld.repo.github=https://maven.pkg.github.com/rife2/bld
+          -Dbld.repo.github.username=${{ secrets.GH_USERNAME }}
+          -Dbld.repo.github.password=${{ secrets.GH_PASSWORD }}      
+          -Dbld.repo.rife2-snapshots=https://repo.rife2.com/snapshots/
+          -Dbld.repo.rife2-snapshots.username=${{ secrets.RIFE2_USERNAME }}
+          -Dbld.repo.rife2-snapshots.password=${{ secrets.RIFE2_PASSWORD }}
+          -Dbld.repo.central-snapshots=https://central.sonatype.com/repository/maven-snapshots/
+          -Dbld.repo.central-snapshots.username=${{ secrets.SONATYPE_USER }}
+          -Dbld.repo.central-snapshots.password=${{ secrets.SONATYPE_PASSWORD }}
+          -Dsign.key=${{ secrets.SIGN_KEY }}
+          -Dsign.passphrase=${{ secrets.SIGN_PASSPHRASE }}
 
       - name: Delete GnuPG data
+        if: always()
         run: rm -rfv $HOME/.gnupg
