@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        java-version: [ 17, 22, 24, 26 ]
+        java-version: [ 17, 21, 25, 26 ]
         include:
           - os: ubuntu-latest
             run-db-tests: true

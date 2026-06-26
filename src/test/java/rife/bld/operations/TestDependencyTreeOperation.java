@@ -70,7 +70,7 @@ public class TestDependencyTreeOperation {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
             var operation = new DependencyTreeOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL));
+                .repositories(RepositoryTestHelper.getNextRepositories(1));
             operation.dependencies().scope(Scope.compile)
                 .include(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1,5,20)))
                 .include(new Module("com.stripe", "stripe-java", new VersionNumber(20,136,0)))
@@ -143,7 +143,7 @@ public class TestDependencyTreeOperation {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
             var operation = new DependencyTreeOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL));
+                .repositories(RepositoryTestHelper.getNextRepositories(1));
             operation.dependencies().scope(Scope.provided)
                 .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
                 .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
@@ -222,7 +222,7 @@ public class TestDependencyTreeOperation {
         try {
             var project = new TestProject(tmp);
             project.createProjectStructure();
-            project.repositories().add(Repository.MAVEN_CENTRAL);
+            project.repositories().add(RepositoryTestHelper.getNextRepository());
             project.dependencies().scope(Scope.compile)
                 .include(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1,5,20)))
                 .include(new Dependency("com.stripe", "stripe-java", new VersionNumber(20,136,0)))
@@ -299,7 +299,7 @@ public class TestDependencyTreeOperation {
         try {
             var project = new TestProject(tmp);
             project.createProjectStructure();
-            project.repositories().add(Repository.MAVEN_CENTRAL);
+            project.repositories().add(RepositoryTestHelper.getNextRepository());
             project.dependencies().scope(Scope.provided)
                 .include(new Dependency("org.jsoup", "jsoup", new VersionNumber(1,16,1)))
                 .include(new Dependency("jakarta.servlet", "jakarta.servlet-api", new VersionNumber(5,0,0)))
@@ -386,7 +386,7 @@ public class TestDependencyTreeOperation {
                 bld.extension-tests=com.uwyn.rife2:bld-tests-badge:1.4.8""");
             FileUtils.writeString(properties, wrapper.wrapperPropertiesFile());
 
-            project.repositories().add(Repository.MAVEN_CENTRAL);
+            project.repositories().add(RepositoryTestHelper.getNextRepository());
             project.dependencies().scope(Scope.compile)
                 .include(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1,5,20)))
                 .include(new Dependency("com.stripe", "stripe-java", new VersionNumber(20,136,0)))

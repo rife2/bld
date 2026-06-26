@@ -5,6 +5,8 @@
 package rife.bld;
 
 import org.junit.jupiter.api.Test;
+import rife.bld.dependencies.Repository;
+import rife.bld.dependencies.RepositoryTestHelper;
 import rife.bld.dependencies.VersionNumber;
 import rife.tools.FileUtils;
 
@@ -16,7 +18,6 @@ import java.nio.file.Files;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static rife.bld.dependencies.Repository.MAVEN_CENTRAL;
 import static rife.bld.dependencies.Scope.*;
 
 public class TestProject {
@@ -331,14 +332,17 @@ public class TestProject {
         }
     }
 
+
     static class CustomProjectAutoPurge extends Project {
+        static final List<Repository> repos = List.of(RepositoryTestHelper.getNextRepository());
+
         CustomProjectAutoPurge(File tmp) {
             workDirectory = tmp;
             pkg = "test.pkg";
             name = "my_project";
             version = new VersionNumber(0, 0, 1);
 
-            repositories = List.of(MAVEN_CENTRAL);
+            repositories = repos;
             scope(compile)
                 .include(dependency("com.uwyn.rife2", "rife2", version(1, 5, 11)));
             scope(test)
