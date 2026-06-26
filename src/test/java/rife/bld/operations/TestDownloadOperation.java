@@ -137,7 +137,7 @@ public class TestDownloadOperation {
             var dir10 = new File(dir5, "dir10");
 
             var operation = new DownloadOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL))
+                .repositories(RepositoryTestHelper.getNextRepositories(1))
                 .libCompileDirectory(dir1)
                 .libProvidedDirectory(dir2)
                 .libRuntimeDirectory(dir3)
@@ -225,7 +225,7 @@ public class TestDownloadOperation {
             var dir10 = new File(dir5, "dir10");
 
             var operation = new DownloadOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL))
+                .repositories(RepositoryTestHelper.getNextRepositories(1))
                 .libCompileDirectory(dir1)
                 .libProvidedDirectory(dir2)
                 .libRuntimeDirectory(dir3)
@@ -359,7 +359,7 @@ public class TestDownloadOperation {
         try {
             var project = new TestProject(tmp);
             project.createProjectStructure();
-            project.repositories().add(Repository.MAVEN_CENTRAL);
+            project.repositories().add(RepositoryTestHelper.getNextRepository());
             project.dependencies().scope(Scope.compile)
                 .include(new Dependency("org.apache.commons", "commons-lang3", new VersionNumber(3,12,0)))
                 .include(new Module("org.json", "json", new VersionNumber(20240303)).excludeSources());
@@ -467,7 +467,7 @@ public class TestDownloadOperation {
         try {
             var project = new TestProject(tmp);
             project.createProjectStructure();
-            project.repositories().add(Repository.MAVEN_CENTRAL);
+            project.repositories().add(RepositoryTestHelper.getNextRepository());
             project.dependencies().scope(Scope.compile)
                 .include(new Dependency("com.stripe", "stripe-java", new VersionNumber(20,136,0)));
             project.dependencies().scope(Scope.runtime)

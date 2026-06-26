@@ -10,7 +10,6 @@ import rife.tools.StringUtils;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static rife.bld.dependencies.Repository.*;
 import static rife.bld.dependencies.RepositoryTestHelper.getNextRepository;
 import static rife.bld.dependencies.Scope.compile;
 import static rife.bld.dependencies.Scope.runtime;
@@ -372,6 +371,6 @@ public class TestDependencySet {
                │     └─ com.squareup.okio:okio-jvm:3.6.0
                ├─ com.squareup.okhttp3:logging-interceptor:4.12.0
                └─ org.json:json:20250107
-            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS), compile, runtime));
+            """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), RepositoryTestHelper.getNextRepositories(), compile, runtime));
     }
 }

@@ -132,7 +132,7 @@ public class TestPurgeOperation {
             var dir10 = new File(dir5, "dir10");
 
             var operation_download1 = new DownloadOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL))
+                .repositories(RepositoryTestHelper.getNextRepositories(1))
                 .libCompileDirectory(dir1)
                 .libProvidedDirectory(dir2)
                 .libRuntimeDirectory(dir3)
@@ -162,7 +162,7 @@ public class TestPurgeOperation {
             operation_download1.execute();
 
             var operation_download2 = new DownloadOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL))
+                .repositories(RepositoryTestHelper.getNextRepositories(1))
                 .libCompileDirectory(dir1)
                 .libProvidedDirectory(dir2)
                 .libRuntimeDirectory(dir3)
@@ -254,7 +254,7 @@ public class TestPurgeOperation {
                 FileUtils.generateDirectoryListing(tmp));
 
             var operation_purge = new PurgeOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL))
+                .repositories(RepositoryTestHelper.getNextRepositories(1))
                 .libCompileDirectory(dir1)
                 .libProvidedDirectory(dir2)
                 .libRuntimeDirectory(dir3)
@@ -342,7 +342,7 @@ public class TestPurgeOperation {
             var dir10 = new File(dir5, "dir10");
 
             var operation_download1 = new DownloadOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL))
+                .repositories(RepositoryTestHelper.getNextRepositories(1))
                 .libCompileDirectory(dir1)
                 .libProvidedDirectory(dir2)
                 .libRuntimeDirectory(dir3)
@@ -374,7 +374,7 @@ public class TestPurgeOperation {
             operation_download1.execute();
 
             var operation_download2 = new DownloadOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL))
+                .repositories(RepositoryTestHelper.getNextRepositories(1))
                 .libCompileDirectory(dir1)
                 .libProvidedDirectory(dir2)
                 .libRuntimeDirectory(dir3)
@@ -566,7 +566,7 @@ public class TestPurgeOperation {
                 FileUtils.generateDirectoryListing(tmp));
 
             var operation_purge = new PurgeOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL))
+                .repositories(RepositoryTestHelper.getNextRepositories(1))
                 .libCompileDirectory(dir1)
                 .libProvidedDirectory(dir2)
                 .libRuntimeDirectory(dir3)
@@ -805,7 +805,7 @@ public class TestPurgeOperation {
         try {
             var project1 = new TestProject(tmp);
             project1.createProjectStructure();
-            project1.repositories().add(Repository.MAVEN_CENTRAL);
+            project1.repositories().add(RepositoryTestHelper.getNextRepository());
             project1.dependencies().scope(Scope.compile)
                 .include(new Dependency("org.apache.commons", "commons-lang3", new VersionNumber(3,1)))
                 .include(new Module("org.json", "json", new VersionNumber(20240205)));
@@ -824,7 +824,7 @@ public class TestPurgeOperation {
 
             var project2 = new TestProject(tmp);
             project2.createProjectStructure();
-            project2.repositories().add(Repository.MAVEN_CENTRAL);
+            project2.repositories().add(RepositoryTestHelper.getNextRepository());
             project2.dependencies().scope(Scope.compile)
                 .include(new Dependency("org.apache.commons", "commons-lang3", new VersionNumber(3,12,0)))
                 .include(new Module("org.json", "json", new VersionNumber(20240303)));

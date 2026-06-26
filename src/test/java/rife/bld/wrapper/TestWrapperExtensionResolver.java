@@ -7,6 +7,7 @@ package rife.bld.wrapper;
 import org.junit.jupiter.api.Test;
 import rife.bld.BldCache;
 import rife.bld.BldVersion;
+import rife.bld.dependencies.RepositoryTestHelper;
 import rife.bld.dependencies.VersionResolution;
 import rife.tools.FileUtils;
 
@@ -15,7 +16,6 @@ import java.nio.file.Files;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static rife.bld.wrapper.Wrapper.MAVEN_CENTRAL;
 
 public class TestWrapperExtensionResolver {
     @Test
@@ -71,7 +71,7 @@ public class TestWrapperExtensionResolver {
 
             var resolver = new WrapperExtensionResolver(tmp1, tmp2,
                 new Properties(), new Properties(),
-                List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
+                List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -116,7 +116,7 @@ public class TestWrapperExtensionResolver {
             properties.put(VersionResolution.PROPERTY_OVERRIDE_PREFIX, "org.antlr:antlr4:4.11.0");
             var resolver = new WrapperExtensionResolver(tmp1, tmp2,
                 properties, new Properties(),
-                List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
+                List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -161,7 +161,7 @@ public class TestWrapperExtensionResolver {
             properties.put(VersionResolution.PROPERTY_OVERRIDE_PREFIX, "org.glassfish:javax.json:1.1.3");
             var resolver = new WrapperExtensionResolver(tmp1, tmp2,
                 properties, new Properties(),
-                List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
+                List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -203,7 +203,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.jar
                 bld-wrapper.properties""", String.join("\n", files1));
 
-            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), true, false);
+            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), true, false);
             resolver.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -251,7 +251,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.jar
                 bld-wrapper.properties""", String.join("\n", files1));
 
-            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, true);
+            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), false, true);
             resolver.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -299,7 +299,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.jar
                 bld-wrapper.properties""", String.join("\n", files1));
 
-            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), true, true);
+            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), true, true);
             resolver.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -358,7 +358,7 @@ public class TestWrapperExtensionResolver {
             properties.put(VersionResolution.PROPERTY_OVERRIDE_PREFIX, "org.antlr:antlr4:4.11.0");
             var resolver = new WrapperExtensionResolver(tmp1, tmp2,
                 properties, new Properties(),
-                List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), true, true);
+                List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), true, true);
             resolver.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -414,7 +414,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.properties""", String.join("\n", files1));
 
             var properties = new File(tmp1, "local.properties");
-            FileUtils.writeString("bld.repo.testrepo=" + MAVEN_CENTRAL, properties);
+            FileUtils.writeString("bld.repo.testrepo=" + RepositoryTestHelper.getNextRepository().location(), properties);
 
             var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of("testrepo"), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
@@ -457,7 +457,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.jar
                 bld-wrapper.properties""", String.join("\n", files1));
 
-            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
+            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -508,7 +508,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.jar
                 bld-wrapper.properties""", String.join("\n", files1));
 
-            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
+            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -576,7 +576,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.jar
                 bld-wrapper.properties""", String.join("\n", files1));
 
-            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
+            var resolver = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -644,7 +644,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.jar
                 bld-wrapper.properties""", String.join("\n", files1));
 
-            var resolver1 = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
+            var resolver1 = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver1.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -663,7 +663,7 @@ public class TestWrapperExtensionResolver {
                 javax.json-1.1.4.jar
                 org.abego.treelayout.core-1.0.3.jar""", String.join("\n", files2));
 
-            var resolver2 = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1", "org.jsoup:jsoup:1.15.4"), false, false);
+            var resolver2 = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1", "org.jsoup:jsoup:1.15.4"), false, false);
             resolver2.updateExtensions();
             var files3 = FileUtils.getFileList(tmp2);
             assertEquals(11, files3.size());
@@ -703,7 +703,7 @@ public class TestWrapperExtensionResolver {
                 bld-wrapper.jar
                 bld-wrapper.properties""", String.join("\n", files1));
 
-            var resolver1 = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1", "org.jsoup:jsoup:1.15.4"), false, false);
+            var resolver1 = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1", "org.jsoup:jsoup:1.15.4"), false, false);
             resolver1.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -723,7 +723,7 @@ public class TestWrapperExtensionResolver {
                 jsoup-1.15.4.jar
                 org.abego.treelayout.core-1.0.3.jar""", String.join("\n", files2));
 
-            var resolver2 = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(MAVEN_CENTRAL), List.of("org.jsoup:jsoup:1.15.4"), false, false);
+            var resolver2 = new WrapperExtensionResolver(tmp1, tmp2, new Properties(), new Properties(), List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.jsoup:jsoup:1.15.4"), false, false);
             resolver2.updateExtensions();
             var files3 = FileUtils.getFileList(tmp2);
             assertEquals(4, files3.size());
@@ -758,7 +758,7 @@ public class TestWrapperExtensionResolver {
 
             var resolver1 = new WrapperExtensionResolver(tmp1, tmp2,
                 new Properties(), new Properties(),
-                List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
+                List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver1.updateExtensions();
 
             assertTrue(cache_file.exists());
@@ -781,7 +781,7 @@ public class TestWrapperExtensionResolver {
             properties.put(VersionResolution.PROPERTY_OVERRIDE_PREFIX, "org.antlr:antlr4:4.11.0");
             var resolver2 = new WrapperExtensionResolver(tmp1, tmp2,
                 properties, new Properties(),
-                List.of(MAVEN_CENTRAL), List.of("org.antlr:antlr4:4.11.1"), false, false);
+                List.of(RepositoryTestHelper.getNextRepository().location()), List.of("org.antlr:antlr4:4.11.1"), false, false);
             resolver2.updateExtensions();
             var files3 = FileUtils.getFileList(tmp2);
             assertEquals(10, files3.size());

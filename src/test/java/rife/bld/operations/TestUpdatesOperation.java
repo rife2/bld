@@ -62,7 +62,7 @@ public class TestUpdatesOperation {
         var tmp = Files.createTempDirectory("test").toFile();
         try {
             var operation = new UpdatesOperation()
-                .repositories(List.of(Repository.MAVEN_CENTRAL));
+                .repositories(RepositoryTestHelper.getNextRepositories(1));
             operation.dependencies().scope(Scope.compile)
                 .include(new Dependency("org.apache.commons", "commons-lang3", new VersionNumber(3, 10, 0)));
             operation.dependencies().scope(Scope.runtime)
@@ -121,7 +121,7 @@ public class TestUpdatesOperation {
         try {
             var project = new TestProject(tmp);
             project.createProjectStructure();
-            project.repositories().add(Repository.MAVEN_CENTRAL);
+            project.repositories().add(RepositoryTestHelper.getNextRepository());
             project.dependencies().scope(Scope.compile)
                 .include(new Dependency("org.apache.commons", "commons-lang3", new VersionNumber(3, 10, 0)));
             project.dependencies().scope(Scope.runtime)
