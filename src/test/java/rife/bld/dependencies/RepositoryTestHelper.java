@@ -4,38 +4,29 @@
  */
 package rife.bld.dependencies;
 
-import rife.tools.exceptions.FileUtilsErrorException;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static rife.bld.dependencies.Repository.*;
 
 /**
- * Hands out repositories to tests so the resolution load is spread as evenly as
- * possible across all the Maven Central mirrors.
+ * Helper for distributing Maven repository selection in tests.
  * <p>
- * A {@link DependencyResolver} contacts the repositories in order and stops at
- * the first one that holds the artifact (see {@code parseMavenMetadata} and
- * {@code transferIntoDirectory}). Because the dependencies these tests resolve
- * exist in every mirror, only the <em>first</em> repository of each list is
- * actually contacted; the rest act purely as fallbacks. The load therefore
- * lands entirely on whichever repository is handed out first.
+ * The starting index is seeded from system properties {@code os.name}, {@code os.arch},
+ * {@code os.version}, and {@code java.version}. This ensures different platforms/JVMs
+ * begin iteration at different repositories, reducing load on a single mirror while
+ * keeping selection deterministic per environment for reproducible tests.
  * <p>
- * That load is dominated by a handful of tests with large transitive trees, each
- * sending hundreds of reads to its single head repository, so a blind round-robin
- * cannot balance the actual reads. Instead, the head is chosen greedily: each test
- * is handed the mirror that has accumulated the fewest reads so far, observed
- * through {@link #retriever()}. After a heavy test lands on the lightest mirror,
- * that mirror becomes the heaviest and is avoided until the others catch up, so
- * the cumulative reads converge toward an even split. Tests must resolve through
- * {@link #retriever()} for their reads to be counted.
+ * All methods are thread-safe and perform round-robin selection from {@link #MAVEN_CENTRAL_REPOSITORIES}.
+ *
+ * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
+ * @author <a href="https://www.uwyn.com">Geert Bevin</a>
  */
 public final class RepositoryTestHelper {
+    /**
+     * List of Maven Central repositories and mirrors used for test distribution.
+     */
     public static final List<Repository> MAVEN_CENTRAL_REPOSITORIES = List.of(
             MAVEN_CENTRAL,
             APACHE,
@@ -44,48 +35,45 @@ public final class RepositoryTestHelper {
             GOOGLE_MAVEN_CENTRAL_ASIA
     );
 
-    // Actual reads observed per repository, used as the greedy balancing signal.
-    private static final Map<Repository, AtomicLong> READS = new ConcurrentHashMap<>();
-    static {
-        MAVEN_CENTRAL_REPOSITORIES.forEach(repo -> READS.put(repo, new AtomicLong()));
-    }
+    // Generate seed from os.name, os.arch, os.version, java.version
+    private static final int SEED = Math.abs(
+            (System.getProperty("os.name", "") +
+                    System.getProperty("os.arch", "") +
+                    System.getProperty("os.version", "") +
+                    System.getProperty("java.version", ""))
+                    .hashCode()
+    );
 
-    // Rotates the scan start so mirrors tied on load (e.g. all zero at startup)
-    // are still handed out in turn rather than always defaulting to the first.
-    private static final AtomicInteger TIE_BREAKER = new AtomicInteger(0);
-
-    // Retriever that behaves like ArtifactRetriever.instance() (uncached) but
-    // records every read against its repository so the load can be balanced.
-    private static final ArtifactRetriever COUNTING_RETRIEVER = new ArtifactRetriever() {
-        String getCached(RepositoryArtifact artifact) {
-            return null;
-        }
-
-        void cache(RepositoryArtifact artifact, String content) {
-        }
-
-        @Override
-        public String readString(RepositoryArtifact artifact)
-        throws FileUtilsErrorException {
-            READS.computeIfAbsent(artifact.repository(), r -> new AtomicLong()).incrementAndGet();
-            return super.readString(artifact);
-        }
-    };
+    private static final AtomicInteger COUNTER = new AtomicInteger(SEED);
 
     private RepositoryTestHelper() {
+        // Utility class
     }
 
     /**
-     * The retriever tests must use so their reads are attributed for balancing.
+     * Returns the next {@link Repository} using round-robin selection.
+     * <p>
+     * The sequence starts at an index derived from the current OS and JVM properties,
+     * then increments atomically on each call.
+     *
+     * @return the next repository in the rotation
      */
-    public static ArtifactRetriever retriever() {
-        return COUNTING_RETRIEVER;
-    }
-
     public static Repository getNextRepository() {
-        return leastLoaded();
+        var index = COUNTER.getAndIncrement() % MAVEN_CENTRAL_REPOSITORIES.size();
+        return MAVEN_CENTRAL_REPOSITORIES.get(index);
     }
 
+    /**
+     * Returns the next {@code count} repositories using round-robin selection.
+     * <p>
+     * The starting position is based on the current counter value, which is initially
+     * seeded from OS and JVM properties. The counter is advanced by {@code count}.
+     *
+     * @param count the number of repositories to return
+     * @return an unmodifiable list of repositories
+     * @throws IllegalArgumentException if {@code count} is negative or exceeds the
+     *                                  number of available repositories
+     */
     public static List<Repository> getNextRepositories(int count) {
         if (count < 0) {
             throw new IllegalArgumentException("count cannot be negative");
@@ -95,45 +83,23 @@ public final class RepositoryTestHelper {
                     + MAVEN_CENTRAL_REPOSITORIES.size());
         }
 
-        // The head bears the load, so pick the least-loaded mirror; the remaining
-        // mirrors are appended only as (never-contacted) fallbacks.
-        var head = leastLoaded();
+        var start = COUNTER.getAndAdd(count) % MAVEN_CENTRAL_REPOSITORIES.size();
         var result = new ArrayList<Repository>(count);
-        if (count > 0) {
-            result.add(head);
-        }
-        for (var repo : MAVEN_CENTRAL_REPOSITORIES) {
-            if (result.size() == count) {
-                break;
-            }
-            if (!repo.equals(head)) {
-                result.add(repo);
-            }
+        for (var i = 0; i < count; i++) {
+            result.add(MAVEN_CENTRAL_REPOSITORIES.get((start + i) % MAVEN_CENTRAL_REPOSITORIES.size()));
         }
         return List.copyOf(result);
     }
 
+    /**
+     * Returns the next 2 repositories using round-robin selection.
+     * <p>
+     * Convenience method equivalent to {@code getNextRepositories(2)}.
+     *
+     * @return an unmodifiable list containing 2 repositories
+     * @see #getNextRepositories(int)
+     */
     public static List<Repository> getNextRepositories() {
         return getNextRepositories(2);
-    }
-
-    /**
-     * Returns the mirror that has accumulated the fewest reads so far, rotating
-     * the scan start so equally-loaded mirrors are still spread in turn.
-     */
-    private static Repository leastLoaded() {
-        var size = MAVEN_CENTRAL_REPOSITORIES.size();
-        var offset = TIE_BREAKER.getAndIncrement();
-        Repository best = null;
-        var bestReads = Long.MAX_VALUE;
-        for (var i = 0; i < size; i++) {
-            var repo = MAVEN_CENTRAL_REPOSITORIES.get(Math.floorMod(offset + i, size));
-            var reads = READS.get(repo).get();
-            if (reads < bestReads) {
-                bestReads = reads;
-                best = repo;
-            }
-        }
-        return best;
     }
 }

@@ -157,15 +157,13 @@ public class TestWebProject {
     }
 
     static class CustomWebProjectAutoPurge extends WebProject {
-        static final List<Repository> repos = List.of(RepositoryTestHelper.getNextRepository());
-
-        CustomWebProjectAutoPurge(File tmp) {
+        CustomWebProjectAutoPurge(File tmp, Repository repo) {
             workDirectory = tmp;
             pkg = "test.pkg";
             name = "my_project";
             version = new VersionNumber(0, 0, 1);
 
-            repositories = repos;
+            repositories = List.of(repo);
             scope(compile)
                 .include(dependency("com.uwyn.rife2", "rife2", version(1, 5, 11)));
             scope(test)
@@ -199,13 +197,15 @@ public class TestWebProject {
     void testAutoDownloadPurge()
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
+        var repo = RepositoryTestHelper.getNextRepository();
+
         try {
-            var project = new CustomWebProjectAutoPurge(tmp);
+            var project = new CustomWebProjectAutoPurge(tmp, repo);
             project.execute(new String[]{"version"});
 
             assertEquals("", FileUtils.generateDirectoryListing(tmp));
 
-            project = new CustomWebProjectAutoPurge(tmp);
+            project = new CustomWebProjectAutoPurge(tmp, repo);
             project.enableAutoDownloadPurge();
             project.execute(new String[]{"version"});
 
@@ -245,7 +245,7 @@ public class TestWebProject {
                 /lib/bld
                 /lib/bld/bld.cache""", FileUtils.generateDirectoryListing(tmp));
 
-            project = new CustomWebProjectAutoPurge(tmp);
+            project = new CustomWebProjectAutoPurge(tmp, repo);
             project.enableAutoDownloadPurge();
             project.execute(new String[]{"version"});
             assertEquals("""
@@ -253,7 +253,7 @@ public class TestWebProject {
                 /lib/bld
                 /lib/bld/bld.cache""", FileUtils.generateDirectoryListing(tmp));
 
-            project = new CustomWebProjectAutoPurge(tmp);
+            project = new CustomWebProjectAutoPurge(tmp, repo);
             project.enableAutoDownloadPurge();
             project.increaseRife2Version();
             project.execute(new String[]{"version"});
@@ -285,7 +285,7 @@ public class TestWebProject {
                 /lib/test/junit-platform-engine-1.9.2.jar
                 /lib/test/opentest4j-1.2.0.jar""", FileUtils.generateDirectoryListing(tmp));
 
-            project = new CustomWebProjectAutoPurge(tmp);
+            project = new CustomWebProjectAutoPurge(tmp, repo);
             project.enableAutoDownloadPurge();
             project.increaseRife2VersionMore();
             project.execute(new String[]{"version"});

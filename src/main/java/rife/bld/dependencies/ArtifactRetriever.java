@@ -76,7 +76,7 @@ public abstract class ArtifactRetriever {
         };
     }
 
-    ArtifactRetriever() {
+    private ArtifactRetriever() {
     }
 
     abstract String getCached(RepositoryArtifact artifact);

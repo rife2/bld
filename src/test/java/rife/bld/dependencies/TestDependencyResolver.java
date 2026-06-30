@@ -29,7 +29,7 @@ public class TestDependencyResolver {
         var repos = new ArrayList<>(MAVEN_CENTRAL_REPOSITORIES);
         Collections.addAll(repos, GOOGLE, SONATYPE_SNAPSHOTS, SONATYPE_RELEASES, SONATYPE_RELEASES_LEGACY, SONATYPE_SNAPSHOTS_LEGACY, RIFE2_RELEASES, RIFE2_SNAPSHOTS);
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "com.uwyn.rife2:rife2:1.8.0")),
-            RepositoryTestHelper.retriever(), repos, new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
+            ArtifactRetriever.instance(), repos, new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
         assertNotNull(resolver);
         assertEquals(new VersionNumber(1,8,0), resolver.resolution().overrideVersion(new Dependency("com.uwyn.rife2", "rife2")));
         repos.forEach(repo -> assertTrue(resolver.repositories().contains(repo), repo.toString() + "not found."));
@@ -38,38 +38,38 @@ public class TestDependencyResolver {
 
     @Test
     void testNotFound() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.org.unknown", "voidthing"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.org.unknown", "voidthing"));
         assertFalse(resolver.exists());
     }
 
     @Test
     void testCheckExistence() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
         assertTrue(resolver.exists());
     }
 
     @Test
     void testCheckExistenceVersion() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
         assertTrue(resolver.exists());
     }
 
     @Test
     void testCheckExistenceMissingVersion() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 3, 9)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 3, 9)));
         assertFalse(resolver.exists());
     }
 
     @Test
     void testCheckVersionOverride() {
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "com.uwyn.rife2:rife2:1.8.0")),
-            RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 3, 9)));
+            ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 3, 9)));
         assertEquals(new VersionNumber(1, 8, 0), resolver.resolveVersion());
     }
 
     @Test
     void testListVersions() {
-        var resolver1 = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver1 = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
         var versions1 = resolver1.listVersions();
         assertNotNull(versions1);
         assertFalse(versions1.isEmpty());
@@ -77,7 +77,7 @@ public class TestDependencyResolver {
         assertTrue(versions1.contains(new VersionNumber(1, 0, 0)));
         assertTrue(versions1.contains(new VersionNumber(1, 2, 1)));
 
-        var resolver2 = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server"));
+        var resolver2 = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server"));
         var versions2 = resolver2.listVersions();
         assertNotNull(versions2);
         assertFalse(versions2.isEmpty());
@@ -88,7 +88,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetLatestVersion() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(3), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(3), new Dependency("com.uwyn.rife2", "rife2"));
         var version = resolver.latestVersion();
         assertNotNull(version);
         assertTrue(version.compareTo(new VersionNumber(1, 4)) >= 0);
@@ -96,7 +96,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetReleaseVersion() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(4), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(4), new Dependency("com.uwyn.rife2", "rife2"));
         var version = resolver.releaseVersion();
         assertNotNull(version);
         assertTrue(version.compareTo(new VersionNumber(1, 4)) >= 0);
@@ -104,7 +104,7 @@ public class TestDependencyResolver {
 
     @Test
     void testMetadata() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(5), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(5), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
         var metadata = resolver.getMavenMetadata();
         assertNotNull(metadata);
         assertTrue(metadata.getLatest().compareTo(resolver.dependency().version()) > 0);
@@ -113,7 +113,7 @@ public class TestDependencyResolver {
 
     @Test
     void testSnapshotMetadata() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var metadata = resolver.getSnapshotMavenMetadata();
         assertNotNull(metadata);
         assertEquals("20241227.175755", metadata.getSnapshotTimestamp());
@@ -122,7 +122,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesRIFE2() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(0, dependencies.size());
@@ -130,7 +130,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesRIFE2Snapshot() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(0, dependencies.size());
@@ -138,7 +138,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesGoogleApi() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(1, dependencies.size());
@@ -148,7 +148,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesJetty() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(4, dependencies.size());
@@ -161,7 +161,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesAssertJ() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.assertj", "assertj-joda-time", new VersionNumber(2, 2, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.assertj", "assertj-joda-time", new VersionNumber(2, 2, 0)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(1, dependencies.size());
@@ -171,7 +171,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesSwagger() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("io.swagger.core.v3", "swagger-core", new VersionNumber(2,2,27)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("io.swagger.core.v3", "swagger-core", new VersionNumber(2,2,27)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(11, dependencies.size());
@@ -192,7 +192,7 @@ public class TestDependencyResolver {
     @Test
     void testGetCompileDependenciesJettyOverride1() {
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.16")),
-            RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+            ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(4, dependencies.size());
@@ -206,7 +206,7 @@ public class TestDependencyResolver {
     @Test
     void testGetCompileDependenciesJettyOverride2() {
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.11,org.eclipse.jetty:jetty-io:11.0.13,org.eclipse.jetty:jetty-server:11.0.15")),
-            RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+            ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(4, dependencies.size());
@@ -219,7 +219,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileRuntimeDependenciesJunit() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
         var dependencies_compile = resolver.getDirectDependencies(compile, runtime);
         assertNotNull(dependencies_compile);
         assertEquals(3, dependencies_compile.size());
@@ -231,7 +231,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesSpringBoot() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(6, dependencies.size());
@@ -246,7 +246,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesMaven() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(26, dependencies.size());
@@ -281,7 +281,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesPlay() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(25, dependencies.size());
@@ -315,7 +315,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileDependenciesVaadin() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
         var dependencies = resolver.getDirectDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(9, dependencies.size());
@@ -333,7 +333,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileRuntimeDependenciesBitly() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(2, 0, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(2, 0, 0)));
         var dependencies = resolver.getDirectDependencies(compile, runtime);
         assertNotNull(dependencies);
         assertEquals(6, dependencies.size());
@@ -348,7 +348,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesRIFE2() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(1, dependencies.size());
@@ -358,7 +358,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesRIFE2Snapshot() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(1, dependencies.size());
@@ -368,7 +368,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJetty() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(6, dependencies.size());
@@ -383,7 +383,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJettyExclusion() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(),
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
                 .exclude("org.slf4j", "slf4j-api"));
         var dependencies = resolver.getAllDependencies(compile);
@@ -399,7 +399,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJettyFullGroupExclusion() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(),
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
                 .exclude("org.eclipse.jetty", "*"));
         var dependencies = resolver.getAllDependencies(compile);
@@ -413,7 +413,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJettyFullArtifactExclusion() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(),
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
                 .exclude("*", "jetty-http")
                 .exclude("*", "slf4j-api"));
@@ -429,7 +429,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJettyFullExclusion() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(),
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
                 .exclude("*", "*"));
         var dependencies = resolver.getAllDependencies(compile);
@@ -441,8 +441,8 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesJettyAndSlfj() {
-        var dependencies = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))).getAllDependencies(compile);
-        var dependencies2 = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2, 0, 6))).getAllDependencies(compile, runtime);
+        var dependencies = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))).getAllDependencies(compile);
+        var dependencies2 = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2, 0, 6))).getAllDependencies(compile, runtime);
         assertNotNull(dependencies);
         assertNotNull(dependencies2);
         assertEquals(6, dependencies.size());
@@ -461,7 +461,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileRuntimeTransitiveDependenciesJunit() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
         var dependencies_compile = resolver.getAllDependencies(compile, runtime);
         assertNotNull(dependencies_compile);
         assertEquals(8, dependencies_compile.size());
@@ -484,7 +484,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesSpringBoot() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(18, dependencies.size());
@@ -511,7 +511,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesMaven() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(32, dependencies.size());
@@ -552,7 +552,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesPlay() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(48, dependencies.size());
@@ -609,7 +609,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileTransitiveDependenciesVaadin() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
         var dependencies = resolver.getAllDependencies(compile);
         assertNotNull(dependencies);
         assertEquals(88, dependencies.size());
@@ -706,7 +706,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileRuntimeTransitiveDependenciesBitly() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(2, 0, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(2, 0, 0)));
         var dependencies = resolver.getAllDependencies(compile, runtime);
         assertNotNull(dependencies);
         assertEquals(11, dependencies.size());
@@ -726,7 +726,7 @@ public class TestDependencyResolver {
 
     @Test
     void testGetCompileRuntimeTransitiveDependenciesMariaDb() {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.mariadb.jdbc", "mariadb-java-client", new VersionNumber(3, 1, 3)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.mariadb.jdbc", "mariadb-java-client", new VersionNumber(3, 1, 3)));
         var dependencies_compile = resolver.getAllDependencies(compile, runtime);
         assertNotNull(dependencies_compile);
         assertEquals(9, dependencies_compile.size());
@@ -751,11 +751,11 @@ public class TestDependencyResolver {
     void testTransferDependency()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("com.uwyn.rife2", "rife2"));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertTrue(StringUtils.join(result, "\n").matches(StringUtils.replace("""
                 %s:%scom/uwyn/rife2/rife2/.*/rife2-.*.jar"""
                     , "%s", repos.get(0).toString())));
@@ -775,11 +775,11 @@ public class TestDependencyResolver {
     void testTransferDependencySources()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("com.uwyn.rife2", "rife2"));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
             assertTrue(StringUtils.join(result, "\n").matches(StringUtils.replace("""
                 %s:%scom/uwyn/rife2/rife2/.*/rife2-.*.jar
                 %s:%scom/uwyn/rife2/rife2/.*/rife2-.*-sources.jar""",
@@ -800,11 +800,11 @@ public class TestDependencyResolver {
     void testTransferDependencySourcesJavadoc()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("com.uwyn.rife2", "rife2"));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertTrue(StringUtils.join(result, "\n").matches(StringUtils.replace("""
                 %s:%scom/uwyn/rife2/rife2/.*/rife2-.*.jar
                 %s:%scom/uwyn/rife2/rife2/.*/rife2-.*-sources.jar
@@ -825,11 +825,11 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySnapshot()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo.rife2.com/snapshots/:https://repo.rife2.com/snapshots/com/uwyn/rife2/rife2/1.9.1-SNAPSHOT/rife2-1.9.1-20241227.175755-4.jar""", StringUtils.join(result, "\n"));
 
@@ -847,11 +847,11 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySnapshotSources()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
             assertEquals("""
                 https://repo.rife2.com/snapshots/:https://repo.rife2.com/snapshots/com/uwyn/rife2/rife2/1.9.1-SNAPSHOT/rife2-1.9.1-20241227.175755-4.jar
                 https://repo.rife2.com/snapshots/:https://repo.rife2.com/snapshots/com/uwyn/rife2/rife2/1.9.1-SNAPSHOT/rife2-1.9.1-20241227.175755-4-sources.jar""", StringUtils.join(result, "\n"));
@@ -871,11 +871,11 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySnapshotSourcesJavadoc()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertEquals("""
                 https://repo.rife2.com/snapshots/:https://repo.rife2.com/snapshots/com/uwyn/rife2/rife2/1.9.1-SNAPSHOT/rife2-1.9.1-20241227.175755-4.jar
                 https://repo.rife2.com/snapshots/:https://repo.rife2.com/snapshots/com/uwyn/rife2/rife2/1.9.1-SNAPSHOT/rife2-1.9.1-20241227.175755-4-sources.jar
@@ -898,11 +898,11 @@ public class TestDependencyResolver {
     void testTransferDependencySourcesModule()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Module("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Module("com.uwyn.rife2", "rife2"));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
             assertTrue(StringUtils.join(result, "\n").matches(StringUtils.replace("""
                 %s:%scom/uwyn/rife2/rife2/.*/rife2-.*.jar
                 %s:%scom/uwyn/rife2/rife2/.*/rife2-.*-sources.jar""",
@@ -923,11 +923,11 @@ public class TestDependencyResolver {
     void testTransferDependencySourcesJavadocModule()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Module("com.uwyn.rife2", "rife2"));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Module("com.uwyn.rife2", "rife2"));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertTrue(StringUtils.join(result, "\n").matches(StringUtils.replace("""
                 %s:%scom/uwyn/rife2/rife2/.*/rife2-.*.jar
                 %s:%scom/uwyn/rife2/rife2/.*/rife2-.*-sources.jar
@@ -948,11 +948,11 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySnapshotModule()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals("""
                 https://repo.rife2.com/snapshots/:https://repo.rife2.com/snapshots/com/uwyn/rife2/rife2/1.9.1-SNAPSHOT/rife2-1.9.1-20241227.175755-4.jar""", StringUtils.join(result, "\n"));
 
@@ -970,11 +970,11 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySnapshotSourcesModule()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
             assertEquals("""
                 https://repo.rife2.com/snapshots/:https://repo.rife2.com/snapshots/com/uwyn/rife2/rife2/1.9.1-SNAPSHOT/rife2-1.9.1-20241227.175755-4.jar
                 https://repo.rife2.com/snapshots/:https://repo.rife2.com/snapshots/com/uwyn/rife2/rife2/1.9.1-SNAPSHOT/rife2-1.9.1-20241227.175755-4-sources.jar""", StringUtils.join(result, "\n"));
@@ -994,11 +994,11 @@ public class TestDependencyResolver {
     @Test
     void testTransferDependencySnapshotSourcesJavadocModule()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), List.of(SONATYPE_SNAPSHOTS, RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(SONATYPE_SNAPSHOTS, RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertEquals("""
                 https://repo.rife2.com/snapshots/:https://repo.rife2.com/snapshots/com/uwyn/rife2/rife2/1.9.1-SNAPSHOT/rife2-1.9.1-20241227.175755-4.jar
                 https://repo.rife2.com/snapshots/:https://repo.rife2.com/snapshots/com/uwyn/rife2/rife2/1.9.1-SNAPSHOT/rife2-1.9.1-20241227.175755-4-sources.jar
@@ -1021,11 +1021,11 @@ public class TestDependencyResolver {
     void testTransferDependencyJetty()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 %s:%sorg/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
@@ -1058,11 +1058,11 @@ public class TestDependencyResolver {
     void testTransferDependencyJettyModule()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 %s:%sorg/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
@@ -1095,11 +1095,11 @@ public class TestDependencyResolver {
     void testTransferDependencySwagger()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("io.swagger.core.v3", "swagger-core", new VersionNumber(2,2,27)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("io.swagger.core.v3", "swagger-core", new VersionNumber(2,2,27)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%sio/swagger/core/v3/swagger-core/2.2.27/swagger-core-2.2.27.jar
                 %s:%sjakarta/xml/bind/jakarta.xml.bind-api/2.3.3/jakarta.xml.bind-api-2.3.3.jar
@@ -1148,11 +1148,11 @@ public class TestDependencyResolver {
     void testTransferDependencyGoogleApi()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%scom/google/apis/google-api-services-youtube/v3-rev20240514-2.0.0/google-api-services-youtube-v3-rev20240514-2.0.0.jar
                 %s:%scom/google/api-client/google-api-client/2.5.0/google-api-client-2.5.0.jar
@@ -1221,11 +1221,11 @@ public class TestDependencyResolver {
     void testTransferDependencyGoogleApiModule()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Module("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Module("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%scom/google/apis/google-api-services-youtube/v3-rev20240514-2.0.0/google-api-services-youtube-v3-rev20240514-2.0.0.jar
                 %s:%scom/google/api-client/google-api-client/2.5.0/google-api-client-2.5.0.jar
@@ -1298,11 +1298,11 @@ public class TestDependencyResolver {
             .put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.11")
             .put(PROPERTY_OVERRIDE_PREFIX + "1", "org.eclipse.jetty:jetty-io:11.0.13")
             .put(PROPERTY_OVERRIDE_PREFIX + "2", "org.eclipse.jetty:jetty-server:11.0.15"));
-        var resolver = new DependencyResolver(resolution, RepositoryTestHelper.retriever(), repos, new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(resolution, ArtifactRetriever.instance(), repos, new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.15/jetty-server-11.0.15.jar
                 %s:%sorg/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
@@ -1339,11 +1339,11 @@ public class TestDependencyResolver {
             .put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.11")
             .put(PROPERTY_OVERRIDE_PREFIX + "1", "org.eclipse.jetty:jetty-io:11.0.13")
             .put(PROPERTY_OVERRIDE_PREFIX + "2", "org.eclipse.jetty:jetty-server:11.0.15"));
-        var resolver = new DependencyResolver(resolution, RepositoryTestHelper.retriever(), repos, new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(resolution, ArtifactRetriever.instance(), repos, new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.15/jetty-server-11.0.15.jar
                 %s:%sorg/eclipse/jetty/toolchain/jetty-jakarta-servlet-api/5.0.2/jetty-jakarta-servlet-api-5.0.2.jar
@@ -1376,11 +1376,11 @@ public class TestDependencyResolver {
     void testTransferDependencyJettySources()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-sources.jar
@@ -1425,11 +1425,11 @@ public class TestDependencyResolver {
     void testTransferDependencyJettySourcesModule()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-sources.jar
@@ -1474,11 +1474,11 @@ public class TestDependencyResolver {
     void testTransferDependencyJettySourcesJavadoc()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-sources.jar
@@ -1535,11 +1535,11 @@ public class TestDependencyResolver {
     void testTransferDependencyJettySourcesJavadocModule()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2, CLASSIFIER_SOURCES, CLASSIFIER_JAVADOC);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14.jar
                 %s:%sorg/eclipse/jetty/jetty-server/11.0.14/jetty-server-11.0.14-sources.jar
@@ -1596,11 +1596,11 @@ public class TestDependencyResolver {
     void testTransferDependenciesJunit()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos , new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos , new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile, runtime).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile, runtime).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar
                 %s:%sorg/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar
@@ -1637,11 +1637,11 @@ public class TestDependencyResolver {
     void testTransferDependencySpringBoot()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/springframework/boot/spring-boot-starter/3.0.4/spring-boot-starter-3.0.4.jar
                 %s:%sorg/springframework/boot/spring-boot/3.0.4/spring-boot-3.0.4.jar
@@ -1698,11 +1698,11 @@ public class TestDependencyResolver {
     void testTransferDependencyMaven()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%sorg/apache/maven/maven-core/3.9.0/maven-core-3.9.0.jar
                 %s:%sorg/apache/maven/maven-model/3.9.0/maven-model-3.9.0.jar
@@ -1787,11 +1787,11 @@ public class TestDependencyResolver {
     void testTransferDependencyPlay()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos, new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos, new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%scom/typesafe/play/play_2.13/2.8.19/play_2.13-2.8.19.jar
                 %s:%sorg/scala-lang/scala-library/2.13.10/scala-library-2.13.10.jar
@@ -1910,11 +1910,11 @@ public class TestDependencyResolver {
         var repos = getNextRepositories();
         var resolution = new VersionResolution(new HierarchicalProperties()
             .put(PROPERTY_OVERRIDE_PREFIX, "org.scala-lang:scala-library:2.13.12,org.slf4j:slf4j-api:2.0.11,com.google.guava:guava:31.1-jre"));
-        var resolver = new DependencyResolver(resolution, RepositoryTestHelper.retriever(), repos, new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
+        var resolver = new DependencyResolver(resolution, ArtifactRetriever.instance(), repos, new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(resolution, ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%scom/typesafe/play/play_2.13/2.8.19/play_2.13-2.8.19.jar
                 %s:%sorg/scala-lang/scala-library/2.13.12/scala-library-2.13.12.jar
@@ -2030,11 +2030,11 @@ public class TestDependencyResolver {
     void testTransferDependencyVaadin()
     throws Exception {
         var repos = getNextRepositories();
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), repos , new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repos , new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            var result = resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertEquals(StringUtils.replace("""
                 %s:%scom/vaadin/vaadin/23.3.7/vaadin-23.3.7.jar
                 %s:%scom/vaadin/vaadin-core/23.3.7/vaadin-core-23.3.7.jar
@@ -2229,11 +2229,11 @@ public class TestDependencyResolver {
     @Test
     void testTransferCheckExisting()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
 
             var modification_map = new HashMap<String, Long>();
             Files.walk(Path.of(tmp1.getAbsolutePath()))
@@ -2244,7 +2244,7 @@ public class TestDependencyResolver {
             assertTrue(FileUtils.getFileList(tmp2).isEmpty());
 
             // re-transfer and check the modification time didn't change
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             Files.walk(Path.of(tmp1.getAbsolutePath()))
                 .map(path -> path.toAbsolutePath().toString())
                 .filter(s -> !s.equals(tmp1.getAbsolutePath()))
@@ -2256,7 +2256,7 @@ public class TestDependencyResolver {
             var first = modification_map.keySet().stream().findFirst().get();
             var first_file = new File(first);
             first_file.delete();
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertNotEquals(first_file.lastModified(), modification_map.get(first));
             modification_map.put(first, first_file.lastModified());
             Files.walk(Path.of(tmp1.getAbsolutePath()))
@@ -2269,7 +2269,7 @@ public class TestDependencyResolver {
             // change one file and check that this is transferred again
             FileUtils.writeString("stuff", first_file);
             var before_transfer_modified = first_file.lastModified();
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertNotEquals(first_file.lastModified(), before_transfer_modified);
             modification_map.put(first, first_file.lastModified());
             Files.walk(Path.of(tmp1.getAbsolutePath()))
@@ -2287,11 +2287,11 @@ public class TestDependencyResolver {
     @Test
     void testTransferCheckExistingModule()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), RepositoryTestHelper.retriever(), getNextRepositories(), new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
 
             assertTrue(FileUtils.getFileList(tmp1).isEmpty());
 
@@ -2304,7 +2304,7 @@ public class TestDependencyResolver {
             // re-transfer and check the modification time didn't change
             assertTrue(FileUtils.getFileList(tmp1).isEmpty());
 
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             Files.walk(Path.of(tmp2.getAbsolutePath()))
                 .map(path -> path.toAbsolutePath().toString())
                 .filter(s -> !s.equals(tmp2.getAbsolutePath()))
@@ -2316,7 +2316,7 @@ public class TestDependencyResolver {
             var first = modification_map.keySet().stream().findFirst().get();
             var first_file = new File(first);
             first_file.delete();
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertNotEquals(first_file.lastModified(), modification_map.get(first));
             modification_map.put(first, first_file.lastModified());
             Files.walk(Path.of(tmp2.getAbsolutePath()))
@@ -2329,7 +2329,7 @@ public class TestDependencyResolver {
 
             FileUtils.writeString("stuff", first_file);
             var before_transfer_modified = first_file.lastModified();
-            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), RepositoryTestHelper.retriever(), resolver.repositories(), tmp1, tmp2);
+            resolver.getAllDependencies(compile).transferIntoDirectory(VersionResolution.dummy(), ArtifactRetriever.instance(), resolver.repositories(), tmp1, tmp2);
             assertNotEquals(first_file.lastModified(), before_transfer_modified);
             modification_map.put(first, first_file.lastModified());
             Files.walk(Path.of(tmp2.getAbsolutePath()))
