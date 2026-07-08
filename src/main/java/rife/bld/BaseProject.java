@@ -11,6 +11,8 @@ import rife.bld.operations.*;
 import rife.tools.FileUtils;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -902,12 +904,36 @@ public class BaseProject extends BuildExecutor {
      * <p>
      * If the local dependency points to a directory, it will be scanned for jar files.
      *
-     * @param path the file system path of the local dependency
+     * @param path the file system path (absolute or relative to the {@link #workDirectory})
+     *             of the local dependency
      * @since 1.5.2
      */
-
     public LocalDependency local(String path) {
         return new LocalDependency(path);
+    } /**
+
+
+     /**
+     * Creates a local dependency instance.
+     * <p>
+     * If the local dependency points to a directory, it will be scanned for jar files.
+     *
+     * @param path the file system path of the local dependency
+     * @since 2.3.1
+     */
+    public LocalDependency local(Path path) {
+        return new LocalDependency(path.toString());
+    }
+    /**
+     * Creates a local dependency instance.
+     * <p>
+     * If the local dependency points to a directory, it will be scanned for jar files.
+     *
+     * @param path the file system path of the local dependency
+     * @since 2.3.1
+     */
+    public LocalDependency local(File path) {
+        return new LocalDependency(path.getAbsolutePath());
     }
 
     /**
@@ -997,12 +1023,36 @@ public class BaseProject extends BuildExecutor {
      * <p>
      * If the local module points to a directory, it will be scanned for jar files.
      *
-     * @param path the file system path of the local module
+     * @param path the file system path (absolute or relative to the {@link #workDirectory})
+     *             of the local module
      * @since 2.1
      */
-
     public LocalModule localModule(String path) {
         return new LocalModule(path);
+    }
+
+    /**
+     * Creates a local module instance.
+     * <p>
+     * If the local module points to a directory, it will be scanned for jar files.
+     *
+     * @param path the file system path of the local module
+     * @since 2.3.1
+     */
+    public LocalModule localModule(Path path) {
+        return new LocalModule(path.toString());
+    }
+
+    /**
+     * Creates a local module instance.
+     * <p>
+     * If the local module points to a directory, it will be scanned for jar files.
+     *
+     * @param path the file system path of the local module
+     * @since 2.3.1
+     */
+    public LocalModule localModule(File path) {
+        return new LocalModule(path.getAbsolutePath());
     }
 
     /*
@@ -1863,16 +1913,28 @@ public class BaseProject extends BuildExecutor {
     }
 
     private void addLocalJars(List<File> jars, String path) {
-        var local_file = new File(workDirectory(), path);
-        if (local_file.exists()) {
-            if (local_file.isDirectory()) {
-                var local_jar_files = FileUtils.getFileList(local_file.getAbsoluteFile(), INCLUDED_JARS, EXCLUDED_JARS);
-                jars.addAll(new ArrayList<>(local_jar_files.stream().map(file -> new File(local_file, file)).toList()));
-            } else {
-                jars.add(local_file);
+        var localPath = Path.of(path);
+        if (!localPath.isAbsolute()) {
+            localPath = workDirectory().toPath().resolve(path);
+        }
+
+        if (!Files.exists(localPath)) {
+            if (verbose()) {
+                System.err.println("Invalid local path, skipped: " + path);
             }
+            return;
+        }
+
+        if (Files.isDirectory(localPath)) {
+            var localJarFiles = FileUtils.getFileList(localPath.toFile(), INCLUDED_JARS, EXCLUDED_JARS);
+            for (var jar : localJarFiles) {
+                jars.add(localPath.resolve(jar).toFile());
+            }
+        } else {
+            jars.add(localPath.toFile());
         }
     }
+
 
     /**
      * Returns all the classpath entries for compiling the main sources.
