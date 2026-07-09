@@ -918,7 +918,8 @@ public class BaseProject extends BuildExecutor {
      * <p>
      * If the local dependency points to a directory, it will be scanned for jar files.
      *
-     * @param path the file system path of the local dependency
+     * @param path the file system path (absolute or relative to the {@link #workDirectory})
+     *             of the local dependency
      * @since 2.3.1
      */
     public LocalDependency local(Path path) {
@@ -1036,7 +1037,8 @@ public class BaseProject extends BuildExecutor {
      * <p>
      * If the local module points to a directory, it will be scanned for jar files.
      *
-     * @param path the file system path of the local module
+     * @param path the file system path (absolute or relative to the {@link #workDirectory})
+     *             of the local module
      * @since 2.3.1
      */
     public LocalModule localModule(Path path) {
@@ -1913,25 +1915,25 @@ public class BaseProject extends BuildExecutor {
     }
 
     private void addLocalJars(List<File> jars, String path) {
-        var localPath = Path.of(path);
-        if (!localPath.isAbsolute()) {
-            localPath = workDirectory().toPath().resolve(path);
+        var local_path = Path.of(path);
+        if (!local_path.isAbsolute()) {
+            local_path = workDirectory().toPath().resolve(path);
         }
 
-        if (!Files.exists(localPath)) {
+        if (!Files.exists(local_path)) {
             if (verbose()) {
-                System.err.println("Invalid local path, skipped: " + path);
+                System.err.println("Invalid local dependency path, skipped: " + path);
             }
             return;
         }
 
-        if (Files.isDirectory(localPath)) {
-            var localJarFiles = FileUtils.getFileList(localPath.toFile(), INCLUDED_JARS, EXCLUDED_JARS);
-            for (var jar : localJarFiles) {
-                jars.add(localPath.resolve(jar).toFile());
+        if (Files.isDirectory(local_path)) {
+            var local_jar_files = FileUtils.getFileList(local_path.toFile(), INCLUDED_JARS, EXCLUDED_JARS);
+            for (var jar : local_jar_files) {
+                jars.add(local_path.resolve(jar).toFile());
             }
         } else {
-            jars.add(localPath.toFile());
+            jars.add(local_path.toFile());
         }
     }
 
