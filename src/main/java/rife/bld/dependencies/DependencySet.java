@@ -8,6 +8,10 @@ import rife.bld.dependencies.exceptions.DependencyTransferException;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 /**
  * Convenience class to handle a set of {@link Dependency} objects.
@@ -128,6 +132,11 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * including other classifiers.
      * <p>
      * The destination directory must exist and be writable.
+     * <p>
+     * The artifacts of different dependencies are transferred in parallel,
+     * the {@value VersionResolution#PROPERTY_TRANSFER_PARALLELISM} property
+     * can be used to change the number of simultaneous transfers, setting it
+     * to {@code 1} makes the transfers sequential.
      *
      * @param resolution        the version resolution state that can be cached
      * @param retriever         the retriever to use to get artifacts
@@ -140,7 +149,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * @since 2.1
      */
     public List<RepositoryArtifact> transferIntoDirectory(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, File directory, File modulesDirectory, String... classifiers) {
-        var result = new ArrayList<RepositoryArtifact>();
+        var transfers = new ArrayList<Supplier<List<RepositoryArtifact>>>();
         for (var dependency : this) {
             var transfer_directory = directory;
             if (dependency.isModularJar()) {
@@ -159,21 +168,66 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
                 }
             }
 
-            var artifact = new DependencyResolver(resolution, retriever, repositories, dependency).transferIntoDirectory(transfer_directory);
-            if (artifact != null) {
-                result.add(artifact);
-            }
+            final var target_directory = transfer_directory;
+            transfers.add(() -> {
+                var artifacts = new ArrayList<RepositoryArtifact>();
+                var artifact = new DependencyResolver(resolution, retriever, repositories, dependency).transferIntoDirectory(target_directory);
+                if (artifact != null) {
+                    artifacts.add(artifact);
+                }
 
-            if (classifiers != null) {
-                for (var classifier : classifiers) {
-                    if (classifier != null && !dependency.excludedClassifiers().contains(classifier)) {
-                        var classifier_artifact = new DependencyResolver(resolution, retriever, repositories, dependency.withClassifier(classifier)).transferIntoDirectory(transfer_directory);
-                        if (classifier_artifact != null) {
-                            result.add(classifier_artifact);
+                if (classifiers != null) {
+                    for (var classifier : classifiers) {
+                        if (classifier != null && !dependency.excludedClassifiers().contains(classifier)) {
+                            var classifier_artifact = new DependencyResolver(resolution, retriever, repositories, dependency.withClassifier(classifier)).transferIntoDirectory(target_directory);
+                            if (classifier_artifact != null) {
+                                artifacts.add(classifier_artifact);
+                            }
                         }
                     }
                 }
+                return artifacts;
+            });
+        }
+
+        return executeTransfers(transfers, resolution.transferParallelism());
+    }
+
+    private static List<RepositoryArtifact> executeTransfers(List<Supplier<List<RepositoryArtifact>>> transfers, int transferParallelism) {
+        var result = new ArrayList<RepositoryArtifact>();
+
+        var parallelism = Math.min(transfers.size(), transferParallelism);
+        if (parallelism <= 1) {
+            for (var transfer : transfers) {
+                result.addAll(transfer.get());
             }
+            return result;
+        }
+
+        var executor = Executors.newFixedThreadPool(parallelism);
+        try {
+            var futures = new ArrayList<Future<List<RepositoryArtifact>>>();
+            for (var transfer : transfers) {
+                futures.add(executor.submit(transfer::get));
+            }
+            for (var future : futures) {
+                try {
+                    result.addAll(future.get());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Artifact transfer was interrupted", e);
+                } catch (ExecutionException e) {
+                    if (e.getCause() instanceof RuntimeException runtime) {
+                        throw runtime;
+                    }
+                    if (e.getCause() instanceof Error error) {
+                        throw error;
+                    }
+                    throw new IllegalStateException(e.getCause());
+                }
+            }
+        } finally {
+            executor.shutdownNow();
         }
         return result;
     }

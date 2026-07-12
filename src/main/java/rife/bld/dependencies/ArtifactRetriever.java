@@ -19,6 +19,7 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static rife.tools.HttpUtils.HEADER_AUTHORIZATION;
 import static rife.tools.HttpUtils.basicAuthorizationHeader;
@@ -35,6 +36,8 @@ import static rife.tools.StringUtils.encodeHexLower;
  * @since 1.5.18
  */
 public abstract class ArtifactRetriever {
+    private static final int TRANSFER_CHUNK_SIZE = 128 * 1024;
+
     private final static ArtifactRetriever UNCACHED = new ArtifactRetriever() {
         String getCached(RepositoryArtifact artifact) {
             return null;
@@ -63,7 +66,7 @@ public abstract class ArtifactRetriever {
      */
     public static ArtifactRetriever cachingInstance() {
         return new ArtifactRetriever() {
-            private final Map<RepositoryArtifact, String> artifactCache = new HashMap<>();
+            private final Map<RepositoryArtifact, String> artifactCache = new ConcurrentHashMap<>();
 
             String getCached(RepositoryArtifact artifact) {
                 return artifactCache.get(artifact);
@@ -141,17 +144,17 @@ public abstract class ArtifactRetriever {
 
         var download_filename = artifact.location().substring(artifact.location().lastIndexOf("/") + 1);
         var download_file = new File(directory, download_filename);
-        System.out.print("Downloading: " + artifact.location() + " ... ");
-        System.out.flush();
+        var transfer = TransferOutput.instance().start(artifact.location());
+        var status = "";
         try {
             if (artifact.repository().isLocal()) {
                 var source = new File(artifact.location());
                 if (source.exists()) {
                     FileUtils.copy(source, download_file);
-                    System.out.print("done");
+                    status = "done";
                     return true;
                 } else {
-                    System.out.print("not found");
+                    status = "not found";
                     return false;
                 }
             } else {
@@ -159,7 +162,7 @@ public abstract class ArtifactRetriever {
                     if (download_file.exists() && download_file.canRead()) {
                         if (checkHash(artifact, download_file, ".sha256", "SHA-256") ||
                             checkHash(artifact, download_file, ".md5", "MD5")) {
-                            System.out.print("exists");
+                            status = "exists";
                             return true;
                         }
                     }
@@ -170,23 +173,29 @@ public abstract class ArtifactRetriever {
                             HEADER_AUTHORIZATION,
                             basicAuthorizationHeader(artifact.repository().username(), artifact.repository().password()));
                     }
+                    var content_length = connection.getContentLengthLong();
                     try (var input_stream = connection.getInputStream()) {
                         var readableByteChannel = Channels.newChannel(input_stream);
                         try (var fileOutputStream = new FileOutputStream(download_file)) {
                             var fileChannel = fileOutputStream.getChannel();
-                            fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+                            var position = 0L;
+                            long transferred;
+                            while ((transferred = fileChannel.transferFrom(readableByteChannel, position, TRANSFER_CHUNK_SIZE)) > 0) {
+                                position += transferred;
+                                transfer.progress(position, content_length);
+                            }
 
-                            System.out.print("done");
+                            status = "done";
                             return true;
                         }
                     }
                 } catch (FileNotFoundException e) {
-                    System.out.print("not found");
+                    status = "not found";
                     return false;
                 }
             }
         } finally {
-            System.out.println();
+            transfer.finish(status);
         }
     }
 

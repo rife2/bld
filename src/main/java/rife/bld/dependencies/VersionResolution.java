@@ -8,6 +8,7 @@ import rife.ioc.HierarchicalProperties;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * This class is responsible for managing version overrides for dependencies.
@@ -27,6 +28,10 @@ import java.util.Map;
  * bld.override-tests=com.uwyn.rife2:bld-tests-badge:1.4.7
  * bld.override-h2=com.h2database:h2:2.2.222
  * </pre>
+ * <p>
+ * It also captures other dependency resolution preferences, like the number
+ * of parallel artifact transfers through the "{@code bld.transferParallelism}"
+ * property.
  * @since 2.0
  */
 public class VersionResolution {
@@ -36,7 +41,16 @@ public class VersionResolution {
      */
     public static final String PROPERTY_OVERRIDE_PREFIX = "bld.override";
 
+    /**
+     * The property key that determines how many artifact transfers are
+     * performed in parallel, {@code 1} makes them sequential.
+     * @since 2.3.1
+     */
+    public static final String PROPERTY_TRANSFER_PARALLELISM = "bld.transferParallelism";
+    private static final int DEFAULT_TRANSFER_PARALLELISM = 6;
+
     private final Map<String, Version> versionOverrides_ = new HashMap<>();
+    private final int transferParallelism_;
 
     /**
      * Returns a dummy {@code VersionResolution} instance that doesn't override anything.
@@ -59,6 +73,7 @@ public class VersionResolution {
      * @since 2.0
      */
     public VersionResolution(HierarchicalProperties properties) {
+        var transfer_parallelism = DEFAULT_TRANSFER_PARALLELISM;
         if (properties != null) {
             for (var name : properties.getNames()) {
                 if (name.startsWith(PROPERTY_OVERRIDE_PREFIX)) {
@@ -73,7 +88,17 @@ public class VersionResolution {
                     }
                 }
             }
+
+            var parallelism = properties.getValueString(PROPERTY_TRANSFER_PARALLELISM);
+            if (parallelism != null && !parallelism.isBlank()) {
+                try {
+                    transfer_parallelism = Math.max(1, Integer.parseInt(parallelism.trim()));
+                } catch (NumberFormatException e) {
+                    Logger.getLogger("rife.bld").warning("Unable to parse the " + PROPERTY_TRANSFER_PARALLELISM + " property as an integer: '" + parallelism + "', using " + transfer_parallelism + " instead");
+                }
+            }
         }
+        transferParallelism_ = transfer_parallelism;
     }
 
     /**
@@ -121,5 +146,16 @@ public class VersionResolution {
      */
     public Map<String, Version> versionOverrides() {
         return versionOverrides_;
+    }
+
+    /**
+     * Returns the number of artifact transfers that are performed in parallel,
+     * {@code 1} means transfers are sequential.
+     *
+     * @return the number of parallel artifact transfers
+     * @since 2.3.1
+     */
+    public int transferParallelism() {
+        return transferParallelism_;
     }
 }
