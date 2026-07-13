@@ -8,7 +8,6 @@ import rife.bld.dependencies.exceptions.DependencyTransferException;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.Supplier;
 
 /**
  * Convenience class to handle a set of {@link Dependency} objects.
@@ -146,56 +145,9 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * @since 2.1
      */
     public List<RepositoryArtifact> transferIntoDirectory(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, File directory, File modulesDirectory, String... classifiers) {
-        var transfers = new ArrayList<Supplier<List<RepositoryArtifact>>>();
-        for (var dependency : this) {
-            var transfer_directory = directory;
-            if (dependency.isModularJar()) {
-                if (modulesDirectory == null) {
-                    throw new DependencyTransferException(dependency, "modules directory is not provided");
-                }
-                transfer_directory = modulesDirectory;
-            }
-            else if (directory == null) {
-                throw new DependencyTransferException(dependency, "artifacts directory is not provided");
-            }
-
-            if (!transfer_directory.exists()) {
-                if (!transfer_directory.mkdirs()) {
-                    throw new DependencyTransferException(dependency, transfer_directory, "couldn't create directory");
-                }
-            }
-
-            final var target_directory = transfer_directory;
-            transfers.add(() -> {
-                var artifacts = new ArrayList<RepositoryArtifact>();
-                var artifact = new DependencyResolver(resolution, retriever, repositories, dependency).transferIntoDirectory(target_directory);
-                if (artifact != null) {
-                    artifacts.add(artifact);
-                }
-
-                if (classifiers != null) {
-                    for (var classifier : classifiers) {
-                        if (classifier != null && !dependency.excludedClassifiers().contains(classifier)) {
-                            var classifier_artifact = new DependencyResolver(resolution, retriever, repositories, dependency.withClassifier(classifier)).transferIntoDirectory(target_directory);
-                            if (classifier_artifact != null) {
-                                artifacts.add(classifier_artifact);
-                            }
-                        }
-                    }
-                }
-                return artifacts;
-            });
-        }
-
-        return executeTransfers(transfers, resolution.transferParallelism());
-    }
-
-    private static List<RepositoryArtifact> executeTransfers(List<Supplier<List<RepositoryArtifact>>> transfers, int transferParallelism) {
-        var result = new ArrayList<RepositoryArtifact>();
-        for (var artifacts : ParallelExecution.execute(transfers, transferParallelism)) {
-            result.addAll(artifacts);
-        }
-        return result;
+        return new DependencyTransferBatch()
+            .add(this, directory, modulesDirectory, classifiers)
+            .transfer(resolution, retriever, repositories);
     }
 
     /**

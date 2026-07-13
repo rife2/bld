@@ -4,21 +4,17 @@
  */
 package rife.bld.dependencies;
 
-import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 import rife.ioc.HierarchicalProperties;
 import rife.tools.FileUtils;
 import rife.tools.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static rife.bld.dependencies.TransferTestHelper.*;
 import static rife.bld.dependencies.RepositoryTestHelper.getNextRepository;
 import static rife.bld.dependencies.Scope.compile;
 import static rife.bld.dependencies.Scope.runtime;
@@ -390,8 +386,8 @@ public class TestDependencySet {
         server.start();
         var tmp = Files.createTempDirectory("transfers").toFile();
         try {
-            var dependencies = createTransferDependencies();
-            var repositories = List.of(new Repository("http://localhost:" + server.getAddress().getPort() + "/"));
+            var dependencies = createTransferDependencies(1, 6);
+            var repositories = List.of(transferRepository(server));
 
             var artifacts = dependencies.transferIntoDirectory(new VersionResolution(null), ArtifactRetriever.instance(), repositories, tmp, tmp);
 
@@ -415,8 +411,8 @@ public class TestDependencySet {
             var resolution = new VersionResolution(properties);
             assertEquals(1, resolution.transferParallelism());
 
-            var dependencies = createTransferDependencies();
-            var repositories = List.of(new Repository("http://localhost:" + server.getAddress().getPort() + "/"));
+            var dependencies = createTransferDependencies(1, 6);
+            var repositories = List.of(transferRepository(server));
 
             var artifacts = dependencies.transferIntoDirectory(resolution, ArtifactRetriever.instance(), repositories, tmp, tmp);
 
@@ -428,47 +424,4 @@ public class TestDependencySet {
         }
     }
 
-    private static DependencySet createTransferDependencies() {
-        var dependencies = new DependencySet();
-        for (var i = 1; i <= 6; i++) {
-            dependencies.include(new Dependency("com.example", "artifact" + i, new VersionNumber(1, 0, 0)));
-        }
-        return dependencies;
-    }
-
-    private static HttpServer createTransferServer(AtomicInteger maxConcurrentTransfers)
-    throws IOException {
-        var active_transfers = new AtomicInteger();
-        var server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
-        server.createContext("/", exchange -> {
-            var active = active_transfers.incrementAndGet();
-            maxConcurrentTransfers.accumulateAndGet(active, Math::max);
-            try {
-                // delay the response so that parallel transfers overlap
-                Thread.sleep(200);
-
-                var body = exchange.getRequestURI().getPath().getBytes();
-                exchange.sendResponseHeaders(200, body.length);
-                exchange.getResponseBody().write(body);
-                exchange.close();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } finally {
-                active_transfers.decrementAndGet();
-            }
-        });
-        server.setExecutor(Executors.newCachedThreadPool());
-        return server;
-    }
-
-    private static void assertTransferredArtifacts(DependencySet dependencies, List<RepositoryArtifact> artifacts, File directory) {
-        assertEquals(dependencies.size(), artifacts.size());
-        var index = 0;
-        for (var dependency : dependencies) {
-            var filename = dependency.artifactId() + "-" + dependency.version() + ".jar";
-            assertTrue(artifacts.get(index).location().endsWith(filename), "expected artifact " + filename + " at index " + index);
-            assertTrue(new File(directory, filename).exists(), "expected file " + filename + " to be transferred");
-            ++index;
-        }
-    }
 }

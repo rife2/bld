@@ -42,9 +42,13 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     private File libTestModulesDirectory_;
     private boolean downloadSources_ = false;
     private boolean downloadJavadoc_ = false;
+    private final DependencyTransferBatch transfers_ = new DependencyTransferBatch();
 
     /**
      * Performs the download operation.
+     * <p>
+     * The artifact transfers of all the scopes are collected first and then
+     * performed together in a single parallel batch.
      *
      * @since 1.5
      */
@@ -59,6 +63,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
         executeDownloadRuntimeDependencies();
         executeDownloadStandaloneDependencies();
         executeDownloadTestDependencies();
+        executeTransferDependencies();
         if (!silent()) {
             System.out.println("Downloading finished successfully.");
         }
@@ -110,7 +115,11 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     }
 
     /**
-     * Part of the {@link #execute} operation, download the artifacts for a particular dependency scope.
+     * Part of the {@link #execute} operation, collect the artifact transfers
+     * for a particular dependency scope into the {@linkplain #transfers()
+     * transfer batch}.
+     * <p>
+     * The transfers are performed by {@link #executeTransferDependencies}.
      *
      * @param destinationDirectory the directory in which the artifacts should be downloaded
      * @param modulesDirectory     the directory in which the modules should be downloaded
@@ -128,7 +137,29 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
             additional_classifiers = classifiers.toArray(new String[0]);
         }
 
-        dependencies.transferIntoDirectory(new VersionResolution(properties()), artifactRetriever(), repositories(), destinationDirectory, modulesDirectory, additional_classifiers);
+        transfers().add(dependencies, destinationDirectory, modulesDirectory, additional_classifiers);
+    }
+
+    /**
+     * Part of the {@link #execute} operation, perform all the collected
+     * artifact transfers of the {@linkplain #transfers() transfer batch}
+     * together in parallel.
+     *
+     * @since 2.3.1
+     */
+    protected void executeTransferDependencies() {
+        transfers().transfer(new VersionResolution(properties()), artifactRetriever(), repositories());
+    }
+
+    /**
+     * Returns the batch that collects the artifact transfers of this
+     * operation.
+     *
+     * @return the artifact transfer batch of this operation
+     * @since 2.3.1
+     */
+    protected DependencyTransferBatch transfers() {
+        return transfers_;
     }
 
     /**
