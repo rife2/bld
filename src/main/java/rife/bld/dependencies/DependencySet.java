@@ -8,9 +8,6 @@ import rife.bld.dependencies.exceptions.DependencyTransferException;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 /**
@@ -195,39 +192,8 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
 
     private static List<RepositoryArtifact> executeTransfers(List<Supplier<List<RepositoryArtifact>>> transfers, int transferParallelism) {
         var result = new ArrayList<RepositoryArtifact>();
-
-        var parallelism = Math.min(transfers.size(), transferParallelism);
-        if (parallelism <= 1) {
-            for (var transfer : transfers) {
-                result.addAll(transfer.get());
-            }
-            return result;
-        }
-
-        var executor = Executors.newFixedThreadPool(parallelism);
-        try {
-            var futures = new ArrayList<Future<List<RepositoryArtifact>>>();
-            for (var transfer : transfers) {
-                futures.add(executor.submit(transfer::get));
-            }
-            for (var future : futures) {
-                try {
-                    result.addAll(future.get());
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new IllegalStateException("Artifact transfer was interrupted", e);
-                } catch (ExecutionException e) {
-                    if (e.getCause() instanceof RuntimeException runtime) {
-                        throw runtime;
-                    }
-                    if (e.getCause() instanceof Error error) {
-                        throw error;
-                    }
-                    throw new IllegalStateException(e.getCause());
-                }
-            }
-        } finally {
-            executor.shutdownNow();
+        for (var artifacts : ParallelExecution.execute(transfers, transferParallelism)) {
+            result.addAll(artifacts);
         }
         return result;
     }
@@ -260,11 +226,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * @since 2.0
      */
     public String generateTransitiveDependencyTree(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, Scope... scopes) {
-        var compile_dependencies = new DependencySet();
-        for (var dependency : this) {
-            compile_dependencies.addAll(new DependencyResolver(resolution, retriever, repositories, dependency).getAllDependencies(scopes));
-        }
-        return compile_dependencies.generateDependencyTree();
+        return DependencyResolver.resolveAllDependencies(resolution, retriever, repositories, this, scopes).generateDependencyTree();
     }
 
     /**

@@ -49,8 +49,18 @@ public class VersionResolution {
     public static final String PROPERTY_TRANSFER_PARALLELISM = "bld.transferParallelism";
     private static final int DEFAULT_TRANSFER_PARALLELISM = 6;
 
+    /**
+     * The property key that determines how many POMs are speculatively
+     * retrieved in parallel during transitive dependency resolution,
+     * {@code 1} disables the parallel retrieval.
+     * @since 2.3.1
+     */
+    public static final String PROPERTY_RESOLUTION_PARALLELISM = "bld.resolutionParallelism";
+    private static final int DEFAULT_RESOLUTION_PARALLELISM = 6;
+
     private final Map<String, Version> versionOverrides_ = new HashMap<>();
     private final int transferParallelism_;
+    private final int resolutionParallelism_;
 
     /**
      * Returns a dummy {@code VersionResolution} instance that doesn't override anything.
@@ -73,7 +83,6 @@ public class VersionResolution {
      * @since 2.0
      */
     public VersionResolution(HierarchicalProperties properties) {
-        var transfer_parallelism = DEFAULT_TRANSFER_PARALLELISM;
         if (properties != null) {
             for (var name : properties.getNames()) {
                 if (name.startsWith(PROPERTY_OVERRIDE_PREFIX)) {
@@ -88,17 +97,23 @@ public class VersionResolution {
                     }
                 }
             }
+        }
+        transferParallelism_ = parseParallelism(properties, PROPERTY_TRANSFER_PARALLELISM, DEFAULT_TRANSFER_PARALLELISM);
+        resolutionParallelism_ = parseParallelism(properties, PROPERTY_RESOLUTION_PARALLELISM, DEFAULT_RESOLUTION_PARALLELISM);
+    }
 
-            var parallelism = properties.getValueString(PROPERTY_TRANSFER_PARALLELISM);
+    private static int parseParallelism(HierarchicalProperties properties, String property, int defaultValue) {
+        if (properties != null) {
+            var parallelism = properties.getValueString(property);
             if (parallelism != null && !parallelism.isBlank()) {
                 try {
-                    transfer_parallelism = Math.max(1, Integer.parseInt(parallelism.trim()));
+                    return Math.max(1, Integer.parseInt(parallelism.trim()));
                 } catch (NumberFormatException e) {
-                    Logger.getLogger("rife.bld").warning("Unable to parse the " + PROPERTY_TRANSFER_PARALLELISM + " property as an integer: '" + parallelism + "', using " + transfer_parallelism + " instead");
+                    Logger.getLogger("rife.bld").warning("Unable to parse the " + property + " property as an integer: '" + parallelism + "', using " + defaultValue + " instead");
                 }
             }
         }
-        transferParallelism_ = transfer_parallelism;
+        return defaultValue;
     }
 
     /**
@@ -157,5 +172,17 @@ public class VersionResolution {
      */
     public int transferParallelism() {
         return transferParallelism_;
+    }
+
+    /**
+     * Returns the number of POMs that are speculatively retrieved in parallel
+     * during transitive dependency resolution, {@code 1} means the parallel
+     * retrieval is disabled.
+     *
+     * @return the number of parallel POM retrievals
+     * @since 2.3.1
+     */
+    public int resolutionParallelism() {
+        return resolutionParallelism_;
     }
 }

@@ -45,6 +45,10 @@ public abstract class ArtifactRetriever {
 
         void cache(RepositoryArtifact artifact, String content) {
         }
+
+        boolean isCaching() {
+            return false;
+        }
     };
 
     /**
@@ -76,6 +80,9 @@ public abstract class ArtifactRetriever {
                 artifactCache.put(artifact, content);
             }
 
+            boolean isCaching() {
+                return true;
+            }
         };
     }
 
@@ -85,6 +92,8 @@ public abstract class ArtifactRetriever {
     abstract String getCached(RepositoryArtifact artifact);
 
     abstract void cache(RepositoryArtifact artifact, String content);
+
+    abstract boolean isCaching();
 
     /**
      * Reads the contents of an artifact as a string.

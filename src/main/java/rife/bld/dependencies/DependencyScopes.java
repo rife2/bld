@@ -6,6 +6,7 @@ package rife.bld.dependencies;
 
 import rife.ioc.HierarchicalProperties;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -147,15 +148,14 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
 
     private DependencySet resolveScopedDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories, Scope[] resolvedScopes, Scope[] transitiveScopes, DependencySet excluded) {
         var resolution = new VersionResolution(properties);
-        var dependencies = new DependencySet();
+        var roots = new ArrayList<Dependency>();
         for (var scope : resolvedScopes) {
             var scoped_dependencies = get(scope);
             if (scoped_dependencies != null) {
-                for (var dependency : scoped_dependencies) {
-                    dependencies.addAll(new DependencyResolver(resolution, retriever, repositories, dependency).getAllDependencies(transitiveScopes));
-                }
+                roots.addAll(scoped_dependencies);
             }
         }
+        var dependencies = DependencyResolver.resolveAllDependencies(resolution, retriever, repositories, roots, transitiveScopes);
         if (excluded != null) {
             dependencies.removeAll(excluded);
         }
