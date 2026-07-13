@@ -136,7 +136,7 @@ public class JavacOptions extends ArrayList<String> {
      * of other-module is ALL-UNNAMED
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions addExports(String... modules) {
         if (isNotEmpty(modules)) {
@@ -151,7 +151,7 @@ public class JavacOptions extends ArrayList<String> {
      * of other-module is ALL-UNNAMED
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions addExports(Collection<String> modules) {
         return addCommaSeparatedOption("--add-exports", modules);
@@ -161,7 +161,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specifies additional modules to be considered as required by a given module
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions addReads(String... modules) {
         if (isNotEmpty(modules)) {
@@ -174,7 +174,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specifies additional modules to be considered as required by a given module
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions addReads(Collection<String> modules) {
         return addCommaSeparatedOption("--add-reads", modules);
@@ -222,7 +222,7 @@ public class JavacOptions extends ArrayList<String> {
      * if none specified or inferred
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions defaultModuleForCreatedFiles(String module) {
         add("--default-module-for-created-files");
@@ -417,7 +417,7 @@ public class JavacOptions extends ArrayList<String> {
      * Overrides or augments a module with classes and resources in JAR files or directories
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions patchModule(String module) {
         add("--patch-module");
@@ -441,7 +441,7 @@ public class JavacOptions extends ArrayList<String> {
      * Provide source compatibility with the specified Java SE release
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions source(int version) {
         add("--source");
@@ -453,7 +453,7 @@ public class JavacOptions extends ArrayList<String> {
      * Generate class files suitable for the specified Java SE release
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions target(int version) {
         add("--target");
@@ -645,7 +645,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specify where to find input source files for multiple modules
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions moduleSourcePathStrings(Collection<String> paths) {
         return addPathOption("--module-source-path", paths);
@@ -655,7 +655,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specify where to find input source files for multiple modules
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions moduleSourcePathPaths(Collection<Path> paths) {
         if (isNotEmpty(paths)) {
@@ -668,7 +668,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specify where to find input source files for multiple modules
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions moduleSourcePath(Collection<File> paths) {
         if (isNotEmpty(paths)) {
@@ -827,7 +827,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specify a module path where to find annotation processors
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions processorModulePathPaths(Collection<Path> paths) {
         if (isNotEmpty(paths)) {
@@ -840,7 +840,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specify a module path where to find annotation processors
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions processorModulePathStrings(Collection<String> paths) {
         return addPathOption("--processor-module-path", paths);
@@ -850,7 +850,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specify a module path where to find annotation processors
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions processorModulePath(Collection<File> paths) {
         if (isNotEmpty(paths)) {
@@ -902,7 +902,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specify where to find annotation processors
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions processorPathStrings(Collection<String> paths) {
         return addPathOption("--processor-path", paths);
@@ -912,7 +912,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specify where to find annotation processors
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions processorPath(Collection<File> paths) {
         if (isNotEmpty(paths)) {
@@ -925,7 +925,7 @@ public class JavacOptions extends ArrayList<String> {
      * Specify where to find annotation processors
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions processorPathPaths(Collection<Path> paths) {
         if (isNotEmpty(paths)) {
@@ -1036,7 +1036,7 @@ public class JavacOptions extends ArrayList<String> {
      * Override location of upgradeable modules
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions upgradeModulePathStrings(Collection<String> paths) {
         return addPathOption("--upgrade-module-path", paths);
@@ -1046,7 +1046,7 @@ public class JavacOptions extends ArrayList<String> {
      * Override location of upgradeable modules
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions upgradeModulePath(Collection<File> paths) {
         if (isNotEmpty(paths)) {
@@ -1059,7 +1059,7 @@ public class JavacOptions extends ArrayList<String> {
      * Override location of upgradeable modules
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions upgradeModulePathPaths(Collection<Path> paths) {
         if (isNotEmpty(paths)) {
@@ -1083,7 +1083,7 @@ public class JavacOptions extends ArrayList<String> {
      * Enable recommended warning categories
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions xLint() {
         add("-Xlint");
@@ -1094,7 +1094,7 @@ public class JavacOptions extends ArrayList<String> {
      * Warning categories to enable
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions xLint(XLintKey... keys) {
         if (isNotEmpty(keys)) {
@@ -1107,7 +1107,7 @@ public class JavacOptions extends ArrayList<String> {
      * Warning categories to enable
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions xLint(Collection<XLintKey> keys) {
         if (isNotEmpty(keys)) {
@@ -1120,7 +1120,7 @@ public class JavacOptions extends ArrayList<String> {
      * Warning categories to disable
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions xLintDisable(XLintKey... keys) {
         if (isNotEmpty(keys)) {
@@ -1133,7 +1133,7 @@ public class JavacOptions extends ArrayList<String> {
      * Warning categories to disable
      *
      * @return this list of options
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public JavacOptions xLintDisable(Collection<XLintKey> keys) {
         if (isNotEmpty(keys)) {

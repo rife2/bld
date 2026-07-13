@@ -44,7 +44,7 @@ public class VersionResolution {
     /**
      * The property key that determines how many artifact transfers are
      * performed in parallel, {@code 1} makes them sequential.
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public static final String PROPERTY_TRANSFER_PARALLELISM = "bld.transferParallelism";
     private static final int DEFAULT_TRANSFER_PARALLELISM = 6;
@@ -53,7 +53,7 @@ public class VersionResolution {
      * The property key that determines how many POMs are speculatively
      * retrieved in parallel during transitive dependency resolution,
      * {@code 1} disables the parallel retrieval.
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public static final String PROPERTY_RESOLUTION_PARALLELISM = "bld.resolutionParallelism";
     private static final int DEFAULT_RESOLUTION_PARALLELISM = 6;
@@ -168,7 +168,7 @@ public class VersionResolution {
      * {@code 1} means transfers are sequential.
      *
      * @return the number of parallel artifact transfers
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public int transferParallelism() {
         return transferParallelism_;
@@ -180,7 +180,7 @@ public class VersionResolution {
      * retrieval is disabled.
      *
      * @return the number of parallel POM retrievals
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public int resolutionParallelism() {
         return resolutionParallelism_;

@@ -55,7 +55,7 @@ public abstract class AbstractOperation<T extends AbstractOperation<T>> {
      * @param verbose {@code true} if the operation should be verbose;
      *                {@code false} otherwise
      * @return this operation instance
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public T verbose(boolean verbose) {
         verbose_ = verbose;
@@ -68,7 +68,7 @@ public abstract class AbstractOperation<T extends AbstractOperation<T>> {
      *
      * @return {@code true} if the operation should be verbose;
      * {@code false} otherwise
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public boolean verbose() {
         return verbose_;

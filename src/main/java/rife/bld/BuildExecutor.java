@@ -144,7 +144,7 @@ public class BuildExecutor {
      *
      * @return {@code true} if the execution is verbose;
      *         or {@code false} otherwise
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public boolean verbose() {
         return verbose_;

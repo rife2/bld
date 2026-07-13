@@ -145,7 +145,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * artifact transfers of the {@linkplain #transfers() transfer batch}
      * together in parallel.
      *
-     * @since 2.3.1
+     * @since 2.4.0
      */
     protected void executeTransferDependencies() {
         transfers().transfer(new VersionResolution(properties()), artifactRetriever(), repositories());
@@ -156,7 +156,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * operation.
      *
      * @return the artifact transfer batch of this operation
-     * @since 2.3.1
+     * @since 2.4.0
      */
     protected DependencyTransferBatch transfers() {
         return transfers_;

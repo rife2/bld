@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  * order will have its exception rethrown.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.3.1
+ * @since 2.4.0
  */
 final class ParallelExecution {
     private ParallelExecution() {

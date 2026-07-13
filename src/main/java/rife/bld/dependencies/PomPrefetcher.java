@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
  * POM of each unique dependency will only be prefetched once.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.3.1
+ * @since 2.4.0
  */
 class PomPrefetcher {
     private final VersionResolution resolution_;
@@ -34,7 +34,7 @@ class PomPrefetcher {
      *
      * @return the prefetcher; or {@code null} when the retriever doesn't
      * cache the retrieved POMs or when the resolution parallelism disables it
-     * @since 2.3.1
+     * @since 2.4.0
      */
     static PomPrefetcher create(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories) {
         // prefetching only has benefits when the retrieved POMs are

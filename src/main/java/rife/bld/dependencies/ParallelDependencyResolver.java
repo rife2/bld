@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * {@link DependencyResolver}, in the same order.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.3.1
+ * @since 2.4.0
  */
 public class ParallelDependencyResolver {
     private final VersionResolution resolution_;
@@ -34,7 +34,7 @@ public class ParallelDependencyResolver {
      * @param resolution   the version resolution state that can be cached
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the resolution
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public ParallelDependencyResolver(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories) {
         resolution_ = resolution;
@@ -55,7 +55,7 @@ public class ParallelDependencyResolver {
      * @param roots  the root dependencies to resolve
      * @param scopes the scopes to return the transitive dependencies for
      * @return the merged transitive dependencies of all the roots
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public DependencySet resolveAllDependencies(Collection<Dependency> roots, Scope... scopes) {
         var result = new DependencySet();
@@ -86,7 +86,7 @@ public class ParallelDependencyResolver {
      *
      * @param dependencies the dependencies to resolve the latest versions of
      * @return the latest versions in the order of the provided dependencies
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public List<Version> resolveLatestVersions(List<Dependency> dependencies) {
         var resolutions = new ArrayList<Supplier<Version>>(dependencies.size());
@@ -100,7 +100,7 @@ public class ParallelDependencyResolver {
      * Returns the version resolution state that can be cached.
      *
      * @return the version resolution state
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public VersionResolution resolution() {
         return resolution_;
@@ -110,7 +110,7 @@ public class ParallelDependencyResolver {
      * Retrieve the repositories that are used by this resolver.
      *
      * @return the resolver's repositories
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public List<Repository> repositories() {
         return repositories_;

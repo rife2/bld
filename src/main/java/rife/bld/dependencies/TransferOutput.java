@@ -18,7 +18,7 @@ import java.util.List;
  * interleaving the lines of parallel transfers.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.3.1
+ * @since 2.4.0
  */
 abstract class TransferOutput {
     private static final TransferOutput INSTANCE = create();
@@ -39,14 +39,14 @@ abstract class TransferOutput {
      *
      * @param location the location of the artifact that is being transferred
      * @return the transfer to report progress and completion on
-     * @since 2.3.1
+     * @since 2.4.0
      */
     abstract Transfer start(String location);
 
     /**
      * A single artifact transfer whose progress is being tracked.
      *
-     * @since 2.3.1
+     * @since 2.4.0
      */
     abstract static class Transfer {
         protected final String location_;
@@ -60,7 +60,7 @@ abstract class TransferOutput {
          *
          * @param transferred the number of bytes transferred so far
          * @param total       the total number of bytes; or {@code -1} when unknown
-         * @since 2.3.1
+         * @since 2.4.0
          */
         abstract void progress(long transferred, long total);
 
@@ -69,7 +69,7 @@ abstract class TransferOutput {
          *
          * @param status the final status of the transfer, like
          *               {@code done}, {@code exists} or {@code not found}
-         * @since 2.3.1
+         * @since 2.4.0
          */
         abstract void finish(String status);
     }

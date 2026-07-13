@@ -29,7 +29,7 @@ public class BaseProject extends BuildExecutor {
     /**
      * The CLI option to trigger automatic dependency download and purge.
      *
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public static final String AUTO_DOWNLOAD_PURGE_OPTION = "--auto-download-purge";
 

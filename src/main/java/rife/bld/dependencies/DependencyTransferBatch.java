@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  * transfers into the same directory are only performed once.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.3.1
+ * @since 2.4.0
  */
 public class DependencyTransferBatch {
     private record TransferRequest(Dependency dependency, File directory, String[] classifiers) {
@@ -45,7 +45,7 @@ public class DependencyTransferBatch {
      * @param classifiers      the additional classifiers to transfer
      * @return this batch instance
      * @throws DependencyTransferException when the transfer couldn't be prepared
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public DependencyTransferBatch add(DependencySet dependencies, File directory, File modulesDirectory, String... classifiers) {
         for (var dependency : dependencies) {
@@ -88,7 +88,7 @@ public class DependencyTransferBatch {
      * @param repositories the repositories to use for the transfer
      * @return the list of artifacts that were transferred successfully
      * @throws DependencyTransferException when an error occurred during the transfer
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public List<RepositoryArtifact> transfer(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories) {
         final var repos = (repositories == null ? List.<Repository>of() : repositories);
