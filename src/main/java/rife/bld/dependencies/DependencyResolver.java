@@ -102,7 +102,7 @@ public class DependencyResolver {
         var pom_dependencies = getMavenPom(dependency_).getDependencies(scopes);
         var result = new DependencySet();
         for (var dependency : pom_dependencies) {
-            result.add(resolution_.overrideDependency(dependency.convertToDependency()));
+            result.add(resolution_.overrideTransitiveDependency(dependency.convertToDependency()));
         }
         return result;
     }
@@ -121,19 +121,17 @@ public class DependencyResolver {
      * @since 1.5
      */
     public DependencySet getAllDependencies(Scope... scopes) {
-        var prefetcher = PomPrefetcher.create(resolution_, retriever_, repositories_);
+        var prefetcher = new PomPrefetcher(resolution_, retriever_, repositories_);
         try {
             return getAllDependencies(prefetcher, scopes);
         } finally {
-            if (prefetcher != null) {
-                prefetcher.shutdown();
-            }
+            prefetcher.shutdown();
         }
     }
 
     DependencySet getAllDependencies(PomPrefetcher prefetcher, Scope... scopes) {
         var result = new DependencySet();
-        var overridden = resolution_.overrideDependency(dependency_);
+        var overridden = resolution_.overrideDeclaredDependency(dependency_);
         result.add(overridden);
 
         var dependency_queue = new ArrayList<PomDependency>();
@@ -151,11 +149,9 @@ public class DependencyResolver {
             dependency_queue.addAll(next_dependencies);
             // speculatively retrieve the POMs of the queued dependencies in
             // parallel so that they are cached when they're processed in order
-            if (prefetcher != null) {
-                prefetcher.prefetch(next_dependencies);
-            }
+            prefetcher.prefetch(next_dependencies);
 
-            // unless we find a next set of dependencies to add, stop resolving
+            // unless we find the next set of dependencies to add, stop resolving
             parent = null;
             next_dependencies = null;
 
@@ -163,7 +159,7 @@ public class DependencyResolver {
             // part of the results yet
             while (!dependency_queue.isEmpty()) {
                 var candidate = dependency_queue.remove(0);
-                var dependency = resolution_.overrideDependency(candidate.convertToDependency());
+                var dependency = resolution_.overrideTransitiveDependency(candidate.convertToDependency());
                 if (!result.contains(dependency)) {
                     result.add(dependency);
 

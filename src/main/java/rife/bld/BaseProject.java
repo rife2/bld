@@ -993,6 +993,61 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
+     * Creates a new bill of materials instance.
+     *
+     * @param groupId    the BOM group identifier
+     * @param artifactId the BOM artifact identifier
+     * @return a newly created {@code Bom} instance
+     * @since 2.4.0
+     */
+    public Bom bom(String groupId, String artifactId) {
+        return new Bom(groupId, artifactId);
+    }
+
+    /**
+     * Creates a new bill of materials instance.
+     *
+     * @param groupId    the BOM group identifier
+     * @param artifactId the BOM artifact identifier
+     * @param version    the BOM version
+     * @return a newly created {@code Bom} instance
+     * @since 2.4.0
+     */
+    public Bom bom(String groupId, String artifactId, String version) {
+        return new Bom(groupId, artifactId, version(version));
+    }
+
+    /**
+     * Creates a new bill of materials instance.
+     *
+     * @param groupId    the BOM group identifier
+     * @param artifactId the BOM artifact identifier
+     * @param version    the BOM version
+     * @return a newly created {@code Bom} instance
+     * @since 2.4.0
+     */
+    public Bom bom(String groupId, String artifactId, Version version) {
+        return new Bom(groupId, artifactId, version);
+    }
+
+    /**
+     * Creates a new bill of materials instance from a string representation.
+     * The format is {@code groupId:artifactId:version:classifier}.
+     * The {@code version} and {@code classifier} are optional, and an
+     * optional {@code @bom} or {@code @pom} type suffix is accepted.
+     * <p>
+     * If the string can't be successfully parsed, {@code null} will be returned.
+     *
+     * @param description the BOM string to parse
+     * @return a parsed instance of {@code Bom}; or
+     * {@code null} when the string couldn't be parsed
+     * @since 2.4.0
+     */
+    public Bom bom(String description) {
+        return Bom.parse(description);
+    }
+
+    /**
      * Creates a local module instance.
      * <p>
      * If the local module points to a directory, it will be scanned for jar files.

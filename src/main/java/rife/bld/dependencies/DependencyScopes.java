@@ -147,14 +147,16 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
     }
 
     private DependencySet resolveScopedDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories, Scope[] resolvedScopes, Scope[] transitiveScopes, DependencySet excluded) {
-        var resolution = new VersionResolution(properties);
         var roots = new ArrayList<Dependency>();
+        var boms = new ArrayList<Bom>();
         for (var scope : resolvedScopes) {
             var scoped_dependencies = get(scope);
             if (scoped_dependencies != null) {
                 roots.addAll(scoped_dependencies);
+                boms.addAll(scoped_dependencies.boms());
             }
         }
+        var resolution = new VersionResolution(properties, retriever, repositories, boms);
         var dependencies = new ParallelDependencyResolver(resolution, retriever, repositories).resolveAllDependencies(roots, transitiveScopes);
         if (excluded != null) {
             dependencies.removeAll(excluded);

@@ -40,6 +40,14 @@ public class Dependency {
     // see https://github.com/apache/maven/blob/maven-4.0.0-beta-3/api/maven-api-core/src/main/java/org/apache/maven/api/Type.java
     public static final String TYPE_MODULAR_JAR = "modular-jar";
 
+    /**
+     * The dependency type name for a bill of materials POM whose
+     * dependency management supplies versions during resolution.
+     *
+     * @since 2.4.0
+     */
+    public static final String TYPE_BOM = "bom";
+
     private final String groupId_;
     private final String artifactId_;
     private final Version version_;

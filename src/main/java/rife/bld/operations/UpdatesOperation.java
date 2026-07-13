@@ -35,7 +35,21 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
         var scopes = new ArrayList<Scope>();
         var dependencies = new ArrayList<Dependency>();
         for (var entry : dependencies_.entrySet()) {
-            for (var dependency : entry.getValue()) {
+            var scoped_dependencies = entry.getValue();
+            for (var bom : scoped_dependencies.boms()) {
+                scopes.add(entry.getKey());
+                dependencies.add(bom);
+            }
+
+            // dependencies that are declared without a version and that are
+            // covered by a BOM in the same scope have their version governed
+            // by that BOM, the BOM update itself carries their update signal
+            var scope_resolution = new VersionResolution(properties(), artifactRetriever(), repositories(), scoped_dependencies.boms());
+            for (var dependency : scoped_dependencies) {
+                if (VersionNumber.UNKNOWN.equals(dependency.version()) &&
+                    scope_resolution.bomVersions().containsKey(dependency.toArtifactString())) {
+                    continue;
+                }
                 scopes.add(entry.getKey());
                 dependencies.add(dependency);
             }
@@ -48,9 +62,13 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
             var dependency = dependencies.get(i);
             var latest = latest_versions.get(i);
             if (latest.compareTo(dependency.version()) > 0) {
-                var latest_dependency = new Dependency(dependency.groupId(), dependency.artifactId(), latest,
-                    dependency.classifier(), dependency.type());
-                result.scope(scopes.get(i)).include(latest_dependency);
+                if (dependency instanceof Bom) {
+                    result.scope(scopes.get(i)).include(new Bom(dependency.groupId(), dependency.artifactId(), latest,
+                        dependency.classifier()));
+                } else {
+                    result.scope(scopes.get(i)).include(new Dependency(dependency.groupId(), dependency.artifactId(), latest,
+                        dependency.classifier(), dependency.type()));
+                }
             }
         }
 
@@ -63,6 +81,9 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
             for (var entry : result.entrySet()) {
                 var scope = entry.getKey();
                 System.out.println(scope + ":");
+                for (var bom : entry.getValue().boms()) {
+                    System.out.println("    " + bom);
+                }
                 for (var dependency : entry.getValue()) {
                     System.out.println("    " + dependency);
                 }

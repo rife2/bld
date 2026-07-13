@@ -24,6 +24,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
     private final Map<Dependency, Dependency> dependencies_ = new LinkedHashMap<>();
     private final Set<LocalDependency> localDependencies_ = new LinkedHashSet<>();
     private final Set<LocalModule> localModules_ = new LinkedHashSet<>();
+    private final Set<Bom> boms_ = new LinkedHashSet<>();
 
     /**
      * Creates an empty dependency set.
@@ -81,7 +82,32 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
     }
 
     /**
-     * Includes a local module into the dependency set.
+     * Includes a bill of materials in the dependency set.
+     * <p>
+     * BOMs aren't transferred, their dependency management sections supply
+     * versions during the resolution of this dependency set.
+     *
+     * @param bom the BOM to include
+     * @return this dependency set instance
+     * @since 2.4.0
+     */
+    public DependencySet include(Bom bom) {
+        boms_.add(bom);
+        return this;
+    }
+
+    /**
+     * Retrieves the bills of materials.
+     *
+     * @return the set of BOMs
+     * @since 2.4.0
+     */
+    public Set<Bom> boms() {
+        return boms_;
+    }
+
+    /**
+     * Includes a local module in the dependency set.
      * <p>
      * Local modules aren't resolved and point to a location on
      * the file system.
@@ -153,7 +179,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
     /**
      * Returns the dependency that was stored in the set.
      * <p>
-     * The version can be different from the dependency passed in and this
+     * The version can be different from the dependency passed in, and this
      * method can be used to look up the actual version of the dependency in the set.
      *
      * @param dependency the dependency to look for
@@ -178,6 +204,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * @since 2.0
      */
     public String generateTransitiveDependencyTree(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, Scope... scopes) {
+        resolution = resolution.withBoms(retriever, repositories, boms_);
         return new ParallelDependencyResolver(resolution, retriever, repositories).resolveAllDependencies(this, scopes).generateDependencyTree();
     }
 

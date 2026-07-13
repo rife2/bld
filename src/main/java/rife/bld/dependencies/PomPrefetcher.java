@@ -18,6 +18,10 @@ import java.util.concurrent.Executors;
  * <p>
  * A single instance can be shared by multiple concurrent resolutions, the
  * POM of each unique dependency will only be prefetched once.
+ * <p>
+ * Prefetching only has benefits when the retrieved POMs are cached for the
+ * sequential resolution that follows, the prefetcher is inert when the
+ * retriever doesn't cache or when the resolution parallelism disables it.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
  * @since 2.4.0
@@ -29,32 +33,23 @@ class PomPrefetcher {
     private final ExecutorService executor_;
     private final Set<Dependency> submitted_ = ConcurrentHashMap.newKeySet();
 
-    /**
-     * Creates a prefetcher when it can be beneficial.
-     *
-     * @return the prefetcher; or {@code null} when the retriever doesn't
-     * cache the retrieved POMs or when the resolution parallelism disables it
-     * @since 2.4.0
-     */
-    static PomPrefetcher create(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories) {
-        // prefetching only has benefits when the retrieved POMs are
-        // cached for the sequential resolution that follows
-        if (!retriever.isCaching() || resolution.resolutionParallelism() <= 1) {
-            return null;
-        }
-        return new PomPrefetcher(resolution, retriever, repositories);
-    }
-
-    private PomPrefetcher(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories) {
+    PomPrefetcher(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories) {
         resolution_ = resolution;
         retriever_ = retriever;
         repositories_ = repositories;
-        executor_ = Executors.newFixedThreadPool(resolution.resolutionParallelism());
+        if (retriever.isCaching() && resolution.resolutionParallelism() > 1) {
+            executor_ = Executors.newFixedThreadPool(resolution.resolutionParallelism());
+        } else {
+            executor_ = null;
+        }
     }
 
     void prefetch(Collection<PomDependency> candidates) {
+        if (executor_ == null) {
+            return;
+        }
         for (var candidate : candidates) {
-            var dependency = resolution_.overrideDependency(candidate.convertToDependency());
+            var dependency = resolution_.overrideTransitiveDependency(candidate.convertToDependency());
             if (submitted_.add(dependency)) {
                 executor_.submit(() -> {
                     try {
@@ -70,6 +65,8 @@ class PomPrefetcher {
     }
 
     void shutdown() {
-        executor_.shutdownNow();
+        if (executor_ != null) {
+            executor_.shutdownNow();
+        }
     }
 }

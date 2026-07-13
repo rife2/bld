@@ -63,7 +63,7 @@ public class ParallelDependencyResolver {
             return result;
         }
 
-        var prefetcher = PomPrefetcher.create(resolution_, retriever_, repositories_);
+        var prefetcher = new PomPrefetcher(resolution_, retriever_, repositories_);
         try {
             var resolutions = new ArrayList<Supplier<DependencySet>>(roots.size());
             for (var root : roots) {
@@ -73,9 +73,7 @@ public class ParallelDependencyResolver {
                 result.addAll(dependencies);
             }
         } finally {
-            if (prefetcher != null) {
-                prefetcher.shutdown();
-            }
+            prefetcher.shutdown();
         }
         return result;
     }
