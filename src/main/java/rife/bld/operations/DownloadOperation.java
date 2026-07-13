@@ -58,6 +58,9 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
             return;
         }
 
+        if (!silent()) {
+            System.out.println("Analyzing dependencies...");
+        }
         executeDownloadCompileDependencies();
         executeDownloadProvidedDependencies();
         executeDownloadRuntimeDependencies();

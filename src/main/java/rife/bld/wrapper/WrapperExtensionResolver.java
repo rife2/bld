@@ -95,6 +95,9 @@ public class WrapperExtensionResolver {
                 roots.add(d);
             }
         }
+        if (!roots.isEmpty()) {
+            System.out.println("Analyzing bld extension dependencies...");
+        }
         var dependencies = new ParallelDependencyResolver(resolution_, retriever_, repositories_).resolveAllDependencies(roots, Scope.compile, Scope.runtime);
         if (!dependencies.isEmpty()) {
             ensurePrintedHeader();
