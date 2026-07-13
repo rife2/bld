@@ -89,12 +89,13 @@ public class WrapperExtensionResolver {
 
     private Set<String> transferExtensionDependencies() {
         var filenames = new HashSet<String>();
-        var dependencies = new DependencySet();
+        var roots = new ArrayList<Dependency>();
         for (var d : dependencies_) {
             if (d != null) {
-                dependencies.addAll(new DependencyResolver(resolution_, retriever_, repositories_, d).getAllDependencies(Scope.compile, Scope.runtime));
+                roots.add(d);
             }
         }
+        var dependencies = new ParallelDependencyResolver(resolution_, retriever_, repositories_).resolveAllDependencies(roots, Scope.compile, Scope.runtime);
         if (!dependencies.isEmpty()) {
             ensurePrintedHeader();
 

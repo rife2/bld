@@ -155,7 +155,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
                 roots.addAll(scoped_dependencies);
             }
         }
-        var dependencies = DependencyResolver.resolveAllDependencies(resolution, retriever, repositories, roots, transitiveScopes);
+        var dependencies = new ParallelDependencyResolver(resolution, retriever, repositories).resolveAllDependencies(roots, transitiveScopes);
         if (excluded != null) {
             dependencies.removeAll(excluded);
         }

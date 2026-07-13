@@ -226,7 +226,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * @since 2.0
      */
     public String generateTransitiveDependencyTree(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, Scope... scopes) {
-        return DependencyResolver.resolveAllDependencies(resolution, retriever, repositories, this, scopes).generateDependencyTree();
+        return new ParallelDependencyResolver(resolution, retriever, repositories).resolveAllDependencies(this, scopes).generateDependencyTree();
     }
 
     /**

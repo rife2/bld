@@ -31,16 +31,26 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
      */
     public void execute() {
         var resolution = new VersionResolution(properties());
-        var result = new DependencyScopes();
+
+        var scopes = new ArrayList<Scope>();
+        var dependencies = new ArrayList<Dependency>();
         for (var entry : dependencies_.entrySet()) {
-            var scope = entry.getKey();
             for (var dependency : entry.getValue()) {
-                var latest = new DependencyResolver(resolution, artifactRetriever(), repositories(), dependency).latestVersion();
-                if (latest.compareTo(dependency.version()) > 0) {
-                    var latest_dependency = new Dependency(dependency.groupId(), dependency.artifactId(), latest,
-                        dependency.classifier(), dependency.type());
-                    result.scope(scope).include(latest_dependency);
-                }
+                scopes.add(entry.getKey());
+                dependencies.add(dependency);
+            }
+        }
+
+        var latest_versions = new ParallelDependencyResolver(resolution, artifactRetriever(), repositories()).resolveLatestVersions(dependencies);
+
+        var result = new DependencyScopes();
+        for (var i = 0; i < dependencies.size(); ++i) {
+            var dependency = dependencies.get(i);
+            var latest = latest_versions.get(i);
+            if (latest.compareTo(dependency.version()) > 0) {
+                var latest_dependency = new Dependency(dependency.groupId(), dependency.artifactId(), latest,
+                    dependency.classifier(), dependency.type());
+                result.scope(scopes.get(i)).include(latest_dependency);
             }
         }
 

@@ -9,7 +9,6 @@ import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.*;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static rife.bld.dependencies.Dependency.*;
@@ -175,46 +174,6 @@ public class DependencyResolver {
                     next_dependencies = new DependencyResolver(resolution_, retriever_, repositories_, dependency).getMavenPom(parent).getDependencies(scopes);
                     break;
                 }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Resolves the transitive dependencies of multiple root dependencies,
-     * merging the results in the order of the provided roots.
-     * <p>
-     * The roots are resolved in parallel according to the resolution
-     * parallelism, while a shared {@code PomPrefetcher} speculatively warms
-     * the retriever cache across all of them. The merged result is identical
-     * to resolving each root sequentially.
-     *
-     * @param resolution   the version resolution state that can be cached
-     * @param retriever    the retriever to use to get artifacts
-     * @param repositories the repositories to use for the resolution
-     * @param roots        the root dependencies to resolve
-     * @param scopes       the scopes to return the transitive dependencies for
-     * @return the merged transitive dependencies of all the roots
-     * @since 2.3.1
-     */
-    static DependencySet resolveAllDependencies(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, Collection<Dependency> roots, Scope... scopes) {
-        var result = new DependencySet();
-        if (roots.isEmpty()) {
-            return result;
-        }
-
-        var prefetcher = PomPrefetcher.create(resolution, retriever, repositories);
-        try {
-            var resolutions = new ArrayList<Supplier<DependencySet>>(roots.size());
-            for (var root : roots) {
-                resolutions.add(() -> new DependencyResolver(resolution, retriever, repositories, root).getAllDependencies(prefetcher, scopes));
-            }
-            for (var dependencies : ParallelExecution.execute(resolutions, resolution.resolutionParallelism())) {
-                result.addAll(dependencies);
-            }
-        } finally {
-            if (prefetcher != null) {
-                prefetcher.shutdown();
             }
         }
         return result;
