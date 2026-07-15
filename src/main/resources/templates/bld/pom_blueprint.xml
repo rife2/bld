@@ -32,6 +32,24 @@
   </properties>
   <!--/b-->
 
+  <!--v dependency-management-tag--><!--/v-->
+  <!--b dependency-management-tag-->
+  <dependencyManagement>
+    <dependencies>
+      <!--v dependency-management--><!--/v-->
+      <!--b dependency-management-entry-->
+      <dependency>
+        <groupId><!--v dependency-management-groupId--><!--/v--></groupId>
+        <artifactId><!--v dependency-management-artifactId--><!--/v--></artifactId>
+        <version><!--v dependency-management-version--><!--/v--></version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!--/b-->
+    </dependencies>
+  </dependencyManagement>
+  <!--/b-->
+
   <!--v dependencies-tag--><!--/v-->
   <!--b dependencies-tag-->
   <dependencies>

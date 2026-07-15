@@ -52,6 +52,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
 
     private ZonedDateTime moment_ = null;
     private final List<Repository> repositories_ = new ArrayList<>();
+    private final List<Repository> dependencyRepositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
     private PublishInfo info_ = new PublishInfo();
     private PublishProperties publishProperties_ = new PublishProperties();
@@ -78,6 +79,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
         }
 
         executeValidateArtifacts();
+        executeResolveVersionlessDependencies();
 
         var actual_version = info().version();
 
@@ -100,6 +102,50 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
         }
         if (!silent()) {
             System.out.println("Publishing finished successfully.");
+        }
+    }
+
+    /**
+     * Part of the {@link #execute} operation, resolves the versions of
+     * dependencies that were declared without one and that are not covered
+     * by a BOM in the same scope, so that the published POM is always
+     * complete.
+     * <p>
+     * BOMs that were declared without a version are resolved to their
+     * latest version too.
+     *
+     * @since 2.4.0
+     */
+    protected void executeResolveVersionlessDependencies() {
+        for (var scope : List.of(Scope.compile, Scope.runtime, Scope.provided)) {
+            var scoped_dependencies = dependencies().get(scope);
+            if (scoped_dependencies == null) {
+                continue;
+            }
+
+            // resolve the versions of BOMs that were declared without one
+            if (!scoped_dependencies.boms().isEmpty()) {
+                var base_resolution = new VersionResolution(properties());
+                var declared_boms = List.copyOf(scoped_dependencies.boms());
+                scoped_dependencies.boms().clear();
+                for (var bom : declared_boms) {
+                    if (bom.version().equals(VersionNumber.UNKNOWN)) {
+                        var latest = new DependencyResolver(base_resolution, artifactRetriever(), dependencyRepositories(), bom).latestVersion();
+                        bom = new Bom(bom.groupId(), bom.artifactId(), latest, bom.classifier());
+                    }
+                    scoped_dependencies.boms().add(bom);
+                }
+            }
+
+            var resolution = new VersionResolution(properties(), artifactRetriever(), dependencyRepositories(), scoped_dependencies.boms());
+            for (var dependency : List.copyOf(scoped_dependencies)) {
+                if (dependency.version().equals(VersionNumber.UNKNOWN) &&
+                    !resolution.bomVersions().containsKey(dependency.toArtifactString())) {
+                    var latest = new DependencyResolver(resolution, artifactRetriever(), dependencyRepositories(), dependency).latestVersion();
+                    scoped_dependencies.add(new Dependency(dependency.groupId(), dependency.artifactId(), latest,
+                        dependency.classifier(), dependency.type(), dependency.exclusions(), dependency.parent()));
+                }
+            }
         }
     }
 
@@ -625,6 +671,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
         offline(project.offline());
         properties(project.properties());
         artifactRetriever(project.artifactRetriever());
+        dependencyRepositories(project.repositories());
         dependencies().include(project.dependencies());
         artifacts(List.of(
             new PublishArtifact(new File(project.buildDistDirectory(), project.jarFileName()), "", TYPE_JAR),
@@ -731,6 +778,33 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
     public PublishOperation repositories(List<Repository> repositories) {
         repositories_.addAll(repositories);
         return this;
+    }
+
+    /**
+     * Provides a list of repositories to resolve the dependencies against.
+     * <p>
+     * These are used to resolve the versions of dependencies that were
+     * declared without one, they are not publication targets.
+     *
+     * @param repositories a list of repositories against which dependencies will be resolved
+     * @return this operation instance
+     * @since 2.4.0
+     */
+    public PublishOperation dependencyRepositories(List<Repository> repositories) {
+        dependencyRepositories_.addAll(repositories);
+        return this;
+    }
+
+    /**
+     * Retrieves the repositories that dependencies will be resolved against.
+     * <p>
+     * This is a modifiable list that can be retrieved and changed.
+     *
+     * @return the repositories used for dependency resolution
+     * @since 2.4.0
+     */
+    public List<Repository> dependencyRepositories() {
+        return dependencyRepositories_;
     }
 
     /**
