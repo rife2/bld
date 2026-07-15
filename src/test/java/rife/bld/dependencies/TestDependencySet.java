@@ -380,6 +380,39 @@ public class TestDependencySet {
     }
 
     @Test
+    void testCopyAndIncludePreserveAllContents() {
+        var set = new DependencySet()
+            .include(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1)))
+            .include(new Bom("io.vertx", "vertx-stack-depchain", new VersionNumber(4, 5, 12)))
+            .include(new LocalDependency("lib/local.jar"))
+            .include(new LocalModule("lib/module.jar"));
+
+        var copy = new DependencySet(set);
+        assertEquals(set, copy);
+        assertEquals(set.boms(), copy.boms());
+        assertEquals(set.localDependencies(), copy.localDependencies());
+        assertEquals(set.localModules(), copy.localModules());
+
+        var included = new DependencySet().include(set);
+        assertEquals(set, included);
+        assertEquals(set.boms(), included.boms());
+        assertEquals(set.localDependencies(), included.localDependencies());
+        assertEquals(set.localModules(), included.localModules());
+
+        var scopes = new DependencyScopes();
+        scopes.scope(Scope.compile).include(set);
+        var scopes_copy = new DependencyScopes();
+        scopes_copy.include(scopes);
+        assertEquals(set.boms(), scopes_copy.scope(Scope.compile).boms());
+        assertEquals(set.localDependencies(), scopes_copy.scope(Scope.compile).localDependencies());
+
+        var scopes_ctor_copy = new DependencyScopes(scopes);
+        assertEquals(set.boms(), scopes_ctor_copy.scope(Scope.compile).boms());
+        assertEquals(set.localDependencies(), scopes_ctor_copy.scope(Scope.compile).localDependencies());
+        assertEquals(set.localModules(), scopes_ctor_copy.scope(Scope.compile).localModules());
+    }
+
+    @Test
     void testTransferIntoDirectoryParallel() throws Exception {
         var max_concurrent_transfers = new AtomicInteger();
         var server = createTransferServer(max_concurrent_transfers);

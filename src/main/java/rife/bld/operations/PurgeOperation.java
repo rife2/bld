@@ -54,6 +54,7 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
             return;
         }
 
+        executeReportUncoveredDependencies();
         executePurgeCompileDependencies();
         executePurgeProvidedDependencies();
         executePurgeRuntimeDependencies();
@@ -61,6 +62,21 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
         executePurgeTestDependencies();
         if (!silent()) {
             System.out.println("Purging finished successfully.");
+        }
+    }
+
+    /**
+     * Part of the {@link #execute} operation, warns about version-less
+     * dependencies that are not covered by a BOM in their scope.
+     *
+     * @since 2.4.0
+     */
+    protected void executeReportUncoveredDependencies() {
+        if (silent()) {
+            return;
+        }
+        for (var dependency : dependencies().versionlessDependenciesWithoutBom(properties(), artifactRetriever(), repositories())) {
+            System.out.println("Warning: '" + dependency.toArtifactString() + "' isn't covered by a BOM, its latest version will be used");
         }
     }
 

@@ -41,7 +41,23 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * @since 1.5
      */
     public DependencySet(DependencySet other) {
+        include(other);
+    }
+
+    /**
+     * Includes all the dependencies, local dependencies, local modules and
+     * BOMs from another dependency set.
+     *
+     * @param other the other set to include
+     * @return this dependency set instance
+     * @since 2.4.0
+     */
+    public DependencySet include(DependencySet other) {
         addAll(other);
+        localDependencies_.addAll(other.localDependencies_);
+        localModules_.addAll(other.localModules_);
+        boms_.addAll(other.boms_);
+        return this;
     }
 
     /**

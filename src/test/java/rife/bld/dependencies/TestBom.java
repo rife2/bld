@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static rife.bld.dependencies.RepositoryTestHelper.getNextRepositories;
+import static rife.bld.dependencies.RepositoryTestHelper.*;
 import static rife.bld.dependencies.Scope.compile;
 
 public class TestBom {
@@ -287,8 +287,16 @@ public class TestBom {
                 .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
                 .include(new Dependency("com.example", "a"))
                 .include(new Dependency("com.example", "f"));
+            scopes.scope(Scope.test)
+                // no BOMs in this scope : it's not reported on
+                .include(new Dependency("com.example", "f"));
+
+            // only the dependency that the BOM doesn't cover is reported
+            assertEquals(List.of(new Dependency("com.example", "f")),
+                scopes.versionlessDependenciesWithoutBom(new HierarchicalProperties(), retriever, repositories));
 
             var resolved = scopes.resolveCompileDependencies(new HierarchicalProperties(), retriever, repositories);
+
             // covered by the BOM : the BOM version applies
             assertEquals(Version.parse("1.4.0"), resolved.get(new Dependency("com.example", "a")).version());
             // not covered by the BOM : the version stays unknown in the set,
@@ -499,6 +507,353 @@ public class TestBom {
             var cache_other_bom = new BldCache(tmp, VersionResolution.dummy());
             cache_other_bom.cacheDependenciesHash(repositories, scopes_with_other_bom);
             assertFalse(cache_other_bom.isDependenciesHashValid());
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testBomSurvivesOperationDependenciesCopy() throws Exception {
+        // regression test : operations copy the project's dependency scopes
+        // through DependencyScopes.include, which used to lose the BOMs so
+        // that version-less dependencies resolved to their latest versions
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0")),
+                "a:1.4.0", pom("a", "1.4.0", ""),
+                "a:2.2.0", pom("a", "2.2.0", "")),
+            Map.of("a", metadata("a", "2.2.0", "1.4.0", "2.2.0")));
+        server.start();
+        var tmp = Files.createTempDirectory("bomcopy").toFile();
+        try {
+            var scopes = new DependencyScopes();
+            scopes.scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+
+            var operation = new rife.bld.operations.DownloadOperation()
+                .artifactRetriever(ArtifactRetriever.cachingInstance())
+                .repositories(serverRepositories(server))
+                .dependencies(scopes)
+                .libCompileDirectory(tmp).libCompileModulesDirectory(tmp)
+                .libProvidedDirectory(tmp).libProvidedModulesDirectory(tmp)
+                .libRuntimeDirectory(tmp).libRuntimeModulesDirectory(tmp)
+                .libStandaloneDirectory(tmp).libStandaloneModulesDirectory(tmp)
+                .libTestDirectory(tmp).libTestModulesDirectory(tmp)
+                .silent(true);
+            operation.execute();
+
+            // the BOM version is downloaded, not the latest version
+            assertTrue(new File(tmp, "a-1.4.0.jar").exists());
+            assertFalse(new File(tmp, "a-2.2.0.jar").exists());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testMissingBomFailsLoudlyThroughOperation() throws Exception {
+        // regression test : a missing BOM also has to fail when the
+        // dependency scopes were copied into an operation, the BOM is
+        // deliberately the only artifact that is missing
+        var server = createArtifactServer(Map.of(
+            "a:1.0.0", pom("a", "1.0.0", "")));
+        server.start();
+        var tmp = Files.createTempDirectory("bommissing").toFile();
+        try {
+            var scopes = new DependencyScopes();
+            scopes.scope(compile)
+                .include(new Bom("com.example", "missing", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a", new VersionNumber(1, 0, 0)));
+
+            var operation = new rife.bld.operations.DownloadOperation()
+                .artifactRetriever(ArtifactRetriever.cachingInstance())
+                .repositories(serverRepositories(server))
+                .dependencies(scopes)
+                .libCompileDirectory(tmp).libCompileModulesDirectory(tmp)
+                .libProvidedDirectory(tmp).libProvidedModulesDirectory(tmp)
+                .libRuntimeDirectory(tmp).libRuntimeModulesDirectory(tmp)
+                .libStandaloneDirectory(tmp).libStandaloneModulesDirectory(tmp)
+                .libTestDirectory(tmp).libTestModulesDirectory(tmp)
+                .silent(true);
+
+            assertThrows(ArtifactNotFoundException.class, operation::execute);
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    static class BomProject extends rife.bld.Project {
+        BomProject(File tmp, Repository repository) {
+            workDirectory = tmp;
+            pkg = "test.pkg";
+            name = "bom_project";
+            version = new VersionNumber(0, 0, 1);
+            repositories = List.of(repository);
+        }
+
+        void enableAutoDownloadPurge() {
+            autoDownloadPurge = true;
+        }
+    }
+
+    @Test
+    void testProjectDownloadWithBoms() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0") + managed("b", "2.1.0")),
+                "a:1.4.0", pom("a", "1.4.0", ""),
+                "a:2.2.0", pom("a", "2.2.0", ""),
+                "b:2.1.0", pom("b", "2.1.0", "")),
+            Map.of("a", metadata("a", "2.2.0", "1.4.0", "2.2.0"),
+                   "b", metadata("b", "2.1.0", "2.1.0")));
+        server.start();
+        var tmp = Files.createTempDirectory("bomproject").toFile();
+        try {
+            var project = new BomProject(tmp, transferRepository(server));
+            project.dependencies().scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+            project.dependencies().scope(Scope.test)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"))
+                .include(new Dependency("com.example", "b"));
+
+            assertEquals(0, project.execute(new String[]{"download"}));
+
+            // the BOM versions are downloaded in every scope,
+            // never the latest versions
+            assertTrue(new File(tmp, "lib/compile/a-1.4.0.jar").exists());
+            assertFalse(new File(tmp, "lib/compile/a-2.2.0.jar").exists());
+            assertTrue(new File(tmp, "lib/test/a-1.4.0.jar").exists());
+            assertFalse(new File(tmp, "lib/test/a-2.2.0.jar").exists());
+            assertTrue(new File(tmp, "lib/test/b-2.1.0.jar").exists());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testProjectAutoDownloadPurgeBomUpgrade() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0")),
+                "bom1:2.0.0", bomPom("bom1", "2.0.0", managed("a", "2.2.0")),
+                "a:1.4.0", pom("a", "1.4.0", ""),
+                "a:2.2.0", pom("a", "2.2.0", "")),
+            Map.of("a", metadata("a", "2.2.0", "1.4.0", "2.2.0")));
+        server.start();
+        var tmp = Files.createTempDirectory("bomupgrade").toFile();
+        try {
+            var project = new BomProject(tmp, transferRepository(server));
+            project.enableAutoDownloadPurge();
+            project.dependencies().scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+            assertEquals(0, project.execute(new String[]{"version"}));
+            assertTrue(new File(tmp, "lib/compile/a-1.4.0.jar").exists());
+
+            // running again with an identical BOM declaration
+            // doesn't invalidate the dependencies cache
+            project = new BomProject(tmp, transferRepository(server));
+            project.enableAutoDownloadPurge();
+            project.dependencies().scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+            assertEquals(0, project.execute(new String[]{"version"}));
+            assertTrue(new File(tmp, "lib/compile/a-1.4.0.jar").exists());
+
+            // upgrading the BOM version invalidates the cache,
+            // downloads the new version and purges the old one
+            project = new BomProject(tmp, transferRepository(server));
+            project.enableAutoDownloadPurge();
+            project.dependencies().scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(2, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+            assertEquals(0, project.execute(new String[]{"version"}));
+            assertTrue(new File(tmp, "lib/compile/a-2.2.0.jar").exists());
+            assertFalse(new File(tmp, "lib/compile/a-1.4.0.jar").exists());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testProjectUpdatesWithBom() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0"))),
+            Map.of("bom1", metadata("bom1", "2.0.0", "1.0.0", "2.0.0"),
+                   "a", metadata("a", "9.9.9", "1.4.0", "9.9.9")));
+        server.start();
+        var tmp = Files.createTempDirectory("bomupdates").toFile();
+        try {
+            var project = new BomProject(tmp, transferRepository(server));
+            project.dependencies().scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+
+            var original_out = System.out;
+            var captured = new java.io.ByteArrayOutputStream();
+            System.setOut(new java.io.PrintStream(captured, true));
+            int status;
+            try {
+                status = project.execute(new String[]{"updates"});
+            } finally {
+                System.setOut(original_out);
+            }
+            var output = captured.toString();
+
+            assertEquals(0, status);
+            // the newer BOM version is reported with its type suffix
+            assertTrue(output.contains("com.example:bom1:2.0.0@bom"), output);
+            // the version-less dependency covered by the BOM
+            // is not reported individually
+            assertFalse(output.contains("com.example:a"), output);
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testProjectDependencyTreeWithBom() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0")),
+                "a:1.4.0", pom("a", "1.4.0", "")),
+            Map.of("a", metadata("a", "2.2.0", "1.4.0", "2.2.0")));
+        server.start();
+        var tmp = Files.createTempDirectory("bomtree").toFile();
+        try {
+            var project = new BomProject(tmp, transferRepository(server));
+            project.dependencies().scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+
+            var original_out = System.out;
+            var captured = new java.io.ByteArrayOutputStream();
+            System.setOut(new java.io.PrintStream(captured, true));
+            int status;
+            try {
+                status = project.execute(new String[]{"dependency-tree"});
+            } finally {
+                System.setOut(original_out);
+            }
+            var output = captured.toString();
+
+            assertEquals(0, status);
+            // the tree reflects the BOM version, not the latest version
+            assertTrue(output.contains("com.example:a:1.4.0"), output);
+            assertFalse(output.contains("com.example:a:2.2.0"), output);
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testProjectMissingBomFails() throws Exception {
+        // the BOM is deliberately the only artifact that is missing
+        var server = createArtifactServer(Map.of(
+            "a:1.0.0", pom("a", "1.0.0", "")));
+        server.start();
+        var tmp = Files.createTempDirectory("bommissingproject").toFile();
+        try {
+            var project = new BomProject(tmp, transferRepository(server));
+            project.dependencies().scope(compile)
+                .include(new Bom("com.example", "missing", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a", new VersionNumber(1, 0, 0)));
+
+            assertNotEquals(0, project.execute(new String[]{"download"}));
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    private static Repository transferRepository(HttpServer server) {
+        return new Repository("http://localhost:" + server.getAddress().getPort() + "/");
+    }
+
+    @Test
+    void testProjectDownloadVertxBom() throws Exception {
+        // real-world reproduction of the scenario in
+        // https://github.com/rife2/bld/issues/59 through a full project
+        var tmp = Files.createTempDirectory("bomvertx").toFile();
+        try {
+            var project = new BomProject(tmp, getNextRepository());
+            project.dependencies().scope(compile)
+                .include(new Bom("io.vertx", "vertx-stack-depchain", new VersionNumber(4, 5, 12)))
+                .include(new Dependency("io.vertx", "vertx-core"))
+                .include(new Dependency("com.fasterxml.jackson.core", "jackson-databind"));
+
+            assertEquals(0, project.execute(new String[]{"download"}));
+
+            var jars = List.of(java.util.Objects.requireNonNull(new File(tmp, "lib/compile").list()));
+            assertTrue(jars.contains("vertx-core-4.5.12.jar"), jars.toString());
+            assertTrue(jars.contains("jackson-databind-2.16.1.jar"), jars.toString());
+            assertTrue(jars.contains("jackson-core-2.16.1.jar"), jars.toString());
+            // no jackson artifact resolved to anything but the BOM version
+            assertEquals(0, jars.stream().filter(jar -> jar.startsWith("jackson-") && !jar.contains("2.16.1")).count(), jars.toString());
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testProjectDownloadJUnitBomTestScope() throws Exception {
+        // real-world reproduction of the scenario reported for the
+        // BOMs getting lost when operations copy the project scopes
+        var tmp = Files.createTempDirectory("bomjunit").toFile();
+        try {
+            var project = new BomProject(tmp, getNextRepository());
+            project.dependencies().scope(Scope.test)
+                .include(new Bom("org.junit", "junit-bom", new VersionNumber(6, 1, 1)))
+                .include(new Dependency("org.junit.jupiter", "junit-jupiter"))
+                .include(new Dependency("org.junit.platform", "junit-platform-console-standalone"));
+
+            assertEquals(0, project.execute(new String[]{"download"}));
+
+            var jars = List.of(java.util.Objects.requireNonNull(new File(tmp, "lib/test").list()));
+            assertTrue(jars.contains("junit-jupiter-6.1.1.jar"), jars.toString());
+            // every artifact that junit-bom manages is pinned to the BOM version
+            assertEquals(0, jars.stream().filter(jar -> jar.startsWith("junit-") &&
+                                                        !jar.startsWith("junit-platform-console-standalone-") &&
+                                                        !jar.contains("6.1.1")).count(), jars.toString());
+            // junit-bom deliberately doesn't manage the console-standalone
+            // distribution artifact, so it resolves to its latest version
+            assertTrue(jars.stream().anyMatch(jar -> jar.startsWith("junit-platform-console-standalone-")), jars.toString());
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testProjectUpdatesRealBom() throws Exception {
+        // a real-world BOM with known newer releases reports its own
+        // update while its covered dependencies stay silent
+        var tmp = Files.createTempDirectory("bomupdatesreal").toFile();
+        try {
+            var project = new BomProject(tmp, getNextRepository());
+            project.dependencies().scope(Scope.test)
+                .include(new Bom("org.junit", "junit-bom", new VersionNumber(6, 1, 1)))
+                .include(new Dependency("org.junit.jupiter", "junit-jupiter"));
+
+            var original_out = System.out;
+            var captured = new java.io.ByteArrayOutputStream();
+            System.setOut(new java.io.PrintStream(captured, true));
+            int status;
+            try {
+                status = project.execute(new String[]{"updates"});
+            } finally {
+                System.setOut(original_out);
+            }
+            var output = captured.toString();
+
+            assertEquals(0, status);
+            assertTrue(output.contains("org.junit:junit-bom:"), output);
+            assertTrue(output.contains("@bom"), output);
+            assertFalse(output.contains("org.junit.jupiter:junit-jupiter:"), output);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }

@@ -38,7 +38,8 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
     }
 
     /**
-     * Includes all the dependencies from another dependency scope map.
+     * Includes all the dependencies, local dependencies, local modules and
+     * BOMs from another dependency scope map.
      *
      * @param other the other map to include dependencies from
      * @since 1.5
@@ -50,7 +51,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
                 dependencies = new DependencySet();
                 put(entry.getKey(), dependencies);
             }
-            dependencies.addAll(entry.getValue());
+            dependencies.include(entry.getValue());
         }
     }
 
@@ -64,6 +65,37 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      */
     public DependencySet scope(Scope scope) {
         return computeIfAbsent(scope, k -> new DependencySet());
+    }
+
+    /**
+     * Returns the version-less dependencies that are not covered by the
+     * BOMs that are declared in their scope.
+     * <p>
+     * Scopes that don't declare any BOMs are not considered, their
+     * version-less dependencies simply resolve to the latest version.
+     *
+     * @param properties   the properties to use to get artifacts
+     * @param retriever    the retriever to use to get artifacts
+     * @param repositories the repositories to use for the BOM resolution
+     * @return the version-less dependencies that no BOM in their scope covers
+     * @since 2.4.0
+     */
+    public List<Dependency> versionlessDependenciesWithoutBom(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
+        var result = new ArrayList<Dependency>();
+        for (var scoped_dependencies : values()) {
+            if (scoped_dependencies.boms().isEmpty()) {
+                continue;
+            }
+            var resolution = new VersionResolution(properties, retriever, repositories, scoped_dependencies.boms());
+            for (var dependency : scoped_dependencies) {
+                if (dependency.version().equals(VersionNumber.UNKNOWN) &&
+                    !resolution.bomVersions().containsKey(dependency.toArtifactString()) &&
+                    !result.contains(dependency)) {
+                    result.add(dependency);
+                }
+            }
+        }
+        return result;
     }
 
     /**
