@@ -24,24 +24,21 @@ import java.util.regex.Pattern;
  */
 public class Bom extends Dependency {
     public Bom(String groupId, String artifactId) {
-        this(groupId, artifactId, null, null);
+        this(groupId, artifactId, null);
     }
 
     public Bom(String groupId, String artifactId, Version version) {
-        this(groupId, artifactId, version, null);
+        super(groupId, artifactId, version, null, TYPE_BOM);
     }
 
-    public Bom(String groupId, String artifactId, Version version, String classifier) {
-        super(groupId, artifactId, version, classifier, TYPE_BOM);
-    }
-
-    private static final Pattern BOM_PATTERN = Pattern.compile("^(?<groupId>[^:@]+):(?<artifactId>[^:@]+)(?::(?<version>[^:@]+)(?::(?<classifier>[^:@]+))?)?(?:@(?:bom|pom))?$");
+    private static final Pattern BOM_PATTERN = Pattern.compile("^(?<groupId>[^:@]+):(?<artifactId>[^:@]+)(?::(?<version>[^:@]+))?(?:@(?:bom|pom))?$");
 
     /**
      * Parses a BOM from a string representation.
-     * The format is {@code groupId:artifactId:version:classifier}.
-     * The {@code version} and {@code classifier} are optional, and an
-     * optional {@code @bom} or {@code @pom} type suffix is accepted.
+     * The format is {@code groupId:artifactId:version}.
+     * The {@code version} is optional, and an optional {@code @bom} or
+     * {@code @pom} type suffix is accepted. BOMs can't have classifiers,
+     * strings that contain one are rejected.
      * <p>
      * If the string can't be successfully parsed, {@code null} will be returned.
      *
@@ -63,8 +60,7 @@ public class Bom extends Dependency {
         var groupId = matcher.group("groupId");
         var artifactId = matcher.group("artifactId");
         var version = Version.parse(matcher.group("version"));
-        var classifier = matcher.group("classifier");
 
-        return new Bom(groupId, artifactId, version, classifier);
+        return new Bom(groupId, artifactId, version);
     }
 }

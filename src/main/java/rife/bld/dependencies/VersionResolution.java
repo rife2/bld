@@ -148,11 +148,15 @@ public class VersionResolution {
         this(base, resolveBomVersions(base, retriever, repositories, boms));
     }
 
+    // returns a resolution that additionally imports the provided BOMs,
+    // versions that are already imported take precedence over the new ones
     VersionResolution withBoms(ArtifactRetriever retriever, List<Repository> repositories, Collection<Bom> boms) {
         if (boms == null || boms.isEmpty()) {
             return this;
         }
-        return new VersionResolution(this, retriever, repositories, boms);
+        var merged = new HashMap<>(resolveBomVersions(this, retriever, repositories, boms));
+        merged.putAll(bomVersions_);
+        return new VersionResolution(this, merged);
     }
 
     private static Map<String, Version> resolveBomVersions(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, Collection<Bom> boms) {
@@ -163,12 +167,26 @@ public class VersionResolution {
                 for (var managed : pom.getManagedDependencies()) {
                     if (managed.version() != null && !managed.version().isBlank()) {
                         var dependency = managed.convertToDependency();
-                        bom_versions.putIfAbsent(dependency.toArtifactString(), dependency.version());
+                        bom_versions.putIfAbsent(managedKey(dependency), dependency.version());
                     }
                 }
             }
         }
         return bom_versions;
+    }
+
+    // builds the identity that dependency management entries are matched
+    // on, mirroring Maven this includes the type and the classifier, the
+    // modular and forced-classpath JAR types match the plain jar entries
+    // that BOMs manage
+    private static String managedKey(Dependency dependency) {
+        var type = dependency.type();
+        if (type == null || type.isBlank() ||
+            Dependency.TYPE_MODULAR_JAR.equals(type) ||
+            Dependency.TYPE_CLASSPATH_JAR.equals(type)) {
+            type = Dependency.TYPE_JAR;
+        }
+        return dependency.toArtifactString() + ":" + type + ":" + dependency.classifier();
     }
 
     private static int parseParallelism(HierarchicalProperties properties, String property, int defaultValue) {
@@ -198,7 +216,7 @@ public class VersionResolution {
             return overridden;
         }
         if (VersionNumber.UNKNOWN.equals(original.version())) {
-            var bom_version = bomVersions_.get(original.toArtifactString());
+            var bom_version = bomVersions_.get(managedKey(original));
             if (bom_version != null) {
                 return bom_version;
             }
@@ -239,7 +257,7 @@ public class VersionResolution {
     public Dependency overrideDeclaredDependency(Dependency declared) {
         var overridden = versionOverrides_.get(declared.toArtifactString());
         if (overridden == null && VersionNumber.UNKNOWN.equals(declared.version())) {
-            overridden = bomVersions_.get(declared.toArtifactString());
+            overridden = bomVersions_.get(managedKey(declared));
         }
         if (overridden == null) {
             return declared;
@@ -264,7 +282,7 @@ public class VersionResolution {
     public Dependency overrideTransitiveDependency(Dependency transitive) {
         var overridden = versionOverrides_.get(transitive.toArtifactString());
         if (overridden == null) {
-            overridden = bomVersions_.get(transitive.toArtifactString());
+            overridden = bomVersions_.get(managedKey(transitive));
         }
         if (overridden == null) {
             return transitive;
@@ -293,9 +311,26 @@ public class VersionResolution {
     }
 
     /**
+     * Indicates whether a bill of materials supplies the version of a
+     * particular dependency.
+     * <p>
+     * The dependency identity takes the group, artifact, type and
+     * classifier into account, mirroring Maven's dependency management.
+     *
+     * @param dependency the dependency to check
+     * @return {@code true} when a BOM manages the dependency's version;
+     * {@code false} otherwise
+     * @since 2.4.0
+     */
+    public boolean coversDependency(Dependency dependency) {
+        return bomVersions_.containsKey(managedKey(dependency));
+    }
+
+    /**
      * Returns the map of versions that were imported from bills of
-     * materials, where the key is the name of the dependency and the value
-     * is the managed version.
+     * materials, where the key is the dependency identity composed of the
+     * group, artifact, type and classifier, and the value is the managed
+     * version.
      *
      * @return the map of BOM versions
      * @since 2.4.0

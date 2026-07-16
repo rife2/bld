@@ -30,7 +30,8 @@ public class TestBom {
         assertEquals(new Bom("com.example", "bom1", new VersionNumber(1, 2, 3)), Bom.parse("com.example:bom1:1.2.3"));
         assertEquals(new Bom("com.example", "bom1", new VersionNumber(1, 2, 3)), Bom.parse("com.example:bom1:1.2.3@bom"));
         assertEquals(new Bom("com.example", "bom1", new VersionNumber(1, 2, 3)), Bom.parse("com.example:bom1:1.2.3@pom"));
-        assertEquals(new Bom("com.example", "bom1", new VersionNumber(1, 2, 3), "classifier1"), Bom.parse("com.example:bom1:1.2.3:classifier1"));
+        // BOMs can't have classifiers, POM imports don't support them
+        assertNull(Bom.parse("com.example:bom1:1.2.3:classifier1"));
         assertNull(Bom.parse(null));
         assertNull(Bom.parse(""));
         assertNull(Bom.parse("not@a@bom"));
@@ -287,13 +288,19 @@ public class TestBom {
                 .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
                 .include(new Dependency("com.example", "a"))
                 .include(new Dependency("com.example", "f"));
-            scopes.scope(Scope.test)
-                // no BOMs in this scope : it's not reported on
+            scopes.scope(Scope.standalone)
+                // no BOMs apply to this scope : it's not reported on
                 .include(new Dependency("com.example", "f"));
 
             // only the dependency that the BOM doesn't cover is reported
             assertEquals(List.of(new Dependency("com.example", "f")),
                 scopes.versionlessDependenciesWithoutBom(new HierarchicalProperties(), retriever, repositories));
+
+            // a bld.override that supplies the version prevents the report
+            var override_properties = new HierarchicalProperties();
+            override_properties.put(VersionResolution.PROPERTY_OVERRIDE_PREFIX, "com.example:f:2.2.0");
+            assertEquals(List.of(),
+                scopes.versionlessDependenciesWithoutBom(override_properties, retriever, repositories));
 
             var resolved = scopes.resolveCompileDependencies(new HierarchicalProperties(), retriever, repositories);
 
@@ -312,7 +319,7 @@ public class TestBom {
     }
 
     @Test
-    void testBomScopeIsolation() throws Exception {
+    void testBomScopeInheritance() throws Exception {
         var server = createArtifactServer(Map.of(
                 "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0")),
                 "a:1.4.0", pom("a", "1.4.0", ""),
@@ -324,20 +331,166 @@ public class TestBom {
             scopes.scope(compile)
                 .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
                 .include(new Dependency("com.example", "a"));
+            scopes.scope(Scope.provided)
+                .include(new Dependency("com.example", "a"));
             scopes.scope(Scope.test)
                 .include(new Dependency("com.example", "a"));
+            scopes.scope(Scope.standalone)
+                .include(new Dependency("com.example", "a"));
 
-            // the compile scope BOM applies to the compile scope resolution
-            var compile_resolved = scopes.resolveCompileDependencies(new HierarchicalProperties(), ArtifactRetriever.cachingInstance(), serverRepositories(server));
+            var properties = new HierarchicalProperties();
+            var retriever = ArtifactRetriever.cachingInstance();
+            var repositories = serverRepositories(server);
+
+            // the compile scope BOM applies to the compile scope resolution,
+            // and follows the classpath composition into the provided and
+            // test scope resolutions
+            var compile_resolved = scopes.resolveCompileDependencies(properties, retriever, repositories);
             assertEquals(Version.parse("1.4.0"), compile_resolved.get(new Dependency("com.example", "a")).version());
+            var provided_resolved = scopes.resolveProvidedDependencies(properties, retriever, repositories);
+            assertEquals(Version.parse("1.4.0"), provided_resolved.get(new Dependency("com.example", "a")).version());
+            var test_resolved = scopes.resolveTestDependencies(properties, retriever, repositories);
+            assertEquals(Version.parse("1.4.0"), test_resolved.get(new Dependency("com.example", "a")).version());
 
-            // and doesn't leak into the test scope resolution, whose version
-            // stays unknown and falls back to the latest from the metadata
-            var test_resolved = scopes.resolveTestDependencies(new HierarchicalProperties(), ArtifactRetriever.cachingInstance(), serverRepositories(server));
-            assertEquals(VersionNumber.UNKNOWN, test_resolved.get(new Dependency("com.example", "a")).version());
+            // the standalone scope is its own world, its version stays
+            // unknown and falls back to the latest from the metadata
+            var standalone_resolved = scopes.resolveStandaloneDependencies(properties, retriever, repositories);
+            assertEquals(VersionNumber.UNKNOWN, standalone_resolved.get(new Dependency("com.example", "a")).version());
         } finally {
             server.stop(0);
         }
+    }
+
+    @Test
+    void testBomScopeInheritanceIsDirectional() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0")),
+                "a:1.4.0", pom("a", "1.4.0", ""),
+                "a:2.2.0", pom("a", "2.2.0", "")),
+            Map.of("a", metadata("a", "2.2.0", "1.4.0", "2.2.0")));
+        server.start();
+        try {
+            var scopes = new DependencyScopes();
+            scopes.scope(Scope.test)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+            scopes.scope(compile)
+                .include(new Dependency("com.example", "a"));
+
+            var properties = new HierarchicalProperties();
+            var retriever = ArtifactRetriever.cachingInstance();
+            var repositories = serverRepositories(server);
+
+            // a test scope BOM applies to the test scope resolution
+            var test_resolved = scopes.resolveTestDependencies(properties, retriever, repositories);
+            assertEquals(Version.parse("1.4.0"), test_resolved.get(new Dependency("com.example", "a")).version());
+
+            // but never reaches back into the compile scope resolution
+            var compile_resolved = scopes.resolveCompileDependencies(properties, retriever, repositories);
+            assertEquals(VersionNumber.UNKNOWN, compile_resolved.get(new Dependency("com.example", "a")).version());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void testBomPrecedenceAcrossScopes() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0")),
+                "bom2:1.0.0", bomPom("bom2", "1.0.0", managed("a", "2.2.0")),
+                "a:1.4.0", pom("a", "1.4.0", ""),
+                "a:2.2.0", pom("a", "2.2.0", "")),
+            Map.of("a", metadata("a", "2.2.0", "1.4.0", "2.2.0")));
+        server.start();
+        try {
+            var scopes = new DependencyScopes();
+            scopes.scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)));
+            scopes.scope(Scope.test)
+                .include(new Bom("com.example", "bom2", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+
+            // when several applicable BOMs manage the same dependency, the
+            // first one in classpath composition order determines the version
+            var test_resolved = scopes.resolveTestDependencies(new HierarchicalProperties(), ArtifactRetriever.cachingInstance(), serverRepositories(server));
+            assertEquals(Version.parse("1.4.0"), test_resolved.get(new Dependency("com.example", "a")).version());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void testUncoveredReportingFollowsScopeComposition() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0"))),
+            Map.of());
+        server.start();
+        try {
+            var scopes = new DependencyScopes();
+            scopes.scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)));
+            scopes.scope(Scope.test)
+                // covered through scope composition by the compile scope BOM
+                .include(new Dependency("com.example", "a"))
+                // not covered by any applicable BOM
+                .include(new Dependency("com.example", "g"));
+
+            assertEquals(List.of(new Dependency("com.example", "g")),
+                scopes.versionlessDependenciesWithoutBom(new HierarchicalProperties(), ArtifactRetriever.cachingInstance(), serverRepositories(server)));
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void testBomIdentityIncludesTypeAndClassifier() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0",
+                    managedTyped("a", "1.5.0", "test-jar", null) +
+                    managedTyped("b", "1.6.0", "jar", "linux-x86_64") +
+                    managed("b", "1.4.0"))),
+            Map.of());
+        server.start();
+        try {
+            var resolution = new VersionResolution(new HierarchicalProperties(), ArtifactRetriever.cachingInstance(), serverRepositories(server),
+                List.of(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0))));
+
+            // a test-jar entry doesn't cover the regular jar dependency
+            assertFalse(resolution.coversDependency(new Dependency("com.example", "a")));
+            // entries with the same identifiers but different classifiers
+            // are managed independently
+            assertEquals(Version.parse("1.4.0"), resolution.overrideDeclaredDependency(new Dependency("com.example", "b")).version());
+            assertEquals(Version.parse("1.6.0"), resolution.overrideDeclaredDependency(new Dependency("com.example", "b", null, "linux-x86_64")).version());
+            // the modular and forced-classpath JAR types match the plain
+            // jar entries of the BOM
+            assertEquals(Version.parse("1.4.0"), resolution.overrideDeclaredDependency(new Dependency("com.example", "b", null, null, Dependency.TYPE_MODULAR_JAR)).version());
+            assertEquals(Version.parse("1.4.0"), resolution.overrideDeclaredDependency(new Dependency("com.example", "b", null, null, Dependency.TYPE_CLASSPATH_JAR)).version());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void testEffectiveBomsComposition() {
+        var compile_bom = new Bom("com.example", "compile-bom", new VersionNumber(1, 0, 0));
+        var runtime_bom = new Bom("com.example", "runtime-bom", new VersionNumber(2, 0, 0));
+        var provided_bom = new Bom("com.example", "provided-bom", new VersionNumber(3, 0, 0));
+        var test_bom = new Bom("com.example", "test-bom", new VersionNumber(4, 0, 0));
+        var standalone_bom = new Bom("com.example", "standalone-bom", new VersionNumber(5, 0, 0));
+
+        var scopes = new DependencyScopes();
+        scopes.scope(compile).include(compile_bom);
+        scopes.scope(Scope.runtime).include(runtime_bom);
+        scopes.scope(Scope.provided).include(provided_bom);
+        scopes.scope(Scope.test).include(test_bom);
+        scopes.scope(Scope.standalone).include(standalone_bom);
+
+        assertEquals(List.of(compile_bom), scopes.effectiveBoms(compile));
+        assertEquals(List.of(compile_bom, provided_bom), scopes.effectiveBoms(Scope.provided));
+        assertEquals(List.of(compile_bom, runtime_bom), scopes.effectiveBoms(Scope.runtime));
+        // the test scope order matches the test classpath order
+        assertEquals(List.of(compile_bom, provided_bom, runtime_bom, test_bom), scopes.effectiveBoms(Scope.test));
+        assertEquals(List.of(standalone_bom), scopes.effectiveBoms(Scope.standalone));
     }
 
     @Test
@@ -452,7 +605,7 @@ public class TestBom {
             assertNotSame(base, resolution);
             assertEquals(base.versionOverrides(), resolution.versionOverrides());
             assertEquals(3, resolution.transferParallelism());
-            assertEquals(Map.of("com.example:a", Version.parse("1.4.0")), resolution.bomVersions());
+            assertEquals(Map.of("com.example:a:jar:", Version.parse("1.4.0")), resolution.bomVersions());
 
             // a declared dependency without version is filled in from the BOM
             assertEquals(Version.parse("1.4.0"), resolution.overrideDeclaredDependency(new Dependency("com.example", "a")).version());
@@ -584,6 +737,42 @@ public class TestBom {
         }
     }
 
+    @Test
+    void testProjectUpdatesWithBomAndOverride() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0"))),
+            Map.of("bom1", metadata("bom1", "1.0.0", "1.0.0", "1.0.0"),
+                   "a", metadata("a", "9.9.9", "1.4.0", "9.9.9")));
+        server.start();
+        var tmp = Files.createTempDirectory("bomupdatesoverride").toFile();
+        try {
+            var project = new BomProject(tmp, transferRepository(server));
+            project.properties().put(VersionResolution.PROPERTY_OVERRIDE_PREFIX, "com.example:a:1.4.0");
+            project.dependencies().scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+
+            var original_out = System.out;
+            var captured = new java.io.ByteArrayOutputStream();
+            System.setOut(new java.io.PrintStream(captured, true));
+            int status;
+            try {
+                status = project.execute(new String[]{"updates"});
+            } finally {
+                System.setOut(original_out);
+            }
+            var output = captured.toString();
+
+            assertEquals(0, status);
+            // the override takes the version control away from the BOM,
+            // the dependency is checked individually against the override
+            assertTrue(output.contains("com.example:a:9.9.9"), output);
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
     static class BomProject extends rife.bld.Project {
         BomProject(File tmp, Repository repository) {
             workDirectory = tmp;
@@ -692,6 +881,10 @@ public class TestBom {
             project.dependencies().scope(compile)
                 .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
                 .include(new Dependency("com.example", "a"));
+            project.dependencies().scope(Scope.test)
+                // covered through scope composition by the compile scope BOM,
+                // must not be reported individually either
+                .include(new Dependency("com.example", "a"));
 
             var original_out = System.out;
             var captured = new java.io.ByteArrayOutputStream();
@@ -729,6 +922,9 @@ public class TestBom {
             project.dependencies().scope(compile)
                 .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
                 .include(new Dependency("com.example", "a"));
+            project.dependencies().scope(Scope.test)
+                // covered through scope composition by the compile scope BOM
+                .include(new Dependency("com.example", "a"));
 
             var original_out = System.out;
             var captured = new java.io.ByteArrayOutputStream();
@@ -742,9 +938,13 @@ public class TestBom {
             var output = captured.toString();
 
             assertEquals(0, status);
-            // the tree reflects the BOM version, not the latest version
+            // the trees reflect the BOM version, not the latest version,
+            // in the compile scope as well as in the test scope that the
+            // compile scope BOM also applies to
             assertTrue(output.contains("com.example:a:1.4.0"), output);
             assertFalse(output.contains("com.example:a:2.2.0"), output);
+            var test_tree = output.substring(output.indexOf("test:"));
+            assertTrue(test_tree.contains("com.example:a:1.4.0"), output);
         } finally {
             server.stop(0);
             FileUtils.deleteDirectory(tmp);
@@ -923,6 +1123,13 @@ public class TestBom {
 
     private static String managed(String artifact, String version) {
         return dependency(artifact, version);
+    }
+
+    private static String managedTyped(String artifact, String version, String type, String classifier) {
+        return "<dependency><groupId>com.example</groupId><artifactId>" + artifact + "</artifactId><version>" + version + "</version>" +
+               "<type>" + type + "</type>" +
+               (classifier == null ? "" : "<classifier>" + classifier + "</classifier>") +
+               "</dependency>";
     }
 
     private static String pom(String artifact, String version, String dependencies) {

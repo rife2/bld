@@ -42,16 +42,21 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
             }
 
             // dependencies that are declared without a version and that are
-            // covered by a BOM in the same scope have their version governed
-            // by that BOM, the BOM update itself carries their update signal
-            var scope_resolution = new VersionResolution(properties(), artifactRetriever(), repositories(), scoped_dependencies.boms());
+            // covered by a BOM that applies to their scope have their version
+            // pinned by that BOM, the BOM update itself carries their update
+            // signal, unless a bld.override supplies the version and takes
+            // that control away from the BOM
+            var scope_resolution = new VersionResolution(properties(), artifactRetriever(), repositories(), dependencies_.effectiveBoms(entry.getKey()));
             for (var dependency : scoped_dependencies) {
                 if (VersionNumber.UNKNOWN.equals(dependency.version()) &&
-                    scope_resolution.bomVersions().containsKey(dependency.toArtifactString())) {
+                    scope_resolution.coversDependency(dependency) &&
+                    !scope_resolution.versionOverrides().containsKey(dependency.toArtifactString())) {
                     continue;
                 }
                 scopes.add(entry.getKey());
-                dependencies.add(dependency);
+                // an overridden version is the one the build uses, it's the
+                // baseline that update checks compare against
+                dependencies.add(scope_resolution.overrideDependency(dependency));
             }
         }
 
@@ -63,8 +68,7 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
             var latest = latest_versions.get(i);
             if (latest.compareTo(dependency.version()) > 0) {
                 if (dependency instanceof Bom) {
-                    result.scope(scopes.get(i)).include(new Bom(dependency.groupId(), dependency.artifactId(), latest,
-                        dependency.classifier()));
+                    result.scope(scopes.get(i)).include(new Bom(dependency.groupId(), dependency.artifactId(), latest));
                 } else {
                     result.scope(scopes.get(i)).include(new Dependency(dependency.groupId(), dependency.artifactId(), latest,
                         dependency.classifier(), dependency.type()));

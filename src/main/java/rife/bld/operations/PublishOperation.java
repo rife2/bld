@@ -27,6 +27,7 @@ import java.security.*;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -106,45 +107,96 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
     }
 
     /**
-     * Part of the {@link #execute} operation, resolves the versions of
-     * dependencies that were declared without one and that are not covered
-     * by a BOM in the same scope, so that the published POM is always
-     * complete.
+     * Part of the {@link #execute} operation, freezes the versions of
+     * dependencies that were declared without one, so that the published
+     * POM is always complete.
      * <p>
-     * BOMs that were declared without a version are resolved to their
-     * latest version too.
+     * Dependencies that are covered by a BOM that applies to their scope
+     * stay version-less, the dependency management imports of the POM
+     * supply their versions. They are frozen anyway when the flattened
+     * dependency management of the POM would supply a different version
+     * than the BOMs that apply to their scope, or when a
+     * {@code bld.override} property supplies their version, since the POM
+     * can't reflect either. Uncovered dependencies are frozen to their
+     * latest version.
+     * <p>
+     * BOMs that were declared without a version are frozen too, to their
+     * {@code bld.override} version or to their latest version.
      *
      * @since 2.4.0
      */
     protected void executeResolveVersionlessDependencies() {
+        // freeze the versions of the declared BOMs, a version from a
+        // bld.override property is used by the build itself and takes
+        // precedence, version-less BOMs resolve to their latest version
+        var base_resolution = new VersionResolution(properties());
+        for (var scope : List.of(Scope.compile, Scope.runtime, Scope.provided)) {
+            var scoped_dependencies = dependencies().get(scope);
+            if (scoped_dependencies == null || scoped_dependencies.boms().isEmpty()) {
+                continue;
+            }
+
+            var declared_boms = List.copyOf(scoped_dependencies.boms());
+            scoped_dependencies.boms().clear();
+            for (var bom : declared_boms) {
+                var version = base_resolution.overrideVersion(bom);
+                if (version.equals(VersionNumber.UNKNOWN)) {
+                    version = new DependencyResolver(base_resolution, artifactRetriever(), dependencyRepositories(), bom).latestVersion();
+                }
+                if (!version.equals(bom.version())) {
+                    bom = new Bom(bom.groupId(), bom.artifactId(), version);
+                }
+                scoped_dependencies.boms().add(bom);
+            }
+        }
+
+        // the published POM flattens all the BOM imports into a single
+        // dependency management list, compute the versions that this list
+        // supplies so that scoped differences can be frozen explicitly
+        var flattened_boms = new LinkedHashMap<String, Bom>();
+        for (var scope : List.of(Scope.compile, Scope.runtime, Scope.provided)) {
+            var scoped_dependencies = dependencies().get(scope);
+            if (scoped_dependencies != null) {
+                for (var bom : scoped_dependencies.boms()) {
+                    flattened_boms.putIfAbsent(bom.toArtifactString(), bom);
+                }
+            }
+        }
+        var flattened_resolution = new VersionResolution(properties(), artifactRetriever(), dependencyRepositories(), flattened_boms.values());
+
+        // freeze the versions of version-less dependencies that no
+        // applicable BOM covers
         for (var scope : List.of(Scope.compile, Scope.runtime, Scope.provided)) {
             var scoped_dependencies = dependencies().get(scope);
             if (scoped_dependencies == null) {
                 continue;
             }
 
-            // resolve the versions of BOMs that were declared without one
-            if (!scoped_dependencies.boms().isEmpty()) {
-                var base_resolution = new VersionResolution(properties());
-                var declared_boms = List.copyOf(scoped_dependencies.boms());
-                scoped_dependencies.boms().clear();
-                for (var bom : declared_boms) {
-                    if (bom.version().equals(VersionNumber.UNKNOWN)) {
-                        var latest = new DependencyResolver(base_resolution, artifactRetriever(), dependencyRepositories(), bom).latestVersion();
-                        bom = new Bom(bom.groupId(), bom.artifactId(), latest, bom.classifier());
-                    }
-                    scoped_dependencies.boms().add(bom);
-                }
-            }
-
-            var resolution = new VersionResolution(properties(), artifactRetriever(), dependencyRepositories(), scoped_dependencies.boms());
+            var resolution = new VersionResolution(properties(), artifactRetriever(), dependencyRepositories(), dependencies().effectiveBoms(scope));
             for (var dependency : List.copyOf(scoped_dependencies)) {
-                if (dependency.version().equals(VersionNumber.UNKNOWN) &&
-                    !resolution.bomVersions().containsKey(dependency.toArtifactString())) {
-                    var latest = new DependencyResolver(resolution, artifactRetriever(), dependencyRepositories(), dependency).latestVersion();
-                    scoped_dependencies.add(new Dependency(dependency.groupId(), dependency.artifactId(), latest,
-                        dependency.classifier(), dependency.type(), dependency.exclusions(), dependency.parent()));
+                if (!dependency.version().equals(VersionNumber.UNKNOWN)) {
+                    continue;
                 }
+                // a version from a bld.override property is used by the
+                // build itself, it's frozen into the POM even when a BOM
+                // covers the dependency since the import can't reflect it
+                var version = resolution.versionOverrides().get(dependency.toArtifactString());
+                if (version == null) {
+                    if (resolution.coversDependency(dependency)) {
+                        // the dependency can only stay version-less when the
+                        // flattened dependency management of the POM supplies
+                        // the same version as the BOMs that apply to its scope
+                        var scoped_version = resolution.overrideVersion(dependency);
+                        if (scoped_version.equals(flattened_resolution.overrideVersion(dependency))) {
+                            continue;
+                        }
+                        version = scoped_version;
+                    } else {
+                        version = new DependencyResolver(resolution, artifactRetriever(), dependencyRepositories(), dependency).latestVersion();
+                    }
+                }
+                scoped_dependencies.add(new Dependency(dependency.groupId(), dependency.artifactId(), version,
+                    dependency.classifier(), dependency.type(), dependency.exclusions(), dependency.parent()));
             }
         }
     }

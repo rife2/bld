@@ -68,28 +68,72 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
     }
 
     /**
-     * Returns the version-less dependencies that are not covered by the
-     * BOMs that are declared in their scope.
+     * Returns the BOMs that apply to the version resolution of a particular
+     * scope.
      * <p>
-     * Scopes that don't declare any BOMs are not considered, their
+     * BOMs follow the same scope composition as the classpaths: the
+     * {@code compile} scope BOMs also apply to the {@code provided},
+     * {@code runtime} and {@code test} scopes, and the {@code runtime} and
+     * {@code provided} scope BOMs also apply to the {@code test} scope.
+     * The BOMs are returned in classpath order, for the {@code test} scope
+     * that is {@code compile}, {@code provided}, {@code runtime},
+     * {@code test}, and this order determines their precedence when
+     * several manage the same dependency.
+     * <p>
+     * The {@code standalone} scope only uses its own BOMs, and its BOMs
+     * deliberately never apply to any other scope.
+     *
+     * @param scope the scope to retrieve the applicable BOMs for
+     * @return the BOMs that apply to the scope's version resolution
+     * @since 2.4.0
+     */
+    public List<Bom> effectiveBoms(Scope scope) {
+        var boms = new ArrayList<Bom>();
+        for (var bom_scope : bomScopes(scope)) {
+            var scoped_dependencies = get(bom_scope);
+            if (scoped_dependencies != null) {
+                boms.addAll(scoped_dependencies.boms());
+            }
+        }
+        return boms;
+    }
+
+    private static Scope[] bomScopes(Scope scope) {
+        return switch (scope) {
+            case provided -> new Scope[]{Scope.compile, Scope.provided};
+            case runtime -> new Scope[]{Scope.compile, Scope.runtime};
+            case test -> new Scope[]{Scope.compile, Scope.provided, Scope.runtime, Scope.test};
+            default -> new Scope[]{scope};
+        };
+    }
+
+    /**
+     * Returns the version-less dependencies that are not covered by the
+     * BOMs that apply to their scope.
+     * <p>
+     * Scopes that no BOMs apply to are not considered, their
      * version-less dependencies simply resolve to the latest version.
+     * Dependencies whose version is supplied by a {@code bld.override}
+     * property are not reported either.
      *
      * @param properties   the properties to use to get artifacts
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the BOM resolution
-     * @return the version-less dependencies that no BOM in their scope covers
+     * @return the version-less dependencies that no applicable BOM covers
      * @since 2.4.0
      */
     public List<Dependency> versionlessDependenciesWithoutBom(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
         var result = new ArrayList<Dependency>();
-        for (var scoped_dependencies : values()) {
-            if (scoped_dependencies.boms().isEmpty()) {
+        for (var entry : entrySet()) {
+            var effective_boms = effectiveBoms(entry.getKey());
+            if (effective_boms.isEmpty()) {
                 continue;
             }
-            var resolution = new VersionResolution(properties, retriever, repositories, scoped_dependencies.boms());
-            for (var dependency : scoped_dependencies) {
+            var resolution = new VersionResolution(properties, retriever, repositories, effective_boms);
+            for (var dependency : entry.getValue()) {
                 if (dependency.version().equals(VersionNumber.UNKNOWN) &&
-                    !resolution.bomVersions().containsKey(dependency.toArtifactString()) &&
+                    !resolution.coversDependency(dependency) &&
+                    !resolution.versionOverrides().containsKey(dependency.toArtifactString()) &&
                     !result.contains(dependency)) {
                     result.add(dependency);
                 }
@@ -109,6 +153,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      */
     public DependencySet resolveCompileDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
         return resolveScopedDependencies(properties, retriever, repositories,
+            Scope.compile,
             new Scope[]{Scope.compile},
             new Scope[]{Scope.compile},
             null);
@@ -125,6 +170,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      */
     public DependencySet resolveProvidedDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
         return resolveScopedDependencies(properties, retriever, repositories,
+            Scope.provided,
             new Scope[]{Scope.provided},
             new Scope[]{Scope.compile, Scope.runtime},
             null);
@@ -141,6 +187,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      */
     public DependencySet resolveRuntimeDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
         return resolveScopedDependencies(properties, retriever, repositories,
+            Scope.runtime,
             new Scope[]{Scope.compile, Scope.runtime},
             new Scope[]{Scope.compile, Scope.runtime},
             resolveCompileDependencies(properties, retriever, repositories));
@@ -157,6 +204,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      */
     public DependencySet resolveStandaloneDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
         return resolveScopedDependencies(properties, retriever, repositories,
+            Scope.standalone,
             new Scope[]{Scope.standalone},
             new Scope[]{Scope.compile, Scope.runtime},
             null);
@@ -173,22 +221,21 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      */
     public DependencySet resolveTestDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
         return resolveScopedDependencies(properties, retriever, repositories,
+            Scope.test,
             new Scope[]{Scope.test},
             new Scope[]{Scope.compile, Scope.runtime},
             null);
     }
 
-    private DependencySet resolveScopedDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories, Scope[] resolvedScopes, Scope[] transitiveScopes, DependencySet excluded) {
+    private DependencySet resolveScopedDependencies(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories, Scope scope, Scope[] resolvedScopes, Scope[] transitiveScopes, DependencySet excluded) {
         var roots = new ArrayList<Dependency>();
-        var boms = new ArrayList<Bom>();
-        for (var scope : resolvedScopes) {
-            var scoped_dependencies = get(scope);
+        for (var resolved_scope : resolvedScopes) {
+            var scoped_dependencies = get(resolved_scope);
             if (scoped_dependencies != null) {
                 roots.addAll(scoped_dependencies);
-                boms.addAll(scoped_dependencies.boms());
             }
         }
-        var resolution = new VersionResolution(properties, retriever, repositories, boms);
+        var resolution = new VersionResolution(properties, retriever, repositories, effectiveBoms(scope));
         var dependencies = new ParallelDependencyResolver(resolution, retriever, repositories).resolveAllDependencies(roots, transitiveScopes);
         if (excluded != null) {
             dependencies.removeAll(excluded);

@@ -1032,9 +1032,10 @@ public class BaseProject extends BuildExecutor {
 
     /**
      * Creates a new bill of materials instance from a string representation.
-     * The format is {@code groupId:artifactId:version:classifier}.
-     * The {@code version} and {@code classifier} are optional, and an
-     * optional {@code @bom} or {@code @pom} type suffix is accepted.
+     * The format is {@code groupId:artifactId:version}.
+     * The {@code version} is optional, and an optional {@code @bom} or
+     * {@code @pom} type suffix is accepted. BOMs can't have classifiers,
+     * strings that contain one are rejected.
      * <p>
      * If the string can't be successfully parsed, {@code null} will be returned.
      *
