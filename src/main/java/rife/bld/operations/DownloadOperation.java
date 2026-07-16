@@ -86,6 +86,28 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
         for (var dependency : dependencies().versionlessDependenciesWithoutBom(properties(), artifactRetriever(), repositories())) {
             System.out.println("Warning: '" + dependency.toArtifactString() + "' isn't covered by a BOM, its latest version will be used");
         }
+        for (var conflict : dependencies().bomVersionConflicts(properties(), artifactRetriever(), repositories())) {
+            System.out.println(formatBomVersionConflict(conflict));
+        }
+    }
+
+    /**
+     * Formats a warning message for a BOM version conflict.
+     *
+     * @param conflict the BOM version conflict to format
+     * @return the formatted warning message
+     * @since 2.4.0
+     */
+    protected static String formatBomVersionConflict(rife.bld.dependencies.VersionResolution.BomVersionConflict conflict) {
+        var entries = conflict.bomVersions().entrySet().iterator();
+        var used = entries.next();
+        var message = new StringBuilder("Warning: '" + conflict.dependency() + "' is managed by multiple BOMs, using " +
+            used.getValue() + " from '" + used.getKey() + "'");
+        while (entries.hasNext()) {
+            var other = entries.next();
+            message.append(", not ").append(other.getValue()).append(" from '").append(other.getKey()).append('\'');
+        }
+        return message.toString();
     }
 
     /**

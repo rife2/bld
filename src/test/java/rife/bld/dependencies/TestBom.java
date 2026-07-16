@@ -410,10 +410,11 @@ public class TestBom {
                 .include(new Bom("com.example", "bom2", new VersionNumber(1, 0, 0)))
                 .include(new Dependency("com.example", "a"));
 
-            // when several applicable BOMs manage the same dependency, the
-            // first one in classpath composition order determines the version
+            // a BOM declared in the dependency's own scope takes precedence
+            // over a BOM inherited from a broader scope, so the test scope
+            // bom2 wins over the compile scope bom1
             var test_resolved = scopes.resolveTestDependencies(new HierarchicalProperties(), ArtifactRetriever.cachingInstance(), serverRepositories(server));
-            assertEquals(Version.parse("1.4.0"), test_resolved.get(new Dependency("com.example", "a")).version());
+            assertEquals(Version.parse("2.2.0"), test_resolved.get(new Dependency("com.example", "a")).version());
         } finally {
             server.stop(0);
         }
@@ -471,6 +472,41 @@ public class TestBom {
     }
 
     @Test
+    void testBomVersionConflictsAreDetected() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0") + managed("b", "3.0.0")),
+                "bom2:1.0.0", bomPom("bom2", "1.0.0", managed("a", "2.2.0"))),
+            Map.of());
+        server.start();
+        try {
+            var scopes = new DependencyScopes();
+            scopes.scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)));
+            scopes.scope(Scope.test)
+                .include(new Bom("com.example", "bom2", new VersionNumber(1, 0, 0)));
+
+            var conflicts = scopes.bomVersionConflicts(new HierarchicalProperties(), ArtifactRetriever.cachingInstance(), serverRepositories(server));
+            // only 'a' is managed by both BOMs at different versions, 'b'
+            // is managed by a single BOM so it isn't a conflict
+            assertEquals(1, conflicts.size());
+            var conflict = conflicts.get(0);
+            assertEquals("com.example:a", conflict.dependency());
+
+            var versions = conflict.bomVersions().entrySet().iterator();
+            // the test scope bom2 wins and is reported first, the compile
+            // scope bom1 is the alternative
+            var used = versions.next();
+            assertEquals("com.example:bom2", used.getKey());
+            assertEquals(Version.parse("2.2.0"), used.getValue());
+            var other = versions.next();
+            assertEquals("com.example:bom1", other.getKey());
+            assertEquals(Version.parse("1.4.0"), other.getValue());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
     void testEffectiveBomsComposition() {
         var compile_bom = new Bom("com.example", "compile-bom", new VersionNumber(1, 0, 0));
         var runtime_bom = new Bom("com.example", "runtime-bom", new VersionNumber(2, 0, 0));
@@ -485,11 +521,12 @@ public class TestBom {
         scopes.scope(Scope.test).include(test_bom);
         scopes.scope(Scope.standalone).include(standalone_bom);
 
+        // the scope's own BOMs come first, then the inherited ones from
+        // the more specific to the more general scope
         assertEquals(List.of(compile_bom), scopes.effectiveBoms(compile));
-        assertEquals(List.of(compile_bom, provided_bom), scopes.effectiveBoms(Scope.provided));
-        assertEquals(List.of(compile_bom, runtime_bom), scopes.effectiveBoms(Scope.runtime));
-        // the test scope order matches the test classpath order
-        assertEquals(List.of(compile_bom, provided_bom, runtime_bom, test_bom), scopes.effectiveBoms(Scope.test));
+        assertEquals(List.of(provided_bom, compile_bom), scopes.effectiveBoms(Scope.provided));
+        assertEquals(List.of(runtime_bom, compile_bom), scopes.effectiveBoms(Scope.runtime));
+        assertEquals(List.of(test_bom, runtime_bom, provided_bom, compile_bom), scopes.effectiveBoms(Scope.test));
         assertEquals(List.of(standalone_bom), scopes.effectiveBoms(Scope.standalone));
     }
 

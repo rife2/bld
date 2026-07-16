@@ -6,8 +6,10 @@ package rife.bld.dependencies;
 
 import rife.ioc.HierarchicalProperties;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -173,6 +175,62 @@ public class VersionResolution {
             }
         }
         return bom_versions;
+    }
+
+    /**
+     * Describes a version conflict between bills of materials, where more
+     * than one applicable BOM manages the same dependency at a different
+     * version.
+     *
+     * @param dependency  the group and artifact identifiers of the
+     *                    dependency that is managed at conflicting versions
+     * @param bomVersions the versions that the BOMs manage the dependency
+     *                    at, keyed by the BOM, in precedence order so that
+     *                    the first entry is the version that is used
+     * @since 2.4.0
+     */
+    public record BomVersionConflict(String dependency, Map<String, Version> bomVersions) {
+    }
+
+    /**
+     * Resolves the version conflicts between the provided bills of
+     * materials, where more than one of them manages the same dependency
+     * at a different version.
+     *
+     * @param properties   the properties to use to get artifacts
+     * @param retriever    the retriever to use to get the BOMs
+     * @param repositories the repositories to resolve the BOMs in
+     * @param boms         the BOMs to check, in precedence order
+     * @return the version conflicts between the BOMs
+     * @since 2.4.0
+     */
+    public static List<BomVersionConflict> resolveBomVersionConflicts(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories, Collection<Bom> boms) {
+        var base = new VersionResolution(properties);
+        var versions_by_key = new LinkedHashMap<String, LinkedHashMap<String, Version>>();
+        var dependency_by_key = new LinkedHashMap<String, String>();
+        if (boms != null) {
+            for (var bom : boms) {
+                var pom = new DependencyResolver(base, retriever, repositories, bom).getMavenPom(bom);
+                for (var managed : pom.getManagedDependencies()) {
+                    if (managed.version() != null && !managed.version().isBlank()) {
+                        var dependency = managed.convertToDependency();
+                        var key = managedKey(dependency);
+                        versions_by_key.computeIfAbsent(key, k -> new LinkedHashMap<>())
+                            .putIfAbsent(bom.toArtifactString(), dependency.version());
+                        dependency_by_key.putIfAbsent(key, dependency.toArtifactString());
+                    }
+                }
+            }
+        }
+
+        var conflicts = new ArrayList<BomVersionConflict>();
+        for (var entry : versions_by_key.entrySet()) {
+            var bom_versions = entry.getValue();
+            if (bom_versions.values().stream().distinct().count() > 1) {
+                conflicts.add(new BomVersionConflict(dependency_by_key.get(entry.getKey()), new LinkedHashMap<>(bom_versions)));
+            }
+        }
+        return conflicts;
     }
 
     // builds the identity that dependency management entries are matched

@@ -7,6 +7,7 @@ package rife.bld.dependencies;
 import rife.ioc.HierarchicalProperties;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -75,10 +76,13 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      * {@code compile} scope BOMs also apply to the {@code provided},
      * {@code runtime} and {@code test} scopes, and the {@code runtime} and
      * {@code provided} scope BOMs also apply to the {@code test} scope.
-     * The BOMs are returned in classpath order, for the {@code test} scope
-     * that is {@code compile}, {@code provided}, {@code runtime},
-     * {@code test}, and this order determines their precedence when
-     * several manage the same dependency.
+     * The BOMs are returned with the scope's own BOMs first, followed by
+     * the inherited ones from the more specific to the more general scope,
+     * for the {@code test} scope that is {@code test}, {@code runtime},
+     * {@code provided}, {@code compile}. This order determines their
+     * precedence when several manage the same dependency: a BOM declared
+     * in the scope where a dependency is used takes precedence over a BOM
+     * that is inherited from a broader scope.
      * <p>
      * The {@code standalone} scope only uses its own BOMs, and its BOMs
      * deliberately never apply to any other scope.
@@ -100,9 +104,9 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
 
     private static Scope[] bomScopes(Scope scope) {
         return switch (scope) {
-            case provided -> new Scope[]{Scope.compile, Scope.provided};
-            case runtime -> new Scope[]{Scope.compile, Scope.runtime};
-            case test -> new Scope[]{Scope.compile, Scope.provided, Scope.runtime, Scope.test};
+            case provided -> new Scope[]{Scope.provided, Scope.compile};
+            case runtime -> new Scope[]{Scope.runtime, Scope.compile};
+            case test -> new Scope[]{Scope.test, Scope.runtime, Scope.provided, Scope.compile};
             default -> new Scope[]{scope};
         };
     }
@@ -136,6 +140,37 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
                     !resolution.versionOverrides().containsKey(dependency.toArtifactString()) &&
                     !result.contains(dependency)) {
                     result.add(dependency);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the version conflicts between the BOMs that apply to the
+     * scopes, where more than one applicable BOM manages the same
+     * dependency at a different version.
+     * <p>
+     * Each conflict is reported once, the versions are keyed by their BOM
+     * in precedence order so that the first is the version that is used.
+     *
+     * @param properties   the properties to use to get artifacts
+     * @param retriever    the retriever to use to get artifacts
+     * @param repositories the repositories to use for the BOM resolution
+     * @return the version conflicts between the applicable BOMs
+     * @since 2.4.0
+     */
+    public List<VersionResolution.BomVersionConflict> bomVersionConflicts(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
+        var result = new ArrayList<VersionResolution.BomVersionConflict>();
+        var seen = new HashSet<String>();
+        for (var scope : keySet()) {
+            var effective_boms = effectiveBoms(scope);
+            if (effective_boms.size() < 2) {
+                continue;
+            }
+            for (var conflict : VersionResolution.resolveBomVersionConflicts(properties, retriever, repositories, effective_boms)) {
+                if (seen.add(conflict.dependency() + conflict.bomVersions())) {
+                    result.add(conflict);
                 }
             }
         }

@@ -78,6 +78,9 @@ public class PurgeOperation extends AbstractOperation<PurgeOperation> {
         for (var dependency : dependencies().versionlessDependenciesWithoutBom(properties(), artifactRetriever(), repositories())) {
             System.out.println("Warning: '" + dependency.toArtifactString() + "' isn't covered by a BOM, its latest version will be used");
         }
+        for (var conflict : dependencies().bomVersionConflicts(properties(), artifactRetriever(), repositories())) {
+            System.out.println(DownloadOperation.formatBomVersionConflict(conflict));
+        }
     }
 
     /**
