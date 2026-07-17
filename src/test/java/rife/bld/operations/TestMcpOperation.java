@@ -823,6 +823,8 @@ public class TestMcpOperation {
             assertEquals("1.0.0", description.getString("version"));
             assertEquals("test.pkg", description.getString("package"));
             assertNotNull(description.getObject("directories").getString("srcMainJava"));
+            // values that aren't configured are omitted instead of null
+            assertFalse(description.containsKey("javaRelease"));
 
             // the dependencies resource describes the scopes
             var read_dependencies = process(operation, """

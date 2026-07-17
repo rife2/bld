@@ -843,7 +843,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
             resources.object(r -> r
                 .set("uri", RESOURCE_PROJECT)
                 .set("name", "project")
-                .set("description", "The identification and directory layout of the project")
+                .set("description", "The identification and directory layout of the project, values that aren't configured are omitted")
                 .set("mimeType", "application/json"));
             resources.object(r -> r
                 .set("uri", RESOURCE_DEPENDENCIES)
@@ -904,24 +904,34 @@ public class McpOperation extends AbstractOperation<McpOperation> {
     /**
      * Part of the {@link #execute} operation, describes the project
      * identification and directory layout as JSON.
+     * <p>
+     * Values that aren't configured are omitted, so that their absence
+     * can't be mistaken for missing data.
      *
      * @return the JSON description of the project
      * @since 2.4.0
      */
     protected String readProjectResource() {
-        return new JsonObject()
-            .set("name", project_.name())
-            .set("version", project_.version() == null ? null : project_.version().toString())
-            .set("package", project_.pkg())
-            .set("mainClass", project_.mainClass())
-            .set("javaRelease", project_.javaRelease())
-            .object("directories", d -> d
-                .set("work", directoryPath(project_.workDirectory()))
-                .set("srcMainJava", directoryPath(project_.srcMainJavaDirectory()))
-                .set("srcTestJava", directoryPath(project_.srcTestJavaDirectory()))
-                .set("buildMain", directoryPath(project_.buildMainDirectory()))
-                .set("buildTest", directoryPath(project_.buildTestDirectory())))
-            .toPrettyString();
+        var json = new JsonObject();
+        setIfPresent(json, "name", project_.name());
+        setIfPresent(json, "version", project_.version() == null ? null : project_.version().toString());
+        setIfPresent(json, "package", project_.pkg());
+        setIfPresent(json, "mainClass", project_.mainClass());
+        setIfPresent(json, "javaRelease", project_.javaRelease());
+        var directories = new JsonObject();
+        setIfPresent(directories, "work", directoryPath(project_.workDirectory()));
+        setIfPresent(directories, "srcMainJava", directoryPath(project_.srcMainJavaDirectory()));
+        setIfPresent(directories, "srcTestJava", directoryPath(project_.srcTestJavaDirectory()));
+        setIfPresent(directories, "buildMain", directoryPath(project_.buildMainDirectory()));
+        setIfPresent(directories, "buildTest", directoryPath(project_.buildTestDirectory()));
+        json.set("directories", directories);
+        return json.toPrettyString();
+    }
+
+    private static void setIfPresent(JsonObject json, String name, Object value) {
+        if (value != null) {
+            json.set(name, value);
+        }
     }
 
     private static String directoryPath(File directory) {
