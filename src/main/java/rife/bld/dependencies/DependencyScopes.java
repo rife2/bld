@@ -179,6 +179,40 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
     }
 
     /**
+     * Returns the declared dependencies whose explicit version differs
+     * from the version that a BOM applying to their scope manages them at.
+     * <p>
+     * The declared version is used for the dependency itself, its
+     * transitive dependencies still resolve to the versions that the BOMs
+     * manage. Dependencies whose version is supplied by a
+     * {@code bld.override} property are not reported. Each difference is
+     * reported once.
+     *
+     * @param properties   the properties to use to get artifacts
+     * @param retriever    the retriever to use to get artifacts
+     * @param repositories the repositories to use for the BOM resolution
+     * @return the version differences between the declared dependencies
+     * and the applicable BOMs
+     * @since 2.4.0
+     */
+    public List<VersionResolution.DeclaredVersionConflict> declaredVersionConflicts(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
+        var result = new ArrayList<VersionResolution.DeclaredVersionConflict>();
+        var seen = new HashSet<String>();
+        for (var entry : entrySet()) {
+            var effective_boms = effectiveBoms(entry.getKey());
+            if (effective_boms.isEmpty()) {
+                continue;
+            }
+            for (var conflict : VersionResolution.resolveDeclaredVersionConflicts(properties, retriever, repositories, effective_boms, entry.getValue())) {
+                if (seen.add(conflict.dependency() + conflict.declaredVersion() + conflict.bom() + conflict.bomVersion())) {
+                    result.add(conflict);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the transitive set of dependencies that would be used for the compile scope in a project.
      *
      * @param properties   the properties to use to get artifacts

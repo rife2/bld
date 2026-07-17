@@ -507,6 +507,48 @@ public class TestBom {
     }
 
     @Test
+    void testDeclaredVersionConflictsAreDetected() throws Exception {
+        var server = createArtifactServer(Map.of(
+                "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0") + managed("b", "3.0.0"))),
+            Map.of());
+        server.start();
+        try {
+            var retriever = ArtifactRetriever.cachingInstance();
+            var repositories = serverRepositories(server);
+            var scopes = new DependencyScopes();
+            scopes.scope(compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                // declared at a different version than the BOM manages
+                .include(new Dependency("com.example", "a", new VersionNumber(2, 2, 0)))
+                // declared at the same version as the BOM manages
+                .include(new Dependency("com.example", "b", new VersionNumber(3, 0, 0)));
+            scopes.scope(Scope.test)
+                // the same difference through scope composition is
+                // reported once
+                .include(new Dependency("com.example", "a", new VersionNumber(2, 2, 0)))
+                // a version-less dependency takes the BOM version and
+                // isn't a difference
+                .include(new Dependency("com.example", "b"));
+
+            var conflicts = scopes.declaredVersionConflicts(new HierarchicalProperties(), retriever, repositories);
+            assertEquals(1, conflicts.size());
+            var conflict = conflicts.get(0);
+            assertEquals("com.example:a", conflict.dependency());
+            assertEquals(Version.parse("2.2.0"), conflict.declaredVersion());
+            assertEquals("com.example:bom1", conflict.bom());
+            assertEquals(Version.parse("1.4.0"), conflict.bomVersion());
+
+            // a bld.override that supplies the version prevents the report
+            var override_properties = new HierarchicalProperties();
+            override_properties.put(VersionResolution.PROPERTY_OVERRIDE_PREFIX, "com.example:a:2.2.0");
+            assertEquals(List.of(),
+                scopes.declaredVersionConflicts(override_properties, retriever, repositories));
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
     void testEffectiveBomsComposition() {
         var compile_bom = new Bom("com.example", "compile-bom", new VersionNumber(1, 0, 0));
         var runtime_bom = new Bom("com.example", "runtime-bom", new VersionNumber(2, 0, 0));

@@ -233,6 +233,78 @@ public class VersionResolution {
         return conflicts;
     }
 
+    /**
+     * Describes a declared dependency whose explicit version differs from
+     * the version that an applicable bill of materials manages it at.
+     * <p>
+     * The declared version is used for the dependency itself, its
+     * transitive dependencies still resolve to the versions that the BOM
+     * manages.
+     *
+     * @param dependency      the group and artifact identifiers of the
+     *                        declared dependency
+     * @param declaredVersion the version the dependency is declared with
+     * @param bom             the BOM that manages the dependency, the one
+     *                        with the highest precedence when several do
+     * @param bomVersion      the version the BOM manages the dependency at
+     * @since 2.4.0
+     */
+    public record DeclaredVersionConflict(String dependency, Version declaredVersion, String bom, Version bomVersion) {
+    }
+
+    /**
+     * Finds the declared dependencies whose explicit version differs from
+     * the version that the provided bills of materials manage them at.
+     * <p>
+     * Dependencies that are declared without a version or whose version is
+     * supplied by a {@code bld.override} property are not reported.
+     *
+     * @param properties   the properties to use to get artifacts
+     * @param retriever    the retriever to use to get the BOMs
+     * @param repositories the repositories to resolve the BOMs in
+     * @param boms         the BOMs to check, in precedence order
+     * @param declared     the declared dependencies to check
+     * @return the version differences between the declared dependencies and the BOMs
+     * @since 2.4.0
+     */
+    public static List<DeclaredVersionConflict> resolveDeclaredVersionConflicts(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories, Collection<Bom> boms, Collection<Dependency> declared) {
+        var base = new VersionResolution(properties);
+        var managed_versions = new LinkedHashMap<String, Version>();
+        var managed_boms = new LinkedHashMap<String, String>();
+        if (boms != null) {
+            for (var bom : boms) {
+                var pom = new DependencyResolver(base, retriever, repositories, bom).getMavenPom(bom);
+                for (var managed : pom.getManagedDependencies()) {
+                    if (managed.version() != null && !managed.version().isBlank()) {
+                        var dependency = managed.convertToDependency();
+                        var key = managedKey(dependency);
+                        // the first BOM that manages a dependency determines
+                        // its version, mirroring the resolution precedence
+                        if (managed_versions.putIfAbsent(key, dependency.version()) == null) {
+                            managed_boms.put(key, bom.toArtifactString());
+                        }
+                    }
+                }
+            }
+        }
+
+        var conflicts = new ArrayList<DeclaredVersionConflict>();
+        if (declared != null) {
+            for (var dependency : declared) {
+                if (VersionNumber.UNKNOWN.equals(dependency.version()) ||
+                    base.versionOverrides_.containsKey(dependency.toArtifactString())) {
+                    continue;
+                }
+                var key = managedKey(dependency);
+                var managed_version = managed_versions.get(key);
+                if (managed_version != null && !managed_version.equals(dependency.version())) {
+                    conflicts.add(new DeclaredVersionConflict(dependency.toArtifactString(), dependency.version(), managed_boms.get(key), managed_version));
+                }
+            }
+        }
+        return conflicts;
+    }
+
     // builds the identity that dependency management entries are matched
     // on, mirroring Maven this includes the type and the classifier, the
     // modular and forced-classpath JAR types match the plain jar entries

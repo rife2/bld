@@ -89,6 +89,9 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
         for (var conflict : dependencies().bomVersionConflicts(properties(), artifactRetriever(), repositories())) {
             System.out.println(formatBomVersionConflict(conflict));
         }
+        for (var conflict : dependencies().declaredVersionConflicts(properties(), artifactRetriever(), repositories())) {
+            System.out.println(formatDeclaredVersionConflict(conflict));
+        }
     }
 
     /**
@@ -108,6 +111,20 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
             message.append(", not ").append(other.getValue()).append(" from '").append(other.getKey()).append('\'');
         }
         return message.toString();
+    }
+
+    /**
+     * Formats a warning message for a declared dependency whose version
+     * differs from the version that a BOM manages it at.
+     *
+     * @param conflict the declared version conflict to format
+     * @return the formatted warning message
+     * @since 2.4.0
+     */
+    protected static String formatDeclaredVersionConflict(rife.bld.dependencies.VersionResolution.DeclaredVersionConflict conflict) {
+        return "Warning: '" + conflict.dependency() + "' is declared with version " + conflict.declaredVersion() +
+               " while BOM '" + conflict.bom() + "' manages it at " + conflict.bomVersion() +
+               ", the declared version is used but transitive dependencies still follow the BOM";
     }
 
     /**
