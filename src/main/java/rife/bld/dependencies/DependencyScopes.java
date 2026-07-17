@@ -77,12 +77,13 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      * {@code runtime} and {@code test} scopes, and the {@code runtime} and
      * {@code provided} scope BOMs also apply to the {@code test} scope.
      * The BOMs are returned with the scope's own BOMs first, followed by
-     * the inherited ones from the more specific to the more general scope,
-     * for the {@code test} scope that is {@code test}, {@code runtime},
-     * {@code provided}, {@code compile}. This order determines their
-     * precedence when several manage the same dependency: a BOM declared
-     * in the scope where a dependency is used takes precedence over a BOM
-     * that is inherited from a broader scope.
+     * the inherited ones in the standard scope order, for the {@code test}
+     * scope that is {@code test}, {@code compile}, {@code provided},
+     * {@code runtime}. This order determines their precedence when several
+     * manage the same dependency: a BOM declared in the scope where a
+     * dependency is used takes precedence over a BOM that is inherited from
+     * another scope, and among the inherited BOMs the more fundamental
+     * scope wins.
      * <p>
      * The {@code standalone} scope only uses its own BOMs, and its BOMs
      * deliberately never apply to any other scope.
@@ -106,7 +107,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
         return switch (scope) {
             case provided -> new Scope[]{Scope.provided, Scope.compile};
             case runtime -> new Scope[]{Scope.runtime, Scope.compile};
-            case test -> new Scope[]{Scope.test, Scope.runtime, Scope.provided, Scope.compile};
+            case test -> new Scope[]{Scope.test, Scope.compile, Scope.provided, Scope.runtime};
             default -> new Scope[]{scope};
         };
     }

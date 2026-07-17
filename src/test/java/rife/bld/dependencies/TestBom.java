@@ -526,7 +526,7 @@ public class TestBom {
         assertEquals(List.of(compile_bom), scopes.effectiveBoms(compile));
         assertEquals(List.of(provided_bom, compile_bom), scopes.effectiveBoms(Scope.provided));
         assertEquals(List.of(runtime_bom, compile_bom), scopes.effectiveBoms(Scope.runtime));
-        assertEquals(List.of(test_bom, runtime_bom, provided_bom, compile_bom), scopes.effectiveBoms(Scope.test));
+        assertEquals(List.of(test_bom, compile_bom, provided_bom, runtime_bom), scopes.effectiveBoms(Scope.test));
         assertEquals(List.of(standalone_bom), scopes.effectiveBoms(Scope.standalone));
     }
 
