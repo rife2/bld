@@ -654,7 +654,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
                     .set("description", "Whether the console output was truncated at the output limit"))
                 .object("durationMs", d -> d
                     .set("type", "integer")
-                    .set("description", "The wall clock duration of the command execution in milliseconds")))
+                    .set("description", "The wall clock duration of the whole tool call process in milliseconds, including the JVM and wrapper startup")))
             .array("required", r -> r
                 .append("command")
                 .append("exitStatus")
