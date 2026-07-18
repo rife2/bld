@@ -91,6 +91,11 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      */
     public static final String RESOURCE_DEPENDENCY_TREE = "bld://dependency-tree";
 
+    // the RFC 5424 syslog severities that MCP logging uses, from the least
+    // to the most severe, the streamed build output is sent at info
+    private static final List<String> LOG_LEVELS = List.of(
+        "debug", "info", "notice", "warning", "error", "critical", "alert", "emergency");
+
     private BuildExecutor executor_;
     private BaseProject project_ = null;
     private String serverTitle_ = null;
@@ -101,6 +106,11 @@ public class McpOperation extends AbstractOperation<McpOperation> {
     private final Set<String> excludedCommands_ = new LinkedHashSet<>(List.of("mcp"));
     private final Set<String> confirmationCommands_ = new LinkedHashSet<>(List.of("publish"));
     private final Set<Process> activeProcesses_ = ConcurrentHashMap.newKeySet();
+    // the writer of the running server loop, log notifications from the
+    // output reader threads are interleaved with the responses through it
+    private volatile PrintWriter notificationWriter_ = null;
+    private volatile String logLevel_ = "info";
+    private final Object writeLock_ = new Object();
 
     private static final class ResourceNotFoundException extends RuntimeException {
         ResourceNotFoundException(String uri) {
@@ -171,18 +181,63 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      */
     protected void executeServerLoop(BufferedReader reader, PrintWriter writer)
     throws IOException {
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.isBlank()) {
-                continue;
+        // the writer is shared with the output streaming of tool calls
+        // while the loop runs
+        notificationWriter_ = writer;
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank()) {
+                    continue;
+                }
+                var response = processMessage(line);
+                if (response != null) {
+                    writeProtocolMessage(writer, response);
+                }
             }
-            var response = processMessage(line);
-            if (response != null) {
-                writer.print(response);
-                writer.print('\n');
-                writer.flush();
-            }
+        } finally {
+            notificationWriter_ = null;
         }
+    }
+
+    // responses and log notifications are written as complete lines under
+    // a shared lock, so that concurrent streaming can never interleave
+    // inside a message
+    private void writeProtocolMessage(PrintWriter writer, String message) {
+        synchronized (writeLock_) {
+            writer.print(message);
+            writer.print('\n');
+            writer.flush();
+        }
+    }
+
+    /**
+     * Part of the {@link #execute} operation, sends the console output of
+     * a running tool call as an MCP log message notification.
+     * <p>
+     * The output is sent at the {@code info} level with the command name
+     * as the logger, when the client set a more severe minimum level with
+     * {@code logging/setLevel} the output isn't streamed. Nothing is sent
+     * when no server loop is running.
+     *
+     * @param command the name of the build command that produced the output
+     * @param data    the chunk of console output to send
+     * @since 2.4.0
+     */
+    protected void sendToolCallOutput(String command, String data) {
+        var writer = notificationWriter_;
+        if (writer == null || LOG_LEVELS.indexOf(logLevel_) > LOG_LEVELS.indexOf("info")) {
+            return;
+        }
+        var notification = new JsonObject()
+            .set("jsonrpc", "2.0")
+            .set("method", "notifications/message")
+            .object("params", p -> p
+                .set("level", "info")
+                .set("logger", command)
+                .set("data", data))
+            .toString();
+        writeProtocolMessage(writer, notification);
     }
 
     /**
@@ -252,6 +307,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
                     yield processResourcesList();
                 }
                 case "resources/read" -> processResourcesRead(params);
+                case "logging/setLevel" -> processLoggingSetLevel(params);
                 default -> null;
             };
         } catch (InvalidParamsException e) {
@@ -334,7 +390,8 @@ public class McpOperation extends AbstractOperation<McpOperation> {
             .set("protocolVersion", version)
             .object("capabilities", c -> c
                 .object("tools", t -> {})
-                .object("resources", r -> {}))
+                .object("resources", r -> {})
+                .object("logging", l -> {}))
             .object("serverInfo", s -> {
                 s.set("name", "bld");
                 if (serverTitle_ != null) {
@@ -343,6 +400,28 @@ public class McpOperation extends AbstractOperation<McpOperation> {
                 s.set("version", BldVersion.getVersion());
             })
             .set("instructions", instructions_ == null ? defaultInstructions() : instructions_);
+    }
+
+    /**
+     * Part of the {@link #execute} operation, handles the MCP
+     * {@code logging/setLevel} request.
+     * <p>
+     * The minimum level determines whether the console output of running
+     * tool calls is streamed as log message notifications, the output is
+     * sent at the {@code info} level.
+     *
+     * @param params the parameters of the set level request
+     * @return the empty set level result
+     * @since 2.4.0
+     */
+    protected JsonObject processLoggingSetLevel(JsonObject params) {
+        if (params == null ||
+            !(params.get("level") instanceof String level) ||
+            !LOG_LEVELS.contains(level)) {
+            throw new InvalidParamsException("Invalid logging level");
+        }
+        logLevel_ = level;
+        return new JsonObject();
     }
 
     /**
@@ -518,6 +597,25 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * @since 2.4.0
      */
     protected JsonObject executeToolCall(String command, List<String> arguments, boolean enforceExclusions) {
+        return executeToolCall(command, arguments, enforceExclusions, true);
+    }
+
+    /**
+     * Part of the {@link #execute} operation, executes a single build
+     * command with the provided arguments as a separate build process,
+     * capturing its console output.
+     *
+     * @param command           the name of the build command to execute
+     * @param arguments          the arguments to pass to the build command
+     * @param enforceExclusions  whether the excluded commands are refused
+     * @param streamOutput       whether the console output is streamed as
+     *                           log message notifications while the
+     *                           command runs, the internal resource
+     *                           generation doesn't stream
+     * @return the tool call result with the captured console output
+     * @since 2.4.0
+     */
+    protected JsonObject executeToolCall(String command, List<String> arguments, boolean enforceExclusions, boolean streamOutput) {
         var output = new StringBuilder();
         var truncated = new boolean[]{false};
         // the descendants are collected while the process is alive, so that
@@ -562,7 +660,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
         var final_status_file = status_file;
         var final_control_file = control_file;
         try {
-            return runToolCallProcess(command, process, descendants, output, truncated, final_status_file);
+            return runToolCallProcess(command, process, descendants, output, truncated, final_status_file, streamOutput);
         } finally {
             deleteQuietly(final_control_file);
             deleteQuietly(final_status_file);
@@ -577,7 +675,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
 
 
     private JsonObject runToolCallProcess(String command, Process process, Set<ProcessHandle> descendants,
-                                          StringBuilder output, boolean[] truncated, File status_file) {
+                                          StringBuilder output, boolean[] truncated, File status_file, boolean stream_output) {
 
         var error = false;
         var timed_out = false;
@@ -612,14 +710,24 @@ public class McpOperation extends AbstractOperation<McpOperation> {
                     var buffer = new char[8192];
                     int read;
                     while ((read = stream.read(buffer)) != -1) {
+                        String streamed = null;
                         synchronized (output) {
                             var remaining = outputLimit_ - output.length();
                             if (remaining > 0) {
-                                output.append(buffer, 0, Math.min(read, remaining));
+                                var appended = Math.min(read, remaining);
+                                output.append(buffer, 0, appended);
+                                if (stream_output) {
+                                    streamed = new String(buffer, 0, appended);
+                                }
                             }
                             if (read > remaining) {
                                 truncated[0] = true;
                             }
+                        }
+                        // the captured chunk is also streamed live as a log
+                        // message notification, outside of the output lock
+                        if (streamed != null) {
+                            sendToolCallOutput(command, streamed);
                         }
                     }
                 } catch (IOException e) {
@@ -976,8 +1084,9 @@ public class McpOperation extends AbstractOperation<McpOperation> {
     protected String readDependencyTreeResource() {
         // the resource generation runs the command internally and doesn't
         // enforce the tool exclusions, so that excluding the tool doesn't
-        // break the still advertised resource
-        var result = executeToolCall("dependency-tree", List.of(), false);
+        // break the still advertised resource, its output is the resource
+        // itself and isn't streamed
+        var result = executeToolCall("dependency-tree", List.of(), false, false);
         var text = result.getArray("content").getObject(0).getString("text");
         if (result.getBoolean("isError")) {
             throw new RuntimeException("Unable to generate the dependency tree:\n" + text);

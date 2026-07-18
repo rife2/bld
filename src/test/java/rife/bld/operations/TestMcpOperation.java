@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -174,6 +175,7 @@ public class TestMcpOperation {
         // a supported requested protocol version is echoed
         assertEquals("2025-06-18", result.getString("protocolVersion"));
         assertNotNull(result.getObject("capabilities").getObject("tools"));
+        assertNotNull(result.getObject("capabilities").getObject("logging"));
         assertEquals("bld", result.getObject("serverInfo").getString("name"));
         assertEquals("mcp_test", result.getObject("serverInfo").getString("title"));
         assertFalse(result.getObject("serverInfo").getString("version").isEmpty());
@@ -950,14 +952,21 @@ public class TestMcpOperation {
             var output = new StringWriter();
             operation.executeServerLoop(new BufferedReader(new StringReader(input)), new PrintWriter(output));
 
-            var responses = output.toString().trim().split("\n");
-            assertEquals(4, responses.length);
+            // the streamed log notifications are interleaved with the
+            // responses, only the responses are counted here
+            var responses = new ArrayList<JsonObject>();
+            for (var line : output.toString().trim().split("\n")) {
+                var message = Json.parseObject(line);
+                if (message.getString("method") == null) {
+                    responses.add(message);
+                }
+            }
+            assertEquals(4, responses.size());
 
             // both compile tool calls executed and reported their output,
             // repeated calls behave like separate command line invocations
             for (var i = 1; i <= 2; ++i) {
-                var compile = Json.parseObject(responses[i]);
-                var compile_result = compile.getObject("result");
+                var compile_result = responses.get(i).getObject("result");
                 assertFalse(compile_result.getBoolean("isError"));
                 assertTrue(compile_result.getArray("content").getObject(0).getString("text").contains("Compilation finished successfully"));
             }
@@ -967,12 +976,92 @@ public class TestMcpOperation {
             assertTrue(listing.contains(".class"), listing);
 
             // the project resource reflects the created project
-            var read_project = Json.parseObject(responses[3]);
+            var read_project = responses.get(3);
             var description = Json.parseObject(read_project.getObject("result").getArray("contents").getObject(0).getString("text"));
             assertEquals("myapp", description.getString("name"));
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
+    }
+
+    @Test
+    void testToolCallOutputIsStreamed()
+    throws Exception {
+        var operation = createOperation();
+        var input = """
+            {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}
+            {"jsonrpc":"2.0","method":"notifications/initialized"}
+            {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"hello","arguments":{"arguments":["stream"]}}}
+            """;
+        var output = new StringWriter();
+        operation.executeServerLoop(new BufferedReader(new StringReader(input)), new PrintWriter(output));
+
+        var lines = output.toString().trim().split("\n");
+        // the console output arrives live as log message notifications
+        // before the tool call response
+        var streamed = new StringBuilder();
+        var notifications = 0;
+        for (var line : lines) {
+            var message = Json.parseObject(line);
+            if ("notifications/message".equals(message.getString("method"))) {
+                ++notifications;
+                var params = message.getObject("params");
+                assertEquals("info", params.getString("level"));
+                assertEquals("hello", params.getString("logger"));
+                streamed.append(params.getString("data"));
+            }
+        }
+        assertTrue(notifications >= 1);
+        assertTrue(streamed.toString().contains("hello stream"), streamed.toString());
+
+        // the tool call response still carries the full output and comes
+        // after the streamed notifications
+        var last = Json.parseObject(lines[lines.length - 1]);
+        assertEquals(2, last.getInt("id"));
+        assertTrue(last.getObject("result").getArray("content").getObject(0).getString("text").contains("hello stream"));
+    }
+
+    @Test
+    void testLoggingSetLevelSuppressesStreaming()
+    throws Exception {
+        var operation = createOperation();
+        var input = """
+            {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}
+            {"jsonrpc":"2.0","method":"notifications/initialized"}
+            {"jsonrpc":"2.0","id":2,"method":"logging/setLevel","params":{"level":"warning"}}
+            {"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"hello","arguments":{"arguments":["quiet"]}}}
+            """;
+        var output = new StringWriter();
+        operation.executeServerLoop(new BufferedReader(new StringReader(input)), new PrintWriter(output));
+
+        var lines = output.toString().trim().split("\n");
+        // a more severe minimum level suppresses the output streaming,
+        // only the three responses are written
+        assertEquals(3, lines.length);
+        for (var line : lines) {
+            assertNull(Json.parseObject(line).getString("method"));
+        }
+        // the tool call response still carries the full output
+        var last = Json.parseObject(lines[2]);
+        assertTrue(last.getObject("result").getArray("content").getObject(0).getString("text").contains("hello quiet"));
+    }
+
+    @Test
+    void testLoggingSetLevelValidation() {
+        var operation = createOperation();
+
+        // the params and a valid RFC 5424 level are required
+        var missing = process(operation, """
+            {"jsonrpc":"2.0","id":1,"method":"logging/setLevel"}""");
+        assertEquals(-32602, missing.getObject("error").getInt("code"));
+        var bogus = process(operation, """
+            {"jsonrpc":"2.0","id":2,"method":"logging/setLevel","params":{"level":"loud"}}""");
+        assertEquals(-32602, bogus.getObject("error").getInt("code"));
+
+        // a valid level is acknowledged with an empty result
+        var valid = process(operation, """
+            {"jsonrpc":"2.0","id":3,"method":"logging/setLevel","params":{"level":"debug"}}""");
+        assertTrue(valid.getObject("result").isEmpty());
     }
 
     @Test
@@ -988,10 +1077,18 @@ public class TestMcpOperation {
         var output = new StringWriter();
         operation.executeServerLoop(new BufferedReader(new StringReader(input)), new PrintWriter(output));
 
-        var responses = output.toString().trim().split("\n");
-        assertEquals(2, responses.length);
-        assertEquals(1, Json.parseObject(responses[0]).getInt("id"));
-        var call = Json.parseObject(responses[1]);
+        // the streamed log notifications are interleaved with the
+        // responses, only the responses are counted here
+        var responses = new ArrayList<JsonObject>();
+        for (var line : output.toString().trim().split("\n")) {
+            var message = Json.parseObject(line);
+            if (message.getString("method") == null) {
+                responses.add(message);
+            }
+        }
+        assertEquals(2, responses.size());
+        assertEquals(1, responses.get(0).getInt("id"));
+        var call = responses.get(1);
         assertEquals(2, call.getInt("id"));
         assertEquals("hello loop", call.getObject("result").getArray("content").getObject(0).getString("text").trim());
     }
