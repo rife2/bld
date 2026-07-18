@@ -5,6 +5,7 @@
 package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
+import rife.bld.BldVersion;
 import rife.bld.BuildCommand;
 import rife.bld.BuildExecutor;
 import rife.bld.Project;
@@ -24,9 +25,11 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -1073,6 +1076,85 @@ public class TestMcpOperation {
 
         public static void main(String[] args) {
             new E2eProject().start(args);
+        }
+    }
+
+    @Test
+    void testMcpInstalledConfigLaunchesTheServer()
+    throws Exception {
+        var tmp = Files.createTempDirectory("mcpinstalllaunch").toFile();
+        try {
+            var project = new E2eProject(tmp);
+            project.arguments().add("install");
+            new McpOperation().fromProject(project).silent(true).execute();
+
+            // the generated entry is the contract with MCP clients, its
+            // exact shape is asserted before it's used for the launch
+            var config = Json.parseObject(Files.readString(new File(tmp, ".mcp.json").toPath()));
+            var server = config.getObject("mcpServers").getObject("myapp");
+            assertEquals("java", server.getString("command"));
+            var args = server.getArray("args");
+            assertEquals(List.of("-jar", "lib/bld/bld-wrapper.jar", "./bld",
+                    "--build", E2eProject.class.getName(), "--use-stderr", "mcp"),
+                List.of(args.toArray()));
+
+            // the server is launched like an MCP client would: the java
+            // command from the entry, an argument array without any shell,
+            // and the project directory as the working directory, which
+            // exercises the platform behavior of the generated entry ; the
+            // wrapper jar segment would download the published bld
+            // distribution instead of testing the working tree, it's
+            // substituted with the class path of this test run, the wrapper
+            // and script mechanics themselves are exercised by every CI
+            // build of bld itself
+            var command_line = new ArrayList<String>();
+            command_line.add(server.getString("command"));
+            command_line.add("-cp");
+            command_line.add(System.getProperty("java.class.path"));
+            for (var i = args.indexOf("--build") + 1; i < args.size(); ++i) {
+                command_line.add(args.getString(i));
+            }
+
+            var builder = new ProcessBuilder(command_line);
+            builder.directory(tmp);
+            var process = builder.start();
+            try {
+                try (var input = process.getOutputStream()) {
+                    input.write("""
+                        {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}
+                        {"jsonrpc":"2.0","method":"notifications/initialized"}
+                        {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"version"}}
+                        """.getBytes(StandardCharsets.UTF_8));
+                }
+                var output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                assertTrue(process.waitFor(120, TimeUnit.SECONDS), output);
+
+                // every line on standard output is a protocol message
+                var responses = new ArrayList<JsonObject>();
+                var streamed = new StringBuilder();
+                for (var line : output.trim().split("\n")) {
+                    var message = Json.parseObject(line);
+                    if ("notifications/message".equals(message.getString("method"))) {
+                        streamed.append(message.getObject("params").getString("data"));
+                    } else {
+                        responses.add(message);
+                    }
+                }
+                assertEquals(2, responses.size());
+                assertEquals("bld", responses.get(0).getObject("result").getObject("serverInfo").getString("name"));
+
+                // the tool call executed against the working tree and
+                // reported its outcome in the structured content
+                var result = responses.get(1).getObject("result");
+                assertFalse(result.getBoolean("isError"));
+                assertTrue(result.getArray("content").getObject(0).getString("text").contains(BldVersion.getVersion()));
+                assertEquals(0, result.getObject("structuredContent").getInt("exitStatus"));
+                assertTrue(streamed.toString().contains(BldVersion.getVersion()));
+            } finally {
+                process.destroyForcibly();
+            }
+        } finally {
+            FileUtils.deleteDirectory(tmp);
         }
     }
 
