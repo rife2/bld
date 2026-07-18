@@ -31,7 +31,7 @@ public class BaseProject extends BuildExecutor {
     /**
      * The CLI option to trigger automatic dependency download and purge.
      *
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public static final String AUTO_DOWNLOAD_PURGE_OPTION = "--auto-download-purge";
 
@@ -910,8 +910,7 @@ public class BaseProject extends BuildExecutor {
      */
     public LocalDependency local(String path) {
         return new LocalDependency(path);
-    } /**
-
+    }
 
      /**
      * Creates a local dependency instance.
@@ -920,8 +919,9 @@ public class BaseProject extends BuildExecutor {
      *
      * @param path the file system path (absolute or relative to the {@link #workDirectory})
      *             of the local dependency
-     * @since 2.3.1
+     * @since 2.4.0
      */
+
     public LocalDependency local(Path path) {
         return new LocalDependency(path.toString());
     }
@@ -931,7 +931,7 @@ public class BaseProject extends BuildExecutor {
      * If the local dependency points to a directory, it will be scanned for jar files.
      *
      * @param path the file system path of the local dependency
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public LocalDependency local(File path) {
         return new LocalDependency(path.getAbsolutePath());
@@ -1039,7 +1039,7 @@ public class BaseProject extends BuildExecutor {
      *
      * @param path the file system path (absolute or relative to the {@link #workDirectory})
      *             of the local module
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public LocalModule localModule(Path path) {
         return new LocalModule(path.toString());
@@ -1051,7 +1051,7 @@ public class BaseProject extends BuildExecutor {
      * If the local module points to a directory, it will be scanned for jar files.
      *
      * @param path the file system path of the local module
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public LocalModule localModule(File path) {
         return new LocalModule(path.getAbsolutePath());
