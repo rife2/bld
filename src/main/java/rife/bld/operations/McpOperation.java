@@ -500,6 +500,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
                                 .set("type", "array")
                                 .object("items", i -> i.set("type", "string"))
                                 .set("description", "The command line arguments to pass to the build command"))));
+                t.set("outputSchema", toolOutputSchema());
                 if (confirmation) {
                     t.object("annotations", a -> a
                         .set("destructiveHint", true)
@@ -508,6 +509,46 @@ public class McpOperation extends AbstractOperation<McpOperation> {
             });
         }
         return new JsonObject().set("tools", tools);
+    }
+
+    /**
+     * Part of the {@link #execute} operation, builds the output schema
+     * that describes the structured content of the tool call results.
+     * <p>
+     * The structure captures the execution metadata that is reliably
+     * known for every command: the command name, the exit status of the
+     * build process, whether the call timed out or its output was
+     * truncated, and the execution duration. The console output itself
+     * stays in the text content.
+     *
+     * @return the output schema of the tool call results
+     * @since 2.4.0
+     */
+    protected JsonObject toolOutputSchema() {
+        return new JsonObject()
+            .set("type", "object")
+            .object("properties", p -> p
+                .object("command", c -> c
+                    .set("type", "string")
+                    .set("description", "The build command that was executed"))
+                .object("exitStatus", e -> e
+                    .set("type", "integer")
+                    .set("description", "The exit status of the build process, 0 for success, -1 when it couldn't be determined"))
+                .object("timedOut", t -> t
+                    .set("type", "boolean")
+                    .set("description", "Whether the command was terminated after the tool call timeout"))
+                .object("truncated", t -> t
+                    .set("type", "boolean")
+                    .set("description", "Whether the console output was truncated at the output limit"))
+                .object("durationMs", d -> d
+                    .set("type", "integer")
+                    .set("description", "The wall clock duration of the command execution in milliseconds")))
+            .array("required", r -> r
+                .append("command")
+                .append("exitStatus")
+                .append("timedOut")
+                .append("truncated")
+                .append("durationMs"));
     }
 
     /**
@@ -679,6 +720,10 @@ public class McpOperation extends AbstractOperation<McpOperation> {
 
         var error = false;
         var timed_out = false;
+        // -1 signals that the exit status couldn't be determined, for
+        // instance when the wait for the process was interrupted
+        var exit_status = -1;
+        var start_time = System.currentTimeMillis();
         try {
             // the process is tracked so that it's terminated when the
             // server shuts down
@@ -743,7 +788,8 @@ public class McpOperation extends AbstractOperation<McpOperation> {
                     destroyProcessTree(process, descendants);
                 }
             }
-            error = process.waitFor() != 0 || timed_out;
+            exit_status = process.waitFor();
+            error = exit_status != 0 || timed_out;
             // a background child can keep the output pipe open, the join
             // is bounded so that it can never block the server
             reader.join(10_000);
@@ -793,17 +839,31 @@ public class McpOperation extends AbstractOperation<McpOperation> {
         }
 
         String output_text;
+        boolean truncated_result;
         synchronized (output) {
-            if (truncated[0]) {
+            truncated_result = truncated[0];
+            if (truncated_result) {
                 output.append("\nThe output was truncated after ").append(outputLimit_).append(" characters.");
             }
             output_text = output.toString();
         }
         var error_result = error;
+        var timed_out_result = timed_out;
+        var exit_status_result = exit_status;
+        var duration = System.currentTimeMillis() - start_time;
+        // besides the console output, the result carries the execution
+        // metadata as structured content, matching the output schema of
+        // the tool listing
         return new JsonObject()
             .array("content", c -> c.object(o -> o
                 .set("type", "text")
                 .set("text", output_text)))
+            .object("structuredContent", s -> s
+                .set("command", command)
+                .set("exitStatus", exit_status_result)
+                .set("timedOut", timed_out_result)
+                .set("truncated", truncated_result)
+                .set("durationMs", duration))
             .set("isError", error_result);
     }
 

@@ -321,6 +321,12 @@ public class TestMcpOperation {
         assertEquals("Greets the caller", hello.getString("description"));
         assertEquals("object", hello.getObject("inputSchema").getString("type"));
         assertEquals("array", hello.getObject("inputSchema").getObject("properties").getObject("arguments").getString("type"));
+        // the output schema describes the structured execution metadata
+        var output_schema = hello.getObject("outputSchema");
+        assertEquals("object", output_schema.getString("type"));
+        assertEquals("integer", output_schema.getObject("properties").getObject("exitStatus").getString("type"));
+        assertEquals("boolean", output_schema.getObject("properties").getObject("timedOut").getString("type"));
+        assertTrue(output_schema.getArray("required").contains("exitStatus"));
     }
 
     @Test
@@ -392,6 +398,14 @@ public class TestMcpOperation {
         var content = result.getArray("content").getObject(0);
         assertEquals("text", content.getString("type"));
         assertEquals("hello big world", content.getString("text").trim());
+
+        // the structured content carries the execution metadata
+        var structured = result.getObject("structuredContent");
+        assertEquals("hello", structured.getString("command"));
+        assertEquals(0, structured.getInt("exitStatus"));
+        assertFalse(structured.getBoolean("timedOut"));
+        assertFalse(structured.getBoolean("truncated"));
+        assertTrue(structured.getLong("durationMs") >= 0);
     }
 
     @Test
@@ -403,6 +417,8 @@ public class TestMcpOperation {
         var result = response.getObject("result");
         assertTrue(result.getBoolean("isError"));
         assertTrue(result.getArray("content").getObject(0).getString("text").contains("boom"));
+        // a failed command reports its exit status in the structured content
+        assertEquals(1, result.getObject("structuredContent").getInt("exitStatus"));
     }
 
     @Test
@@ -650,6 +666,8 @@ public class TestMcpOperation {
         var result = response.getObject("result");
         assertTrue(result.getBoolean("isError"));
         assertTrue(result.getArray("content").getObject(0).getString("text").contains("timed out after 1 seconds"));
+        // the timeout is reported in the structured content
+        assertTrue(result.getObject("structuredContent").getBoolean("timedOut"));
     }
 
     @Test
@@ -661,6 +679,8 @@ public class TestMcpOperation {
         var text = response.getObject("result").getArray("content").getObject(0).getString("text");
         assertTrue(text.contains("truncated after 150 characters"), text);
         assertTrue(text.length() < 300, String.valueOf(text.length()));
+        // the truncation is reported in the structured content
+        assertTrue(response.getObject("result").getObject("structuredContent").getBoolean("truncated"));
     }
 
     @Test
