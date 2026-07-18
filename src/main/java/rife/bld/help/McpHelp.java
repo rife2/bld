@@ -29,6 +29,19 @@ public class McpHelp implements CommandHelp {
             bld with the --use-stderr option to keep standard output free
             for the protocol while the build starts up.
 
-            Usage : ${topic}""", "${topic}", topic);
+            The install argument doesn't start the server, it registers the
+            project with an MCP client by writing the standard configuration
+            file inside the project directory:
+
+            install          writes .mcp.json (Claude Code and compatible)
+            install cursor   writes .cursor/mcp.json
+            install vscode   writes .vscode/mcp.json
+            install --print  prints the configuration instead of writing it
+
+            Existing configuration files are merged with, other servers are
+            preserved. The registered command launches the wrapper directly
+            through java, so that the same file works on every platform.
+
+            Usage : ${topic} [install [claude | cursor | vscode] [--print]]""", "${topic}", topic);
     }
 }

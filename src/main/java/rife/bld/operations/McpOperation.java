@@ -7,6 +7,7 @@ package rife.bld.operations;
 import rife.bld.BaseProject;
 import rife.bld.BldVersion;
 import rife.bld.BuildExecutor;
+import rife.bld.operations.exceptions.OperationOptionException;
 import rife.bld.wrapper.Wrapper;
 import rife.json.Json;
 import rife.json.JsonArray;
@@ -96,10 +97,25 @@ public class McpOperation extends AbstractOperation<McpOperation> {
     private static final List<String> LOG_LEVELS = List.of(
         "debug", "info", "notice", "warning", "error", "critical", "alert", "emergency");
 
+    /**
+     * The command argument that registers the MCP server with a client
+     * instead of starting it.
+     * @since 2.4.0
+     */
+    public static final String ARGUMENT_INSTALL = "install";
+
+    private static final String ARGUMENT_INSTALL_PRINT = "--print";
+    private static final String INSTALL_TARGET_CLAUDE = "claude";
+    private static final String INSTALL_TARGET_CURSOR = "cursor";
+    private static final String INSTALL_TARGET_VSCODE = "vscode";
+    private static final List<String> INSTALL_TARGETS = List.of(INSTALL_TARGET_CLAUDE, INSTALL_TARGET_CURSOR, INSTALL_TARGET_VSCODE);
+
     private BuildExecutor executor_;
     private BaseProject project_ = null;
     private String serverTitle_ = null;
     private String instructions_ = null;
+    private String installTarget_ = null;
+    private boolean installPrint_ = false;
     private boolean initialized_ = false;
     private int toolCallTimeout_ = 0;
     private int outputLimit_ = 1_000_000;
@@ -139,6 +155,13 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      */
     public void execute()
     throws IOException {
+        // the install argument registers the server with an MCP client
+        // instead of starting it
+        if (installTarget_ != null) {
+            executeInstall();
+            return;
+        }
+
         var previous_output = System.out;
         var reader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         // the protocol messages are written to the real standard output
@@ -238,6 +261,95 @@ public class McpOperation extends AbstractOperation<McpOperation> {
                 .set("data", data))
             .toString();
         writeProtocolMessage(writer, notification);
+    }
+
+    /**
+     * Part of the {@link #execute} operation, registers the MCP server
+     * with an MCP client by writing the standard configuration file
+     * inside the project directory.
+     * <p>
+     * The registered command launches the wrapper jar directly through
+     * {@code java}, the wrapper scripts are platform specific while the
+     * same committed configuration file is shared by every platform.
+     * An existing configuration file is merged with: other servers are
+     * preserved and repeated installs update the same entry. A file that
+     * can't be parsed is never modified.
+     *
+     * @throws IOException when the configuration couldn't be read or written
+     * @since 2.4.0
+     */
+    protected void executeInstall()
+    throws IOException {
+        if (project_ == null) {
+            throw new OperationOptionException("ERROR: The MCP install requires a project.");
+        }
+
+        var name = project_.name() == null ? "bld" : project_.name();
+        var wrapper_jar = "lib/bld/" + Wrapper.WRAPPER_PREFIX + ".jar";
+        var entry = new JsonObject();
+        if (INSTALL_TARGET_VSCODE.equals(installTarget_)) {
+            entry.set("type", "stdio");
+        }
+        // the entry replicates the wrapper script invocation: the wrapper
+        // jar is launched in build mode with the project's build class,
+        // the leading script path lets the wrapper derive the project
+        // directory, the client launches the server with the project
+        // directory as the working directory so the relative paths resolve
+        entry.set("command", "java")
+            .array("args", a -> a
+                .append("-jar")
+                .append(wrapper_jar)
+                .append("./bld")
+                .append(Wrapper.BUILD_ARGUMENT)
+                .append(project_.getClass().getName())
+                .append(Wrapper.USE_STDERR_ARGUMENT)
+                .append("mcp"));
+
+        var root_key = INSTALL_TARGET_VSCODE.equals(installTarget_) ? "servers" : "mcpServers";
+        var relative_path = switch (installTarget_) {
+            case INSTALL_TARGET_CURSOR -> ".cursor/mcp.json";
+            case INSTALL_TARGET_VSCODE -> ".vscode/mcp.json";
+            default -> ".mcp.json";
+        };
+
+        if (installPrint_) {
+            System.out.println(new JsonObject().object(root_key, r -> r.set(name, entry)).toPrettyString());
+            return;
+        }
+
+        var file = new File(project_.workDirectory(), relative_path);
+        JsonObject config;
+        if (file.exists()) {
+            try {
+                config = Json.parseObject(Files.readString(file.toPath()));
+            } catch (JsonParseException e) {
+                throw new OperationOptionException("ERROR: Unable to parse the existing '" + relative_path + "', not modifying it.");
+            }
+        } else {
+            config = new JsonObject();
+        }
+        var existing_root = config.get(root_key);
+        JsonObject servers;
+        if (existing_root == null) {
+            servers = new JsonObject();
+            config.set(root_key, servers);
+        } else if (existing_root instanceof JsonObject existing_servers) {
+            servers = existing_servers;
+        } else {
+            throw new OperationOptionException("ERROR: '" + root_key + "' in '" + relative_path + "' isn't an object, not modifying it.");
+        }
+        servers.set(name, entry);
+
+        file.getParentFile().mkdirs();
+        Files.writeString(file.toPath(), config.toPrettyString() + "\n");
+
+        if (!silent()) {
+            System.out.println("The MCP server '" + name + "' was registered in '" + relative_path + "'.");
+            System.out.println("The registered command launches the wrapper through 'java', which has to be on the PATH of the MCP client.");
+            if (!new File(project_.workDirectory(), wrapper_jar).isFile()) {
+                System.out.println("Warning: '" + wrapper_jar + "' wasn't found, the registered command expects the project wrapper.");
+            }
+        }
     }
 
     /**
@@ -1166,6 +1278,25 @@ public class McpOperation extends AbstractOperation<McpOperation> {
         var operation = executor(project);
         if (project.name() != null) {
             operation = operation.serverTitle(project.name());
+        }
+        // the install argument and its options are consumed from the
+        // command arguments
+        var arguments = project.arguments();
+        if (!arguments.isEmpty() && arguments.get(0).equals(ARGUMENT_INSTALL)) {
+            arguments.remove(0);
+            installTarget_ = INSTALL_TARGET_CLAUDE;
+            if (!arguments.isEmpty() && !arguments.get(0).startsWith("-")) {
+                var target = arguments.remove(0);
+                if (!INSTALL_TARGETS.contains(target)) {
+                    throw new OperationOptionException("ERROR: Unknown MCP install target '" + target + "', " +
+                                                       "expecting " + String.join(", ", INSTALL_TARGETS) + ".");
+                }
+                installTarget_ = target;
+            }
+            if (!arguments.isEmpty() && arguments.get(0).equals(ARGUMENT_INSTALL_PRINT)) {
+                arguments.remove(0);
+                installPrint_ = true;
+            }
         }
         return operation;
     }

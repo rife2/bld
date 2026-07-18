@@ -12,6 +12,7 @@ import rife.bld.dependencies.Bom;
 import rife.bld.dependencies.Dependency;
 import rife.bld.dependencies.Scope;
 import rife.bld.dependencies.VersionNumber;
+import rife.bld.operations.exceptions.OperationOptionException;
 import rife.json.Json;
 import rife.json.JsonObject;
 import rife.tools.FileUtils;
@@ -922,6 +923,138 @@ public class TestMcpOperation {
             assertEquals(-32603, error.getInt("code"));
             assertTrue(error.getString("message").contains("dependency tree"), error.getString("message"));
         } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testMcpInstall()
+    throws Exception {
+        var tmp = Files.createTempDirectory("mcpinstall").toFile();
+        try {
+            var project = new McpProject(tmp);
+            project.arguments().add("install");
+            var operation = new McpOperation().fromProject(project);
+            // the install arguments are consumed and can't chain commands
+            assertTrue(project.arguments().isEmpty());
+            operation.silent(true).execute();
+
+            var config = Json.parseObject(Files.readString(new File(tmp, ".mcp.json").toPath()));
+            var server = config.getObject("mcpServers").getObject("mcp_project");
+            // the wrapper is launched directly through java, so that the
+            // same committed file works on every platform
+            assertEquals("java", server.getString("command"));
+            var args = server.getArray("args");
+            assertEquals("-jar", args.getString(0));
+            assertEquals("lib/bld/bld-wrapper.jar", args.getString(1));
+            assertEquals("./bld", args.getString(2));
+            // the wrapper is launched in build mode with the project's
+            // build class, mirroring the wrapper script invocation
+            assertEquals("--build", args.getString(3));
+            assertEquals(McpProject.class.getName(), args.getString(4));
+            assertEquals("--use-stderr", args.getString(5));
+            assertEquals("mcp", args.getString(6));
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testMcpInstallMergesAndUpdates()
+    throws Exception {
+        var tmp = Files.createTempDirectory("mcpinstallmerge").toFile();
+        try {
+            Files.writeString(new File(tmp, ".mcp.json").toPath(), """
+                {"mcpServers":{"other":{"command":"other-cmd"}},"custom":true}""");
+
+            for (var round = 1; round <= 2; ++round) {
+                var project = new McpProject(tmp);
+                project.arguments().add("install");
+                new McpOperation().fromProject(project).silent(true).execute();
+            }
+
+            var config = Json.parseObject(Files.readString(new File(tmp, ".mcp.json").toPath()));
+            // other servers and unrelated settings are preserved, repeated
+            // installs update the same single entry
+            assertEquals("other-cmd", config.getObject("mcpServers").getObject("other").getString("command"));
+            assertTrue(config.getBoolean("custom"));
+            assertEquals(2, config.getObject("mcpServers").size());
+            assertEquals("java", config.getObject("mcpServers").getObject("mcp_project").getString("command"));
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testMcpInstallVscode()
+    throws Exception {
+        var tmp = Files.createTempDirectory("mcpinstallvscode").toFile();
+        try {
+            var project = new McpProject(tmp);
+            project.arguments().addAll(List.of("install", "vscode"));
+            new McpOperation().fromProject(project).silent(true).execute();
+
+            var config = Json.parseObject(Files.readString(new File(tmp, ".vscode/mcp.json").toPath()));
+            // the VS Code format uses the servers root and a stdio type
+            var server = config.getObject("servers").getObject("mcp_project");
+            assertEquals("stdio", server.getString("type"));
+            assertEquals("java", server.getString("command"));
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testMcpInstallUnknownTarget()
+    throws Exception {
+        var tmp = Files.createTempDirectory("mcpinstallbogus").toFile();
+        try {
+            var project = new McpProject(tmp);
+            project.arguments().addAll(List.of("install", "bogus"));
+            assertThrows(OperationOptionException.class, () -> new McpOperation().fromProject(project));
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testMcpInstallRefusesCorruptConfig()
+    throws Exception {
+        var tmp = Files.createTempDirectory("mcpinstallcorrupt").toFile();
+        try {
+            var config_file = new File(tmp, ".mcp.json");
+            Files.writeString(config_file.toPath(), "this is not json");
+
+            var project = new McpProject(tmp);
+            project.arguments().add("install");
+            var operation = new McpOperation().fromProject(project).silent(true);
+            // a file that can't be parsed is reported and never modified
+            assertThrows(OperationOptionException.class, operation::execute);
+            assertEquals("this is not json", Files.readString(config_file.toPath()));
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testMcpInstallPrint()
+    throws Exception {
+        var tmp = Files.createTempDirectory("mcpinstallprint").toFile();
+        var previous_out = System.out;
+        try {
+            var project = new McpProject(tmp);
+            project.arguments().addAll(List.of("install", "--print"));
+            var captured = new java.io.ByteArrayOutputStream();
+            System.setOut(new PrintStream(captured, true));
+            new McpOperation().fromProject(project).execute();
+            System.setOut(previous_out);
+
+            // the configuration is printed instead of written
+            var printed = Json.parseObject(captured.toString());
+            assertEquals("java", printed.getObject("mcpServers").getObject("mcp_project").getString("command"));
+            assertFalse(new File(tmp, ".mcp.json").exists());
+        } finally {
+            System.setOut(previous_out);
             FileUtils.deleteDirectory(tmp);
         }
     }
