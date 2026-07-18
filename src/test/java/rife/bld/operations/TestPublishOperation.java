@@ -11,9 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import rife.bld.Project;
+import rife.bld.WebProject;
 import rife.bld.blueprints.AppProjectBlueprint;
 import rife.bld.dependencies.*;
 import rife.bld.publish.PublishArtifact;
+import rife.bld.publish.PublishInfo;
 import rife.tools.FileUtils;
 import rife.tools.exceptions.FileUtilsErrorException;
 
@@ -702,6 +704,430 @@ public class TestPublishOperation {
             FileUtils.deleteDirectory(tmp_local);
             FileUtils.deleteDirectory(tmp2);
             FileUtils.deleteDirectory(tmp1);
+        }
+    }
+
+    @Test
+    void testPublishLocalWithBom()
+    throws Exception {
+        var poms = java.util.Map.of(
+            "bom1:1.0.0", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>bom1</artifactId>
+                    <version>1.0.0</version>
+                    <packaging>pom</packaging>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency><groupId>com.example</groupId><artifactId>a</artifactId><version>1.4.0</version></dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>""");
+        var metadata = java.util.Map.of(
+            "b", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <metadata>
+                    <groupId>com.example</groupId>
+                    <artifactId>b</artifactId>
+                    <versioning>
+                        <latest>2.2.0</latest>
+                        <release>2.2.0</release>
+                        <versions><version>2.2.0</version></versions>
+                    </versioning>
+                </metadata>""");
+        var server = com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress("localhost", 0), 0);
+        server.createContext("/", exchange -> {
+            var segments = exchange.getRequestURI().getPath().split("/");
+            var filename = segments[segments.length - 1];
+            String content = null;
+            if (filename.endsWith(".pom") && segments.length >= 3) {
+                content = poms.get(segments[segments.length - 3] + ":" + segments[segments.length - 2]);
+            } else if (filename.equals("maven-metadata.xml") && segments.length >= 2) {
+                content = metadata.get(segments[segments.length - 2]);
+            }
+            if (content == null) {
+                exchange.sendResponseHeaders(404, -1);
+            } else {
+                var body = content.getBytes();
+                exchange.sendResponseHeaders(200, body.length);
+                exchange.getResponseBody().write(body);
+            }
+            exchange.close();
+        });
+        server.start();
+
+        var tmp_local = Files.createTempDirectory("bomlocal").toFile();
+        var artifact_file = File.createTempFile("myapp", ".jar");
+        try {
+            var operation = new PublishOperation()
+                .artifactRetriever(ArtifactRetriever.cachingInstance())
+                .repositories(new Repository(tmp_local.getAbsolutePath()))
+                .dependencyRepositories(List.of(new Repository("http://localhost:" + server.getAddress().getPort() + "/")))
+                .info(new PublishInfo()
+                    .groupId("test.pkg")
+                    .artifactId("myapp")
+                    .version(new VersionNumber(3, 3, 3)))
+                .artifacts(List.of(new PublishArtifact(artifact_file, "", "jar")));
+            operation.dependencies().scope(Scope.compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"))
+                .include(new Dependency("com.example", "b"));
+            operation.execute();
+
+            var pom = FileUtils.readString(Path.of(tmp_local.getAbsolutePath(), "test", "pkg", "myapp", "3.3.3", "myapp-3.3.3.pom").toFile());
+
+            // the BOM is imported through dependency management
+            assertTrue(pom.contains("<dependencyManagement>"), pom);
+            assertTrue(pom.contains("<artifactId>bom1</artifactId>"), pom);
+            assertTrue(pom.contains("<version>1.0.0</version>"), pom);
+            assertTrue(pom.contains("<type>pom</type>"), pom);
+            assertTrue(pom.contains("<scope>import</scope>"), pom);
+
+            // the covered dependency stays version-less,
+            // the BOM import provides its version downstream
+            assertTrue(pom.contains("<artifactId>a</artifactId>"), pom);
+            assertFalse(java.util.regex.Pattern.compile("<artifactId>a</artifactId>\\s*<version>").matcher(pom).find(), pom);
+
+            // the uncovered dependency is frozen to its resolved version
+            assertTrue(java.util.regex.Pattern.compile("<artifactId>b</artifactId>\\s*<version>2\\.2\\.0</version>").matcher(pom).find(), pom);
+        } finally {
+            server.stop(0);
+            artifact_file.delete();
+            FileUtils.deleteDirectory(tmp_local);
+        }
+    }
+
+    @Test
+    void testResolveVersionlessDependenciesWithOverrides()
+    throws Exception {
+        var poms = java.util.Map.of(
+            "bom1:1.0.0", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>bom1</artifactId>
+                    <version>1.0.0</version>
+                    <packaging>pom</packaging>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency><groupId>com.example</groupId><artifactId>a</artifactId><version>1.4.0</version></dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>""",
+            "bom2:2.5.0", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>bom2</artifactId>
+                    <version>2.5.0</version>
+                    <packaging>pom</packaging>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency><groupId>com.example</groupId><artifactId>d</artifactId><version>4.0.0</version></dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>""");
+        var metadata = java.util.Map.of(
+            "b", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <metadata>
+                    <groupId>com.example</groupId>
+                    <artifactId>b</artifactId>
+                    <versioning>
+                        <latest>2.2.0</latest>
+                        <release>2.2.0</release>
+                        <versions><version>2.2.0</version></versions>
+                    </versioning>
+                </metadata>""");
+        var server = com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress("localhost", 0), 0);
+        server.createContext("/", exchange -> {
+            var segments = exchange.getRequestURI().getPath().split("/");
+            var filename = segments[segments.length - 1];
+            String content = null;
+            if (filename.endsWith(".pom") && segments.length >= 3) {
+                content = poms.get(segments[segments.length - 3] + ":" + segments[segments.length - 2]);
+            } else if (filename.equals("maven-metadata.xml") && segments.length >= 2) {
+                content = metadata.get(segments[segments.length - 2]);
+            }
+            if (content == null) {
+                exchange.sendResponseHeaders(404, -1);
+            } else {
+                var body = content.getBytes();
+                exchange.sendResponseHeaders(200, body.length);
+                exchange.getResponseBody().write(body);
+            }
+            exchange.close();
+        });
+        server.start();
+        try {
+            var properties = new rife.ioc.HierarchicalProperties();
+            properties.put(VersionResolution.PROPERTY_OVERRIDE_PREFIX,
+                "com.example:a:1.9.9,com.example:b:1.1.1,com.example:bom2:2.5.0");
+
+            var scopes = new DependencyScopes();
+            scopes.scope(Scope.compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"))
+                .include(new Dependency("com.example", "b"));
+            scopes.scope(Scope.runtime)
+                .include(new Bom("com.example", "bom2"));
+
+            var operation = new PublishOperation()
+                .properties(properties)
+                .artifactRetriever(ArtifactRetriever.cachingInstance())
+                .dependencyRepositories(List.of(new Repository("http://localhost:" + server.getAddress().getPort() + "/")))
+                .dependencies(scopes);
+            operation.executeResolveVersionlessDependencies();
+
+            var compile_scope = operation.dependencies().scope(Scope.compile);
+            // the override is what the build resolves, it's frozen into the
+            // POM even though the BOM covers the dependency
+            assertEquals(new VersionNumber(1, 9, 9), compile_scope.get(new Dependency("com.example", "a")).version());
+            // an uncovered dependency freezes to its override instead of
+            // the latest version
+            assertEquals(new VersionNumber(1, 1, 1), compile_scope.get(new Dependency("com.example", "b")).version());
+            // a version-less BOM freezes to its override
+            var runtime_boms = operation.dependencies().scope(Scope.runtime).boms();
+            assertEquals(new Bom("com.example", "bom2", new VersionNumber(2, 5, 0)), runtime_boms.iterator().next());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void testResolveVersionlessDependenciesFreezesFlattenedConflicts()
+    throws Exception {
+        var poms = java.util.Map.of(
+            "bomr:1.0.0", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>bomr</artifactId>
+                    <version>1.0.0</version>
+                    <packaging>pom</packaging>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency><groupId>com.example</groupId><artifactId>a</artifactId><version>1.0.0</version></dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>""",
+            "bomp:1.0.0", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>bomp</artifactId>
+                    <version>1.0.0</version>
+                    <packaging>pom</packaging>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency><groupId>com.example</groupId><artifactId>a</artifactId><version>2.0.0</version></dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>""");
+        var server = com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress("localhost", 0), 0);
+        server.createContext("/", exchange -> {
+            var segments = exchange.getRequestURI().getPath().split("/");
+            var filename = segments[segments.length - 1];
+            String content = null;
+            if (filename.endsWith(".pom") && segments.length >= 3) {
+                content = poms.get(segments[segments.length - 3] + ":" + segments[segments.length - 2]);
+            }
+            if (content == null) {
+                exchange.sendResponseHeaders(404, -1);
+            } else {
+                var body = content.getBytes();
+                exchange.sendResponseHeaders(200, body.length);
+                exchange.getResponseBody().write(body);
+            }
+            exchange.close();
+        });
+        server.start();
+        try {
+            var scopes = new DependencyScopes();
+            scopes.scope(Scope.runtime)
+                .include(new Bom("com.example", "bomr", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+            scopes.scope(Scope.provided)
+                .include(new Bom("com.example", "bomp", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"));
+
+            var operation = new PublishOperation()
+                .artifactRetriever(ArtifactRetriever.cachingInstance())
+                .dependencyRepositories(List.of(new Repository("http://localhost:" + server.getAddress().getPort() + "/")))
+                .dependencies(scopes);
+            operation.executeResolveVersionlessDependencies();
+
+            // the flattened dependency management of the POM imports the
+            // runtime BOM first and would supply 1.0.0, the runtime scope
+            // agrees with that so its dependency stays version-less
+            assertEquals(VersionNumber.UNKNOWN, operation.dependencies().scope(Scope.runtime).get(new Dependency("com.example", "a")).version());
+            // the provided scope resolves 2.0.0 through its own BOM, that
+            // conflicts with the flattened list so the version is frozen
+            assertEquals(new VersionNumber(2, 0, 0), operation.dependencies().scope(Scope.provided).get(new Dependency("com.example", "a")).version());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void testResolveVersionlessDependenciesUntouchedScopes() {
+        // no network access is needed when nothing has to be resolved :
+        // explicitly versioned dependencies are untouched and the test
+        // scope isn't part of the publication
+        var scopes = new DependencyScopes();
+        scopes.scope(Scope.compile)
+            .include(new Dependency("com.example", "c", new VersionNumber(5, 0, 0)));
+        scopes.scope(Scope.test)
+            .include(new Dependency("com.example", "t"));
+
+        var operation = new PublishOperation()
+            .dependencies(scopes);
+        operation.executeResolveVersionlessDependencies();
+
+        assertEquals(new VersionNumber(5, 0, 0), operation.dependencies().scope(Scope.compile).get(new Dependency("com.example", "c")).version());
+        assertEquals(VersionNumber.UNKNOWN, operation.dependencies().scope(Scope.test).get(new Dependency("com.example", "t")).version());
+    }
+
+    static class BomPublishProject extends WebProject {
+        BomPublishProject(File tmp) {
+            workDirectory = tmp;
+            pkg = "test.pkg";
+            name = "myapp";
+            version = new VersionNumber(0, 0, 1);
+            repositories = List.of(new Repository("https://example.com/resolve"));
+        }
+    }
+
+    @Test
+    void testFromProjectDependencyRepositories()
+    throws Exception {
+        var tmp = Files.createTempDirectory("test").toFile();
+        try {
+            var project = new BomPublishProject(tmp);
+            var operation = new PublishOperation()
+                .fromProject(project);
+            assertEquals(project.repositories(), operation.dependencyRepositories());
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testResolveVersionlessDependencies()
+    throws Exception {
+        var poms = java.util.Map.of(
+            "bom1:1.0.0", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>bom1</artifactId>
+                    <version>1.0.0</version>
+                    <packaging>pom</packaging>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency><groupId>com.example</groupId><artifactId>a</artifactId><version>1.4.0</version></dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>""",
+            "bom2:3.0.0", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>bom2</artifactId>
+                    <version>3.0.0</version>
+                    <packaging>pom</packaging>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency><groupId>com.example</groupId><artifactId>d</artifactId><version>4.0.0</version></dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>""");
+        var metadata = java.util.Map.of(
+            "b", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <metadata>
+                    <groupId>com.example</groupId>
+                    <artifactId>b</artifactId>
+                    <versioning>
+                        <latest>2.2.0</latest>
+                        <release>2.2.0</release>
+                        <versions><version>2.2.0</version></versions>
+                    </versioning>
+                </metadata>""",
+            "bom2", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <metadata>
+                    <groupId>com.example</groupId>
+                    <artifactId>bom2</artifactId>
+                    <versioning>
+                        <latest>3.0.0</latest>
+                        <release>3.0.0</release>
+                        <versions><version>3.0.0</version></versions>
+                    </versioning>
+                </metadata>""");
+        var server = com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress("localhost", 0), 0);
+        server.createContext("/", exchange -> {
+            var segments = exchange.getRequestURI().getPath().split("/");
+            var filename = segments[segments.length - 1];
+            String content = null;
+            if (filename.endsWith(".pom") && segments.length >= 3) {
+                content = poms.get(segments[segments.length - 3] + ":" + segments[segments.length - 2]);
+            } else if (filename.equals("maven-metadata.xml") && segments.length >= 2) {
+                content = metadata.get(segments[segments.length - 2]);
+            }
+            if (content == null) {
+                exchange.sendResponseHeaders(404, -1);
+            } else {
+                var body = content.getBytes();
+                exchange.sendResponseHeaders(200, body.length);
+                exchange.getResponseBody().write(body);
+            }
+            exchange.close();
+        });
+        server.start();
+        try {
+            var scopes = new DependencyScopes();
+            scopes.scope(Scope.compile)
+                .include(new Bom("com.example", "bom1", new VersionNumber(1, 0, 0)))
+                .include(new Dependency("com.example", "a"))
+                .include(new Dependency("com.example", "b"))
+                .include(new Dependency("com.example", "c", new VersionNumber(5, 0, 0)));
+            scopes.scope(Scope.runtime)
+                .include(new Bom("com.example", "bom2"));
+            scopes.scope(Scope.provided)
+                // covered by the compile scope BOM through scope inheritance
+                .include(new Dependency("com.example", "a"));
+
+            var operation = new PublishOperation()
+                .artifactRetriever(ArtifactRetriever.cachingInstance())
+                .dependencyRepositories(List.of(new Repository("http://localhost:" + server.getAddress().getPort() + "/")))
+                .dependencies(scopes);
+            operation.executeResolveVersionlessDependencies();
+
+            var compile_scope = operation.dependencies().scope(Scope.compile);
+            // covered by the BOM : stays version-less for the POM,
+            // the dependency management import provides the version
+            assertEquals(VersionNumber.UNKNOWN, compile_scope.get(new Dependency("com.example", "a")).version());
+            // not covered : resolved to its latest version
+            assertEquals(new VersionNumber(2, 2, 0), compile_scope.get(new Dependency("com.example", "b")).version());
+            // explicitly versioned : untouched
+            assertEquals(new VersionNumber(5, 0, 0), compile_scope.get(new Dependency("com.example", "c")).version());
+            // a version-less BOM is resolved to its latest version
+            var runtime_boms = operation.dependencies().scope(Scope.runtime).boms();
+            assertEquals(new Bom("com.example", "bom2", new VersionNumber(3, 0, 0)), runtime_boms.iterator().next());
+            // the compile scope BOM also covers the provided scope,
+            // its version-less dependency stays version-less
+            assertEquals(VersionNumber.UNKNOWN, operation.dependencies().scope(Scope.provided).get(new Dependency("com.example", "a")).version());
+        } finally {
+            server.stop(0);
         }
     }
 }

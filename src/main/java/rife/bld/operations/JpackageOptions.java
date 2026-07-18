@@ -561,7 +561,7 @@ public class JpackageOptions extends LinkedHashMap<String, String> {
     /**
      * Creates a shortcut for the application.
      *
-     * @param shortcut {@code true| to create a shortcut, {@code false} otherwise
+     * @param shortcut {@code true} to create a shortcut, {@code false} otherwise
      * @return this map of options
      */
     public JpackageOptions linuxShortcut(boolean shortcut) {

@@ -395,6 +395,7 @@ public class BaseProject extends BuildExecutor {
     private final CompileOperation compileOperation_ = new CompileOperation();
     private final DependencyTreeOperation dependencyTreeOperation_ = new DependencyTreeOperation();
     private final DownloadOperation downloadOperation_ = new DownloadOperation();
+    private final McpOperation mcpOperation_ = new McpOperation();
     private final PurgeOperation purgeOperation_ = new PurgeOperation();
     private final PublishOperation publishOperation_ = new PublishOperation();
     private final RunOperation runOperation_ = new RunOperation();
@@ -440,6 +441,16 @@ public class BaseProject extends BuildExecutor {
      */
     public DownloadOperation downloadOperation() {
         return downloadOperation_;
+    }
+
+    /**
+     * Retrieves the project's default MCP operation.
+     *
+     * @return the default MCP operation instance
+     * @since 2.4.0
+     */
+    public McpOperation mcpOperation() {
+        return mcpOperation_;
     }
 
     /**
@@ -544,6 +555,18 @@ public class BaseProject extends BuildExecutor {
     public void download()
     throws Exception {
         downloadOperation().executeOnce(() -> downloadOperation().fromProject(this));
+    }
+
+    /**
+     * Standard build command, starts an MCP server that exposes the build
+     * commands as tools.
+     *
+     * @since 2.4.0
+     */
+    @BuildCommand(help = McpHelp.class)
+    public void mcp()
+    throws Exception {
+        mcpOperation().executeOnce(() -> mcpOperation().fromProject(this));
     }
 
     /**
@@ -1017,6 +1040,62 @@ public class BaseProject extends BuildExecutor {
      */
     public Module module(String description) {
         return Module.parse(description);
+    }
+
+    /**
+     * Creates a new bill of materials instance.
+     *
+     * @param groupId    the BOM group identifier
+     * @param artifactId the BOM artifact identifier
+     * @return a newly created {@code Bom} instance
+     * @since 2.4.0
+     */
+    public Bom bom(String groupId, String artifactId) {
+        return new Bom(groupId, artifactId);
+    }
+
+    /**
+     * Creates a new bill of materials instance.
+     *
+     * @param groupId    the BOM group identifier
+     * @param artifactId the BOM artifact identifier
+     * @param version    the BOM version
+     * @return a newly created {@code Bom} instance
+     * @since 2.4.0
+     */
+    public Bom bom(String groupId, String artifactId, String version) {
+        return new Bom(groupId, artifactId, version(version));
+    }
+
+    /**
+     * Creates a new bill of materials instance.
+     *
+     * @param groupId    the BOM group identifier
+     * @param artifactId the BOM artifact identifier
+     * @param version    the BOM version
+     * @return a newly created {@code Bom} instance
+     * @since 2.4.0
+     */
+    public Bom bom(String groupId, String artifactId, Version version) {
+        return new Bom(groupId, artifactId, version);
+    }
+
+    /**
+     * Creates a new bill of materials instance from a string representation.
+     * The format is {@code groupId:artifactId:version}.
+     * The {@code version} is optional, and an optional {@code @bom} or
+     * {@code @pom} type suffix is accepted. BOMs can't have classifiers,
+     * strings that contain one are rejected.
+     * <p>
+     * If the string can't be successfully parsed, {@code null} will be returned.
+     *
+     * @param description the BOM string to parse
+     * @return a parsed instance of {@code Bom}; or
+     * {@code null} when the string couldn't be parsed
+     * @since 2.4.0
+     */
+    public Bom bom(String description) {
+        return Bom.parse(description);
     }
 
     /**
@@ -2062,6 +2141,22 @@ public class BaseProject extends BuildExecutor {
         purge();
     }
 
+    /**
+     * Performs the automatic download and purge of the project
+     * dependencies when it's enabled through {@link #autoDownloadPurge()}
+     * and the project isn't offline.
+     * <p>
+     * The dependencies are only refreshed when the dependency cache is
+     * stale, so that repeated invocations are cheap.
+     *
+     * @since 2.4.0
+     */
+    public void performAutoDownloadPurgeIfEnabled() {
+        if (!offline() && autoDownloadPurge()) {
+            performAutoDownloadPurge();
+        }
+    }
+
     private void performAutoDownloadPurge() {
         var resolution = new VersionResolution(properties());
         var cache = new BldCache(libBldDirectory(), resolution);
@@ -2085,6 +2180,12 @@ public class BaseProject extends BuildExecutor {
         var remainingArguments = new ArrayList<>(List.of(arguments));
         var auto = remainingArguments.remove(AUTO_DOWNLOAD_PURGE_OPTION);
 
+        if (remainingArguments.contains(BuildExecutor.ARG_USE_STDERR)) {
+            // the build output is sent to standard error so that standard
+            // output stays free for the MCP protocol, done before the
+            // automatic download and purge produces any output
+            System.setOut(System.err);
+        }
         if (!offline() &&
             (autoDownloadPurge() || auto)) {
             performAutoDownloadPurge();

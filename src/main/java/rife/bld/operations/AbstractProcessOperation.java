@@ -241,7 +241,7 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      *
      * @param classpath classpath entries for the operation
      * @return this operation instance
-     * @since 2.3.1
+     * @since 2.4.0
      *
      */
     public T classpath(File... classpath) {
@@ -269,7 +269,7 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      *
      * @param classpath a list of classpath entries for the operation
      * @return this operation instance
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public T classpath(Collection<File> classpath) {
         classpath_.addAll(classpath.stream().map(File::getAbsolutePath).toList());
@@ -293,7 +293,7 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      *
      * @param modulePath module path entries for the operation
      * @return this operation instance
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public T modulePath(File... modulePath) {
         return modulePath(List.of(modulePath));
@@ -320,7 +320,7 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      *
      * @param modulePath a list of module path entries for the operation
      * @return this operation instance
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public T modulePath(Collection<File> modulePath) {
         modulePath_.addAll(modulePath.stream().map(File::getAbsolutePath).toList());

@@ -4,15 +4,20 @@
  */
 package rife.bld.dependencies;
 
+import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 import rife.ioc.HierarchicalProperties;
 import rife.tools.FileUtils;
 import rife.tools.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static rife.bld.dependencies.Dependency.CLASSIFIER_JAVADOC;
@@ -2340,5 +2345,99 @@ public class TestDependencyResolver {
             FileUtils.deleteDirectory(tmp1);
             FileUtils.deleteDirectory(tmp2);
         }
+    }
+
+    @Test
+    void testGetAllDependenciesParallelPomPrefetching() throws Exception {
+        var max_concurrent_retrievals = new AtomicInteger();
+        var server = createPomServer(max_concurrent_retrievals);
+        server.start();
+        try {
+            var repositories = List.of(new Repository("http://localhost:" + server.getAddress().getPort() + "/"));
+            var root = new Dependency("com.example", "root", new VersionNumber(1, 0, 0));
+
+            // the caching retriever enables parallel POM prefetching
+            var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.cachingInstance(), repositories, root);
+            assertEquals(StringUtils.convertLineSeparator("""
+                com.example:root:1.0.0
+                com.example:child1:1.0.0
+                com.example:child2:1.0.0
+                com.example:child3:1.0.0
+                com.example:child4:1.0.0
+                com.example:child5:1.0.0
+                com.example:child6:1.0.0
+                com.example:shared:1.0.0"""), StringUtils.join(resolver.getAllDependencies(compile), System.lineSeparator()));
+            assertTrue(max_concurrent_retrievals.get() > 1, "expected concurrent POM retrievals, max was " + max_concurrent_retrievals.get());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void testGetAllDependenciesSequentialWithoutCachingRetriever() throws Exception {
+        var max_concurrent_retrievals = new AtomicInteger();
+        var server = createPomServer(max_concurrent_retrievals);
+        server.start();
+        try {
+            var repositories = List.of(new Repository("http://localhost:" + server.getAddress().getPort() + "/"));
+            var root = new Dependency("com.example", "root", new VersionNumber(1, 0, 0));
+
+            // the uncached retriever disables prefetching, retrievals stay sequential
+            var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repositories, root);
+            assertEquals(8, resolver.getAllDependencies(compile).size());
+            assertEquals(1, max_concurrent_retrievals.get(), "expected sequential POM retrievals, max was " + max_concurrent_retrievals.get());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    private static HttpServer createPomServer(AtomicInteger maxConcurrentRetrievals)
+    throws IOException {
+        var graph = new HashMap<String, List<String>>();
+        graph.put("root", List.of("child1", "child2", "child3", "child4", "child5", "child6"));
+        graph.put("child1", List.of("shared"));
+
+        var active_retrievals = new AtomicInteger();
+        var server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        server.createContext("/", exchange -> {
+            var active = active_retrievals.incrementAndGet();
+            maxConcurrentRetrievals.accumulateAndGet(active, Math::max);
+            try {
+                // delay the response so that parallel retrievals overlap
+                Thread.sleep(100);
+
+                // serve the POM of the artifact in the request path
+                var segments = exchange.getRequestURI().getPath().split("/");
+                var artifact = segments[segments.length - 3];
+                var body = buildPom(artifact, graph.getOrDefault(artifact, List.of())).getBytes();
+                exchange.sendResponseHeaders(200, body.length);
+                exchange.getResponseBody().write(body);
+                exchange.close();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                active_retrievals.decrementAndGet();
+            }
+        });
+        server.setExecutor(Executors.newCachedThreadPool());
+        return server;
+    }
+
+    private static String buildPom(String artifact, List<String> children) {
+        var dependencies = new StringBuilder();
+        for (var child : children) {
+            dependencies.append("<dependency><groupId>com.example</groupId><artifactId>")
+                .append(child)
+                .append("</artifactId><version>1.0.0</version></dependency>");
+        }
+        return """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.example</groupId>
+                <artifactId>%s</artifactId>
+                <version>1.0.0</version>
+                <dependencies>%s</dependencies>
+            </project>""".formatted(artifact, dependencies);
     }
 }

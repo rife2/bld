@@ -129,6 +129,17 @@ class Xml2MavenPom extends Xml2Data {
         return result;
     }
 
+    Set<PomDependency> getManagedDependencies() {
+        var result = new LinkedHashSet<PomDependency>();
+        // iterate the values since putting an entry with an equal key
+        // preserves the original key instance while the value reflects
+        // the actual managed dependency
+        for (var managed : dependencyManagement_.values()) {
+            result.add(resolveDependency(managed));
+        }
+        return result;
+    }
+
     PomDependency resolveDependency(PomDependency dependency) {
         return new PomDependency(
             resolveMavenProperties(dependency.groupId()),

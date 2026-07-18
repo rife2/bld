@@ -40,6 +40,7 @@ public class Wrapper {
 
     public static final String BUILD_ARGUMENT = "--build";
     public static final String OFFLINE_ARGUMENT = "--offline";
+    public static final String USE_STDERR_ARGUMENT = "--use-stderr";
 
     public static final String WRAPPER_PREFIX = "bld-wrapper";
     public static final String WRAPPER_PROPERTIES = WRAPPER_PREFIX + ".properties";
@@ -97,6 +98,11 @@ public class Wrapper {
      * @since 1.5
      */
     public static void main(String[] arguments) {
+        if (Arrays.asList(arguments).contains(USE_STDERR_ARGUMENT)) {
+            // the wrapper diagnostics are sent to standard error so that
+            // standard output stays free for the MCP protocol
+            System.setOut(System.err);
+        }
         System.exit(new Wrapper().installAndLaunch(new ArrayList<>(Arrays.asList(arguments))));
     }
 

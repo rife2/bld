@@ -42,9 +42,13 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     private File libTestModulesDirectory_;
     private boolean downloadSources_ = false;
     private boolean downloadJavadoc_ = false;
+    private final DependencyTransferBatch transfers_ = new DependencyTransferBatch();
 
     /**
      * Performs the download operation.
+     * <p>
+     * The artifact transfers of all the scopes are collected first and then
+     * performed together in a single parallel batch.
      *
      * @since 1.5
      */
@@ -54,14 +58,73 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
             return;
         }
 
+        if (!silent()) {
+            System.out.println("Analyzing dependencies...");
+        }
+        executeReportUncoveredDependencies();
         executeDownloadCompileDependencies();
         executeDownloadProvidedDependencies();
         executeDownloadRuntimeDependencies();
         executeDownloadStandaloneDependencies();
         executeDownloadTestDependencies();
+        executeTransferDependencies();
         if (!silent()) {
             System.out.println("Downloading finished successfully.");
         }
+    }
+
+    /**
+     * Part of the {@link #execute} operation, warns about version-less
+     * dependencies that are not covered by a BOM in their scope.
+     *
+     * @since 2.4.0
+     */
+    protected void executeReportUncoveredDependencies() {
+        if (silent()) {
+            return;
+        }
+        for (var dependency : dependencies().versionlessDependenciesWithoutBom(properties(), artifactRetriever(), repositories())) {
+            System.out.println("Warning: '" + dependency.toArtifactString() + "' isn't covered by a BOM, its latest version will be used");
+        }
+        for (var conflict : dependencies().bomVersionConflicts(properties(), artifactRetriever(), repositories())) {
+            System.out.println(formatBomVersionConflict(conflict));
+        }
+        for (var conflict : dependencies().declaredVersionConflicts(properties(), artifactRetriever(), repositories())) {
+            System.out.println(formatDeclaredVersionConflict(conflict));
+        }
+    }
+
+    /**
+     * Formats a warning message for a BOM version conflict.
+     *
+     * @param conflict the BOM version conflict to format
+     * @return the formatted warning message
+     * @since 2.4.0
+     */
+    protected static String formatBomVersionConflict(rife.bld.dependencies.VersionResolution.BomVersionConflict conflict) {
+        var entries = conflict.bomVersions().entrySet().iterator();
+        var used = entries.next();
+        var message = new StringBuilder("Warning: '" + conflict.dependency() + "' is managed by multiple BOMs, using " +
+            used.getValue() + " from '" + used.getKey() + "'");
+        while (entries.hasNext()) {
+            var other = entries.next();
+            message.append(", not ").append(other.getValue()).append(" from '").append(other.getKey()).append('\'');
+        }
+        return message.toString();
+    }
+
+    /**
+     * Formats a warning message for a declared dependency whose version
+     * differs from the version that a BOM manages it at.
+     *
+     * @param conflict the declared version conflict to format
+     * @return the formatted warning message
+     * @since 2.4.0
+     */
+    protected static String formatDeclaredVersionConflict(rife.bld.dependencies.VersionResolution.DeclaredVersionConflict conflict) {
+        return "Warning: '" + conflict.dependency() + "' is declared with version " + conflict.declaredVersion() +
+               " while BOM '" + conflict.bom() + "' manages it at " + conflict.bomVersion() +
+               ", the declared version is used but transitive dependencies still follow the BOM";
     }
 
     /**
@@ -110,7 +173,11 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
     }
 
     /**
-     * Part of the {@link #execute} operation, download the artifacts for a particular dependency scope.
+     * Part of the {@link #execute} operation, collect the artifact transfers
+     * for a particular dependency scope into the {@linkplain #transfers()
+     * transfer batch}.
+     * <p>
+     * The transfers are performed by {@link #executeTransferDependencies}.
      *
      * @param destinationDirectory the directory in which the artifacts should be downloaded
      * @param modulesDirectory     the directory in which the modules should be downloaded
@@ -128,7 +195,29 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
             additional_classifiers = classifiers.toArray(new String[0]);
         }
 
-        dependencies.transferIntoDirectory(new VersionResolution(properties()), artifactRetriever(), repositories(), destinationDirectory, modulesDirectory, additional_classifiers);
+        transfers().add(dependencies, destinationDirectory, modulesDirectory, additional_classifiers);
+    }
+
+    /**
+     * Part of the {@link #execute} operation, perform all the collected
+     * artifact transfers of the {@linkplain #transfers() transfer batch}
+     * together in parallel.
+     *
+     * @since 2.4.0
+     */
+    protected void executeTransferDependencies() {
+        transfers().transfer(new VersionResolution(properties()), artifactRetriever(), repositories());
+    }
+
+    /**
+     * Returns the batch that collects the artifact transfers of this
+     * operation.
+     *
+     * @return the artifact transfer batch of this operation
+     * @since 2.4.0
+     */
+    protected DependencyTransferBatch transfers() {
+        return transfers_;
     }
 
     /**

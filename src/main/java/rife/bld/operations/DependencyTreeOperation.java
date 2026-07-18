@@ -178,7 +178,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.5.21
      */
     protected String executeGenerateCompileDependencies() {
-        var compile_tree = dependencies().scope(compile).generateTransitiveDependencyTree(new VersionResolution(properties()), artifactRetriever(), repositories(), compile);
+        var compile_tree = dependencies().scope(compile).generateTransitiveDependencyTree(new VersionResolution(properties(), artifactRetriever(), repositories(), dependencies().effectiveBoms(compile)), artifactRetriever(), repositories(), compile);
         if (compile_tree.isEmpty()) {
             compile_tree = "no dependencies" + System.lineSeparator();
         }
@@ -191,7 +191,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.7.3
      */
     protected String executeGenerateProvidedDependencies() {
-        var provided_tree = dependencies().scope(provided).generateTransitiveDependencyTree(new VersionResolution(properties()), artifactRetriever(), repositories(), compile, runtime);
+        var provided_tree = dependencies().scope(provided).generateTransitiveDependencyTree(new VersionResolution(properties(), artifactRetriever(), repositories(), dependencies().effectiveBoms(provided)), artifactRetriever(), repositories(), compile, runtime);
         if (provided_tree.isEmpty()) {
             provided_tree = "no dependencies" + System.lineSeparator();
         }
@@ -204,7 +204,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.5.21
      */
     protected String executeGenerateRuntimeDependencies() {
-        var runtime_tree = dependencies().scope(runtime).generateTransitiveDependencyTree(new VersionResolution(properties()), artifactRetriever(), repositories(), compile, runtime);
+        var runtime_tree = dependencies().scope(runtime).generateTransitiveDependencyTree(new VersionResolution(properties(), artifactRetriever(), repositories(), dependencies().effectiveBoms(runtime)), artifactRetriever(), repositories(), compile, runtime);
         if (runtime_tree.isEmpty()) {
             runtime_tree = "no dependencies" + System.lineSeparator();
         }
@@ -217,7 +217,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
      * @since 1.7.3
      */
     protected String executeGenerateTestDependencies() {
-        var test_tree = dependencies().scope(test).generateTransitiveDependencyTree(new VersionResolution(properties()), artifactRetriever(), repositories(), compile, runtime);
+        var test_tree = dependencies().scope(test).generateTransitiveDependencyTree(new VersionResolution(properties(), artifactRetriever(), repositories(), dependencies().effectiveBoms(test)), artifactRetriever(), repositories(), compile, runtime);
         if (test_tree.isEmpty()) {
             test_tree = "no dependencies" + System.lineSeparator();
         }

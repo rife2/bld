@@ -271,6 +271,10 @@ public class BldCache {
             finger_print.append(entry.getKey());
             finger_print.append('\n');
             if (entry.getValue() != null) {
+                for (var bom : entry.getValue().boms()) {
+                    finger_print.append(bom.toString());
+                    finger_print.append('\n');
+                }
                 for (var dependency : entry.getValue()) {
                     finger_print.append(dependency.toString());
                     finger_print.append('\n');

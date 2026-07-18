@@ -31,15 +31,47 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
      */
     public void execute() {
         var resolution = new VersionResolution(properties());
-        var result = new DependencyScopes();
+
+        var scopes = new ArrayList<Scope>();
+        var dependencies = new ArrayList<Dependency>();
         for (var entry : dependencies_.entrySet()) {
-            var scope = entry.getKey();
-            for (var dependency : entry.getValue()) {
-                var latest = new DependencyResolver(resolution, artifactRetriever(), repositories(), dependency).latestVersion();
-                if (latest.compareTo(dependency.version()) > 0) {
-                    var latest_dependency = new Dependency(dependency.groupId(), dependency.artifactId(), latest,
-                        dependency.classifier(), dependency.type());
-                    result.scope(scope).include(latest_dependency);
+            var scoped_dependencies = entry.getValue();
+            for (var bom : scoped_dependencies.boms()) {
+                scopes.add(entry.getKey());
+                dependencies.add(bom);
+            }
+
+            // dependencies that are declared without a version and that are
+            // covered by a BOM that applies to their scope have their version
+            // pinned by that BOM, the BOM update itself carries their update
+            // signal, unless a bld.override supplies the version and takes
+            // that control away from the BOM
+            var scope_resolution = new VersionResolution(properties(), artifactRetriever(), repositories(), dependencies_.effectiveBoms(entry.getKey()));
+            for (var dependency : scoped_dependencies) {
+                if (VersionNumber.UNKNOWN.equals(dependency.version()) &&
+                    scope_resolution.coversDependency(dependency) &&
+                    !scope_resolution.versionOverrides().containsKey(dependency.toArtifactString())) {
+                    continue;
+                }
+                scopes.add(entry.getKey());
+                // an overridden version is the one the build uses, it's the
+                // baseline that update checks compare against
+                dependencies.add(scope_resolution.overrideDependency(dependency));
+            }
+        }
+
+        var latest_versions = new ParallelDependencyResolver(resolution, artifactRetriever(), repositories()).resolveLatestVersions(dependencies);
+
+        var result = new DependencyScopes();
+        for (var i = 0; i < dependencies.size(); ++i) {
+            var dependency = dependencies.get(i);
+            var latest = latest_versions.get(i);
+            if (latest.compareTo(dependency.version()) > 0) {
+                if (dependency instanceof Bom) {
+                    result.scope(scopes.get(i)).include(new Bom(dependency.groupId(), dependency.artifactId(), latest));
+                } else {
+                    result.scope(scopes.get(i)).include(new Dependency(dependency.groupId(), dependency.artifactId(), latest,
+                        dependency.classifier(), dependency.type()));
                 }
             }
         }
@@ -53,6 +85,9 @@ public class UpdatesOperation extends AbstractOperation<UpdatesOperation> {
             for (var entry : result.entrySet()) {
                 var scope = entry.getKey();
                 System.out.println(scope + ":");
+                for (var bom : entry.getValue().boms()) {
+                    System.out.println("    " + bom);
+                }
                 for (var dependency : entry.getValue()) {
                     System.out.println("    " + dependency);
                 }

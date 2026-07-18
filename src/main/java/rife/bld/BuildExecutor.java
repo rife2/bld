@@ -32,6 +32,8 @@ public class BuildExecutor {
     public static final String LOCAL_PROPERTIES = "local.properties";
 
     private static final String ARG_OFFLINE = "--offline";
+    static final String ARG_USE_STDERR = "--use-stderr";
+
     private static final String ARG_HELP1 = "--help";
     private static final String ARG_HELP2 = "-h";
     private static final String ARG_HELP3 = "-?";
@@ -41,7 +43,7 @@ public class BuildExecutor {
     private static final String ARG_VERBOSE2 = "-v";
 
     private final HierarchicalProperties properties_;
-    private List<String> arguments_ = Collections.emptyList();
+    private List<String> arguments_ = new ArrayList<>();
     private boolean offline_ = false;
     private boolean verbose_ = false;
     private Map<String, CommandDefinition> buildCommands_ = null;
@@ -139,15 +141,62 @@ public class BuildExecutor {
     }
 
     /**
+     * Changes whether the bld execution is intended to be offline.
+     *
+     * @param offline {@code true} if the execution is intended to be offline;
+     *                or {@code false} otherwise
+     * @since 2.4.0
+     */
+    public void offline(boolean offline) {
+        offline_ = offline;
+    }
+
+    /**
      * Returns whether the bld execution should output detailed information
      * about the operations it performs.
      *
      * @return {@code true} if the execution is verbose;
      *         or {@code false} otherwise
-     * @since 2.3.1
+     * @since 2.4.0
      */
     public boolean verbose() {
         return verbose_;
+    }
+
+    /**
+     * Changes whether the bld execution should output detailed information
+     * about the operations it performs.
+     *
+     * @param verbose {@code true} if the execution is verbose;
+     *                or {@code false} otherwise
+     * @since 2.4.0
+     */
+    public void verbose(boolean verbose) {
+        verbose_ = verbose;
+    }
+
+    /**
+     * Returns whether the bld execution prints out the stacktrace for
+     * exceptions.
+     *
+     * @return {@code true} if the stacktrace is printed;
+     *         or {@code false} otherwise
+     * @since 2.4.0
+     */
+    public boolean showStacktrace() {
+        return showStacktrace;
+    }
+
+    /**
+     * Changes whether the bld execution prints out the stacktrace for
+     * exceptions.
+     *
+     * @param showStacktrace {@code true} if the stacktrace is printed;
+     *                       or {@code false} otherwise
+     * @since 2.4.0
+     */
+    public void showStacktrace(boolean showStacktrace) {
+        this.showStacktrace = showStacktrace;
     }
 
     /**
@@ -243,12 +292,19 @@ public class BuildExecutor {
         show_help |= arguments_.removeAll(List.of(ARG_HELP1, ARG_HELP2, ARG_HELP3));
         showStacktrace = arguments_.removeAll(List.of(ARG_STACKTRACE1, ARG_STACKTRACE2));
         verbose_ = arguments_.removeAll(List.of(ARG_VERBOSE1, ARG_VERBOSE2));
+        if (arguments_.removeAll(List.of(ARG_USE_STDERR))) {
+            // the build output is sent to standard error so that standard
+            // output stays free for the MCP protocol, which the MCP server
+            // relies on to keep its protocol stream clean
+            System.setOut(System.err);
+        }
 
         if (show_help) {
             new HelpOperation(this, Collections.emptyList()).execute();
             return exitStatus_;
         }
-        else if (arguments_.isEmpty()) {
+
+        if (arguments_.isEmpty()) {
             showBldHelp();
             return exitStatus_;
         }
@@ -441,47 +497,14 @@ public class BuildExecutor {
      */
     public boolean executeCommand(String command)
     throws Throwable {
-        var matched_command = command;
-        var definition = buildCommands().get(command);
-
-        // try to find an alias
-        if (definition == null) {
-            var aliased_command = buildAliases().get(command);
-            if (aliased_command != null) {
-                matched_command = aliased_command;
-                definition = buildCommands().get(aliased_command);
-            }
-        }
-
-        // try to find a match for the provided command amongst
-        // the ones that are known
-        if (definition == null) {
-            // try to find starting matching options
-            var matches = new ArrayList<>(buildCommands().keySet().stream()
-                .filter(c -> c.toLowerCase().startsWith(command.toLowerCase()))
-                .toList());
-
-            if (matches.isEmpty()) {
-                // try to find fuzzy matching options
-                var fuzzy_regexp = new StringBuilder("^.*");
-                for (var ch : command.toCharArray()) {
-                    fuzzy_regexp.append("\\Q");
-                    fuzzy_regexp.append(ch);
-                    fuzzy_regexp.append("\\E.*");
-                }
-                fuzzy_regexp.append('$');
-                var fuzzy_pattern = Pattern.compile(fuzzy_regexp.toString());
-                matches.addAll(buildCommands().keySet().stream()
-                    .filter(c -> fuzzy_pattern.matcher(c.toLowerCase()).matches())
-                    .toList());
-            }
-
-            // only proceed if exactly one match was found
-            if (matches.size() == 1) {
-                matched_command = matches.get(0);
+        var matched_command = resolveCommand(command);
+        CommandDefinition definition = null;
+        if (matched_command != null) {
+            if (!matched_command.equals(command) &&
+                !matched_command.equals(buildAliases().get(command))) {
                 System.out.println("Executing matched command: " + matched_command);
-                definition = buildCommands().get(matched_command);
             }
+            definition = buildCommands().get(matched_command);
         }
 
         // execute the command if we found one
@@ -505,6 +528,54 @@ public class BuildExecutor {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Resolves a command name to the name of the build command that would
+     * be executed for it, taking the command aliases, unique name prefixes
+     * and unique fuzzy matches into account.
+     *
+     * @param command the command name to resolve
+     * @return the name of the build command that would be executed; or
+     * {@code null} when the name couldn't be resolved
+     * @since 2.4.0
+     */
+    public String resolveCommand(String command) {
+        if (buildCommands().containsKey(command)) {
+            return command;
+        }
+
+        // try to find an alias
+        var aliased_command = buildAliases().get(command);
+        if (aliased_command != null) {
+            return aliased_command;
+        }
+
+        // try to find starting matching options
+        var matches = new ArrayList<>(buildCommands().keySet().stream()
+            .filter(c -> c.toLowerCase().startsWith(command.toLowerCase()))
+            .toList());
+
+        if (matches.isEmpty()) {
+            // try to find fuzzy matching options
+            var fuzzy_regexp = new StringBuilder("^.*");
+            for (var ch : command.toCharArray()) {
+                fuzzy_regexp.append("\\Q");
+                fuzzy_regexp.append(ch);
+                fuzzy_regexp.append("\\E.*");
+            }
+            fuzzy_regexp.append('$');
+            var fuzzy_pattern = Pattern.compile(fuzzy_regexp.toString());
+            matches.addAll(buildCommands().keySet().stream()
+                .filter(c -> fuzzy_pattern.matcher(c.toLowerCase()).matches())
+                .toList());
+        }
+
+        // only resolve if exactly one match was found
+        if (matches.size() == 1) {
+            return matches.get(0);
+        }
+        return null;
     }
 
     private void showBldHelp() {

@@ -12,6 +12,8 @@ import rife.tools.StringUtils;
 import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.File;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
 
 import static rife.bld.dependencies.Dependency.TYPE_JAR;
@@ -152,6 +154,7 @@ public class PomBuilder {
         }
 
         if (dependencies() != null && !dependencies().isEmpty()) {
+            addDependencyManagement(t);
             addDependencies(t, Scope.compile);
             addDependencies(t, Scope.runtime);
             addDependencies(t, Scope.provided);
@@ -170,6 +173,32 @@ public class PomBuilder {
             throws FileUtilsErrorException {
         var pomBuilder = new PomBuilder().info(info).dependencies(dependencies);
         FileUtils.writeString(pomBuilder.build(), file);
+    }
+
+    private void addDependencyManagement(Template t) {
+        var boms = new LinkedHashMap<String, Bom>();
+        for (var scope : List.of(Scope.compile, Scope.runtime, Scope.provided)) {
+            var scoped_dependencies = dependencies().get(scope);
+            if (scoped_dependencies == null) {
+                continue;
+            }
+            for (var bom : scoped_dependencies.boms()) {
+                if (!bom.version().equals(VersionNumber.UNKNOWN)) {
+                    boms.putIfAbsent(bom.toArtifactString(), bom);
+                }
+            }
+        }
+        if (boms.isEmpty()) {
+            return;
+        }
+
+        for (var bom : boms.values()) {
+            t.setValueEncoded("dependency-management-groupId", bom.groupId());
+            t.setValueEncoded("dependency-management-artifactId", bom.artifactId());
+            t.setValueEncoded("dependency-management-version", bom.version());
+            t.appendBlock("dependency-management", "dependency-management-entry");
+        }
+        t.setBlock("dependency-management-tag");
     }
 
     private void addDependencies(Template t, Scope scope) {

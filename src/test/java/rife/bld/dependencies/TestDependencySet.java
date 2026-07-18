@@ -5,11 +5,16 @@
 package rife.bld.dependencies;
 
 import org.junit.jupiter.api.Test;
+import rife.ioc.HierarchicalProperties;
+import rife.tools.FileUtils;
 import rife.tools.StringUtils;
 
+import java.nio.file.Files;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static rife.bld.dependencies.TransferTestHelper.*;
 import static rife.bld.dependencies.RepositoryTestHelper.getNextRepository;
 import static rife.bld.dependencies.Scope.compile;
 import static rife.bld.dependencies.Scope.runtime;
@@ -373,4 +378,83 @@ public class TestDependencySet {
                └─ org.json:json:20250107
             """), dependencies.generateTransitiveDependencyTree(VersionResolution.dummy(), ArtifactRetriever.instance(), RepositoryTestHelper.getNextRepositories(), compile, runtime));
     }
+
+    @Test
+    void testCopyAndIncludePreserveAllContents() {
+        var set = new DependencySet()
+            .include(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1)))
+            .include(new Bom("io.vertx", "vertx-stack-depchain", new VersionNumber(4, 5, 12)))
+            .include(new LocalDependency("lib/local.jar"))
+            .include(new LocalModule("lib/module.jar"));
+
+        var copy = new DependencySet(set);
+        assertEquals(set, copy);
+        assertEquals(set.boms(), copy.boms());
+        assertEquals(set.localDependencies(), copy.localDependencies());
+        assertEquals(set.localModules(), copy.localModules());
+
+        var included = new DependencySet().include(set);
+        assertEquals(set, included);
+        assertEquals(set.boms(), included.boms());
+        assertEquals(set.localDependencies(), included.localDependencies());
+        assertEquals(set.localModules(), included.localModules());
+
+        var scopes = new DependencyScopes();
+        scopes.scope(Scope.compile).include(set);
+        var scopes_copy = new DependencyScopes();
+        scopes_copy.include(scopes);
+        assertEquals(set.boms(), scopes_copy.scope(Scope.compile).boms());
+        assertEquals(set.localDependencies(), scopes_copy.scope(Scope.compile).localDependencies());
+
+        var scopes_ctor_copy = new DependencyScopes(scopes);
+        assertEquals(set.boms(), scopes_ctor_copy.scope(Scope.compile).boms());
+        assertEquals(set.localDependencies(), scopes_ctor_copy.scope(Scope.compile).localDependencies());
+        assertEquals(set.localModules(), scopes_ctor_copy.scope(Scope.compile).localModules());
+    }
+
+    @Test
+    void testTransferIntoDirectoryParallel() throws Exception {
+        var max_concurrent_transfers = new AtomicInteger();
+        var server = createTransferServer(max_concurrent_transfers);
+        server.start();
+        var tmp = Files.createTempDirectory("transfers").toFile();
+        try {
+            var dependencies = createTransferDependencies(1, 6);
+            var repositories = List.of(transferRepository(server));
+
+            var artifacts = dependencies.transferIntoDirectory(new VersionResolution(null), ArtifactRetriever.instance(), repositories, tmp, tmp);
+
+            assertTransferredArtifacts(dependencies, artifacts, tmp);
+            assertTrue(max_concurrent_transfers.get() > 1, "expected concurrent transfers, max was " + max_concurrent_transfers.get());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testTransferIntoDirectorySequential() throws Exception {
+        var max_concurrent_transfers = new AtomicInteger();
+        var server = createTransferServer(max_concurrent_transfers);
+        server.start();
+        var tmp = Files.createTempDirectory("transfers").toFile();
+        try {
+            var properties = new HierarchicalProperties();
+            properties.put(VersionResolution.PROPERTY_TRANSFER_PARALLELISM, "1");
+            var resolution = new VersionResolution(properties);
+            assertEquals(1, resolution.transferParallelism());
+
+            var dependencies = createTransferDependencies(1, 6);
+            var repositories = List.of(transferRepository(server));
+
+            var artifacts = dependencies.transferIntoDirectory(resolution, ArtifactRetriever.instance(), repositories, tmp, tmp);
+
+            assertTransferredArtifacts(dependencies, artifacts, tmp);
+            assertEquals(1, max_concurrent_transfers.get(), "expected sequential transfers, max was " + max_concurrent_transfers.get());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
 }

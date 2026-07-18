@@ -179,7 +179,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
      * parents, outputting the location when the operation is {@link #verbose()}.
      *
      * @param directory the directory to create
-     * @since 2.3.1
+     * @since 2.4.0
      */
     protected void executeCreateDirectory(File directory) {
         if (verbose()) {
@@ -194,7 +194,7 @@ public abstract class AbstractCreateOperation<T extends AbstractCreateOperation<
      *
      * @param content the content to write
      * @param file    the file to write the content into
-     * @since 2.3.1
+     * @since 2.4.0
      */
     protected void executeWriteProjectFile(String content, File file)
     throws FileUtilsErrorException {

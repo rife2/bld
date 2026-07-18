@@ -24,6 +24,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
     private final Map<Dependency, Dependency> dependencies_ = new LinkedHashMap<>();
     private final Set<LocalDependency> localDependencies_ = new LinkedHashSet<>();
     private final Set<LocalModule> localModules_ = new LinkedHashSet<>();
+    private final Set<Bom> boms_ = new LinkedHashSet<>();
 
     /**
      * Creates an empty dependency set.
@@ -40,7 +41,23 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * @since 1.5
      */
     public DependencySet(DependencySet other) {
+        include(other);
+    }
+
+    /**
+     * Includes all the dependencies, local dependencies, local modules and
+     * BOMs from another dependency set.
+     *
+     * @param other the other set to include
+     * @return this dependency set instance
+     * @since 2.4.0
+     */
+    public DependencySet include(DependencySet other) {
         addAll(other);
+        localDependencies_.addAll(other.localDependencies_);
+        localModules_.addAll(other.localModules_);
+        boms_.addAll(other.boms_);
+        return this;
     }
 
     /**
@@ -81,7 +98,32 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
     }
 
     /**
-     * Includes a local module into the dependency set.
+     * Includes a bill of materials in the dependency set.
+     * <p>
+     * BOMs aren't transferred, their dependency management sections supply
+     * versions during the resolution of this dependency set.
+     *
+     * @param bom the BOM to include
+     * @return this dependency set instance
+     * @since 2.4.0
+     */
+    public DependencySet include(Bom bom) {
+        boms_.add(bom);
+        return this;
+    }
+
+    /**
+     * Retrieves the bills of materials.
+     *
+     * @return the set of BOMs
+     * @since 2.4.0
+     */
+    public Set<Bom> boms() {
+        return boms_;
+    }
+
+    /**
+     * Includes a local module in the dependency set.
      * <p>
      * Local modules aren't resolved and point to a location on
      * the file system.
@@ -128,6 +170,11 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * including other classifiers.
      * <p>
      * The destination directory must exist and be writable.
+     * <p>
+     * The artifacts of different dependencies are transferred in parallel,
+     * the {@value VersionResolution#PROPERTY_TRANSFER_PARALLELISM} property
+     * can be used to change the number of simultaneous transfers, setting it
+     * to {@code 1} makes the transfers sequential.
      *
      * @param resolution        the version resolution state that can be cached
      * @param retriever         the retriever to use to get artifacts
@@ -140,48 +187,15 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * @since 2.1
      */
     public List<RepositoryArtifact> transferIntoDirectory(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, File directory, File modulesDirectory, String... classifiers) {
-        var result = new ArrayList<RepositoryArtifact>();
-        for (var dependency : this) {
-            var transfer_directory = directory;
-            if (dependency.isModularJar()) {
-                if (modulesDirectory == null) {
-                    throw new DependencyTransferException(dependency, "modules directory is not provided");
-                }
-                transfer_directory = modulesDirectory;
-            }
-            else if (directory == null) {
-                throw new DependencyTransferException(dependency, "artifacts directory is not provided");
-            }
-
-            if (!transfer_directory.exists()) {
-                if (!transfer_directory.mkdirs()) {
-                    throw new DependencyTransferException(dependency, transfer_directory, "couldn't create directory");
-                }
-            }
-
-            var artifact = new DependencyResolver(resolution, retriever, repositories, dependency).transferIntoDirectory(transfer_directory);
-            if (artifact != null) {
-                result.add(artifact);
-            }
-
-            if (classifiers != null) {
-                for (var classifier : classifiers) {
-                    if (classifier != null && !dependency.excludedClassifiers().contains(classifier)) {
-                        var classifier_artifact = new DependencyResolver(resolution, retriever, repositories, dependency.withClassifier(classifier)).transferIntoDirectory(transfer_directory);
-                        if (classifier_artifact != null) {
-                            result.add(classifier_artifact);
-                        }
-                    }
-                }
-            }
-        }
-        return result;
+        return new DependencyTransferBatch()
+            .add(this, directory, modulesDirectory, classifiers)
+            .transfer(resolution, retriever, repositories);
     }
 
     /**
      * Returns the dependency that was stored in the set.
      * <p>
-     * The version can be different from the dependency passed in and this
+     * The version can be different from the dependency passed in, and this
      * method can be used to look up the actual version of the dependency in the set.
      *
      * @param dependency the dependency to look for
@@ -206,11 +220,8 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * @since 2.0
      */
     public String generateTransitiveDependencyTree(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, Scope... scopes) {
-        var compile_dependencies = new DependencySet();
-        for (var dependency : this) {
-            compile_dependencies.addAll(new DependencyResolver(resolution, retriever, repositories, dependency).getAllDependencies(scopes));
-        }
-        return compile_dependencies.generateDependencyTree();
+        resolution = resolution.withBoms(retriever, repositories, boms_);
+        return new ParallelDependencyResolver(resolution, retriever, repositories).resolveAllDependencies(this, scopes).generateDependencyTree();
     }
 
     /**

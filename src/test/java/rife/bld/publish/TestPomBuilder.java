@@ -652,4 +652,93 @@ public class TestPomBuilder {
                 </project>
                 """, builder.build());
     }
+
+    @Test
+    void testDependencyManagementScopeBoundaries() {
+        var builder = new PomBuilder();
+        builder.dependencies().scope(Scope.provided)
+            .include(new Bom("org.eclipse.jetty", "jetty-bom", new VersionNumber(12, 0, 16)));
+        builder.dependencies().scope(Scope.test)
+            // the test scope isn't published, its BOMs are not emitted
+            .include(new Bom("org.junit", "junit-bom", new VersionNumber(6, 1, 1)));
+        assertEquals("""
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId></groupId>
+                  <artifactId></artifactId>
+                  <version></version>
+                  <name></name>
+                  <description></description>
+                  <url></url>
+                  <dependencyManagement>
+                    <dependencies>
+                      <dependency>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-bom</artifactId>
+                        <version>12.0.16</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                      </dependency>
+                    </dependencies>
+                  </dependencyManagement>
+                  <dependencies>
+                  </dependencies>
+                </project>
+                """, builder.build());
+    }
+
+    @Test
+    void testDependencyManagement() {
+        var builder = new PomBuilder();
+        builder.dependencies().scope(Scope.compile)
+            .include(new Bom("io.vertx", "vertx-stack-depchain", new VersionNumber(4, 5, 12)))
+            .include(new Dependency("io.vertx", "vertx-core"));
+        builder.dependencies().scope(Scope.runtime)
+            // duplicate BOMs are only emitted once
+            .include(new Bom("io.vertx", "vertx-stack-depchain", new VersionNumber(4, 5, 12)))
+            .include(new Bom("org.junit", "junit-bom", new VersionNumber(6, 1, 1)));
+        builder.dependencies().scope(Scope.provided)
+            // BOMs without a version are not emitted
+            .include(new Bom("com.example", "versionless-bom"));
+        assertEquals("""
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId></groupId>
+                  <artifactId></artifactId>
+                  <version></version>
+                  <name></name>
+                  <description></description>
+                  <url></url>
+                  <dependencyManagement>
+                    <dependencies>
+                      <dependency>
+                        <groupId>io.vertx</groupId>
+                        <artifactId>vertx-stack-depchain</artifactId>
+                        <version>4.5.12</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                      </dependency>
+                      <dependency>
+                        <groupId>org.junit</groupId>
+                        <artifactId>junit-bom</artifactId>
+                        <version>6.1.1</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                      </dependency>
+                    </dependencies>
+                  </dependencyManagement>
+                  <dependencies>
+                    <dependency>
+                      <groupId>io.vertx</groupId>
+                      <artifactId>vertx-core</artifactId>
+                      <scope>compile</scope>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """, builder.build());
+    }
 }
