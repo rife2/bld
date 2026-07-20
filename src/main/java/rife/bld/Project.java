@@ -25,6 +25,7 @@ public class Project extends BaseProject {
 
     private final JavadocOperation javadocOperation_ = new JavadocOperation();
     private final PrecompileOperation precompileOperation_ = new PrecompileOperation();
+    private final InstrumentOperation instrumentOperation_ = new InstrumentOperation();
     private final JarOperation jarOperation_ = new JarOperation();
     private final JarOperation jarSourcesOperation_ = new JarOperation();
     private final JarOperation jarJavadocOperation_ = new JarOperation();
@@ -54,6 +55,16 @@ public class Project extends BaseProject {
      */
     public PrecompileOperation precompileOperation() {
         return precompileOperation_;
+    }
+
+    /**
+     * Retrieves the project's default instrument operation.
+     *
+     * @return the default instrument operation instance
+     * @since 2.4
+     */
+    public InstrumentOperation instrumentOperation() {
+        return instrumentOperation_;
     }
 
     /**
@@ -123,6 +134,19 @@ public class Project extends BaseProject {
     public void precompile()
     throws Exception {
         precompileOperation().executeOnce(() -> precompileOperation().fromProject(this));
+    }
+
+    /**
+     * Standard build command, instruments the compiled classes ahead of
+     * time, as an alternative to the java agent.
+     *
+     * @since 2.4
+     */
+    @BuildCommand(help = InstrumentHelp.class)
+    public void instrument()
+    throws Exception {
+        compile();
+        instrumentOperation().executeOnce(() -> instrumentOperation().fromProject(this));
     }
 
     /**
