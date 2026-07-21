@@ -664,7 +664,42 @@ public class BaseProject extends BuildExecutor {
         if (rife2Agent_ == null) {
             return null;
         }
-        return new File(libRuntimeDirectory(), rife2Agent_.toFileName());
+
+        var directory = libRuntimeDirectory();
+        var logical = rife2Agent_.toFileName();
+
+        // for a released version the on-disk name matches the dependency exactly
+        if (!rife2Agent_.version().isSnapshot()) {
+            return new File(directory, logical);
+        }
+
+        // snapshot artifacts keep their resolved, timestamped names on disk, so
+        // the logical name with the SNAPSHOT qualifier won't exist; locate the
+        // resolved file by matching that qualifier against the timestamp part,
+        // e.g. rife2-1.10.0-SNAPSHOT-agent.jar resolves to a file like
+        // rife2-1.10.0-20240101.120000-1-agent.jar
+        var marker = logical.toUpperCase().indexOf(SNAPSHOT_QUALIFIER);
+        if (marker >= 0) {
+            var prefix = logical.substring(0, marker);
+            var suffix = logical.substring(marker + SNAPSHOT_QUALIFIER.length());
+            var matches = directory.listFiles((dir, name) ->
+                name.length() > prefix.length() + suffix.length() &&
+                name.startsWith(prefix) && name.endsWith(suffix));
+            if (matches != null && matches.length > 0) {
+                // when several resolved snapshots are present, pick the most
+                // recent one; timestamped names sort chronologically
+                var latest = matches[0];
+                for (var candidate : matches) {
+                    if (candidate.getName().compareTo(latest.getName()) > 0) {
+                        latest = candidate;
+                    }
+                }
+                return latest;
+            }
+        }
+
+        // fall back to the logical name if no resolved file could be found
+        return new File(directory, logical);
     }
 
     /**

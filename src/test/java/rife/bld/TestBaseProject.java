@@ -324,4 +324,55 @@ class TestBaseProject {
             );
         }
     }
+
+    @Nested
+    @DisplayName("getRife2AgentFile()")
+    class Rife2AgentFileTest {
+        @Test
+        @DisplayName("null when the agent isn't used")
+        void nullWhenUnused() {
+            assertNull(project.getRife2AgentFile());
+        }
+
+        @Test
+        @DisplayName("released version uses the exact logical name")
+        void releasedVersion() throws Exception {
+            project.useRife2Agent(project.version(1, 9, 1));
+            var expected = new File(project.libRuntimeDirectory(), "rife2-1.9.1-agent.jar");
+            Files.createFile(expected.toPath());
+            assertEquals(expected, project.getRife2AgentFile());
+        }
+
+        @Test
+        @DisplayName("snapshot version resolves the timestamped file, ignoring look-alikes")
+        void snapshotResolvesTimestamped() throws Exception {
+            project.useRife2Agent(project.version(1, 10, 0, "SNAPSHOT"));
+            var dir = project.libRuntimeDirectory();
+            var agent = new File(dir, "rife2-1.10.0-20240101.120000-1-agent.jar");
+            Files.createFile(agent.toPath());
+            // neither the main jar nor the agent sources jar may be picked
+            Files.createFile(new File(dir, "rife2-1.10.0-20240101.120000-1.jar").toPath());
+            Files.createFile(new File(dir, "rife2-1.10.0-20240101.120000-1-agent-sources.jar").toPath());
+            assertEquals(agent, project.getRife2AgentFile());
+        }
+
+        @Test
+        @DisplayName("snapshot version picks the most recent resolved file")
+        void snapshotPicksMostRecent() throws Exception {
+            project.useRife2Agent(project.version(1, 10, 0, "SNAPSHOT"));
+            var dir = project.libRuntimeDirectory();
+            Files.createFile(new File(dir, "rife2-1.10.0-20240101.120000-1-agent.jar").toPath());
+            var newest = new File(dir, "rife2-1.10.0-20240202.130000-1-agent.jar");
+            Files.createFile(newest.toPath());
+            assertEquals(newest, project.getRife2AgentFile());
+        }
+
+        @Test
+        @DisplayName("snapshot version falls back to the logical name when nothing is resolved")
+        void snapshotFallsBack() {
+            project.useRife2Agent(project.version(1, 10, 0, "SNAPSHOT"));
+            var logical = new File(project.libRuntimeDirectory(), "rife2-1.10.0-SNAPSHOT-agent.jar");
+            assertEquals(logical, project.getRife2AgentFile());
+        }
+    }
 }
