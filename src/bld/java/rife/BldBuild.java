@@ -32,7 +32,10 @@ public class BldBuild extends AbstractRife2Build {
         mainClass = "rife.bld.Cli";
         version = VersionNumber.parse(FileUtils.readString(new File(srcMainResourcesDirectory(), "BLD_VERSION")));
 
-        repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
+        repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES, RIFE2_SNAPSHOTS);
+
+        scope(test)
+            .include(dependency("com.uwyn.rife2", "bld-testing-helpers", version(1, 1, 0, "SNAPSHOT")));
 
         var core_dir = new File(workDirectory(), "core");
         var core_src_dir = new File(core_dir, "src");
