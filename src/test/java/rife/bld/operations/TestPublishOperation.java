@@ -20,6 +20,8 @@ import rife.tools.FileUtils;
 import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,9 +39,33 @@ public class TestPublishOperation {
     throws Exception {
         reposiliteJar_ = File.createTempFile("reposilite", "jar");
         reposiliteJar_.deleteOnExit();
-        System.out.print("Downloading: https://maven.reposilite.com/releases/com/reposilite/reposilite/3.4.0/reposilite-3.4.0-all.jar ...");
+        var url = "https://maven.reposilite.com/releases/com/reposilite/reposilite/3.4.0/reposilite-3.4.0-all.jar";
+        System.out.print("Downloading: " + url + " ...");
         System.out.flush();
-        FileUtils.copy(new URL("https://maven.reposilite.com/releases/com/reposilite/reposilite/3.4.0/reposilite-3.4.0-all.jar").openStream(), reposiliteJar_);
+
+        // the reposilite CDN intermittently rate-limits with a 403 when
+        // several matrix jobs download at the same time, retry with a
+        // backoff before giving up
+        var attempts = 5;
+        for (var attempt = 1; ; ++attempt) {
+            try {
+                var connection = (HttpURLConnection) new URL(url).openConnection();
+                connection.setRequestProperty("User-Agent", "bld-tests");
+                connection.setConnectTimeout(30_000);
+                connection.setReadTimeout(60_000);
+                try (var input = connection.getInputStream()) {
+                    FileUtils.copy(input, reposiliteJar_);
+                }
+                break;
+            } catch (IOException e) {
+                if (attempt >= attempts) {
+                    throw e;
+                }
+                System.out.print(" retrying (" + e.getMessage() + ") ...");
+                System.out.flush();
+                Thread.sleep(attempt * 3_000L);
+            }
+        }
         System.out.println("done");
     }
 
