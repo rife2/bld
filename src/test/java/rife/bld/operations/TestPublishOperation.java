@@ -4,7 +4,7 @@
  */
 package rife.bld.operations;
 
-import org.json.JSONObject;
+import rife.json.Json;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -172,16 +172,16 @@ public class TestPublishOperation {
                 .repositories(new Repository("http://localhost:8081/releases", "manager", "passwd"));
             publish_operation1.execute();
 
-            var dir_json1 = new JSONObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp")));
+            var dir_json1 = Json.parseObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp")));
             assertEquals("myapp", dir_json1.get("name"));
-            var dir_files_json1 = dir_json1.getJSONArray("files");
-            assertEquals(6, dir_files_json1.length());
-            assertEquals("0.0.1", dir_files_json1.getJSONObject(0).get("name"));
-            assertEquals("maven-metadata.xml.md5", dir_files_json1.getJSONObject(1).get("name"));
-            assertEquals("maven-metadata.xml.sha1", dir_files_json1.getJSONObject(2).get("name"));
-            assertEquals("maven-metadata.xml.sha256", dir_files_json1.getJSONObject(3).get("name"));
-            assertEquals("maven-metadata.xml.sha512", dir_files_json1.getJSONObject(4).get("name"));
-            assertEquals("maven-metadata.xml", dir_files_json1.getJSONObject(5).get("name"));
+            var dir_files_json1 = dir_json1.getArray("files");
+            assertEquals(6, dir_files_json1.size());
+            assertEquals("0.0.1", dir_files_json1.getObject(0).get("name"));
+            assertEquals("maven-metadata.xml.md5", dir_files_json1.getObject(1).get("name"));
+            assertEquals("maven-metadata.xml.sha1", dir_files_json1.getObject(2).get("name"));
+            assertEquals("maven-metadata.xml.sha256", dir_files_json1.getObject(3).get("name"));
+            assertEquals("maven-metadata.xml.sha512", dir_files_json1.getObject(4).get("name"));
+            assertEquals("maven-metadata.xml", dir_files_json1.getObject(5).get("name"));
 
             var maven_metadata1 = new Xml2MavenMetadata();
             maven_metadata1.processXml(FileUtils.readString(new URL("http://localhost:8081/releases/test/pkg/myapp/maven-metadata.xml")));
@@ -193,20 +193,20 @@ public class TestPublishOperation {
             assertEquals(1, maven_metadata1.getVersions().size());
             assertTrue(maven_metadata1.getVersions().contains(create_operation1.project().version()));
 
-            var version_json1 = new JSONObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/0.0.1")));
+            var version_json1 = Json.parseObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/0.0.1")));
             assertEquals("0.0.1", version_json1.get("name"));
-            var version_files_json1 = version_json1.getJSONArray("files");
-            assertEquals(10, version_files_json1.length());
-            assertEquals("myapp-0.0.1.jar.md5", version_files_json1.getJSONObject(0).get("name"));
-            assertEquals("myapp-0.0.1.jar.sha1", version_files_json1.getJSONObject(1).get("name"));
-            assertEquals("myapp-0.0.1.jar.sha256", version_files_json1.getJSONObject(2).get("name"));
-            assertEquals("myapp-0.0.1.jar.sha512", version_files_json1.getJSONObject(3).get("name"));
-            assertEquals("myapp-0.0.1.jar", version_files_json1.getJSONObject(4).get("name"));
-            assertEquals("myapp-0.0.1.pom.md5", version_files_json1.getJSONObject(5).get("name"));
-            assertEquals("myapp-0.0.1.pom.sha1", version_files_json1.getJSONObject(6).get("name"));
-            assertEquals("myapp-0.0.1.pom.sha256", version_files_json1.getJSONObject(7).get("name"));
-            assertEquals("myapp-0.0.1.pom.sha512", version_files_json1.getJSONObject(8).get("name"));
-            assertEquals("myapp-0.0.1.pom", version_files_json1.getJSONObject(9).get("name"));
+            var version_files_json1 = version_json1.getArray("files");
+            assertEquals(10, version_files_json1.size());
+            assertEquals("myapp-0.0.1.jar.md5", version_files_json1.getObject(0).get("name"));
+            assertEquals("myapp-0.0.1.jar.sha1", version_files_json1.getObject(1).get("name"));
+            assertEquals("myapp-0.0.1.jar.sha256", version_files_json1.getObject(2).get("name"));
+            assertEquals("myapp-0.0.1.jar.sha512", version_files_json1.getObject(3).get("name"));
+            assertEquals("myapp-0.0.1.jar", version_files_json1.getObject(4).get("name"));
+            assertEquals("myapp-0.0.1.pom.md5", version_files_json1.getObject(5).get("name"));
+            assertEquals("myapp-0.0.1.pom.sha1", version_files_json1.getObject(6).get("name"));
+            assertEquals("myapp-0.0.1.pom.sha256", version_files_json1.getObject(7).get("name"));
+            assertEquals("myapp-0.0.1.pom.sha512", version_files_json1.getObject(8).get("name"));
+            assertEquals("myapp-0.0.1.pom", version_files_json1.getObject(9).get("name"));
 
             // created an updated publication
             var create_operation2 = new CreateAppOperation() {
@@ -233,17 +233,17 @@ public class TestPublishOperation {
                 .repositories(new Repository("http://localhost:8081/releases", "manager", "passwd"));
             publish_operation2.execute();
 
-            var dir_json2 = new JSONObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp")));
+            var dir_json2 = Json.parseObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp")));
             assertEquals("myapp", dir_json2.get("name"));
-            var dir_files_json2 = dir_json2.getJSONArray("files");
-            assertEquals(7, dir_files_json2.length());
-            assertEquals("0.0.1", dir_files_json2.getJSONObject(0).get("name"));
-            assertEquals("1.0.0", dir_files_json2.getJSONObject(1).get("name"));
-            assertEquals("maven-metadata.xml.md5", dir_files_json2.getJSONObject(2).get("name"));
-            assertEquals("maven-metadata.xml.sha1", dir_files_json2.getJSONObject(3).get("name"));
-            assertEquals("maven-metadata.xml.sha256", dir_files_json2.getJSONObject(4).get("name"));
-            assertEquals("maven-metadata.xml.sha512", dir_files_json2.getJSONObject(5).get("name"));
-            assertEquals("maven-metadata.xml", dir_files_json2.getJSONObject(6).get("name"));
+            var dir_files_json2 = dir_json2.getArray("files");
+            assertEquals(7, dir_files_json2.size());
+            assertEquals("0.0.1", dir_files_json2.getObject(0).get("name"));
+            assertEquals("1.0.0", dir_files_json2.getObject(1).get("name"));
+            assertEquals("maven-metadata.xml.md5", dir_files_json2.getObject(2).get("name"));
+            assertEquals("maven-metadata.xml.sha1", dir_files_json2.getObject(3).get("name"));
+            assertEquals("maven-metadata.xml.sha256", dir_files_json2.getObject(4).get("name"));
+            assertEquals("maven-metadata.xml.sha512", dir_files_json2.getObject(5).get("name"));
+            assertEquals("maven-metadata.xml", dir_files_json2.getObject(6).get("name"));
 
             var maven_metadata2 = new Xml2MavenMetadata();
             maven_metadata2.processXml(FileUtils.readString(new URL("http://localhost:8081/releases/test/pkg/myapp/maven-metadata.xml")));
@@ -256,35 +256,35 @@ public class TestPublishOperation {
             assertTrue(maven_metadata2.getVersions().contains(create_operation1.project().version()));
             assertTrue(maven_metadata2.getVersions().contains(create_operation2.project().version()));
 
-            var version_json1b = new JSONObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/0.0.1")));
+            var version_json1b = Json.parseObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/0.0.1")));
             assertEquals("0.0.1", version_json1b.get("name"));
-            var version_files_json1b = version_json1b.getJSONArray("files");
-            assertEquals(10, version_files_json1b.length());
-            assertEquals("myapp-0.0.1.jar.md5", version_files_json1b.getJSONObject(0).get("name"));
-            assertEquals("myapp-0.0.1.jar.sha1", version_files_json1b.getJSONObject(1).get("name"));
-            assertEquals("myapp-0.0.1.jar.sha256", version_files_json1b.getJSONObject(2).get("name"));
-            assertEquals("myapp-0.0.1.jar.sha512", version_files_json1b.getJSONObject(3).get("name"));
-            assertEquals("myapp-0.0.1.jar", version_files_json1b.getJSONObject(4).get("name"));
-            assertEquals("myapp-0.0.1.pom.md5", version_files_json1b.getJSONObject(5).get("name"));
-            assertEquals("myapp-0.0.1.pom.sha1", version_files_json1b.getJSONObject(6).get("name"));
-            assertEquals("myapp-0.0.1.pom.sha256", version_files_json1b.getJSONObject(7).get("name"));
-            assertEquals("myapp-0.0.1.pom.sha512", version_files_json1b.getJSONObject(8).get("name"));
-            assertEquals("myapp-0.0.1.pom", version_files_json1b.getJSONObject(9).get("name"));
+            var version_files_json1b = version_json1b.getArray("files");
+            assertEquals(10, version_files_json1b.size());
+            assertEquals("myapp-0.0.1.jar.md5", version_files_json1b.getObject(0).get("name"));
+            assertEquals("myapp-0.0.1.jar.sha1", version_files_json1b.getObject(1).get("name"));
+            assertEquals("myapp-0.0.1.jar.sha256", version_files_json1b.getObject(2).get("name"));
+            assertEquals("myapp-0.0.1.jar.sha512", version_files_json1b.getObject(3).get("name"));
+            assertEquals("myapp-0.0.1.jar", version_files_json1b.getObject(4).get("name"));
+            assertEquals("myapp-0.0.1.pom.md5", version_files_json1b.getObject(5).get("name"));
+            assertEquals("myapp-0.0.1.pom.sha1", version_files_json1b.getObject(6).get("name"));
+            assertEquals("myapp-0.0.1.pom.sha256", version_files_json1b.getObject(7).get("name"));
+            assertEquals("myapp-0.0.1.pom.sha512", version_files_json1b.getObject(8).get("name"));
+            assertEquals("myapp-0.0.1.pom", version_files_json1b.getObject(9).get("name"));
 
-            var version_json2 = new JSONObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/1.0.0")));
+            var version_json2 = Json.parseObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/1.0.0")));
             assertEquals("1.0.0", version_json2.get("name"));
-            var version_files_json2 = version_json2.getJSONArray("files");
-            assertEquals(10, version_files_json2.length());
-            assertEquals("myapp-1.0.0.jar.md5", version_files_json2.getJSONObject(0).get("name"));
-            assertEquals("myapp-1.0.0.jar.sha1", version_files_json2.getJSONObject(1).get("name"));
-            assertEquals("myapp-1.0.0.jar.sha256", version_files_json2.getJSONObject(2).get("name"));
-            assertEquals("myapp-1.0.0.jar.sha512", version_files_json2.getJSONObject(3).get("name"));
-            assertEquals("myapp-1.0.0.jar", version_files_json2.getJSONObject(4).get("name"));
-            assertEquals("myapp-1.0.0.pom.md5", version_files_json2.getJSONObject(5).get("name"));
-            assertEquals("myapp-1.0.0.pom.sha1", version_files_json2.getJSONObject(6).get("name"));
-            assertEquals("myapp-1.0.0.pom.sha256", version_files_json2.getJSONObject(7).get("name"));
-            assertEquals("myapp-1.0.0.pom.sha512", version_files_json2.getJSONObject(8).get("name"));
-            assertEquals("myapp-1.0.0.pom", version_files_json2.getJSONObject(9).get("name"));
+            var version_files_json2 = version_json2.getArray("files");
+            assertEquals(10, version_files_json2.size());
+            assertEquals("myapp-1.0.0.jar.md5", version_files_json2.getObject(0).get("name"));
+            assertEquals("myapp-1.0.0.jar.sha1", version_files_json2.getObject(1).get("name"));
+            assertEquals("myapp-1.0.0.jar.sha256", version_files_json2.getObject(2).get("name"));
+            assertEquals("myapp-1.0.0.jar.sha512", version_files_json2.getObject(3).get("name"));
+            assertEquals("myapp-1.0.0.jar", version_files_json2.getObject(4).get("name"));
+            assertEquals("myapp-1.0.0.pom.md5", version_files_json2.getObject(5).get("name"));
+            assertEquals("myapp-1.0.0.pom.sha1", version_files_json2.getObject(6).get("name"));
+            assertEquals("myapp-1.0.0.pom.sha256", version_files_json2.getObject(7).get("name"));
+            assertEquals("myapp-1.0.0.pom.sha512", version_files_json2.getObject(8).get("name"));
+            assertEquals("myapp-1.0.0.pom", version_files_json2.getObject(9).get("name"));
 
             process.destroy();
         } finally {
@@ -444,16 +444,16 @@ public class TestPublishOperation {
                 .repositories(new Repository("http://localhost:8081/releases", "manager", "passwd"));
             publish_operation1.execute();
 
-            var dir_json1 = new JSONObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp")));
+            var dir_json1 = Json.parseObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp")));
             assertEquals("myapp", dir_json1.get("name"));
-            var dir_files_json1 = dir_json1.getJSONArray("files");
-            assertEquals(6, dir_files_json1.length());
-            assertEquals("1.2.3-SNAPSHOT", dir_files_json1.getJSONObject(0).get("name"));
-            assertEquals("maven-metadata.xml.md5", dir_files_json1.getJSONObject(1).get("name"));
-            assertEquals("maven-metadata.xml.sha1", dir_files_json1.getJSONObject(2).get("name"));
-            assertEquals("maven-metadata.xml.sha256", dir_files_json1.getJSONObject(3).get("name"));
-            assertEquals("maven-metadata.xml.sha512", dir_files_json1.getJSONObject(4).get("name"));
-            assertEquals("maven-metadata.xml", dir_files_json1.getJSONObject(5).get("name"));
+            var dir_files_json1 = dir_json1.getArray("files");
+            assertEquals(6, dir_files_json1.size());
+            assertEquals("1.2.3-SNAPSHOT", dir_files_json1.getObject(0).get("name"));
+            assertEquals("maven-metadata.xml.md5", dir_files_json1.getObject(1).get("name"));
+            assertEquals("maven-metadata.xml.sha1", dir_files_json1.getObject(2).get("name"));
+            assertEquals("maven-metadata.xml.sha256", dir_files_json1.getObject(3).get("name"));
+            assertEquals("maven-metadata.xml.sha512", dir_files_json1.getObject(4).get("name"));
+            assertEquals("maven-metadata.xml", dir_files_json1.getObject(5).get("name"));
 
             var maven_metadata1 = new Xml2MavenMetadata();
             maven_metadata1.processXml(FileUtils.readString(new URL("http://localhost:8081/releases/test/pkg/myapp/maven-metadata.xml")));
@@ -465,25 +465,25 @@ public class TestPublishOperation {
             assertEquals(1, maven_metadata1.getVersions().size());
             assertTrue(maven_metadata1.getVersions().contains(create_operation1.project().version()));
 
-            var version_json1 = new JSONObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/1.2.3-SNAPSHOT")));
+            var version_json1 = Json.parseObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/1.2.3-SNAPSHOT")));
             assertEquals("1.2.3-SNAPSHOT", version_json1.get("name"));
-            var version_files_json1 = version_json1.getJSONArray("files");
-            assertEquals(15, version_files_json1.length());
-            assertEquals("maven-metadata.xml.md5", version_files_json1.getJSONObject(0).get("name"));
-            assertEquals("maven-metadata.xml.sha1", version_files_json1.getJSONObject(1).get("name"));
-            assertEquals("maven-metadata.xml.sha256", version_files_json1.getJSONObject(2).get("name"));
-            assertEquals("maven-metadata.xml.sha512", version_files_json1.getJSONObject(3).get("name"));
-            assertEquals("maven-metadata.xml", version_files_json1.getJSONObject(4).get("name"));
-            assertEquals("myapp-1.2.3-20230329.225432-1.jar.md5", version_files_json1.getJSONObject(5).get("name"));
-            assertEquals("myapp-1.2.3-20230329.225432-1.jar.sha1", version_files_json1.getJSONObject(6).get("name"));
-            assertEquals("myapp-1.2.3-20230329.225432-1.jar.sha256", version_files_json1.getJSONObject(7).get("name"));
-            assertEquals("myapp-1.2.3-20230329.225432-1.jar.sha512", version_files_json1.getJSONObject(8).get("name"));
-            assertEquals("myapp-1.2.3-20230329.225432-1.jar", version_files_json1.getJSONObject(9).get("name"));
-            assertEquals("myapp-1.2.3-20230329.225432-1.pom.md5", version_files_json1.getJSONObject(10).get("name"));
-            assertEquals("myapp-1.2.3-20230329.225432-1.pom.sha1", version_files_json1.getJSONObject(11).get("name"));
-            assertEquals("myapp-1.2.3-20230329.225432-1.pom.sha256", version_files_json1.getJSONObject(12).get("name"));
-            assertEquals("myapp-1.2.3-20230329.225432-1.pom.sha512", version_files_json1.getJSONObject(13).get("name"));
-            assertEquals("myapp-1.2.3-20230329.225432-1.pom", version_files_json1.getJSONObject(14).get("name"));
+            var version_files_json1 = version_json1.getArray("files");
+            assertEquals(15, version_files_json1.size());
+            assertEquals("maven-metadata.xml.md5", version_files_json1.getObject(0).get("name"));
+            assertEquals("maven-metadata.xml.sha1", version_files_json1.getObject(1).get("name"));
+            assertEquals("maven-metadata.xml.sha256", version_files_json1.getObject(2).get("name"));
+            assertEquals("maven-metadata.xml.sha512", version_files_json1.getObject(3).get("name"));
+            assertEquals("maven-metadata.xml", version_files_json1.getObject(4).get("name"));
+            assertEquals("myapp-1.2.3-20230329.225432-1.jar.md5", version_files_json1.getObject(5).get("name"));
+            assertEquals("myapp-1.2.3-20230329.225432-1.jar.sha1", version_files_json1.getObject(6).get("name"));
+            assertEquals("myapp-1.2.3-20230329.225432-1.jar.sha256", version_files_json1.getObject(7).get("name"));
+            assertEquals("myapp-1.2.3-20230329.225432-1.jar.sha512", version_files_json1.getObject(8).get("name"));
+            assertEquals("myapp-1.2.3-20230329.225432-1.jar", version_files_json1.getObject(9).get("name"));
+            assertEquals("myapp-1.2.3-20230329.225432-1.pom.md5", version_files_json1.getObject(10).get("name"));
+            assertEquals("myapp-1.2.3-20230329.225432-1.pom.sha1", version_files_json1.getObject(11).get("name"));
+            assertEquals("myapp-1.2.3-20230329.225432-1.pom.sha256", version_files_json1.getObject(12).get("name"));
+            assertEquals("myapp-1.2.3-20230329.225432-1.pom.sha512", version_files_json1.getObject(13).get("name"));
+            assertEquals("myapp-1.2.3-20230329.225432-1.pom", version_files_json1.getObject(14).get("name"));
 
             var maven_snapshot_metadata1 = new Xml2MavenMetadata();
             maven_snapshot_metadata1.processXml(FileUtils.readString(new URL("http://localhost:8081/releases/test/pkg/myapp/1.2.3-SNAPSHOT/maven-metadata.xml")));
@@ -521,16 +521,16 @@ public class TestPublishOperation {
                 .repositories(new Repository("http://localhost:8081/releases", "manager", "passwd"));
             publish_operation2.execute();
 
-            var dir_json2 = new JSONObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp")));
+            var dir_json2 = Json.parseObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp")));
             assertEquals("myapp", dir_json2.get("name"));
-            var dir_files_json2 = dir_json2.getJSONArray("files");
-            assertEquals(6, dir_files_json2.length());
-            assertEquals("1.2.3-SNAPSHOT", dir_files_json2.getJSONObject(0).get("name"));
-            assertEquals("maven-metadata.xml.md5", dir_files_json2.getJSONObject(1).get("name"));
-            assertEquals("maven-metadata.xml.sha1", dir_files_json2.getJSONObject(2).get("name"));
-            assertEquals("maven-metadata.xml.sha256", dir_files_json2.getJSONObject(3).get("name"));
-            assertEquals("maven-metadata.xml.sha512", dir_files_json2.getJSONObject(4).get("name"));
-            assertEquals("maven-metadata.xml", dir_files_json2.getJSONObject(5).get("name"));
+            var dir_files_json2 = dir_json2.getArray("files");
+            assertEquals(6, dir_files_json2.size());
+            assertEquals("1.2.3-SNAPSHOT", dir_files_json2.getObject(0).get("name"));
+            assertEquals("maven-metadata.xml.md5", dir_files_json2.getObject(1).get("name"));
+            assertEquals("maven-metadata.xml.sha1", dir_files_json2.getObject(2).get("name"));
+            assertEquals("maven-metadata.xml.sha256", dir_files_json2.getObject(3).get("name"));
+            assertEquals("maven-metadata.xml.sha512", dir_files_json2.getObject(4).get("name"));
+            assertEquals("maven-metadata.xml", dir_files_json2.getObject(5).get("name"));
 
             var maven_metadata2 = new Xml2MavenMetadata();
             maven_metadata2.processXml(FileUtils.readString(new URL("http://localhost:8081/releases/test/pkg/myapp/maven-metadata.xml")));
@@ -543,25 +543,25 @@ public class TestPublishOperation {
             assertTrue(maven_metadata2.getVersions().contains(create_operation1.project().version()));
             assertTrue(maven_metadata2.getVersions().contains(create_operation2.project().version()));
 
-            var version_json2 = new JSONObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/1.2.3-SNAPSHOT")));
+            var version_json2 = Json.parseObject(FileUtils.readString(new URL("http://localhost:8081/api/maven/details/releases/test/pkg/myapp/1.2.3-SNAPSHOT")));
             assertEquals("1.2.3-SNAPSHOT", version_json2.get("name"));
-            var version_files_json2 = version_json2.getJSONArray("files");
-            assertEquals(15, version_files_json2.length());
-            assertEquals("maven-metadata.xml.md5", version_files_json2.getJSONObject(0).get("name"));
-            assertEquals("maven-metadata.xml.sha1", version_files_json2.getJSONObject(1).get("name"));
-            assertEquals("maven-metadata.xml.sha256", version_files_json2.getJSONObject(2).get("name"));
-            assertEquals("maven-metadata.xml.sha512", version_files_json2.getJSONObject(3).get("name"));
-            assertEquals("maven-metadata.xml", version_files_json2.getJSONObject(4).get("name"));
-            assertEquals("myapp-1.2.3-20230330.171729-2.jar.md5", version_files_json2.getJSONObject(5).get("name"));
-            assertEquals("myapp-1.2.3-20230330.171729-2.jar.sha1", version_files_json2.getJSONObject(6).get("name"));
-            assertEquals("myapp-1.2.3-20230330.171729-2.jar.sha256", version_files_json2.getJSONObject(7).get("name"));
-            assertEquals("myapp-1.2.3-20230330.171729-2.jar.sha512", version_files_json2.getJSONObject(8).get("name"));
-            assertEquals("myapp-1.2.3-20230330.171729-2.jar", version_files_json2.getJSONObject(9).get("name"));
-            assertEquals("myapp-1.2.3-20230330.171729-2.pom.md5", version_files_json2.getJSONObject(10).get("name"));
-            assertEquals("myapp-1.2.3-20230330.171729-2.pom.sha1", version_files_json2.getJSONObject(11).get("name"));
-            assertEquals("myapp-1.2.3-20230330.171729-2.pom.sha256", version_files_json2.getJSONObject(12).get("name"));
-            assertEquals("myapp-1.2.3-20230330.171729-2.pom.sha512", version_files_json2.getJSONObject(13).get("name"));
-            assertEquals("myapp-1.2.3-20230330.171729-2.pom", version_files_json2.getJSONObject(14).get("name"));
+            var version_files_json2 = version_json2.getArray("files");
+            assertEquals(15, version_files_json2.size());
+            assertEquals("maven-metadata.xml.md5", version_files_json2.getObject(0).get("name"));
+            assertEquals("maven-metadata.xml.sha1", version_files_json2.getObject(1).get("name"));
+            assertEquals("maven-metadata.xml.sha256", version_files_json2.getObject(2).get("name"));
+            assertEquals("maven-metadata.xml.sha512", version_files_json2.getObject(3).get("name"));
+            assertEquals("maven-metadata.xml", version_files_json2.getObject(4).get("name"));
+            assertEquals("myapp-1.2.3-20230330.171729-2.jar.md5", version_files_json2.getObject(5).get("name"));
+            assertEquals("myapp-1.2.3-20230330.171729-2.jar.sha1", version_files_json2.getObject(6).get("name"));
+            assertEquals("myapp-1.2.3-20230330.171729-2.jar.sha256", version_files_json2.getObject(7).get("name"));
+            assertEquals("myapp-1.2.3-20230330.171729-2.jar.sha512", version_files_json2.getObject(8).get("name"));
+            assertEquals("myapp-1.2.3-20230330.171729-2.jar", version_files_json2.getObject(9).get("name"));
+            assertEquals("myapp-1.2.3-20230330.171729-2.pom.md5", version_files_json2.getObject(10).get("name"));
+            assertEquals("myapp-1.2.3-20230330.171729-2.pom.sha1", version_files_json2.getObject(11).get("name"));
+            assertEquals("myapp-1.2.3-20230330.171729-2.pom.sha256", version_files_json2.getObject(12).get("name"));
+            assertEquals("myapp-1.2.3-20230330.171729-2.pom.sha512", version_files_json2.getObject(13).get("name"));
+            assertEquals("myapp-1.2.3-20230330.171729-2.pom", version_files_json2.getObject(14).get("name"));
 
             var maven_snapshot_metadata2 = new Xml2MavenMetadata();
             maven_snapshot_metadata2.processXml(FileUtils.readString(new URL("http://localhost:8081/releases/test/pkg/myapp/1.2.3-SNAPSHOT/maven-metadata.xml")));

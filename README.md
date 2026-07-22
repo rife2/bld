@@ -58,8 +58,8 @@ public class MyAppBuild extends Project {
         downloadSources = true;
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
         scope(test)
-            .include(dependency("org.junit.jupiter", "junit-jupiter", version(5,11,4)))
-            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1,11,4)));
+            .include(dependency("org.junit.jupiter", "junit-jupiter", version(6,1,2)))
+            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(6,1,2)));
     }
 
     public static void main(String[] args) {
@@ -69,8 +69,8 @@ public class MyAppBuild extends Project {
 ```
 
 > **NOTE:** `bld` supports different ways to describe dependencies,
-> `dependency("org.junit.jupiter", "junit-jupiter", version(5,11,4))` can for instance also
-> be written as `dependency("org.junit.jupiter:junit-jupiter:5.11.4")`. Which format you use,
+> `dependency("org.junit.jupiter", "junit-jupiter", version(6,1,2))` can for instance also
+> be written as `dependency("org.junit.jupiter:junit-jupiter:6.1.2")`. Which format you use,
 > is a matter of personal taste.
 
 # Where does `bld` fit?
