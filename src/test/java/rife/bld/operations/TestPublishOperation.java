@@ -4,9 +4,9 @@
  */
 package rife.bld.operations;
 
+import rife.bld.testing.RetryTest;
 import rife.json.Json;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
@@ -32,46 +32,39 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestPublishOperation {
-    static File reposiliteJar_ = null;
+    static volatile File reposiliteJar_ = null;
 
-    @BeforeAll
-    static void downloadReposilite()
-    throws Exception {
+    static synchronized void ensureReposilite() throws Exception {
+        if (reposiliteJar_ != null && reposiliteJar_.exists()) {
+            return;
+        }
+
         reposiliteJar_ = File.createTempFile("reposilite", "jar");
         reposiliteJar_.deleteOnExit();
-        var url = "https://maven.reposilite.com/releases/com/reposilite/reposilite/3.4.0/reposilite-3.4.0-all.jar";
+        var url = new URL("https://maven.reposilite.com/releases/com/reposilite/reposilite/3.4.0/reposilite-3.4.0-all.jar");
         System.out.print("Downloading: " + url + " ...");
         System.out.flush();
 
-        // the reposilite CDN intermittently rate-limits with a 403 when
-        // several matrix jobs download at the same time, retry with a
-        // backoff before giving up
-        var attempts = 5;
-        for (var attempt = 1; ; ++attempt) {
-            try {
-                var connection = (HttpURLConnection) new URL(url).openConnection();
-                connection.setRequestProperty("User-Agent", "bld-tests");
-                connection.setConnectTimeout(30_000);
-                connection.setReadTimeout(60_000);
-                try (var input = connection.getInputStream()) {
-                    FileUtils.copy(input, reposiliteJar_);
-                }
-                break;
-            } catch (IOException e) {
-                if (attempt >= attempts) {
-                    throw e;
-                }
-                System.out.print(" retrying (" + e.getMessage() + ") ...");
-                System.out.flush();
-                Thread.sleep(attempt * 3_000L);
-            }
+        var connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestProperty("User-Agent", "bld-tests");
+        connection.setConnectTimeout(30_000);
+        connection.setReadTimeout(60_000);
+
+        int code = connection.getResponseCode();
+        if (code >= 400) {
+            throw new IOException("Server returned HTTP response code: " + code + " for URL: " + url);
+        }
+
+        try (var in = connection.getInputStream()) {
+            FileUtils.copy(in, reposiliteJar_);
+        } finally {
+            connection.disconnect();
         }
         System.out.println("done");
     }
 
     @AfterAll
-    static void deleteReposilite()
-    throws Exception {
+    static void deleteReposilite() {
         if (reposiliteJar_ != null) {
             reposiliteJar_.delete();
             reposiliteJar_ = null;
@@ -154,10 +147,12 @@ public class TestPublishOperation {
         assertEquals(19, operation3.publishProperties().mavenCompilerTarget());
     }
 
-    @Test
+    @RetryTest(value = 5, delay = 5)
     @DisabledOnOs({OS.WINDOWS})
     void testPublishRelease()
     throws Exception {
+        ensureReposilite();
+
         var tmp1 = Files.createTempDirectory("test1").toFile();
         var tmp2 = Files.createTempDirectory("test2").toFile();
         var tmp_reposilite = Files.createTempDirectory("test").toFile();
@@ -421,10 +416,12 @@ public class TestPublishOperation {
         }
     }
 
-    @Test
+    @RetryTest(value = 5, delay = 5)
     @DisabledOnOs({OS.WINDOWS})
     void testPublishSnapshot()
     throws Exception {
+        ensureReposilite();
+
         var tmp1 = Files.createTempDirectory("test1").toFile();
         var tmp2 = Files.createTempDirectory("test2").toFile();
         var tmp_reposilite = Files.createTempDirectory("test").toFile();
