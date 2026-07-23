@@ -147,7 +147,7 @@ public class TestPublishOperation {
         assertEquals(19, operation3.publishProperties().mavenCompilerTarget());
     }
 
-    @RetryTest(value = 5, delay = 5)
+    @RetryTest(value = 5, delay = 5, withExceptions = IOException.class)
     @DisabledOnOs({OS.WINDOWS})
     void testPublishRelease()
     throws Exception {
@@ -416,7 +416,7 @@ public class TestPublishOperation {
         }
     }
 
-    @RetryTest(value = 5, delay = 5)
+    @RetryTest(value = 5, delay = 5, withExceptions = IOException.class)
     @DisabledOnOs({OS.WINDOWS})
     void testPublishSnapshot()
     throws Exception {
