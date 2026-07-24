@@ -23,16 +23,16 @@ them because we have to, but we'd rather just get on with coding the real stuff.
 
 * tasks don't happen without you telling them to happen
 * no auto-magical behavior, task behavior is explicit and API-defined
-* managing libs yourself is fine, having that automated also, or mix and match
+* managing libs yourself is fine, automating that is fine too, or mix and match
 * build logic is written in Java, with all the advantages of Java
 * standard collection of Java-centric tasks for common operations
-* bld is distributed in a single jar, if you have the jar, you have the build system
+* bld is distributed as a single jar, if you have the jar, you have the build system
 
 # Designed for modern Java
 
 bld relies on Java 17 and leverages many of the features that this version of
-Java provides. Thanks to the modern language constructs, your Java build logic
-ends up looking very concise, is easily readable and understood by any IDE.
+Java provides. Thanks to modern Java, your build logic stays concise and
+readable, and any Java IDE understands it.
 You automatically get support for auto-completion and javadoc documentation,
 and you can split your build logic into multiple files and classes when you
 outgrow a single file.
