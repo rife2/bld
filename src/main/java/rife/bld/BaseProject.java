@@ -8,9 +8,12 @@ import rife.bld.dependencies.*;
 import rife.bld.dependencies.Module;
 import rife.bld.help.*;
 import rife.bld.operations.*;
+import rife.bld.wrapper.Wrapper;
+import rife.ioc.HierarchicalProperties;
 import rife.tools.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -1664,6 +1667,120 @@ public class BaseProject extends BuildExecutor {
             dependencies = new DependencyScopes();
         }
         return dependencies;
+    }
+
+    /**
+     * Creates the version resolution for a dependency scope, applying the
+     * version overrides from the properties and the BOMs that are
+     * effective for that scope.
+     * <p>
+     * This is the same resolution that the build uses for that scope, use
+     * it when resolving dependencies yourself, for instance with
+     * {@link DependencyResolver}, so that the versions agree with the
+     * build.
+     *
+     * @param scope the scope to create the version resolution for
+     * @return the version resolution for the scope
+     * @since 2.4.0
+     */
+    public VersionResolution versionResolution(Scope scope) {
+        return new VersionResolution(properties(), artifactRetriever(), repositories(), dependencies().effectiveBoms(scope));
+    }
+
+    /**
+     * Retrieves the jars of a single dependency in a scope, together with
+     * its transitive compile and runtime dependencies, as the files in
+     * the local lib directory of that scope.
+     * <p>
+     * Use this to build an isolated classpath for one dependency, for
+     * instance to launch an external tool in its own process, without
+     * including the other dependencies of the scope. The dependency is
+     * looked up by group and artifact in the scope's declarations and the
+     * declared version is used.
+     *
+     * @param scope      the scope the dependency is declared in
+     * @param groupId    the group of the dependency
+     * @param artifactId the artifact of the dependency
+     * @return the jar files of the dependency and its transitive
+     * dependencies
+     * @throws IllegalArgumentException when the dependency isn't declared
+     *                                  in the scope
+     * @since 2.4.0
+     */
+    public List<File> dependencyClasspathJars(Scope scope, String groupId, String artifactId) {
+        var declared = dependencies().scope(scope).get(new Dependency(groupId, artifactId));
+        if (declared == null) {
+            throw new IllegalArgumentException("Dependency '" + groupId + ":" + artifactId + "' isn't declared in the " + scope + " scope.");
+        }
+
+        var resolver = new DependencyResolver(versionResolution(scope), artifactRetriever(), repositories(), declared);
+        var dir = scopeLibDirectory(scope);
+        return resolver.getAllDependencies(Scope.compile, Scope.runtime).stream()
+            .map(dependency -> new File(dir, dependency.toFileName()))
+            .toList();
+    }
+
+    private File scopeLibDirectory(Scope scope) {
+        return switch (scope) {
+            case compile -> libCompileDirectory();
+            case provided -> libProvidedDirectory();
+            case runtime -> libRuntimeDirectory();
+            case standalone -> libStandaloneDirectory();
+            case test -> libTestDirectory();
+        };
+    }
+
+    /**
+     * Retrieves the jars of a single dependency of the bld extensions,
+     * together with its transitive compile and runtime dependencies, as
+     * the files in the {@code lib/bld} directory.
+     * <p>
+     * The extensions that are declared in the bld wrapper properties are
+     * resolved the same way the wrapper does, the dependency is looked up
+     * by group and artifact in that resolved set and its resolved version
+     * is used. This works both for a dependency that is declared as an
+     * extension itself and for one that an extension brought in
+     * transitively.
+     *
+     * @param groupId    the group of the dependency
+     * @param artifactId the artifact of the dependency
+     * @return the jar files of the dependency and its transitive
+     * dependencies
+     * @throws IllegalArgumentException when the dependency isn't part of
+     *                                  the extensions of this project
+     * @since 2.4.0
+     */
+    public List<File> extensionClasspathJars(String groupId, String artifactId) {
+        var wrapper = new Wrapper();
+        wrapper.currentDir(workDirectory());
+        try {
+            wrapper.initWrapperProperties(BldVersion.getVersion());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        var properties = new HierarchicalProperties().parent(BuildExecutor.setupProperties(workDirectory()));
+        properties.putAll(wrapper.wrapperProperties());
+
+        var repositories = new ArrayList<Repository>();
+        for (var repository : wrapper.repositories()) {
+            repositories.add(Repository.resolveRepository(properties, repository));
+        }
+
+        var resolution = new VersionResolution(properties);
+        var extensions = wrapper.extensions().stream().map(Dependency::parse).toList();
+        var resolved = new ParallelDependencyResolver(resolution, artifactRetriever(), repositories)
+            .resolveAllDependencies(extensions, Scope.compile, Scope.runtime);
+
+        var dependency = resolved.get(new Dependency(groupId, artifactId));
+        if (dependency == null) {
+            throw new IllegalArgumentException("Dependency '" + groupId + ":" + artifactId + "' isn't part of the extensions of this project.");
+        }
+
+        var resolver = new DependencyResolver(resolution, artifactRetriever(), repositories, dependency);
+        return resolver.getAllDependencies(Scope.compile, Scope.runtime).stream()
+            .map(d -> new File(libBldDirectory(), d.toFileName()))
+            .toList();
     }
 
     /**
