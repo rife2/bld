@@ -629,29 +629,32 @@ public class Wrapper {
 
     private void downloadDistribution(File file, String downloadUrl)
     throws IOException {
-        try {
-            System.out.print("Downloading: " + downloadUrl + " ... ");
-            System.out.flush();
-            var url = new URL(downloadUrl);
-            var readableByteChannel = Channels.newChannel(url.openStream());
-            try (var fileOutputStream = new FileOutputStream(file)) {
-                var fileChannel = fileOutputStream.getChannel();
-                fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        retryOnTransientIoIssues(() -> {
+            try {
+                System.out.print("Downloading: " + downloadUrl + " ... ");
+                System.out.flush();
+                var url = new URL(downloadUrl);
+                var readableByteChannel = Channels.newChannel(url.openStream());
+                try (var fileOutputStream = new FileOutputStream(file)) {
+                    var fileChannel = fileOutputStream.getChannel();
+                    fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
-                System.out.print("done");
+                    System.out.print("done");
+                }
+            } catch (FileNotFoundException e) {
+                System.err.println("not found");
+                System.err.println("Failed to download file " + file + ".");
+                throw e;
+            } catch (IOException e) {
+                System.err.println("error");
+                System.err.println("Failed to download file " + file + " due to I/O issue.");
+                Files.deleteIfExists(file.toPath());
+                throw e;
+            } finally {
+                System.out.println();
             }
-        } catch (FileNotFoundException e) {
-            System.err.println("not found");
-            System.err.println("Failed to download file " + file + ".");
-            throw e;
-        } catch (IOException e) {
-            System.err.println("error");
-            System.err.println("Failed to download file " + file + " due to I/O issue.");
-            Files.deleteIfExists(file.toPath());
-            throw e;
-        } finally {
-            System.out.println();
-        }
+            return null;
+        });
     }
 
     private void resolveExtensions() {
@@ -835,11 +838,48 @@ public class Wrapper {
 
     private String readString(String version, URL url)
     throws IOException {
-        var connection = url.openConnection();
-        connection.setUseCaches(false);
-        connection.setRequestProperty(HttpUtils.HEADER_USER_AGENT, Product.BLD.toUserAgent(version));
-        try (var in = connection.getInputStream()) {
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        return retryOnTransientIoIssues(() -> {
+            var connection = url.openConnection();
+            connection.setUseCaches(false);
+            connection.setRequestProperty(HttpUtils.HEADER_USER_AGENT, Product.BLD.toUserAgent(version));
+            try (var in = connection.getInputStream()) {
+                return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            }
+        });
+    }
+
+    static final int DOWNLOAD_ATTEMPTS = 3;
+    static final long DOWNLOAD_RETRY_DELAY_MS = 2000L;
+
+    interface IoAction<T> {
+        T execute() throws IOException;
+    }
+
+    private static <T> T retryOnTransientIoIssues(IoAction<T> action)
+    throws IOException {
+        return retryOnTransientIoIssues(action, DOWNLOAD_ATTEMPTS, DOWNLOAD_RETRY_DELAY_MS);
+    }
+
+    static <T> T retryOnTransientIoIssues(IoAction<T> action, int attempts, long delayMs)
+    throws IOException {
+        for (var attempt = 1; ; ++attempt) {
+            try {
+                return action.execute();
+            } catch (FileNotFoundException e) {
+                // a resource that doesn't exist will not appear by retrying
+                throw e;
+            } catch (IOException e) {
+                if (attempt >= attempts) {
+                    throw e;
+                }
+                System.err.println("Download issue (" + e.getMessage() + "), retrying ...");
+                try {
+                    Thread.sleep(delayMs * attempt);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+            }
         }
     }
 
