@@ -2406,19 +2406,23 @@ public class TestDependencyResolver {
             try {
                 // delay the response so that parallel retrievals overlap
                 Thread.sleep(100);
-
-                // serve the POM of the artifact in the request path
-                var segments = exchange.getRequestURI().getPath().split("/");
-                var artifact = segments[segments.length - 3];
-                var body = buildPom(artifact, graph.getOrDefault(artifact, List.of())).getBytes();
-                exchange.sendResponseHeaders(200, body.length);
-                exchange.getResponseBody().write(body);
-                exchange.close();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-            } finally {
-                active_retrievals.decrementAndGet();
             }
+
+            // serve the POM of the artifact in the request path
+            var segments = exchange.getRequestURI().getPath().split("/");
+            var artifact = segments[segments.length - 3];
+            var body = buildPom(artifact, graph.getOrDefault(artifact, List.of())).getBytes();
+
+            // stop counting before the response is released, a sequential
+            // client sends its next request the moment the response
+            // arrives, even while this handler is still finishing up
+            active_retrievals.decrementAndGet();
+
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
         });
         server.setExecutor(Executors.newCachedThreadPool());
         return server;
