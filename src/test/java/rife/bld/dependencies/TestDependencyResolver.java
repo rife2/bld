@@ -6,6 +6,7 @@ package rife.bld.dependencies;
 
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
+import rife.bld.testing.RetryTest;
 import rife.ioc.HierarchicalProperties;
 import rife.tools.FileUtils;
 import rife.tools.StringUtils;
@@ -41,38 +42,38 @@ public class TestDependencyResolver {
         assertEquals(new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)), resolver.dependency());
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testNotFound() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.org.unknown", "voidthing"));
         assertFalse(resolver.exists());
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testCheckExistence() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
         assertTrue(resolver.exists());
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testCheckExistenceVersion() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
         assertTrue(resolver.exists());
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testCheckExistenceMissingVersion() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 3, 9)));
         assertFalse(resolver.exists());
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testCheckVersionOverride() {
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "com.uwyn.rife2:rife2:1.8.0")),
             ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 3, 9)));
         assertEquals(new VersionNumber(1, 8, 0), resolver.resolveVersion());
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testListVersions() {
         var resolver1 = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
         var versions1 = resolver1.listVersions();
@@ -91,7 +92,7 @@ public class TestDependencyResolver {
         assertTrue(versions2.contains(new VersionNumber(11, 0, 14)));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetLatestVersion() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(3), new Dependency("com.uwyn.rife2", "rife2"));
         var version = resolver.latestVersion();
@@ -99,7 +100,7 @@ public class TestDependencyResolver {
         assertTrue(version.compareTo(new VersionNumber(1, 4)) >= 0);
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetReleaseVersion() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(4), new Dependency("com.uwyn.rife2", "rife2"));
         var version = resolver.releaseVersion();
@@ -107,7 +108,7 @@ public class TestDependencyResolver {
         assertTrue(version.compareTo(new VersionNumber(1, 4)) >= 0);
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testMetadata() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(5), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
         var metadata = resolver.getMavenMetadata();
@@ -116,7 +117,7 @@ public class TestDependencyResolver {
         assertNull(resolver.getSnapshotMavenMetadata());
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testSnapshotMetadata() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var metadata = resolver.getSnapshotMavenMetadata();
@@ -125,7 +126,7 @@ public class TestDependencyResolver {
         assertEquals(4, metadata.getSnapshotBuildNumber());
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesRIFE2() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -133,7 +134,7 @@ public class TestDependencyResolver {
         assertEquals(0, dependencies.size());
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesRIFE2Snapshot() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -141,7 +142,7 @@ public class TestDependencyResolver {
         assertEquals(0, dependencies.size());
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesGoogleApi() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.google.apis", "google-api-services-youtube", new VersionGeneric("v3-rev20240514-2.0.0")));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -151,7 +152,7 @@ public class TestDependencyResolver {
             com.google.api-client:google-api-client:2.5.0""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesJetty() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -164,7 +165,7 @@ public class TestDependencyResolver {
             org.slf4j:slf4j-api:2.0.5""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesAssertJ() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.assertj", "assertj-joda-time", new VersionNumber(2, 2, 0)));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -174,7 +175,7 @@ public class TestDependencyResolver {
             org.assertj:assertj-core""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesSwagger() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("io.swagger.core.v3", "swagger-core", new VersionNumber(2,2,27)));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -194,7 +195,7 @@ public class TestDependencyResolver {
             jakarta.validation:jakarta.validation-api:2.0.2""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesJettyOverride1() {
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.16")),
             ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
@@ -208,7 +209,7 @@ public class TestDependencyResolver {
             org.slf4j:slf4j-api:2.0.16""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesJettyOverride2() {
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "org.slf4j:slf4j-api:2.0.11,org.eclipse.jetty:jetty-io:11.0.13,org.eclipse.jetty:jetty-server:11.0.15")),
             ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
@@ -222,7 +223,7 @@ public class TestDependencyResolver {
             org.slf4j:slf4j-api:2.0.11""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileRuntimeDependenciesJunit() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
         var dependencies_compile = resolver.getDirectDependencies(compile, runtime);
@@ -234,7 +235,7 @@ public class TestDependencyResolver {
             org.junit.jupiter:junit-jupiter-engine:5.9.2""", StringUtils.join(dependencies_compile, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesSpringBoot() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -249,7 +250,7 @@ public class TestDependencyResolver {
             org.yaml:snakeyaml:1.33""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesMaven() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -284,7 +285,7 @@ public class TestDependencyResolver {
             org.slf4j:slf4j-api:1.7.36""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesPlay() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -318,7 +319,7 @@ public class TestDependencyResolver {
             org.scala-lang.modules:scala-parser-combinators_2.13:1.1.2""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileDependenciesVaadin() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
         var dependencies = resolver.getDirectDependencies(compile);
@@ -336,7 +337,7 @@ public class TestDependencyResolver {
             com.vaadin:collaboration-engine:5.3.0""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileRuntimeDependenciesBitly() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(2, 0, 0)));
         var dependencies = resolver.getDirectDependencies(compile, runtime);
@@ -351,7 +352,7 @@ public class TestDependencyResolver {
             org.json:json:20250107""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesRIFE2() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2"));
         var dependencies = resolver.getAllDependencies(compile);
@@ -361,7 +362,7 @@ public class TestDependencyResolver {
             com.uwyn.rife2:rife2""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesRIFE2Snapshot() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var dependencies = resolver.getAllDependencies(compile);
@@ -371,7 +372,7 @@ public class TestDependencyResolver {
             com.uwyn.rife2:rife2:1.9.1-SNAPSHOT""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesJetty() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
         var dependencies = resolver.getAllDependencies(compile);
@@ -386,7 +387,7 @@ public class TestDependencyResolver {
             org.eclipse.jetty:jetty-util:11.0.14""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesJettyExclusion() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
@@ -402,7 +403,7 @@ public class TestDependencyResolver {
             org.eclipse.jetty:jetty-util:11.0.14""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesJettyFullGroupExclusion() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
@@ -416,7 +417,7 @@ public class TestDependencyResolver {
             org.slf4j:slf4j-api:2.0.5""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesJettyFullArtifactExclusion() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
@@ -432,7 +433,7 @@ public class TestDependencyResolver {
             org.eclipse.jetty:jetty-util:11.0.14""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesJettyFullExclusion() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(),
             new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))
@@ -444,7 +445,7 @@ public class TestDependencyResolver {
             org.eclipse.jetty:jetty-server:11.0.14""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesJettyAndSlfj() {
         var dependencies = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14))).getAllDependencies(compile);
         var dependencies2 = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.slf4j", "slf4j-simple", new VersionNumber(2, 0, 6))).getAllDependencies(compile, runtime);
@@ -464,7 +465,7 @@ public class TestDependencyResolver {
             org.slf4j:slf4j-api:2.0.6""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileRuntimeTransitiveDependenciesJunit() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.junit.jupiter", "junit-jupiter", new VersionNumber(5, 9, 2)));
         var dependencies_compile = resolver.getAllDependencies(compile, runtime);
@@ -487,7 +488,7 @@ public class TestDependencyResolver {
             org.junit.jupiter:junit-jupiter-engine:5.9.2""", StringUtils.join(dependencies_runtime, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesSpringBoot() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.springframework.boot", "spring-boot-starter", new VersionNumber(3, 0, 4)));
         var dependencies = resolver.getAllDependencies(compile);
@@ -514,7 +515,7 @@ public class TestDependencyResolver {
             org.apache.logging.log4j:log4j-api:2.19.0""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesMaven() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.apache.maven", "maven-core", new VersionNumber(3, 9, 0)));
         var dependencies = resolver.getAllDependencies(compile);
@@ -555,7 +556,7 @@ public class TestDependencyResolver {
             org.codehaus.plexus:plexus-cipher:2.0""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesPlay() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.typesafe.play", "play_2.13", new VersionNumber(2, 8, 19)));
         var dependencies = resolver.getAllDependencies(compile);
@@ -612,7 +613,7 @@ public class TestDependencyResolver {
             com.thoughtworks.paranamer:paranamer:2.8""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileTransitiveDependenciesVaadin() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.vaadin", "vaadin", new VersionNumber(23, 3, 7)));
         var dependencies = resolver.getAllDependencies(compile);
@@ -709,7 +710,7 @@ public class TestDependencyResolver {
             com.google.code.findbugs:jsr305:3.0.2""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileRuntimeTransitiveDependenciesBitly() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("net.thauvin.erik", "bitly-shorten", new VersionNumber(2, 0, 0)));
         var dependencies = resolver.getAllDependencies(compile, runtime);
@@ -729,7 +730,7 @@ public class TestDependencyResolver {
             com.squareup.okio:okio-jvm:3.6.0""", StringUtils.join(dependencies, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetCompileRuntimeTransitiveDependenciesMariaDb() {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.mariadb.jdbc", "mariadb-java-client", new VersionNumber(3, 1, 3)));
         var dependencies_compile = resolver.getAllDependencies(compile, runtime);
@@ -752,7 +753,7 @@ public class TestDependencyResolver {
             org.mariadb.jdbc:mariadb-java-client:3.1.3""", StringUtils.join(dependencies_runtime, "\n"));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependency()
     throws Exception {
         var repos = getNextRepositories();
@@ -776,7 +777,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySources()
     throws Exception {
         var repos = getNextRepositories();
@@ -801,7 +802,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySourcesJavadoc()
     throws Exception {
         var repos = getNextRepositories();
@@ -827,7 +828,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySnapshot()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
@@ -849,7 +850,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySnapshotSources()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
@@ -873,7 +874,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySnapshotSourcesJavadoc()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
@@ -899,7 +900,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySourcesModule()
     throws Exception {
         var repos = getNextRepositories();
@@ -924,7 +925,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySourcesJavadocModule()
     throws Exception {
         var repos = getNextRepositories();
@@ -950,7 +951,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySnapshotModule()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
@@ -972,7 +973,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySnapshotSourcesModule()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(getNextRepository(), RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
@@ -996,7 +997,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySnapshotSourcesJavadocModule()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(SONATYPE_SNAPSHOTS, RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
@@ -1022,7 +1023,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyJetty()
     throws Exception {
         var repos = getNextRepositories();
@@ -1059,7 +1060,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyJettyModule()
     throws Exception {
         var repos = getNextRepositories();
@@ -1096,7 +1097,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySwagger()
     throws Exception {
         var repos = getNextRepositories();
@@ -1149,7 +1150,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyGoogleApi()
     throws Exception {
         var repos = getNextRepositories();
@@ -1222,7 +1223,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyGoogleApiModule()
     throws Exception {
         var repos = getNextRepositories();
@@ -1295,7 +1296,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyJettyOverriddenVersions()
     throws Exception {
         var repos = getNextRepositories();
@@ -1336,7 +1337,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyJettyOverriddenVersionsModule()
     throws Exception {
         var repos = getNextRepositories();
@@ -1377,7 +1378,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyJettySources()
     throws Exception {
         var repos = getNextRepositories();
@@ -1426,7 +1427,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyJettySourcesModule()
     throws Exception {
         var repos = getNextRepositories();
@@ -1475,7 +1476,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyJettySourcesJavadoc()
     throws Exception {
         var repos = getNextRepositories();
@@ -1536,7 +1537,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyJettySourcesJavadocModule()
     throws Exception {
         var repos = getNextRepositories();
@@ -1597,7 +1598,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependenciesJunit()
     throws Exception {
         var repos = getNextRepositories();
@@ -1638,7 +1639,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySpringBoot()
     throws Exception {
         var repos = getNextRepositories();
@@ -1699,7 +1700,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyMaven()
     throws Exception {
         var repos = getNextRepositories();
@@ -1788,7 +1789,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyPlay()
     throws Exception {
         var repos = getNextRepositories();
@@ -1909,7 +1910,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyPlayOverriddenVersions()
     throws Exception {
         var repos = getNextRepositories();
@@ -2031,7 +2032,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencyVaadin()
     throws Exception {
         var repos = getNextRepositories();
@@ -2231,7 +2232,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferCheckExisting()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Dependency("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
@@ -2289,7 +2290,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferCheckExistingModule()
     throws Exception {
         var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(), new Module("org.eclipse.jetty", "jetty-server", new VersionNumber(11, 0, 14)));
@@ -2347,7 +2348,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetAllDependenciesParallelPomPrefetching() throws Exception {
         var max_concurrent_retrievals = new AtomicInteger();
         var server = createPomServer(max_concurrent_retrievals);
@@ -2373,7 +2374,7 @@ public class TestDependencyResolver {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testGetAllDependenciesSequentialWithoutCachingRetriever() throws Exception {
         var max_concurrent_retrievals = new AtomicInteger();
         var server = createPomServer(max_concurrent_retrievals);

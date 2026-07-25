@@ -5,12 +5,14 @@
 package rife.bld.operations;
 
 import org.junit.jupiter.api.Test;
+import rife.bld.testing.RetryTest;
 import rife.bld.WebProject;
 import rife.bld.dependencies.*;
 import rife.bld.dependencies.Module;
 import rife.tools.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -120,7 +122,7 @@ public class TestDownloadOperation {
         assertTrue(operation3.repositories().contains(repository2));
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testExecution()
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
@@ -208,7 +210,7 @@ public class TestDownloadOperation {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testExecutionAdditionalSourcesJavadoc()
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
@@ -352,7 +354,7 @@ public class TestDownloadOperation {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testFromProject()
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
@@ -460,7 +462,7 @@ public class TestDownloadOperation {
         }
     }
 
-    @Test
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testFromProject2()
     throws Exception {
         var tmp = Files.createTempDirectory("test").toFile();
