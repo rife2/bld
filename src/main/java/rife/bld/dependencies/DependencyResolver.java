@@ -243,14 +243,23 @@ public class DependencyResolver {
      */
     public RepositoryArtifact transferIntoDirectory(File directory)
     throws DependencyTransferException {
+        DependencyTransferException transient_failure = null;
         for (var artifact : getTransferArtifacts()) {
             try {
                 if (retriever_.transferIntoDirectory(artifact, directory)) {
                     return artifact;
                 }
             } catch (IOException e) {
-                throw new DependencyTransferException(dependency_, artifact.location(), directory, e);
+                // a transient issue with this repository, try the next one
+                // before giving up
+                transient_failure = rememberFailure(transient_failure, new DependencyTransferException(dependency_, artifact.location(), directory, e));
             }
+        }
+
+        // transient failures never degrade into a null not-found result,
+        // an artifact that couldn't be transferred might still exist
+        if (transient_failure != null) {
+            throw transient_failure;
         }
         return null;
     }
@@ -370,46 +379,58 @@ public class DependencyResolver {
     }
 
     private MavenMetadata parseMavenMetadata(List<RepositoryArtifact> artifacts) {
-        RepositoryArtifact retrieved_artifact = null;
-        String metadata = null;
+        var retrieved = retrieveFirstAvailable(artifacts, "metadata locations");
+
+        var xml = new Xml2MavenMetadata();
+        if (!xml.processXml(retrieved.content())) {
+            throw new DependencyXmlParsingErrorException(dependency_, retrieved.artifact().location(), xml.getErrors());
+        }
+
+        return xml;
+    }
+
+    private record RetrievedArtifact(RepositoryArtifact artifact, String content) {
+    }
+
+    private RetrievedArtifact retrieveFirstAvailable(List<RepositoryArtifact> artifacts, String locationsDescription) {
+        ArtifactRetrievalErrorException transient_failure = null;
         for (var artifact : artifacts) {
             try {
-                var content = retriever_.readString(artifact);
-                if (content == null) {
-                    throw new ArtifactNotFoundException(dependency_, artifact.location());
-                }
-
-                retrieved_artifact = artifact;
-                metadata = content;
-
-                break;
+                return new RetrievedArtifact(artifact, retriever_.readString(artifact));
             } catch (FileUtilsErrorException e) {
                 if (e.getCause() instanceof FileNotFoundException) {
                     continue;
                 }
-                throw new ArtifactRetrievalErrorException(dependency_, artifact.location(), e);
+                // a transient issue with this repository, try the next one
+                // before giving up
+                transient_failure = rememberFailure(transient_failure, new ArtifactRetrievalErrorException(dependency_, artifact.location(), e));
             }
         }
 
-        if (metadata == null) {
-            var location = artifacts.stream().map(RepositoryArtifact::location).collect(Collectors.joining(", "));
-            if (location.isEmpty()) {
-                if (repositories_.isEmpty()) {
-                    location = "[no repositories defined]";
-                }
-                else {
-                    location = "[no metadata locations defined]";
-                }
+        // transient failures never degrade into not-found, an artifact
+        // that couldn't be retrieved might still exist
+        if (transient_failure != null) {
+            throw transient_failure;
+        }
+
+        var location = artifacts.stream().map(RepositoryArtifact::location).collect(Collectors.joining(", "));
+        if (location.isEmpty()) {
+            if (repositories_.isEmpty()) {
+                location = "[no repositories defined]";
             }
-            throw new ArtifactNotFoundException(dependency_, location);
+            else {
+                location = "[no " + locationsDescription + " defined]";
+            }
         }
+        throw new ArtifactNotFoundException(dependency_, location);
+    }
 
-        var xml = new Xml2MavenMetadata();
-        if (!xml.processXml(metadata)) {
-            throw new DependencyXmlParsingErrorException(dependency_, retrieved_artifact.location(), xml.getErrors());
+    private static <T extends Throwable> T rememberFailure(T remembered, T failure) {
+        if (remembered == null) {
+            return failure;
         }
-
-        return xml;
+        remembered.addSuppressed(failure);
+        return remembered;
     }
 
     private List<RepositoryArtifact> getPomLocations() {
@@ -426,50 +447,16 @@ public class DependencyResolver {
     }
 
     Xml2MavenPom getMavenPom(Dependency parent) {
-        RepositoryArtifact retrieved_artifact = null;
-        String pom = null;
-        var artifacts = getPomLocations();
-
-        for (var artifact : artifacts) {
-            try {
-                var content = retriever_.readString(artifact);
-                if (content == null) {
-                    throw new ArtifactNotFoundException(dependency_, artifact.location());
-                }
-
-                retrieved_artifact = artifact;
-                pom = content;
-
-                break;
-            } catch (FileUtilsErrorException e) {
-                if (e.getCause() instanceof FileNotFoundException) {
-                    continue;
-                }
-                throw new ArtifactRetrievalErrorException(dependency_, artifact.location(), e);
-            }
-        }
-
-        if (pom == null) {
-            var location = artifacts.stream().map(RepositoryArtifact::location).collect(Collectors.joining(", "));
-            if (location.isEmpty()) {
-                if (repositories_.isEmpty()) {
-                    location = "[no repositories defined]";
-                }
-                else {
-                    location = "[no pom locations defined]";
-                }
-            }
-            throw new ArtifactNotFoundException(dependency_, location);
-        }
+        var retrieved = retrieveFirstAvailable(getPomLocations(), "pom locations");
 
         var xml = new Xml2MavenPom(parent, resolution_, retriever_, repositories_);
         // first pass only extracts the properties from the pom
-        if (!xml.processXml(pom)) {
-            throw new DependencyXmlParsingErrorException(dependency_, retrieved_artifact.location(), xml.getErrors());
+        if (!xml.processXml(retrieved.content())) {
+            throw new DependencyXmlParsingErrorException(dependency_, retrieved.artifact().location(), xml.getErrors());
         }
         // second pass parses all the rest so that the properties are available anywhere
-        if (!xml.processXml(pom)) {
-            throw new DependencyXmlParsingErrorException(dependency_, retrieved_artifact.location(), xml.getErrors());
+        if (!xml.processXml(retrieved.content())) {
+            throw new DependencyXmlParsingErrorException(dependency_, retrieved.artifact().location(), xml.getErrors());
         }
 
         return xml;
