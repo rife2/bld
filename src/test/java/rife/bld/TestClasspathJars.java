@@ -442,7 +442,7 @@ public class TestClasspathJars {
                 .include(new Dependency("com.example", "tool", new VersionNumber(1, 0, 0)));
 
             var jars = project.dependencyClasspathJars(provided, "com.example", "tool");
-            var resolution_requests = requests.get();
+            var resolution_requests = settledRequests(requests);
             assertTrue(resolution_requests > 0);
 
             // a repeated call in the same build resolves nothing
@@ -484,7 +484,7 @@ public class TestClasspathJars {
             writeWrapperProperties(project, server, "com.example:ext:1.0.0");
 
             var jars = project.extensionClasspathJars("com.example", "tool");
-            var resolution_requests = requests.get();
+            var resolution_requests = settledRequests(requests);
             assertTrue(resolution_requests > 0);
 
             // repeated lookups in the same build resolve nothing, also
@@ -493,7 +493,7 @@ public class TestClasspathJars {
             assertEquals(resolution_requests, requests.get());
             var liba_jars = project.extensionClasspathJars("com.example", "liba");
             assertEquals(List.of("liba-1.1.0.jar"), liba_jars.stream().map(File::getName).toList());
-            var universe_requests = requests.get();
+            var universe_requests = settledRequests(requests);
             assertEquals(resolution_requests, universe_requests);
 
             // a fresh project instance reads the persisted cache
@@ -631,7 +631,7 @@ public class TestClasspathJars {
                 project.dependencyClasspathJars(provided, "com.example", "tool").stream().map(File::getName).toList());
             assertEquals(List.of("tool-2.0.0.jar"),
                 project.dependencyClasspathJars(test, "com.example", "tool").stream().map(File::getName).toList());
-            var warm_requests = requests.get();
+            var warm_requests = settledRequests(requests);
 
             var fresh = new JarsProject(tmp, serverRepository(server));
             fresh.dependencies().scope(provided)
@@ -661,7 +661,7 @@ public class TestClasspathJars {
             project.dependencies().scope(test)
                 .include(new Dependency("com.example", "tool", new VersionNumber(1, 0, 0)));
             project.dependencyClasspathJars(test, "com.example", "tool");
-            var warm_requests = requests.get();
+            var warm_requests = settledRequests(requests);
 
             // another BldCache user writing to the same file with the same
             // hash preserves the classpath entries
@@ -711,6 +711,23 @@ public class TestClasspathJars {
             server.stop(0);
             FileUtils.deleteDirectory(tmp);
         }
+    }
+
+    // the POM prefetcher can still have a speculative request in flight
+    // when resolution returns, count requests only after they settle
+    private static int settledRequests(java.util.concurrent.atomic.AtomicInteger requests)
+    throws InterruptedException {
+        var last = requests.get();
+        var stable_since = System.currentTimeMillis();
+        while (System.currentTimeMillis() - stable_since < 300) {
+            Thread.sleep(50);
+            var current = requests.get();
+            if (current != last) {
+                last = current;
+                stable_since = System.currentTimeMillis();
+            }
+        }
+        return last;
     }
 
     private static Repository serverRepository(HttpServer server) {
