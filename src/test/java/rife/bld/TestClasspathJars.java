@@ -713,6 +713,57 @@ public class TestClasspathJars {
         }
     }
 
+
+    @Test
+    void testExtensionClasspathJarsCoexistsWithWrapperResolver() throws Exception {
+        // the scenario of an extension calling extensionClasspathJars in
+        // every build: the wrapper resolves the extensions first, the
+        // classpath lookup must not invalidate the wrapper's cache or the
+        // next build downloads all the extension artifacts again
+        var requests = new java.util.concurrent.atomic.AtomicInteger();
+        var server = createArtifactServer(Map.of(
+            "ext:1.0.0", pom("ext", "1.0.0", dependency("tool", "1.0.0")),
+            "tool:1.0.0", pom("tool", "1.0.0", "")), requests);
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+            writeWrapperProperties(project, server, "com.example:ext:1.0.0");
+            var repository = "http://localhost:" + server.getAddress().getPort() + "/";
+
+            // first build: the wrapper resolves and downloads the extensions
+            new rife.bld.wrapper.WrapperExtensionResolver(tmp, project.libBldDirectory(),
+                new java.util.Properties(), new java.util.Properties(),
+                List.of(repository), List.of("com.example:ext:1.0.0"),
+                false, false).updateExtensions();
+            assertTrue(new File(project.libBldDirectory(), "ext-1.0.0.jar").exists());
+            assertTrue(new File(project.libBldDirectory(), "tool-1.0.0.jar").exists());
+
+            // the extension asks for its tool classpath during the build
+            assertEquals(List.of("tool-1.0.0.jar"),
+                project.extensionClasspathJars("com.example", "tool").stream().map(File::getName).toList());
+            var settled = settledRequests(requests);
+
+            // second build: the wrapper has to consider its cache valid
+            // and transfer nothing
+            new rife.bld.wrapper.WrapperExtensionResolver(tmp, project.libBldDirectory(),
+                new java.util.Properties(), new java.util.Properties(),
+                List.of(repository), List.of("com.example:ext:1.0.0"),
+                false, false).updateExtensions();
+            assertEquals(settled, requests.get());
+
+            // and the classpath lookup of the second build answers from
+            // the cache without resolving
+            var second_build = new JarsProject(tmp, serverRepository(server));
+            assertEquals(List.of("tool-1.0.0.jar"),
+                second_build.extensionClasspathJars("com.example", "tool").stream().map(File::getName).toList());
+            assertEquals(settled, requests.get());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
     // the POM prefetcher can still have a speculative request in flight
     // when resolution returns, count requests only after they settle
     private static int settledRequests(java.util.concurrent.atomic.AtomicInteger requests)

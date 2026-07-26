@@ -1796,8 +1796,22 @@ public class BaseProject extends BuildExecutor {
         properties.putAll(wrapper.wrapperProperties());
 
         var resolution = new VersionResolution(properties);
+        Repository.resolveMavenLocal(properties);
+        var repositories = new ArrayList<Repository>();
+        for (var repository : wrapper.repositories()) {
+            repositories.add(Repository.resolveRepository(properties, repository));
+        }
+        var extensions = new DependencySet();
+        extensions.addAll(wrapper.extensions().stream().map(d -> resolution.overrideDependency(Dependency.parse(d))).toList());
+
+        // the fingerprint has to be computed from the same inputs as
+        // WrapperExtensionResolver, a different hash would make the
+        // wrapper consider its own extension cache stale on every build
+        // and download all the extension artifacts over and over
         var cache = new BldCache(libBldDirectory(), resolution);
-        cache.cacheExtensionsHash(wrapper.repositories(), wrapper.extensions());
+        cache.cacheExtensionsHash(
+            repositories.stream().map(Objects::toString).toList(),
+            extensions.stream().map(Objects::toString).toList());
         if (cache.isExtensionsHashValid()) {
             var cached = cache.getCachedExtensionClasspath(coordinate);
             if (cached != null) {
@@ -1807,15 +1821,9 @@ public class BaseProject extends BuildExecutor {
             }
         }
 
-        var repositories = new ArrayList<Repository>();
-        for (var repository : wrapper.repositories()) {
-            repositories.add(Repository.resolveRepository(properties, repository));
-        }
-
         // the resolved set of all the extensions is reused across
         // lookups of different dependencies in the same build
         if (resolvedExtensions_ == null) {
-            var extensions = wrapper.extensions().stream().map(Dependency::parse).toList();
             resolvedExtensions_ = new ParallelDependencyResolver(resolution, artifactRetriever(), repositories)
                 .resolveAllDependencies(extensions, Scope.compile, Scope.runtime);
         }
