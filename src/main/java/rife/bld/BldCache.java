@@ -5,6 +5,7 @@
 package rife.bld;
 
 import rife.bld.dependencies.DependencyScopes;
+import rife.bld.dependencies.Scope;
 import rife.bld.dependencies.Repository;
 import rife.bld.dependencies.VersionResolution;
 import rife.bld.wrapper.Wrapper;
@@ -40,12 +41,15 @@ public class BldCache {
     private static final String WRAPPER_PROPERTIES_HASH = Wrapper.WRAPPER_PROPERTIES + PROPERTY_SUFFIX_HASH;
     private static final String BLD_BUILD_HASH = "bld-build" + PROPERTY_SUFFIX_HASH;
 
+    private static final String PROPERTY_SUFFIX_CLASSPATH = ".classpath.";
+
     private static final String PROPERTY_EXTENSIONS_PREFIX = "bld.extensions";
     private static final String PROPERTY_EXTENSIONS_HASH = PROPERTY_EXTENSIONS_PREFIX + PROPERTY_SUFFIX_HASH;
     private static final String PROPERTY_EXTENSIONS_LOCAL = PROPERTY_EXTENSIONS_PREFIX + PROPERTY_SUFFIX_LOCAL;
     private static final String PROPERTY_EXTENSIONS_DOWNLOAD_SOURCES = PROPERTY_EXTENSIONS_PREFIX + PROPERTY_SUFFIX_DOWNLOAD_SOURCES;
     private static final String PROPERTY_EXTENSIONS_DOWNLOAD_JAVADOC = PROPERTY_EXTENSIONS_PREFIX + PROPERTY_SUFFIX_DOWNLOAD_JAVADOC;
     private static final String PROPERTY_EXTENSIONS_DEPENDENCY_TREE = PROPERTY_EXTENSIONS_PREFIX + PROPERTY_SUFFIX_DEPENDENCY_TREE;
+    private static final String PROPERTY_EXTENSIONS_CLASSPATH_PREFIX = PROPERTY_EXTENSIONS_PREFIX + PROPERTY_SUFFIX_CLASSPATH;
 
     private static final String PROPERTY_DEPENDENCIES_PREFIX = "bld.dependencies";
     private static final String PROPERTY_DEPENDENCIES_HASH = PROPERTY_DEPENDENCIES_PREFIX + PROPERTY_SUFFIX_HASH;
@@ -55,6 +59,7 @@ public class BldCache {
     private static final String PROPERTY_DEPENDENCIES_PROVIDED_DEPENDENCY_TREE = PROPERTY_DEPENDENCIES_PREFIX + ".provided" + PROPERTY_SUFFIX_DEPENDENCY_TREE;
     private static final String PROPERTY_DEPENDENCIES_RUNTIME_DEPENDENCY_TREE = PROPERTY_DEPENDENCIES_PREFIX + ".runtime" + PROPERTY_SUFFIX_DEPENDENCY_TREE;
     private static final String PROPERTY_DEPENDENCIES_TEST_DEPENDENCY_TREE = PROPERTY_DEPENDENCIES_PREFIX + ".test" + PROPERTY_SUFFIX_DEPENDENCY_TREE;
+    private static final String PROPERTY_DEPENDENCIES_CLASSPATH_PREFIX = PROPERTY_DEPENDENCIES_PREFIX + PROPERTY_SUFFIX_CLASSPATH;
 
     private final File cacheDir_;
     private final VersionResolution resolution_;
@@ -64,6 +69,8 @@ public class BldCache {
     private List<File> extensionsLocalArtifacts_;
     private String extensionsDependencyTree_;
     private String dependenciesHash_;
+    private final java.util.Map<String, String> extensionClasspaths_ = new java.util.LinkedHashMap<>();
+    private final java.util.Map<String, String> dependencyClasspaths_ = new java.util.LinkedHashMap<>();
     private Boolean dependenciesDownloadSources_;
     private Boolean dependenciesDownloadJavadocs_;
     private String dependenciesCompileDependencyTree_;
@@ -478,6 +485,76 @@ public class BldCache {
     }
 
     /**
+     * Sets the resolved classpath jar names of a single extension
+     * dependency, to store with {@link #writeCache()}.
+     * <p>
+     * The names are only meaningful while the extensions hash is valid,
+     * check {@link #isExtensionsHashValid()} before using them.
+     *
+     * @param coordinate the {@code groupId:artifactId} of the dependency
+     * @param jarNames   the jar file names of its transitive classpath
+     * @see #getCachedExtensionClasspath
+     * @since 2.4.0
+     */
+    public void cacheExtensionClasspath(String coordinate, List<String> jarNames) {
+        extensionClasspaths_.put(coordinate, String.join("\n", jarNames));
+    }
+
+    /**
+     * Retrieves the previously stored classpath jar names of a single
+     * extension dependency.
+     *
+     * @param coordinate the {@code groupId:artifactId} of the dependency
+     * @return the stored jar file names; or {@code null} when nothing was
+     * stored for the coordinate
+     * @since 2.4.0
+     * @see #cacheExtensionClasspath
+     */
+    public List<String> getCachedExtensionClasspath(String coordinate) {
+        var stored = hashProperties().getProperty(PROPERTY_EXTENSIONS_CLASSPATH_PREFIX + coordinate);
+        if (stored == null || stored.isEmpty()) {
+            return null;
+        }
+        return List.of(stored.split("\n"));
+    }
+
+    /**
+     * Sets the resolved classpath jar names of a single dependency in a
+     * scope, to store with {@link #writeCache()}.
+     * <p>
+     * The names are only meaningful while the dependencies hash is valid,
+     * check {@link #isDependenciesHashValid()} before using them.
+     *
+     * @param scope      the scope the dependency is declared in
+     * @param coordinate the {@code groupId:artifactId} of the dependency
+     * @param jarNames   the jar file names of its transitive classpath
+     * @since 2.4.0
+     * @see #getCachedDependencyClasspath
+     */
+    public void cacheDependencyClasspath(Scope scope, String coordinate, List<String> jarNames) {
+        dependencyClasspaths_.put(scope + "." + coordinate, String.join("\n", jarNames));
+    }
+
+    /**
+     * Retrieves the previously stored classpath jar names of a single
+     * dependency in a scope.
+     *
+     * @param scope      the scope the dependency is declared in
+     * @param coordinate the {@code groupId:artifactId} of the dependency
+     * @return the stored jar file names; or {@code null} when nothing was
+     * stored for the coordinate
+     * @since 2.4.0
+     * @see #cacheDependencyClasspath
+     */
+    public List<String> getCachedDependencyClasspath(Scope scope, String coordinate) {
+        var stored = hashProperties().getProperty(PROPERTY_DEPENDENCIES_CLASSPATH_PREFIX + scope + "." + coordinate);
+        if (stored == null || stored.isEmpty()) {
+            return null;
+        }
+        return List.of(stored.split("\n"));
+    }
+
+    /**
      * Writes the state of this {@code BldCache} instance to disk.
      *
      * @since 2.0
@@ -490,7 +567,9 @@ public class BldCache {
                 if (!extensionsHash_.equals(properties.get(PROPERTY_EXTENSIONS_HASH))) {
                     properties.put(PROPERTY_EXTENSIONS_HASH, extensionsHash_);
                     properties.remove(PROPERTY_EXTENSIONS_DEPENDENCY_TREE);
+                    properties.keySet().removeIf(key -> key.toString().startsWith(PROPERTY_EXTENSIONS_CLASSPATH_PREFIX));
                 }
+                extensionClasspaths_.forEach((coordinate, jars) -> properties.put(PROPERTY_EXTENSIONS_CLASSPATH_PREFIX + coordinate, jars));
 
                 if (extensionsDependencyTree_ != null) {
                     properties.put(PROPERTY_EXTENSIONS_DEPENDENCY_TREE, extensionsDependencyTree_);
@@ -525,7 +604,9 @@ public class BldCache {
                     properties.remove(PROPERTY_DEPENDENCIES_PROVIDED_DEPENDENCY_TREE);
                     properties.remove(PROPERTY_DEPENDENCIES_RUNTIME_DEPENDENCY_TREE);
                     properties.remove(PROPERTY_DEPENDENCIES_TEST_DEPENDENCY_TREE);
+                    properties.keySet().removeIf(key -> key.toString().startsWith(PROPERTY_DEPENDENCIES_CLASSPATH_PREFIX));
                 }
+                dependencyClasspaths_.forEach((coordinate, jars) -> properties.put(PROPERTY_DEPENDENCIES_CLASSPATH_PREFIX + coordinate, jars));
 
                 if (dependenciesCompileDependencyTree_ != null) {
                     properties.put(PROPERTY_DEPENDENCIES_COMPILE_DEPENDENCY_TREE, dependenciesCompileDependencyTree_);

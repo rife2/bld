@@ -1669,6 +1669,9 @@ public class BaseProject extends BuildExecutor {
         return dependencies;
     }
 
+    private final Map<String, List<File>> classpathJarsMemo_ = new HashMap<>();
+    private DependencySet resolvedExtensions_ = null;
+
     /**
      * Creates the version resolution for a dependency scope, applying the
      * version overrides from the properties and the BOMs that are
@@ -1708,16 +1711,39 @@ public class BaseProject extends BuildExecutor {
      * @since 2.4.0
      */
     public List<File> dependencyClasspathJars(Scope scope, String groupId, String artifactId) {
+        var coordinate = groupId + ":" + artifactId;
+        var memo_key = "dependency." + scope + "." + coordinate;
+        var memoized = classpathJarsMemo_.get(memo_key);
+        if (memoized != null) {
+            return memoized;
+        }
+
         var declared = dependencies().scope(scope).get(new Dependency(groupId, artifactId));
         if (declared == null) {
-            throw new IllegalArgumentException("Dependency '" + groupId + ":" + artifactId + "' isn't declared in the " + scope + " scope.");
+            throw new IllegalArgumentException("Dependency '" + coordinate + "' isn't declared in the " + scope + " scope.");
+        }
+
+        var dir = scopeLibDirectory(scope);
+        var cache = new BldCache(libBldDirectory(), new VersionResolution(properties()));
+        cache.cacheDependenciesHash(repositories(), dependencies());
+        if (cache.isDependenciesHashValid()) {
+            var cached = cache.getCachedDependencyClasspath(scope, coordinate);
+            if (cached != null) {
+                var jars = cached.stream().map(name -> new File(dir, name)).toList();
+                classpathJarsMemo_.put(memo_key, jars);
+                return jars;
+            }
         }
 
         var resolver = new DependencyResolver(versionResolution(scope), artifactRetriever(), repositories(), declared);
-        var dir = scopeLibDirectory(scope);
-        return resolver.getAllDependencies(Scope.compile, Scope.runtime).stream()
+        var jars = resolver.getAllDependencies(Scope.compile, Scope.runtime).stream()
             .map(dependency -> new File(dir, dependency.toFileName()))
             .toList();
+
+        cache.cacheDependencyClasspath(scope, coordinate, jars.stream().map(File::getName).toList());
+        cache.writeCache();
+        classpathJarsMemo_.put(memo_key, jars);
+        return jars;
     }
 
     private File scopeLibDirectory(Scope scope) {
@@ -1751,6 +1777,13 @@ public class BaseProject extends BuildExecutor {
      * @since 2.4.0
      */
     public List<File> extensionClasspathJars(String groupId, String artifactId) {
+        var coordinate = groupId + ":" + artifactId;
+        var memo_key = "extension." + coordinate;
+        var memoized = classpathJarsMemo_.get(memo_key);
+        if (memoized != null) {
+            return memoized;
+        }
+
         var wrapper = new Wrapper();
         wrapper.currentDir(workDirectory());
         try {
@@ -1762,25 +1795,45 @@ public class BaseProject extends BuildExecutor {
         var properties = new HierarchicalProperties().parent(BuildExecutor.setupProperties(workDirectory()));
         properties.putAll(wrapper.wrapperProperties());
 
+        var resolution = new VersionResolution(properties);
+        var cache = new BldCache(libBldDirectory(), resolution);
+        cache.cacheExtensionsHash(wrapper.repositories(), wrapper.extensions());
+        if (cache.isExtensionsHashValid()) {
+            var cached = cache.getCachedExtensionClasspath(coordinate);
+            if (cached != null) {
+                var jars = cached.stream().map(name -> new File(libBldDirectory(), name)).toList();
+                classpathJarsMemo_.put(memo_key, jars);
+                return jars;
+            }
+        }
+
         var repositories = new ArrayList<Repository>();
         for (var repository : wrapper.repositories()) {
             repositories.add(Repository.resolveRepository(properties, repository));
         }
 
-        var resolution = new VersionResolution(properties);
-        var extensions = wrapper.extensions().stream().map(Dependency::parse).toList();
-        var resolved = new ParallelDependencyResolver(resolution, artifactRetriever(), repositories)
-            .resolveAllDependencies(extensions, Scope.compile, Scope.runtime);
+        // the resolved set of all the extensions is reused across
+        // lookups of different dependencies in the same build
+        if (resolvedExtensions_ == null) {
+            var extensions = wrapper.extensions().stream().map(Dependency::parse).toList();
+            resolvedExtensions_ = new ParallelDependencyResolver(resolution, artifactRetriever(), repositories)
+                .resolveAllDependencies(extensions, Scope.compile, Scope.runtime);
+        }
 
-        var dependency = resolved.get(new Dependency(groupId, artifactId));
+        var dependency = resolvedExtensions_.get(new Dependency(groupId, artifactId));
         if (dependency == null) {
-            throw new IllegalArgumentException("Dependency '" + groupId + ":" + artifactId + "' isn't part of the extensions of this project.");
+            throw new IllegalArgumentException("Dependency '" + coordinate + "' isn't part of the extensions of this project.");
         }
 
         var resolver = new DependencyResolver(resolution, artifactRetriever(), repositories, dependency);
-        return resolver.getAllDependencies(Scope.compile, Scope.runtime).stream()
+        var jars = resolver.getAllDependencies(Scope.compile, Scope.runtime).stream()
             .map(d -> new File(libBldDirectory(), d.toFileName()))
             .toList();
+
+        cache.cacheExtensionClasspath(coordinate, jars.stream().map(File::getName).toList());
+        cache.writeCache();
+        classpathJarsMemo_.put(memo_key, jars);
+        return jars;
     }
 
     /**
