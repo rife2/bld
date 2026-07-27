@@ -88,6 +88,16 @@ public class TestClasspathJars {
             assertEquals(project.libRuntimeDirectory(), project.dependencyClasspathJars(runtime, "com.example", "tool").get(0).getParentFile());
             assertEquals(project.libStandaloneDirectory(), project.dependencyClasspathJars(standalone, "com.example", "tool").get(0).getParentFile());
             assertEquals(project.libTestDirectory(), project.dependencyClasspathJars(test, "com.example", "tool").get(0).getParentFile());
+
+            // the cached lookups rebuild the same files, also for a scope
+            // without a configured directory
+            var fresh = new JarsProject(tmp, serverRepository(server));
+            for (var scope : List.of(compile, provided, runtime, standalone, test)) {
+                fresh.dependencies().scope(scope)
+                    .include(new Dependency("com.example", "tool", new VersionNumber(1, 0, 0)));
+                assertEquals(project.dependencyClasspathJars(scope, "com.example", "tool"),
+                    fresh.dependencyClasspathJars(scope, "com.example", "tool"));
+            }
         } finally {
             server.stop(0);
             FileUtils.deleteDirectory(tmp);
@@ -387,7 +397,7 @@ public class TestClasspathJars {
         }
     }
 
-    private static File compile(File outDir, String classpath, File source) {
+    static File compile(File outDir, String classpath, File source) {
         outDir.mkdirs();
         var args = new ArrayList<>(List.of("-d", outDir.getAbsolutePath()));
         if (classpath != null) {
@@ -399,7 +409,7 @@ public class TestClasspathJars {
         return outDir;
     }
 
-    private static void createJar(File classesDir, File jarFile) throws IOException {
+    static void createJar(File classesDir, File jarFile) throws IOException {
         try (var jar = new JarOutputStream(new FileOutputStream(jarFile))) {
             var base = classesDir.toPath();
             try (var walk = Files.walk(base)) {
@@ -412,7 +422,22 @@ public class TestClasspathJars {
         }
     }
 
-    private static void writeWrapperProperties(Project project, HttpServer server, String extensions)
+    /**
+     * Writes the wrapper properties of a project with the provided
+     * extension declarations.
+     */
+    static void writeWrapperProperties(Project project, HttpServer server, String extensions)
+    throws IOException {
+        writeWrapperProperties(project, server, extensions, "");
+    }
+
+    /**
+     * Writes the wrapper properties of a project with the provided
+     * extension declarations and one more property line, for instance a
+     * version override, which the extension resolution reads from the
+     * wrapper properties and not from the properties of the project.
+     */
+    static void writeWrapperProperties(Project project, HttpServer server, String extensions, String additionalProperty)
     throws IOException {
         var lib_bld = project.libBldDirectory();
         lib_bld.mkdirs();
@@ -422,7 +447,8 @@ public class TestClasspathJars {
             bld.extensions=%s
             bld.repositories=http://localhost:%d/
             bld.version=%s
-            """.formatted(extensions, server.getAddress().getPort(), BldVersion.getVersion());
+            %s
+            """.formatted(extensions, server.getAddress().getPort(), BldVersion.getVersion(), additionalProperty);
         FileUtils.writeString(properties, new File(lib_bld, "bld-wrapper.properties"));
     }
 
@@ -764,9 +790,417 @@ public class TestClasspathJars {
         }
     }
 
+
+    @Test
+    void testDependencyClasspathJarsClassifier() throws Exception {
+        // an artifact that is declared with a classifier, like the
+        // org.jacoco:org.jacoco.agent:runtime agent jar
+        var requests = new java.util.concurrent.atomic.AtomicInteger();
+        var server = createArtifactServer(Map.of(
+            "agent:1.0.0", pom("agent", "1.0.0", dependency("liba", "1.1.0")),
+            "liba:1.1.0", pom("liba", "1.1.0", "")), requests);
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+            project.dependencies().scope(test)
+                .include(new Dependency("com.example", "agent", new VersionNumber(1, 0, 0), "runtime"));
+
+            // the plain coordinate doesn't match a classified declaration
+            var exception = assertThrows(IllegalArgumentException.class,
+                () -> project.dependencyClasspathJars(test, "com.example", "agent"));
+            assertTrue(exception.getMessage().contains("isn't declared in the test scope"));
+
+            // the dependency variant carries the classifier
+            var jars = project.dependencyClasspathJars(test, new Dependency("com.example", "agent", null, "runtime"));
+            assertEquals(List.of("agent-1.0.0-runtime.jar", "liba-1.1.0.jar"),
+                jars.stream().map(File::getName).toList());
+            var settled = settledRequests(requests);
+
+            // the classifier is part of the cache key, a fresh project
+            // answers without resolving
+            var fresh = new JarsProject(tmp, serverRepository(server));
+            fresh.dependencies().scope(test)
+                .include(new Dependency("com.example", "agent", new VersionNumber(1, 0, 0), "runtime"));
+            assertEquals(jars, fresh.dependencyClasspathJars(test, new Dependency("com.example", "agent", null, "runtime")));
+            assertEquals(settled, requests.get());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testExtensionClasspathJarsDependencyVariant() throws Exception {
+        // the dependency variant looks up the same tool as the string one
+        var server = createArtifactServer(Map.of(
+            "ext:1.0.0", pom("ext", "1.0.0", dependency("tool", "1.0.0")),
+            "tool:1.0.0", pom("tool", "1.0.0", "")));
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+            writeWrapperProperties(project, server, "com.example:ext:1.0.0");
+
+            assertEquals(project.extensionClasspathJars("com.example", "tool"),
+                project.extensionClasspathJars(new Dependency("com.example", "tool")));
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+
+    @Test
+    void testDependencyClasspathJarsModule() throws Exception {
+        // a module is transferred into the modules directory of the scope
+        // and is written with a regular jar suffix, not modular-jar
+        var requests = new java.util.concurrent.atomic.AtomicInteger();
+        var server = createArtifactServer(Map.of(
+            "mod:1.0.0", pom("mod", "1.0.0", "")), requests);
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+            project.dependencies().scope(test)
+                .include(new rife.bld.dependencies.Module("com.example", "mod", new VersionNumber(1, 0, 0)));
+
+            var jars = project.dependencyClasspathJars(test, new rife.bld.dependencies.Module("com.example", "mod"));
+            assertEquals(List.of("mod-1.0.0.jar"), jars.stream().map(File::getName).toList());
+            assertEquals(project.libTestModulesDirectory(), jars.get(0).getParentFile());
+            var settled = settledRequests(requests);
+
+            // the cached lookup rebuilds the same module path
+            var fresh = new JarsProject(tmp, serverRepository(server));
+            fresh.dependencies().scope(test)
+                .include(new rife.bld.dependencies.Module("com.example", "mod", new VersionNumber(1, 0, 0)));
+            var cached = fresh.dependencyClasspathJars(test, new rife.bld.dependencies.Module("com.example", "mod"));
+            assertEquals(jars, cached);
+            assertEquals(project.libTestModulesDirectory(), cached.get(0).getParentFile());
+            assertEquals(settled, requests.get());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testDependencyClasspathJarsClasspathJarType() throws Exception {
+        // a classpath jar stays in the regular scope directory and is
+        // also written with a regular jar suffix
+        var server = createArtifactServer(Map.of(
+            "tool:1.0.0", pom("tool", "1.0.0", "")));
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+            project.dependencies().scope(test)
+                .include(new Dependency("com.example", "tool", new VersionNumber(1, 0, 0), null, Dependency.TYPE_CLASSPATH_JAR));
+
+            var lookup = new Dependency("com.example", "tool", null, null, Dependency.TYPE_CLASSPATH_JAR);
+            var jars = project.dependencyClasspathJars(test, lookup);
+            assertEquals(List.of("tool-1.0.0.jar"), jars.stream().map(File::getName).toList());
+            assertEquals(project.libTestDirectory(), jars.get(0).getParentFile());
+
+            var fresh = new JarsProject(tmp, serverRepository(server));
+            fresh.dependencies().scope(test)
+                .include(new Dependency("com.example", "tool", new VersionNumber(1, 0, 0), null, Dependency.TYPE_CLASSPATH_JAR));
+            assertEquals(jars, fresh.dependencyClasspathJars(test, lookup));
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testDependencyClasspathJarsSnapshot() throws Exception {
+        // a snapshot is transferred with its timestamped filename, the
+        // logical SNAPSHOT name doesn't exist on disk
+        var requests = new java.util.concurrent.atomic.AtomicInteger();
+        var server = createSnapshotServer(requests);
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+            project.dependencies().scope(test)
+                .include(new Dependency("com.example", "tool", VersionNumber.parse("1.0.0-SNAPSHOT")));
+
+            var jars = project.dependencyClasspathJars(test, "com.example", "tool");
+            assertEquals(List.of("tool-1.0.0-20260727.123456-4.jar"),
+                jars.stream().map(File::getName).toList());
+            var settled = settledRequests(requests);
+
+            // the cached lookup keeps the timestamped filename
+            var fresh = new JarsProject(tmp, serverRepository(server));
+            fresh.dependencies().scope(test)
+                .include(new Dependency("com.example", "tool", VersionNumber.parse("1.0.0-SNAPSHOT")));
+            assertEquals(jars, fresh.dependencyClasspathJars(test, "com.example", "tool"));
+            assertEquals(settled, requests.get());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testClasspathJarsFollowChangedDeclarationsInSameInstance() throws Exception {
+        // changing the declarations of a project instance after a lookup
+        // has to be reflected, the result of the previous lookup can't be
+        // handed out again
+        var server = createArtifactServer(Map.of(
+            "tool:1.0.0", pom("tool", "1.0.0", ""),
+            "tool:2.0.0", pom("tool", "2.0.0", "")));
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+            project.dependencies().scope(test)
+                .include(new Dependency("com.example", "tool", new VersionNumber(1, 0, 0)));
+            assertEquals(List.of("tool-1.0.0.jar"),
+                project.dependencyClasspathJars(test, "com.example", "tool").stream().map(File::getName).toList());
+
+            // the same instance moves to another version
+            project.dependencies().scope(test).clear();
+            project.dependencies().scope(test)
+                .include(new Dependency("com.example", "tool", new VersionNumber(2, 0, 0)));
+            assertEquals(List.of("tool-2.0.0.jar"),
+                project.dependencyClasspathJars(test, "com.example", "tool").stream().map(File::getName).toList());
+
+            // and removing it makes the lookup fail again
+            project.dependencies().scope(test).clear();
+            assertThrows(IllegalArgumentException.class,
+                () -> project.dependencyClasspathJars(test, "com.example", "tool"));
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+
+    @Test
+    void testExtensionClasspathJarsFollowChangedWrapperInSameInstance() throws Exception {
+        // the wrapper properties can change while a project instance is
+        // alive, a later lookup has to use the new declarations
+        var server = createArtifactServer(Map.of(
+            "ext:1.0.0", pom("ext", "1.0.0", dependency("tool", "1.0.0")),
+            "tool:1.0.0", pom("tool", "1.0.0", ""),
+            "other:1.0.0", pom("other", "1.0.0", dependency("othertool", "2.0.0")),
+            "othertool:2.0.0", pom("othertool", "2.0.0", "")));
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+            writeWrapperProperties(project, server, "com.example:ext:1.0.0");
+            assertEquals(List.of("tool-1.0.0.jar"),
+                project.extensionClasspathJars("com.example", "tool").stream().map(File::getName).toList());
+
+            // the extensions are replaced on the same project instance
+            writeWrapperProperties(project, server, "com.example:other:1.0.0");
+            assertEquals(List.of("othertool-2.0.0.jar"),
+                project.extensionClasspathJars("com.example", "othertool").stream().map(File::getName).toList());
+
+            // and the tool of the removed extension is gone
+            var exception = assertThrows(IllegalArgumentException.class,
+                () -> project.extensionClasspathJars("com.example", "tool"));
+            assertTrue(exception.getMessage().contains("isn't part of the extensions"));
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+
+    @Test
+    void testDependencyClasspathJarsFollowsChangedModulesDirectory() throws Exception {
+        // the modules directory can be reconfigured while the declared
+        // dependencies stay the same, a cached classpath has to point at
+        // the new location
+        var server = createArtifactServer(Map.of(
+            "mod:1.0.0", pom("mod", "1.0.0", "")));
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+            project.dependencies().scope(test)
+                .include(new rife.bld.dependencies.Module("com.example", "mod", new VersionNumber(1, 0, 0)));
+            var lookup = new rife.bld.dependencies.Module("com.example", "mod");
+            assertEquals(project.libTestModulesDirectory(),
+                project.dependencyClasspathJars(test, lookup).get(0).getParentFile());
+
+            // a fresh project reads the cache but with another modules
+            // directory configured
+            var moved = new JarsProject(tmp, serverRepository(server));
+            var custom_modules = new File(tmp, "custom-modules");
+            moved.libTestModulesDirectory = custom_modules;
+            moved.dependencies().scope(test)
+                .include(new rife.bld.dependencies.Module("com.example", "mod", new VersionNumber(1, 0, 0)));
+            var jars = moved.dependencyClasspathJars(test, lookup);
+            assertEquals("mod-1.0.0.jar", jars.get(0).getName());
+            assertEquals(custom_modules, jars.get(0).getParentFile());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+    @Test
+    void testExtensionClasspathJarsReusesResolvedExtensions() throws Exception {
+        // looking up several dependencies of the same unchanged wrapper
+        // resolves the extension universe only once, an uncached
+        // retriever makes the repeated resolution visible as requests
+        var requests = new java.util.concurrent.atomic.AtomicInteger();
+        var server = createArtifactServer(Map.of(
+            "ext:1.0.0", pom("ext", "1.0.0", dependency("tool", "1.0.0") + dependency("liba", "1.1.0")),
+            "tool:1.0.0", pom("tool", "1.0.0", ""),
+            "liba:1.1.0", pom("liba", "1.1.0", "")), requests);
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server)) {
+                private final ArtifactRetriever uncached_ = ArtifactRetriever.instance();
+
+                @Override
+                public ArtifactRetriever artifactRetriever() {
+                    return uncached_;
+                }
+            };
+            writeWrapperProperties(project, server, "com.example:ext:1.0.0");
+
+            assertEquals(List.of("tool-1.0.0.jar"),
+                project.extensionClasspathJars("com.example", "tool").stream().map(File::getName).toList());
+            var first = settledRequests(requests);
+
+            // the second cold lookup reuses the resolved extensions of the
+            // first one, it only resolves its own subtree
+            assertEquals(List.of("liba-1.1.0.jar"),
+                project.extensionClasspathJars("com.example", "liba").stream().map(File::getName).toList());
+            var second = settledRequests(requests) - first;
+            assertTrue(second < first, "second lookup used " + second + " requests, first used " + first);
+
+            // changing the wrapper drops the reuse, the universe is
+            // resolved again for the new declarations
+            writeWrapperProperties(project, server, "com.example:tool:1.0.0");
+            var before_change = settledRequests(requests);
+            assertEquals(List.of("tool-1.0.0.jar"),
+                project.extensionClasspathJars("com.example", "tool").stream().map(File::getName).toList());
+            assertTrue(settledRequests(requests) > before_change);
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+
+    @Test
+    void testExtensionClasspathJarsFollowChangedOverrides() throws Exception {
+        // a version override can change the resolution of a transitive
+        // dependency of an extension without the extension declarations
+        // changing at all, a later lookup has to use the new version
+        var server = createArtifactServer(Map.of(
+            "ext:1.0.0", pom("ext", "1.0.0", dependency("tool", "1.0.0")),
+            "tool:1.0.0", pom("tool", "1.0.0", ""),
+            "tool:2.0.0", pom("tool", "2.0.0", "")));
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+            writeWrapperProperties(project, server, "com.example:ext:1.0.0");
+            assertEquals(List.of("tool-1.0.0.jar"),
+                project.extensionClasspathJars("com.example", "tool").stream().map(File::getName).toList());
+
+            // the extensions stay the same, only an override for the
+            // transitive dependency is added to the wrapper properties
+            writeWrapperProperties(project, server, "com.example:ext:1.0.0",
+                VersionResolution.PROPERTY_OVERRIDE_PREFIX + "=com.example:tool:2.0.0");
+            assertEquals(List.of("tool-2.0.0.jar"),
+                project.extensionClasspathJars("com.example", "tool").stream().map(File::getName).toList());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+
+    @Test
+    void testExtensionClasspathJarsDistinguishesOverrideFromExtension() throws Exception {
+        // an override renders like the dependency string of an extension
+        // with that version, so both configurations below flatten to the
+        // same strings while their extension universes differ: the
+        // override adds nothing since the extension doesn't use the tool,
+        // declaring it brings it in
+        var server = createArtifactServer(Map.of(
+            "ext:1.0.0", pom("ext", "1.0.0", ""),
+            "tool:2.0.0", pom("tool", "2.0.0", "")));
+        server.start();
+        var tmp = Files.createTempDirectory("classpathjars").toFile();
+        try {
+            var project = new JarsProject(tmp, serverRepository(server));
+
+            // an override for a tool that is not part of any extension
+            writeWrapperProperties(project, server, "com.example:ext:1.0.0",
+                VersionResolution.PROPERTY_OVERRIDE_PREFIX + "=com.example:tool:2.0.0");
+            assertThrows(IllegalArgumentException.class,
+                () -> project.extensionClasspathJars("com.example", "tool"));
+
+            // the same coordinate and version, now declared as an
+            // extension instead, which flattens to the same strings
+            writeWrapperProperties(project, server, "com.example:ext:1.0.0,com.example:tool:2.0.0");
+            assertEquals(List.of("tool-2.0.0.jar"),
+                project.extensionClasspathJars("com.example", "tool").stream().map(File::getName).toList());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
+
+    static HttpServer createSnapshotServer(java.util.concurrent.atomic.AtomicInteger requests)
+    throws IOException {
+        var server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        server.createContext("/", exchange -> {
+            requests.incrementAndGet();
+            var path = exchange.getRequestURI().getPath();
+            byte[] body = null;
+            if (path.endsWith("maven-metadata.xml")) {
+                body = """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <metadata>
+                        <groupId>com.example</groupId>
+                        <artifactId>tool</artifactId>
+                        <version>1.0.0-SNAPSHOT</version>
+                        <versioning>
+                            <snapshot>
+                                <timestamp>20260727.123456</timestamp>
+                                <buildNumber>4</buildNumber>
+                            </snapshot>
+                            <snapshotVersions>
+                                <snapshotVersion>
+                                    <extension>jar</extension>
+                                    <value>1.0.0-20260727.123456-4</value>
+                                </snapshotVersion>
+                            </snapshotVersions>
+                        </versioning>
+                    </metadata>""".getBytes();
+            } else if (path.endsWith(".pom")) {
+                body = pom("tool", "1.0.0-SNAPSHOT", "").getBytes();
+            } else if (path.endsWith(".jar")) {
+                body = "jar".getBytes();
+            }
+            if (body == null) {
+                exchange.sendResponseHeaders(404, -1);
+            } else {
+                exchange.sendResponseHeaders(200, body.length);
+                exchange.getResponseBody().write(body);
+            }
+            exchange.close();
+        });
+        server.setExecutor(Executors.newCachedThreadPool());
+        return server;
+    }
+
     // the POM prefetcher can still have a speculative request in flight
     // when resolution returns, count requests only after they settle
-    private static int settledRequests(java.util.concurrent.atomic.AtomicInteger requests)
+    static int settledRequests(java.util.concurrent.atomic.AtomicInteger requests)
     throws InterruptedException {
         var last = requests.get();
         var stable_since = System.currentTimeMillis();
@@ -781,16 +1215,21 @@ public class TestClasspathJars {
         return last;
     }
 
-    private static Repository serverRepository(HttpServer server) {
+    static Repository serverRepository(HttpServer server) {
         return new Repository("http://localhost:" + server.getAddress().getPort() + "/");
     }
 
-    private static HttpServer createArtifactServer(Map<String, String> poms)
+    static HttpServer createArtifactServer(Map<String, String> poms)
     throws IOException {
         return createArtifactServer(poms, new java.util.concurrent.atomic.AtomicInteger());
     }
 
-    private static HttpServer createArtifactServer(Map<String, String> poms, java.util.concurrent.atomic.AtomicInteger requests)
+    static HttpServer createArtifactServer(Map<String, String> poms, java.util.concurrent.atomic.AtomicInteger requests)
+    throws IOException {
+        return createArtifactServer(poms, Map.of(), requests);
+    }
+
+    static HttpServer createArtifactServer(Map<String, String> poms, Map<String, byte[]> jars, java.util.concurrent.atomic.AtomicInteger requests)
     throws IOException {
         var server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
         server.createContext("/", exchange -> {
@@ -804,7 +1243,10 @@ public class TestClasspathJars {
                     body = content.getBytes();
                 }
             } else if (filename.endsWith(".jar") && segments.length >= 3) {
-                if (poms.containsKey(segments[segments.length - 3] + ":" + segments[segments.length - 2])) {
+                var coordinate = segments[segments.length - 3] + ":" + segments[segments.length - 2];
+                if (jars.containsKey(coordinate)) {
+                    body = jars.get(coordinate);
+                } else if (poms.containsKey(coordinate)) {
                     body = "jar".getBytes();
                 }
             }
@@ -820,11 +1262,11 @@ public class TestClasspathJars {
         return server;
     }
 
-    private static String dependency(String artifact, String version) {
+    static String dependency(String artifact, String version) {
         return "<dependency><groupId>com.example</groupId><artifactId>" + artifact + "</artifactId><version>" + version + "</version></dependency>";
     }
 
-    private static String pom(String artifact, String version, String dependencies) {
+    static String pom(String artifact, String version, String dependencies) {
         return """
             <?xml version="1.0" encoding="UTF-8"?>
             <project>
@@ -836,7 +1278,7 @@ public class TestClasspathJars {
             </project>""".formatted(artifact, version, dependencies);
     }
 
-    private static String bomPom(String artifact, String version, String managedDependencies) {
+    static String bomPom(String artifact, String version, String managedDependencies) {
         return """
             <?xml version="1.0" encoding="UTF-8"?>
             <project>

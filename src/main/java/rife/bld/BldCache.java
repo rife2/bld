@@ -5,6 +5,7 @@
 package rife.bld;
 
 import rife.bld.dependencies.DependencyScopes;
+import rife.bld.dependencies.DependencySet;
 import rife.bld.dependencies.Scope;
 import rife.bld.dependencies.Repository;
 import rife.bld.dependencies.VersionResolution;
@@ -17,6 +18,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -91,6 +93,24 @@ public class BldCache {
 
         new File(cacheDir, WRAPPER_PROPERTIES_HASH).delete();
         new File(cacheDir, BLD_BUILD_HASH).delete();
+    }
+
+    /**
+     * Calculates the hash that corresponds to the provided repositories and extensions.
+     * <p>
+     * Every place that reads the extensions of a project has to arrive at the same hash,
+     * this takes the resolved repositories and extension dependencies so that their
+     * textual form is always derived the same way.
+     *
+     * @param repositories the resolved repositories to include into the hash
+     * @param extensions   the resolved extension dependencies to include into the hash
+     * @since 2.4.0
+     * @see #cacheExtensionsHash(Collection, Collection)
+     */
+    public void cacheExtensionsHash(List<Repository> repositories, DependencySet extensions) {
+        cacheExtensionsHash(
+            repositories.stream().map(Objects::toString).toList(),
+            extensions.stream().map(Objects::toString).toList());
     }
 
     /**

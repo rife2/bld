@@ -8,12 +8,9 @@ import rife.bld.dependencies.*;
 import rife.bld.dependencies.Module;
 import rife.bld.help.*;
 import rife.bld.operations.*;
-import rife.bld.wrapper.Wrapper;
-import rife.ioc.HierarchicalProperties;
 import rife.tools.FileUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -1669,8 +1666,7 @@ public class BaseProject extends BuildExecutor {
         return dependencies;
     }
 
-    private final Map<String, List<File>> classpathJarsMemo_ = new HashMap<>();
-    private DependencySet resolvedExtensions_ = null;
+    private ExtensionClasspath extensionClasspath_ = null;
 
     /**
      * Creates the version resolution for a dependency scope, applying the
@@ -1691,15 +1687,20 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
-     * Retrieves the jars of a single dependency in a scope, together with
-     * its transitive compile and runtime dependencies, as the files in
-     * the local lib directory of that scope.
+     * Returns the jar files of a single dependency in a scope, together
+     * with its transitive compile and runtime dependencies.
      * <p>
      * Use this to build an isolated classpath for one dependency, for
      * instance to launch an external tool in its own process, without
      * including the other dependencies of the scope. The dependency is
      * looked up by group and artifact in the scope's declarations and the
      * declared version is used.
+     * <p>
+     * The declarations are those of this project instance, not the files
+     * in the lib directory: a project that is merely pointed at an
+     * existing project directory doesn't have any. This is different from
+     * {@link #extensionClasspathJars(String, String)} which reads the
+     * extension declarations from the wrapper properties on disk.
      *
      * @param scope      the scope the dependency is declared in
      * @param groupId    the group of the dependency
@@ -1711,16 +1712,34 @@ public class BaseProject extends BuildExecutor {
      * @since 2.4.0
      */
     public List<File> dependencyClasspathJars(Scope scope, String groupId, String artifactId) {
-        var coordinate = groupId + ":" + artifactId;
-        var memo_key = "dependency." + scope + "." + coordinate;
-        var memoized = classpathJarsMemo_.get(memo_key);
-        if (memoized != null) {
-            return memoized;
-        }
+        return dependencyClasspathJars(scope, new Dependency(groupId, artifactId));
+    }
 
-        var declared = dependencies().scope(scope).get(new Dependency(groupId, artifactId));
+    /**
+     * Returns the jar files of a single dependency in a scope, together
+     * with its transitive compile and runtime dependencies.
+     * <p>
+     * This variant carries the full dependency identity, use it when the
+     * dependency is declared with a classifier or type, for instance
+     * {@code dependencyClasspathJars(test, dependency("org.jacoco:org.jacoco.agent:0.8.15:runtime"))}.
+     * The version can be different from the dependency passed in, the
+     * declared version of the scope is the one that is used.
+     *
+     * @param scope      the scope the dependency is declared in
+     * @param dependency the dependency to look for
+     * @return the jar files of the dependency and its transitive
+     * dependencies
+     * @throws IllegalArgumentException when the dependency isn't declared
+     *                                  in the scope
+     * @since 2.4.0
+     */
+    public List<File> dependencyClasspathJars(Scope scope, Dependency dependency) {
+        var coordinate = classpathCoordinate(dependency);
+
+        var declared = dependencies().scope(scope).get(dependency);
         if (declared == null) {
-            throw new IllegalArgumentException("Dependency '" + coordinate + "' isn't declared in the " + scope + " scope.");
+            throw new IllegalArgumentException("Dependency '" + coordinate + "' isn't declared in the " + scope + " scope. " +
+                                               "The lookup uses the dependencies that are declared on this project instance, not the files in its lib directory.");
         }
 
         var dir = scopeLibDirectory(scope);
@@ -1729,21 +1748,89 @@ public class BaseProject extends BuildExecutor {
         if (cache.isDependenciesHashValid()) {
             var cached = cache.getCachedDependencyClasspath(scope, coordinate);
             if (cached != null) {
-                var jars = cached.stream().map(name -> new File(dir, name)).toList();
-                classpathJarsMemo_.put(memo_key, jars);
-                return jars;
+                return resolveCachedFiles(dir, scopeLibModulesDirectory(scope), cached);
             }
         }
 
-        var resolver = new DependencyResolver(versionResolution(scope), artifactRetriever(), repositories(), declared);
+        var resolution = versionResolution(scope);
+        var resolver = new DependencyResolver(resolution, artifactRetriever(), repositories(), declared);
         var jars = resolver.getAllDependencies(Scope.compile, Scope.runtime).stream()
-            .map(dependency -> new File(dir, dependency.toFileName()))
+            .map(resolved -> transferredFile(resolved, resolution, artifactRetriever(), repositories(),
+                dir, scopeLibModulesDirectory(scope)))
             .toList();
 
-        cache.cacheDependencyClasspath(scope, coordinate, jars.stream().map(File::getName).toList());
+        cache.cacheDependencyClasspath(scope, coordinate, cacheableFiles(scopeLibModulesDirectory(scope), jars));
         cache.writeCache();
-        classpathJarsMemo_.put(memo_key, jars);
         return jars;
+    }
+
+    /**
+     * The transfer of a dependency writes it with the filename of its
+     * actual artifact, snapshots are timestamped and the modular and
+     * classpath jar types are regular jar files, modules also go into
+     * their own directory.
+     */
+    static File transferredFile(Dependency dependency, VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, File directory, File modulesDirectory) {
+        var dir = directory;
+        if (dependency.isModularJar() && modulesDirectory != null) {
+            dir = modulesDirectory;
+        }
+
+        var locations = new DependencyResolver(resolution, retriever, repositories, dependency).getTransferLocations();
+        if (locations.isEmpty()) {
+            return new File(dir, dependency.toFileName());
+        }
+        var location = locations.get(0);
+        return new File(dir, location.substring(location.lastIndexOf('/') + 1));
+    }
+
+    /**
+     * A transferred artifact always sits directly in the directory of its
+     * scope or in the modules directory, only the name and which of the
+     * two it is are stored so that the current directory configuration
+     * decides where a cached classpath points.
+     */
+    private static final String MODULE_MARKER = "*";
+
+    static List<String> cacheableFiles(File modulesDirectory, List<File> files) {
+        return files.stream()
+            .map(file -> (isInDirectory(file, modulesDirectory) ? MODULE_MARKER : "") + file.getName())
+            .toList();
+    }
+
+    static List<File> resolveCachedFiles(File directory, File modulesDirectory, List<String> entries) {
+        return entries.stream().map(entry -> {
+            if (entry.startsWith(MODULE_MARKER)) {
+                var name = entry.substring(MODULE_MARKER.length());
+                return new File(modulesDirectory == null ? directory : modulesDirectory, name);
+            }
+            return new File(directory, entry);
+        }).toList();
+    }
+
+    private static boolean isInDirectory(File file, File directory) {
+        return directory != null && directory.equals(file.getParentFile());
+    }
+
+    private static String classpathCoordinate(Dependency dependency) {
+        var coordinate = new StringBuilder(dependency.toArtifactString());
+        if (!dependency.classifier().isEmpty()) {
+            coordinate.append(':').append(dependency.classifier());
+        }
+        if (!dependency.type().equals("jar")) {
+            coordinate.append('@').append(dependency.type());
+        }
+        return coordinate.toString();
+    }
+
+    private File scopeLibModulesDirectory(Scope scope) {
+        return switch (scope) {
+            case compile -> libCompileModulesDirectory();
+            case provided -> libProvidedModulesDirectory();
+            case runtime -> libRuntimeModulesDirectory();
+            case standalone -> libStandaloneModulesDirectory();
+            case test -> libTestModulesDirectory();
+        };
     }
 
     private File scopeLibDirectory(Scope scope) {
@@ -1757,9 +1844,8 @@ public class BaseProject extends BuildExecutor {
     }
 
     /**
-     * Retrieves the jars of a single dependency of the bld extensions,
-     * together with its transitive compile and runtime dependencies, as
-     * the files in the {@code lib/bld} directory.
+     * Returns the jar files of a single dependency of the bld extensions,
+     * together with its transitive compile and runtime dependencies.
      * <p>
      * The extensions that are declared in the bld wrapper properties are
      * resolved the same way the wrapper does, the dependency is looked up
@@ -1777,71 +1863,37 @@ public class BaseProject extends BuildExecutor {
      * @since 2.4.0
      */
     public List<File> extensionClasspathJars(String groupId, String artifactId) {
-        var coordinate = groupId + ":" + artifactId;
-        var memo_key = "extension." + coordinate;
-        var memoized = classpathJarsMemo_.get(memo_key);
-        if (memoized != null) {
-            return memoized;
+        return extensionClasspathJars(new Dependency(groupId, artifactId));
+    }
+
+    /**
+     * Returns the jar files of a single dependency of the bld extensions,
+     * together with its transitive compile and runtime dependencies.
+     * <p>
+     * This variant carries the full dependency identity, use it when the
+     * dependency has a classifier or type. The version can be different
+     * from the dependency passed in, the resolved version of the
+     * extensions is the one that is used.
+     *
+     * @param dependency the dependency to look for
+     * @return the jar files of the dependency and its transitive
+     * dependencies
+     * @throws IllegalArgumentException when the dependency isn't part of
+     *                                  the extensions of this project
+     * @since 2.4.0
+     */
+    public List<File> extensionClasspathJars(Dependency dependency) {
+        // the wrapper reading and resolution lives in its own class since
+        // it works from the wrapper properties on disk, not from the
+        // declarations of this project instance, reading them again for
+        // every lookup picks up a changed wrapper properties file while
+        // the previous helper is kept as long as they are the same, it
+        // holds the resolved extensions of this build
+        var fresh = new ExtensionClasspath(workDirectory(), libBldDirectory(), artifactRetriever());
+        if (extensionClasspath_ == null || !extensionClasspath_.hasSameDeclarationsAs(fresh)) {
+            extensionClasspath_ = fresh;
         }
-
-        var wrapper = new Wrapper();
-        wrapper.currentDir(workDirectory());
-        try {
-            wrapper.initWrapperProperties(BldVersion.getVersion());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        var properties = new HierarchicalProperties().parent(BuildExecutor.setupProperties(workDirectory()));
-        properties.putAll(wrapper.wrapperProperties());
-
-        var resolution = new VersionResolution(properties);
-        Repository.resolveMavenLocal(properties);
-        var repositories = new ArrayList<Repository>();
-        for (var repository : wrapper.repositories()) {
-            repositories.add(Repository.resolveRepository(properties, repository));
-        }
-        var extensions = new DependencySet();
-        extensions.addAll(wrapper.extensions().stream().map(d -> resolution.overrideDependency(Dependency.parse(d))).toList());
-
-        // the fingerprint has to be computed from the same inputs as
-        // WrapperExtensionResolver, a different hash would make the
-        // wrapper consider its own extension cache stale on every build
-        // and download all the extension artifacts over and over
-        var cache = new BldCache(libBldDirectory(), resolution);
-        cache.cacheExtensionsHash(
-            repositories.stream().map(Objects::toString).toList(),
-            extensions.stream().map(Objects::toString).toList());
-        if (cache.isExtensionsHashValid()) {
-            var cached = cache.getCachedExtensionClasspath(coordinate);
-            if (cached != null) {
-                var jars = cached.stream().map(name -> new File(libBldDirectory(), name)).toList();
-                classpathJarsMemo_.put(memo_key, jars);
-                return jars;
-            }
-        }
-
-        // the resolved set of all the extensions is reused across
-        // lookups of different dependencies in the same build
-        if (resolvedExtensions_ == null) {
-            resolvedExtensions_ = new ParallelDependencyResolver(resolution, artifactRetriever(), repositories)
-                .resolveAllDependencies(extensions, Scope.compile, Scope.runtime);
-        }
-
-        var dependency = resolvedExtensions_.get(new Dependency(groupId, artifactId));
-        if (dependency == null) {
-            throw new IllegalArgumentException("Dependency '" + coordinate + "' isn't part of the extensions of this project.");
-        }
-
-        var resolver = new DependencyResolver(resolution, artifactRetriever(), repositories, dependency);
-        var jars = resolver.getAllDependencies(Scope.compile, Scope.runtime).stream()
-            .map(d -> new File(libBldDirectory(), d.toFileName()))
-            .toList();
-
-        cache.cacheExtensionClasspath(coordinate, jars.stream().map(File::getName).toList());
-        cache.writeCache();
-        classpathJarsMemo_.put(memo_key, jars);
-        return jars;
+        return extensionClasspath_.classpathJars(dependency, classpathCoordinate(dependency));
     }
 
     /**

@@ -65,9 +65,7 @@ public class WrapperExtensionResolver {
         // verify and update the fingerprint hash file,
         // don't update the extensions if the hash is identical
         var cache = new BldCache(destinationDirectory_, resolution_);
-        cache.cacheExtensionsHash(
-            repositories_.stream().map(Objects::toString).toList(),
-            dependencies_.stream().map(Objects::toString).toList());
+        cache.cacheExtensionsHash(repositories_, dependencies_);
         cache.cacheExtensionsDownloads(downloadSources_, downloadJavadoc_);
         if (cache.isExtensionsCacheValid()) {
             return;

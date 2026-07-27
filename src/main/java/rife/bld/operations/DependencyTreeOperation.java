@@ -55,9 +55,7 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
         BldCache extensions_cache = null;
         if (libBldDir_ != null) {
             extensions_cache =  new BldCache(libBldDir_, new VersionResolution(extensionProperties()));
-            extensions_cache.cacheExtensionsHash(
-                extensionRepositories().stream().map(Repository::toString).toList(),
-                extensionDependencies().scope(compile).stream().map(Dependency::toString).toList());
+            extensions_cache.cacheExtensionsHash(extensionRepositories(), extensionDependencies().scope(compile));
             if (extensions_cache.isExtensionsHashValid()) {
                 var cached_tree = extensions_cache.getCachedExtensionsDependencyTree();
                 if (cached_tree != null) {
