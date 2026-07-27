@@ -258,8 +258,11 @@ public class Wrapper {
         manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, getClass().getName());
 
         try (var jar = new JarOutputStream(new FileOutputStream(new File(destinationDirectory, WRAPPER_JAR)), manifest)) {
+            // every nested type of the wrapper has to be added here too,
+            // the wrapper jar only contains what is listed
             addClassToJar(jar, Wrapper.class);
             addClassToJar(jar, Wrapper.LaunchMode.class);
+            addClassToJar(jar, Wrapper.IoAction.class);
             addClassToJar(jar, WrapperClassLoader.class);
             addClassToJar(jar, FileUtils.class);
             addClassToJar(jar, FileUtilsErrorException.class);

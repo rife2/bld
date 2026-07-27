@@ -18,6 +18,30 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestWrapperExtensionResolver {
+
+    @Test
+    void testWrapperJarContainsEveryNestedType()
+    throws Exception {
+        // the wrapper jar only contains the classes that are listed
+        // explicitly, a nested type that isn't listed makes the wrapper
+        // fail with a NoClassDefFoundError while it bootstraps
+        var tmp = Files.createTempDirectory("wrapperjar").toFile();
+        try {
+            new Wrapper().createWrapperFiles(tmp, "2.4.0-SNAPSHOT");
+
+            var entries = new java.util.HashSet<String>();
+            try (var jar = new java.util.jar.JarFile(new File(tmp, "bld-wrapper.jar"))) {
+                jar.stream().map(java.util.zip.ZipEntry::getName).forEach(entries::add);
+            }
+
+            for (var nested : Wrapper.class.getDeclaredClasses()) {
+                assertTrue(entries.contains(nested.getName().replace('.', '/') + ".class"),
+                    "the wrapper jar doesn't contain " + nested.getName());
+            }
+        } finally {
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
     @Test
     void testNoExtensions()
     throws Exception {
