@@ -494,7 +494,10 @@ public class BldCache {
         var properties = new Properties();
         if (getCacheFile().exists()) {
             try {
-                try (var reader = new BufferedReader(new FileReader(getCacheFile()))) {
+                // the cache holds dependency trees with box drawing
+                // characters, the platform charset can't encode those on
+                // every JVM and would corrupt them
+                try (var reader = new BufferedReader(new FileReader(getCacheFile(), StandardCharsets.UTF_8))) {
                     properties.load(reader);
                 }
             } catch (IOException e) {
@@ -655,7 +658,7 @@ public class BldCache {
 
             cacheDir_.mkdirs();
 
-            try (var writer = new BufferedWriter(new FileWriter(getCacheFile()))) {
+            try (var writer = new BufferedWriter(new FileWriter(getCacheFile(), StandardCharsets.UTF_8))) {
                 properties.store(writer, null);
             }
         } catch (IOException e) {

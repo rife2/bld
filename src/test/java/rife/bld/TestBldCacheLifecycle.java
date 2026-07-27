@@ -230,6 +230,36 @@ public class TestBldCacheLifecycle {
         }
     }
 
+
+    @Test
+    void testDependencyTreeCacheKeepsTreeCharacters() throws Exception {
+        // the tree is drawn with box drawing characters, the cache file
+        // has to keep them no matter what the platform charset of the JVM
+        // is able to encode
+        var requests = new AtomicInteger();
+        var server = createArtifactServer(Map.of(
+            "tool:1.0.0", pom("tool", "1.0.0", dependency("liba", "1.1.0")),
+            "liba:1.1.0", pom("liba", "1.1.0", "")), requests);
+        server.start();
+        var tmp = Files.createTempDirectory("cachelifecycle").toFile();
+        try {
+            var build1 = new LifecycleProject(tmp, serverRepository(server));
+            writeWrapperProperties(build1, server, "");
+            build1.dependencies().scope(provided)
+                .include(new Dependency("com.example", "tool", new VersionNumber(1, 0, 0)));
+            var operation1 = new DependencyTreeOperation().fromProject(build1);
+            operation1.executeOnce();
+            assertTrue(operation1.dependencyTree().contains("─"), operation1.dependencyTree());
+
+            // the characters survive the round trip through the cache file
+            var cached = FileUtils.readString(new File(build1.libBldDirectory(), BldCache.BLD_CACHE));
+            assertTrue(cached.contains("─"), "the cache file lost the tree characters");
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp);
+        }
+    }
+
     @Test
     void testDependencyTreeLifecycle() throws Exception {
         var requests = new AtomicInteger();
