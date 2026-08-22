@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * BOMs don't transfer any artifacts, they only participate in resolution.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.4.0
+ * @since 3.0.0
  */
 public class Bom extends Dependency {
     public Bom(String groupId, String artifactId) {
@@ -45,7 +45,7 @@ public class Bom extends Dependency {
      * @param bom the BOM string to parse
      * @return a parsed instance of {@code Bom}; or
      * {@code null} when the string couldn't be parsed
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static Bom parse(String bom) {
         if (bom == null || bom.isEmpty()) {

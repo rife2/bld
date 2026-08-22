@@ -59,7 +59,7 @@ public class VersionResolution {
     /**
      * The property key that determines how many artifact transfers are
      * performed in parallel, {@code 1} makes them sequential.
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String PROPERTY_TRANSFER_PARALLELISM = "bld.transferParallelism";
     private static final int DEFAULT_TRANSFER_PARALLELISM = 6;
@@ -68,7 +68,7 @@ public class VersionResolution {
      * The property key that determines how many POMs are speculatively
      * retrieved in parallel during transitive dependency resolution,
      * {@code 1} disables the parallel retrieval.
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String PROPERTY_RESOLUTION_PARALLELISM = "bld.resolutionParallelism";
     private static final int DEFAULT_RESOLUTION_PARALLELISM = 6;
@@ -140,7 +140,7 @@ public class VersionResolution {
      * @param retriever    the retriever to use to get the BOMs
      * @param repositories the repositories to resolve the BOMs in
      * @param boms         the BOMs to import
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public VersionResolution(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories, Collection<Bom> boms) {
         this(new VersionResolution(properties), retriever, repositories, boms);
@@ -187,7 +187,7 @@ public class VersionResolution {
      * @param bomVersions the versions that the BOMs manage the dependency
      *                    at, keyed by the BOM, in precedence order so that
      *                    the first entry is the version that is used
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public record BomVersionConflict(String dependency, Map<String, Version> bomVersions) {
     }
@@ -202,7 +202,7 @@ public class VersionResolution {
      * @param repositories the repositories to resolve the BOMs in
      * @param boms         the BOMs to check, in precedence order
      * @return the version conflicts between the BOMs
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static List<BomVersionConflict> resolveBomVersionConflicts(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories, Collection<Bom> boms) {
         var base = new VersionResolution(properties);
@@ -247,7 +247,7 @@ public class VersionResolution {
      * @param bom             the BOM that manages the dependency, the one
      *                        with the highest precedence when several do
      * @param bomVersion      the version the BOM manages the dependency at
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public record DeclaredVersionConflict(String dependency, Version declaredVersion, String bom, Version bomVersion) {
     }
@@ -265,7 +265,7 @@ public class VersionResolution {
      * @param boms         the BOMs to check, in precedence order
      * @param declared     the declared dependencies to check
      * @return the version differences between the declared dependencies and the BOMs
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static List<DeclaredVersionConflict> resolveDeclaredVersionConflicts(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories, Collection<Bom> boms, Collection<Dependency> declared) {
         var base = new VersionResolution(properties);
@@ -382,7 +382,7 @@ public class VersionResolution {
      * @param declared the declared dependency to apply overrides to
      * @return the dependency with the overridden version if one applies; or
      * the original dependency otherwise
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public Dependency overrideDeclaredDependency(Dependency declared) {
         var overridden = versionOverrides_.get(declared.toArtifactString());
@@ -407,7 +407,7 @@ public class VersionResolution {
      * @param transitive the transitive dependency to apply overrides to
      * @return the dependency with the overridden version if one applies; or
      * the original dependency otherwise
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public Dependency overrideTransitiveDependency(Dependency transitive) {
         var overridden = versionOverrides_.get(transitive.toArtifactString());
@@ -450,7 +450,7 @@ public class VersionResolution {
      * @param dependency the dependency to check
      * @return {@code true} when a BOM manages the dependency's version;
      * {@code false} otherwise
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public boolean coversDependency(Dependency dependency) {
         return bomVersions_.containsKey(managedKey(dependency));
@@ -463,7 +463,7 @@ public class VersionResolution {
      * version.
      *
      * @return the map of BOM versions
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public Map<String, Version> bomVersions() {
         return bomVersions_;
@@ -474,7 +474,7 @@ public class VersionResolution {
      * {@code 1} means transfers are sequential.
      *
      * @return the number of parallel artifact transfers
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public int transferParallelism() {
         return transferParallelism_;
@@ -486,7 +486,7 @@ public class VersionResolution {
      * retrieval is disabled.
      *
      * @return the number of parallel POM retrievals
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public int resolutionParallelism() {
         return resolutionParallelism_;

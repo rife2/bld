@@ -11,7 +11,7 @@ import rife.tools.StringUtils;
  * Provides help for the MCP command.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.4.0
+ * @since 3.0.0
  */
 public class McpHelp implements CommandHelp {
     public String getSummary() {

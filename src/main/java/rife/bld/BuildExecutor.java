@@ -145,7 +145,7 @@ public class BuildExecutor {
      *
      * @param offline {@code true} if the execution is intended to be offline;
      *                or {@code false} otherwise
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public void offline(boolean offline) {
         offline_ = offline;
@@ -157,7 +157,7 @@ public class BuildExecutor {
      *
      * @return {@code true} if the execution is verbose;
      *         or {@code false} otherwise
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public boolean verbose() {
         return verbose_;
@@ -169,7 +169,7 @@ public class BuildExecutor {
      *
      * @param verbose {@code true} if the execution is verbose;
      *                or {@code false} otherwise
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public void verbose(boolean verbose) {
         verbose_ = verbose;
@@ -181,7 +181,7 @@ public class BuildExecutor {
      *
      * @return {@code true} if the stacktrace is printed;
      *         or {@code false} otherwise
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public boolean showStacktrace() {
         return showStacktrace;
@@ -193,7 +193,7 @@ public class BuildExecutor {
      *
      * @param showStacktrace {@code true} if the stacktrace is printed;
      *                       or {@code false} otherwise
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public void showStacktrace(boolean showStacktrace) {
         this.showStacktrace = showStacktrace;
@@ -538,7 +538,7 @@ public class BuildExecutor {
      * @param command the command name to resolve
      * @return the name of the build command that would be executed; or
      * {@code null} when the name couldn't be resolved
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public String resolveCommand(String command) {
         if (buildCommands().containsKey(command)) {

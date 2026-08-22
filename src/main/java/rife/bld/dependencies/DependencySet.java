@@ -50,7 +50,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      *
      * @param other the other set to include
      * @return this dependency set instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public DependencySet include(DependencySet other) {
         addAll(other);
@@ -105,7 +105,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      *
      * @param bom the BOM to include
      * @return this dependency set instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public DependencySet include(Bom bom) {
         boms_.add(bom);
@@ -116,7 +116,7 @@ public class DependencySet extends AbstractSet<Dependency> implements Set<Depend
      * Retrieves the bills of materials.
      *
      * @return the set of BOMs
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public Set<Bom> boms() {
         return boms_;

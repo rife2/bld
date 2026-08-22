@@ -31,7 +31,7 @@ public class BaseProject extends BuildExecutor {
     /**
      * The CLI option to trigger automatic dependency download and purge.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String AUTO_DOWNLOAD_PURGE_OPTION = "--auto-download-purge";
 
@@ -447,7 +447,7 @@ public class BaseProject extends BuildExecutor {
      * Retrieves the project's default MCP operation.
      *
      * @return the default MCP operation instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public McpOperation mcpOperation() {
         return mcpOperation_;
@@ -561,7 +561,7 @@ public class BaseProject extends BuildExecutor {
      * Standard build command, starts an MCP server that exposes the build
      * commands as tools.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     @BuildCommand(help = McpHelp.class)
     public void mcp()
@@ -977,7 +977,7 @@ public class BaseProject extends BuildExecutor {
      *
      * @param path the file system path (absolute or relative to the {@link #workDirectory})
      *             of the local dependency
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public LocalDependency local(Path path) {
         return new LocalDependency(path.toString());
@@ -990,7 +990,7 @@ public class BaseProject extends BuildExecutor {
      *
      * @param path the file system path (absolute or relative to the {@link #workDirectory})
      *             of the local dependency
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public LocalDependency local(File path) {
         return new LocalDependency(path.getPath());
@@ -1084,7 +1084,7 @@ public class BaseProject extends BuildExecutor {
      * @param groupId    the BOM group identifier
      * @param artifactId the BOM artifact identifier
      * @return a newly created {@code Bom} instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public Bom bom(String groupId, String artifactId) {
         return new Bom(groupId, artifactId);
@@ -1097,7 +1097,7 @@ public class BaseProject extends BuildExecutor {
      * @param artifactId the BOM artifact identifier
      * @param version    the BOM version
      * @return a newly created {@code Bom} instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public Bom bom(String groupId, String artifactId, String version) {
         return new Bom(groupId, artifactId, version(version));
@@ -1110,7 +1110,7 @@ public class BaseProject extends BuildExecutor {
      * @param artifactId the BOM artifact identifier
      * @param version    the BOM version
      * @return a newly created {@code Bom} instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public Bom bom(String groupId, String artifactId, Version version) {
         return new Bom(groupId, artifactId, version);
@@ -1128,7 +1128,7 @@ public class BaseProject extends BuildExecutor {
      * @param description the BOM string to parse
      * @return a parsed instance of {@code Bom}; or
      * {@code null} when the string couldn't be parsed
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public Bom bom(String description) {
         return Bom.parse(description);
@@ -1154,7 +1154,7 @@ public class BaseProject extends BuildExecutor {
      *
      * @param path the file system path (absolute or relative to the {@link #workDirectory})
      *             of the local module
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public LocalModule localModule(Path path) {
         return new LocalModule(path.toString());
@@ -1167,7 +1167,7 @@ public class BaseProject extends BuildExecutor {
      *
      * @param path the file system path (absolute or relative to the {@link #workDirectory})
      *             of the local module
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public LocalModule localModule(File path) {
         return new LocalModule(path.getPath());
@@ -1680,7 +1680,7 @@ public class BaseProject extends BuildExecutor {
      *
      * @param scope the scope to create the version resolution for
      * @return the version resolution for the scope
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public VersionResolution versionResolution(Scope scope) {
         return new VersionResolution(properties(), artifactRetriever(), repositories(), dependencies().effectiveBoms(scope));
@@ -1709,7 +1709,7 @@ public class BaseProject extends BuildExecutor {
      * dependencies
      * @throws IllegalArgumentException when the dependency isn't declared
      *                                  in the scope
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public List<File> dependencyClasspathJars(Scope scope, String groupId, String artifactId) {
         return dependencyClasspathJars(scope, new Dependency(groupId, artifactId));
@@ -1731,7 +1731,7 @@ public class BaseProject extends BuildExecutor {
      * dependencies
      * @throws IllegalArgumentException when the dependency isn't declared
      *                                  in the scope
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public List<File> dependencyClasspathJars(Scope scope, Dependency dependency) {
         var coordinate = classpathCoordinate(dependency);
@@ -1860,7 +1860,7 @@ public class BaseProject extends BuildExecutor {
      * dependencies
      * @throws IllegalArgumentException when the dependency isn't part of
      *                                  the extensions of this project
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public List<File> extensionClasspathJars(String groupId, String artifactId) {
         return extensionClasspathJars(new Dependency(groupId, artifactId));
@@ -1880,7 +1880,7 @@ public class BaseProject extends BuildExecutor {
      * dependencies
      * @throws IllegalArgumentException when the dependency isn't part of
      *                                  the extensions of this project
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public List<File> extensionClasspathJars(Dependency dependency) {
         // the wrapper reading and resolution lives in its own class since
@@ -2415,7 +2415,7 @@ public class BaseProject extends BuildExecutor {
      * The dependencies are only refreshed when the dependency cache is
      * stale, so that repeated invocations are cheap.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public void performAutoDownloadPurgeIfEnabled() {
         if (!offline() && autoDownloadPurge()) {

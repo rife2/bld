@@ -49,13 +49,13 @@ import java.util.concurrent.TimeUnit;
  * MCP support is experimental and its behavior may still change.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.4.0
+ * @since 3.0.0
  */
 public class McpOperation extends AbstractOperation<McpOperation> {
     /**
      * The most recent MCP protocol version that the server implements.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String PROTOCOL_VERSION = "2025-06-18";
 
@@ -74,21 +74,21 @@ public class McpOperation extends AbstractOperation<McpOperation> {
     /**
      * The URI of the resource that describes the project identification and layout.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String RESOURCE_PROJECT = "bld://project";
 
     /**
      * The URI of the resource that describes the declared dependencies and BOMs.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String RESOURCE_DEPENDENCIES = "bld://dependencies";
 
     /**
      * The URI of the resource that describes the transitive dependency tree.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String RESOURCE_DEPENDENCY_TREE = "bld://dependency-tree";
 
@@ -100,7 +100,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
     /**
      * The command argument that registers the MCP server with a client
      * instead of starting it.
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String ARGUMENT_INSTALL = "install";
 
@@ -151,7 +151,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * corrupts the protocol stream.
      *
      * @throws IOException when an error occurred while reading or writing
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public void execute()
     throws IOException {
@@ -200,7 +200,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * @param reader the reader to read the protocol messages from
      * @param writer the writer to write the protocol responses to
      * @throws IOException when an error occurred while reading or writing
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected void executeServerLoop(BufferedReader reader, PrintWriter writer)
     throws IOException {
@@ -245,7 +245,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param command the name of the build command that produced the output
      * @param data    the chunk of console output to send
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected void sendToolCallOutput(String command, String data) {
         var writer = notificationWriter_;
@@ -276,7 +276,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * can't be parsed is never modified.
      *
      * @throws IOException when the configuration couldn't be read or written
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected void executeInstall()
     throws IOException {
@@ -359,7 +359,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * @param message the JSON-RPC message to process
      * @return the JSON-RPC response; or {@code null} when the message is a
      * notification that doesn't warrant one
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected String processMessage(String message) {
         Object parsed;
@@ -486,7 +486,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param params the parameters of the initialize request
      * @return the initialization result
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected JsonObject processInitialize(JsonObject params) {
         if (params == null ||
@@ -524,7 +524,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param params the parameters of the set level request
      * @return the empty set level result
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected JsonObject processLoggingSetLevel(JsonObject params) {
         if (params == null ||
@@ -542,7 +542,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * none were provided.
      *
      * @return the default server instructions
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected String defaultInstructions() {
         var target = serverTitle_ == null ? "a bld build" : "the bld project '" + serverTitle_ + "'";
@@ -576,7 +576,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * as MCP tools.
      *
      * @return the tool listing result
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected JsonObject processToolsList() {
         var tools = new JsonArray();
@@ -634,7 +634,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * stays in the text content.
      *
      * @return the output schema of the tool call results
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected JsonObject toolOutputSchema() {
         return new JsonObject()
@@ -669,7 +669,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param params the parameters of the tool call
      * @return the tool call result with the captured console output
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected JsonObject processToolsCall(JsonObject params) {
         if (params == null || !(params.get("name") instanceof String name)) {
@@ -724,7 +724,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * @param command   the name of the build command to execute
      * @param arguments the arguments to pass to the build command
      * @return the tool call result with the captured console output
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected JsonObject executeToolCall(String command, List<String> arguments) {
         return executeToolCall(command, arguments, true);
@@ -747,7 +747,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *                           the internal resource generation doesn't
      *                           enforce them
      * @return the tool call result with the captured console output
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected JsonObject executeToolCall(String command, List<String> arguments, boolean enforceExclusions) {
         return executeToolCall(command, arguments, enforceExclusions, true);
@@ -766,7 +766,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *                           command runs, the internal resource
      *                           generation doesn't stream
      * @return the tool call result with the captured console output
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected JsonObject executeToolCall(String command, List<String> arguments, boolean enforceExclusions, boolean streamOutput) {
         var output = new StringBuilder();
@@ -1009,7 +1009,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * @param command   the name of the build command to execute
      * @param arguments the arguments to pass to the build command
      * @return the command line for the tool call process
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected List<String> toolCallCommand(String command, List<String> arguments) {
         // the JVM properties of the original invocation carry over into
@@ -1095,7 +1095,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @return the wrapper jar; or {@code null} when there is no project
      * or the jar couldn't be found
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected File wrapperJar() {
         if (project_ == null) {
@@ -1115,7 +1115,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * a project.
      *
      * @return the resource listing result
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected JsonObject processResourcesList() {
         var resources = new JsonArray();
@@ -1144,7 +1144,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param params the parameters of the resource read request
      * @return the resource contents result
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected JsonObject processResourcesRead(JsonObject params) {
         if (params == null || !(params.get("uri") instanceof String uri)) {
@@ -1189,7 +1189,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * can't be mistaken for missing data.
      *
      * @return the JSON description of the project
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected String readProjectResource() {
         var json = new JsonObject();
@@ -1223,7 +1223,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * dependencies and BOMs of the project as JSON, per scope.
      *
      * @return the JSON description of the dependencies
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected String readDependenciesResource() {
         var json = new JsonObject();
@@ -1251,7 +1251,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * dependency tree of the project.
      *
      * @return the dependency tree description
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected String readDependencyTreeResource() {
         // the resource generation runs the command internally and doesn't
@@ -1271,7 +1271,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param project the project to configure the MCP operation from
      * @return this operation instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public McpOperation fromProject(BaseProject project) {
         project_ = project;
@@ -1314,7 +1314,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param executor the build executor to serve
      * @return this operation instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public McpOperation executor(BuildExecutor executor) {
         executor_ = executor;
@@ -1326,7 +1326,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param title the server title
      * @return this operation instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public McpOperation serverTitle(String title) {
         serverTitle_ = title;
@@ -1339,7 +1339,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param instructions the server instructions
      * @return this operation instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public McpOperation instructions(String instructions) {
         instructions_ = instructions;
@@ -1352,7 +1352,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @return the server instructions; or {@code null} when the generated
      * default is used
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public String instructions() {
         return instructions_;
@@ -1365,7 +1365,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param command the name of the build command to exclude
      * @return this operation instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public McpOperation excludeCommand(String command) {
         excludedCommands_.add(command);
@@ -1387,7 +1387,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param command the name of the build command that requires confirmation
      * @return this operation instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public McpOperation requireConfirmation(String command) {
         confirmationCommands_.add(command);
@@ -1405,7 +1405,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param seconds the tool call timeout in seconds, {@code 0} disables it
      * @return this operation instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public McpOperation toolCallTimeout(int seconds) {
         toolCallTimeout_ = seconds;
@@ -1418,7 +1418,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @return the tool call timeout in seconds; or {@code 0} when no
      * timeout applies
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public int toolCallTimeout() {
         return toolCallTimeout_;
@@ -1432,7 +1432,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      *
      * @param characters the output limit in characters
      * @return this operation instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public McpOperation outputLimit(int characters) {
         outputLimit_ = characters;
@@ -1444,7 +1444,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * tool call collects.
      *
      * @return the output limit in characters
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public int outputLimit() {
         return outputLimit_;
@@ -1455,7 +1455,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * human confirmation before they're called as tools.
      *
      * @return the command names that require confirmation
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public Set<String> confirmationCommands() {
         // the backing set isn't exposed, use requireConfirmation to add
@@ -1466,7 +1466,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * Retrieves the build executor whose commands are served as tools.
      *
      * @return the build executor
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public BuildExecutor executor() {
         return executor_;
@@ -1476,7 +1476,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * Retrieves the title that the server reports during initialization.
      *
      * @return the server title; or {@code null} when none was provided
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public String serverTitle() {
         return serverTitle_;
@@ -1487,7 +1487,7 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * being served as tools.
      *
      * @return the excluded command names
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public Set<String> excludedCommands() {
         // the mcp command is always excluded, the backing set isn't exposed

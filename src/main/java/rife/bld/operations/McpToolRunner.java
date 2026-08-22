@@ -27,32 +27,32 @@ import java.nio.file.Path;
  * ignored.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.4.0
+ * @since 3.0.0
  */
 public final class McpToolRunner {
     /**
      * The environment variable with the path of the control file that
      * requests the execution of exactly one command.
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String ENV_CONTROL_FILE = "BLD_MCP_CONTROL_FILE";
 
     /**
      * The environment variable with the path of the file that the runner
      * writes its result to.
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String ENV_STATUS_FILE = "BLD_MCP_STATUS_FILE";
 
     /**
      * The outcome that is written when the command couldn't be resolved.
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String STATUS_UNKNOWN_COMMAND = "unknown-command";
 
     /**
      * The outcome that is written when the command is excluded.
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String STATUS_EXCLUDED_COMMAND = "excluded-command";
 
@@ -60,7 +60,7 @@ public final class McpToolRunner {
      * The outcome that is written when the runner itself couldn't be set
      * up, for instance when the build executor class couldn't be
      * instantiated, this is a server failure rather than a tool failure.
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String STATUS_RUNNER_ERROR = "runner-error";
 
@@ -71,7 +71,7 @@ public final class McpToolRunner {
      * Runs a single build command for an MCP tool call.
      *
      * @param arguments the build executor class name as the last argument
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static void main(String[] arguments) {
         System.exit(run(arguments));

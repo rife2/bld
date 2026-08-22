@@ -104,7 +104,7 @@ public class BldCache {
      *
      * @param repositories the resolved repositories to include into the hash
      * @param extensions   the resolved extension dependencies to include into the hash
-     * @since 2.4.0
+     * @since 3.0.0
      * @see #cacheExtensionsHash(Collection, Collection)
      */
     public void cacheExtensionsHash(List<Repository> repositories, DependencySet extensions) {
@@ -517,7 +517,7 @@ public class BldCache {
      * @param coordinate the {@code groupId:artifactId} of the dependency
      * @param jarNames   the jar file names of its transitive classpath
      * @see #getCachedExtensionClasspath
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public void cacheExtensionClasspath(String coordinate, List<String> jarNames) {
         extensionClasspaths_.put(coordinate, String.join("\n", jarNames));
@@ -530,7 +530,7 @@ public class BldCache {
      * @param coordinate the {@code groupId:artifactId} of the dependency
      * @return the stored jar file names; or {@code null} when nothing was
      * stored for the coordinate
-     * @since 2.4.0
+     * @since 3.0.0
      * @see #cacheExtensionClasspath
      */
     public List<String> getCachedExtensionClasspath(String coordinate) {
@@ -551,7 +551,7 @@ public class BldCache {
      * @param scope      the scope the dependency is declared in
      * @param coordinate the {@code groupId:artifactId} of the dependency
      * @param jarNames   the jar file names of its transitive classpath
-     * @since 2.4.0
+     * @since 3.0.0
      * @see #getCachedDependencyClasspath
      */
     public void cacheDependencyClasspath(Scope scope, String coordinate, List<String> jarNames) {
@@ -566,7 +566,7 @@ public class BldCache {
      * @param coordinate the {@code groupId:artifactId} of the dependency
      * @return the stored jar file names; or {@code null} when nothing was
      * stored for the coordinate
-     * @since 2.4.0
+     * @since 3.0.0
      * @see #cacheDependencyClasspath
      */
     public List<String> getCachedDependencyClasspath(Scope scope, String coordinate) {

@@ -123,7 +123,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * BOMs that were declared without a version are frozen too, to their
      * {@code bld.override} version or to their latest version.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected void executeResolveVersionlessDependencies() {
         // freeze the versions of the declared BOMs, a version from a
@@ -840,7 +840,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      *
      * @param repositories a list of repositories against which dependencies will be resolved
      * @return this operation instance
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public PublishOperation dependencyRepositories(List<Repository> repositories) {
         dependencyRepositories_.addAll(repositories);
@@ -853,7 +853,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * This is a modifiable list that can be retrieved and changed.
      *
      * @return the repositories used for dependency resolution
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public List<Repository> dependencyRepositories() {
         return dependencyRepositories_;

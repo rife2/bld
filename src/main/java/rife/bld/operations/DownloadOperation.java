@@ -77,7 +77,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * Part of the {@link #execute} operation, warns about version-less
      * dependencies that are not covered by a BOM in their scope.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected void executeReportUncoveredDependencies() {
         if (silent()) {
@@ -99,7 +99,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      *
      * @param conflict the BOM version conflict to format
      * @return the formatted warning message
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected static String formatBomVersionConflict(rife.bld.dependencies.VersionResolution.BomVersionConflict conflict) {
         var entries = conflict.bomVersions().entrySet().iterator();
@@ -119,7 +119,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      *
      * @param conflict the declared version conflict to format
      * @return the formatted warning message
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected static String formatDeclaredVersionConflict(rife.bld.dependencies.VersionResolution.DeclaredVersionConflict conflict) {
         return "Warning: '" + conflict.dependency() + "' is declared with version " + conflict.declaredVersion() +
@@ -203,7 +203,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * artifact transfers of the {@linkplain #transfers() transfer batch}
      * together in parallel.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected void executeTransferDependencies() {
         transfers().transfer(new VersionResolution(properties()), artifactRetriever(), repositories());
@@ -214,7 +214,7 @@ public class DownloadOperation extends AbstractOperation<DownloadOperation> {
      * operation.
      *
      * @return the artifact transfer batch of this operation
-     * @since 2.4.0
+     * @since 3.0.0
      */
     protected DependencyTransferBatch transfers() {
         return transfers_;

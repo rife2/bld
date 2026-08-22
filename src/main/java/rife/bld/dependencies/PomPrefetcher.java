@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
  * retriever doesn't cache or when the resolution parallelism disables it.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.4.0
+ * @since 3.0.0
  */
 class PomPrefetcher {
     private final VersionResolution resolution_;

@@ -44,7 +44,7 @@ public class Dependency {
      * The dependency type name for a bill of materials POM whose
      * dependency management supplies versions during resolution.
      *
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public static final String TYPE_BOM = "bom";
 

@@ -90,7 +90,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      *
      * @param scope the scope to retrieve the applicable BOMs for
      * @return the BOMs that apply to the scope's version resolution
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public List<Bom> effectiveBoms(Scope scope) {
         var boms = new ArrayList<Bom>();
@@ -125,7 +125,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the BOM resolution
      * @return the version-less dependencies that no applicable BOM covers
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public List<Dependency> versionlessDependenciesWithoutBom(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
         var result = new ArrayList<Dependency>();
@@ -159,7 +159,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      * @param retriever    the retriever to use to get artifacts
      * @param repositories the repositories to use for the BOM resolution
      * @return the version conflicts between the applicable BOMs
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public List<VersionResolution.BomVersionConflict> bomVersionConflicts(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
         var result = new ArrayList<VersionResolution.BomVersionConflict>();
@@ -193,7 +193,7 @@ public class DependencyScopes extends LinkedHashMap<Scope, DependencySet> {
      * @param repositories the repositories to use for the BOM resolution
      * @return the version differences between the declared dependencies
      * and the applicable BOMs
-     * @since 2.4.0
+     * @since 3.0.0
      */
     public List<VersionResolution.DeclaredVersionConflict> declaredVersionConflicts(HierarchicalProperties properties, ArtifactRetriever retriever, List<Repository> repositories) {
         var result = new ArrayList<VersionResolution.DeclaredVersionConflict>();
