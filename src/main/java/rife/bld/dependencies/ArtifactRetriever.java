@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
@@ -114,12 +115,7 @@ public abstract class ArtifactRetriever {
             }
 
             try {
-                var connection = openUrlConnection(artifact);
-                if (artifact.repository().username() != null && artifact.repository().password() != null) {
-                    connection.setRequestProperty(
-                        HEADER_AUTHORIZATION,
-                        basicAuthorizationHeader(artifact.repository().username(), artifact.repository().password()));
-                }
+                var connection = connectArtifact(artifact);
                 try (var input_stream = connection.getInputStream()) {
                     var result = FileUtils.readString(input_stream);
                     cache(artifact, result);
@@ -176,12 +172,7 @@ public abstract class ArtifactRetriever {
                         }
                     }
 
-                    var connection = openUrlConnection(artifact);
-                    if (artifact.repository().username() != null && artifact.repository().password() != null) {
-                        connection.setRequestProperty(
-                            HEADER_AUTHORIZATION,
-                            basicAuthorizationHeader(artifact.repository().username(), artifact.repository().password()));
-                    }
+                    var connection = connectArtifact(artifact);
                     var content_length = connection.getContentLengthLong();
                     try (var input_stream = connection.getInputStream()) {
                         var readableByteChannel = Channels.newChannel(input_stream);
@@ -208,10 +199,74 @@ public abstract class ArtifactRetriever {
         }
     }
 
+    static final int RETRIEVAL_ATTEMPTS = 3;
+    static final long RETRIEVAL_RETRY_DELAY_MS = 1000L;
+    static final long RATE_LIMIT_RETRY_DELAY_MS = 5000L;
+
+    private static URLConnection connectArtifact(RepositoryArtifact artifact)
+    throws IOException {
+        return connectArtifact(artifact, RETRIEVAL_ATTEMPTS, RETRIEVAL_RETRY_DELAY_MS, RATE_LIMIT_RETRY_DELAY_MS);
+    }
+
+    /**
+     * Opens a connection to a remote artifact and retries transient
+     * failures: connection issues, server errors and rate limiting.
+     * The connection is returned with its input stream already opened.
+     */
+    static URLConnection connectArtifact(RepositoryArtifact artifact, int attempts, long delayMs, long rateLimitDelayMs)
+    throws IOException {
+        for (var attempt = 1; ; ++attempt) {
+            var connection = openUrlConnection(artifact);
+            try {
+                connection.getInputStream();
+                return connection;
+            } catch (FileNotFoundException e) {
+                // an artifact that isn't there will not appear by retrying,
+                // and resolution legitimately probes repositories without it
+                throw e;
+            } catch (IOException e) {
+                var code = -1;
+                if (connection instanceof HttpURLConnection http) {
+                    try {
+                        code = http.getResponseCode();
+                    } catch (IOException unavailable) {
+                        // the failure happened before a status line arrived
+                    }
+                }
+                // other client errors, like failing authentication, will
+                // fail the same way again
+                if (attempt >= attempts ||
+                    (code >= 400 && code < 500 && code != 408 && code != 429)) {
+                    throw e;
+                }
+                System.err.println("Artifact retrieval issue (" + e.getMessage() + "), retrying ...");
+                try {
+                    // a 429 is the server asking to slow down, wait longer
+                    Thread.sleep((code == 429 ? rateLimitDelayMs : delayMs) * attempt);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+            }
+        }
+    }
+
+    static final int CONNECT_TIMEOUT_MS = 10_000;
+    static final int READ_TIMEOUT_MS = 60_000;
+
     private static URLConnection openUrlConnection(RepositoryArtifact artifact) throws IOException {
         var connection = new URL(artifact.location()).openConnection();
         connection.setUseCaches(false);
+        // without these a host that accepts packets but never answers
+        // stalls resolution for the platform default, which can be minutes
+        connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        connection.setReadTimeout(READ_TIMEOUT_MS);
         connection.setRequestProperty(HttpUtils.HEADER_USER_AGENT, Product.BLD.toUserAgent(BldVersion.getVersion()));
+        if (artifact.repository().username() != null && artifact.repository().password() != null) {
+            connection.setRequestProperty(
+                HEADER_AUTHORIZATION,
+                basicAuthorizationHeader(artifact.repository().username(), artifact.repository().password()));
+        }
         return connection;
     }
 
