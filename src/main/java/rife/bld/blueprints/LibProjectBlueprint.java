@@ -12,7 +12,7 @@ import java.io.File;
 import java.util.List;
 
 import static rife.bld.dependencies.Repository.MAVEN_CENTRAL;
-import static rife.bld.dependencies.Repository.SONATYPE_SNAPSHOTS;
+import static rife.bld.dependencies.Repository.CENTRAL_SNAPSHOTS;
 import static rife.bld.dependencies.Scope.test;
 
 /**
@@ -35,7 +35,7 @@ public class LibProjectBlueprint extends Project {
         version = versionNumber;
 
         downloadSources = true;
-        repositories = List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS);
+        repositories = List.of(MAVEN_CENTRAL, CENTRAL_SNAPSHOTS);
         scope(test)
             .include(dependency("org.junit.jupiter", "junit-jupiter", version(6,1,2)))
             .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(6,1,2)));

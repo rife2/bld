@@ -12,7 +12,7 @@ import java.io.File;
 import java.util.List;
 
 import static rife.bld.dependencies.Repository.MAVEN_CENTRAL;
-import static rife.bld.dependencies.Repository.SONATYPE_SNAPSHOTS;
+import static rife.bld.dependencies.Repository.CENTRAL_SNAPSHOTS;
 
 /**
  * Provides the dependency information required to create a new base project.
@@ -34,6 +34,6 @@ public class BaseProjectBlueprint extends Project {
         version = versionNumber;
 
         downloadSources = true;
-        repositories = List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS);
+        repositories = List.of(MAVEN_CENTRAL, CENTRAL_SNAPSHOTS);
     }
 }

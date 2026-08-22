@@ -31,10 +31,6 @@ public record Repository(String location, String username, String password) {
     public static final Repository MAVEN_CENTRAL = new Repository("https://repo1.maven.org/maven2/");
     public static final Repository SECURECHAIN_REBUILT = new Repository("https://nexus-repo.corp.cloudlinux.com/repository/tuxcare_rebuilt");
     public static final Repository SECURECHAIN_VETTED = new Repository("https://nexus-repo.corp.cloudlinux.com/repository/tuxcare_vetted");
-    public static final Repository SONATYPE_RELEASES = new Repository("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/");
-    public static final Repository SONATYPE_RELEASES_LEGACY = new Repository("https://oss.sonatype.org/service/local/staging/deploy/maven2/");
-    public static final Repository SONATYPE_SNAPSHOTS = new Repository("https://s01.oss.sonatype.org/content/repositories/snapshots/");
-    public static final Repository SONATYPE_SNAPSHOTS_LEGACY = new Repository("https://oss.sonatype.org/content/repositories/snapshots/");
     public static final String OSSRH_STAGING_API_DOMAIN = "ossrh-staging-api.central.sonatype.com";
     public static final Repository CENTRAL_RELEASES = new Repository("https://" + OSSRH_STAGING_API_DOMAIN + "/service/local/staging/deploy/maven2/");
     public static final Repository CENTRAL_SNAPSHOTS = new Repository("https://central.sonatype.com/repository/maven-snapshots/");
@@ -103,10 +99,6 @@ public record Repository(String location, String username, String password) {
             case "RIFE2_SNAPSHOTS" -> Repository.RIFE2_SNAPSHOTS;
             case "SECURECHAIN_REBUILT" -> SECURECHAIN_REBUILT;
             case "SECURECHAIN_VETTED" -> SECURECHAIN_VETTED;
-            case "SONATYPE_RELEASES" -> Repository.SONATYPE_RELEASES;
-            case "SONATYPE_RELEASES_LEGACY" -> Repository.SONATYPE_RELEASES_LEGACY;
-            case "SONATYPE_SNAPSHOTS" -> Repository.SONATYPE_SNAPSHOTS;
-            case "SONATYPE_SNAPSHOTS_LEGACY" -> Repository.SONATYPE_SNAPSHOTS_LEGACY;
             case "CENTRAL_RELEASES" -> Repository.CENTRAL_RELEASES;
             case "CENTRAL_SNAPSHOTS" -> Repository.CENTRAL_SNAPSHOTS;
             default -> new Repository(locationOrName);

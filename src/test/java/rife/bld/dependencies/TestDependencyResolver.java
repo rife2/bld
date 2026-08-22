@@ -33,7 +33,7 @@ public class TestDependencyResolver {
     @Test
     void testInstantiation() {
         var repos = new ArrayList<>(MAVEN_CENTRAL_REPOSITORIES);
-        Collections.addAll(repos, GOOGLE, SONATYPE_SNAPSHOTS, SONATYPE_RELEASES, SONATYPE_RELEASES_LEGACY, SONATYPE_SNAPSHOTS_LEGACY, RIFE2_RELEASES, RIFE2_SNAPSHOTS);
+        Collections.addAll(repos, GOOGLE, CENTRAL_RELEASES, CENTRAL_SNAPSHOTS, RIFE2_RELEASES, RIFE2_SNAPSHOTS);
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "com.uwyn.rife2:rife2:1.8.0")),
             ArtifactRetriever.instance(), repos, new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0)));
         assertNotNull(resolver);
@@ -1000,7 +1000,7 @@ public class TestDependencyResolver {
     @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testTransferDependencySnapshotSourcesJavadocModule()
     throws Exception {
-        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(SONATYPE_SNAPSHOTS, RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), List.of(CENTRAL_SNAPSHOTS, RIFE2_SNAPSHOTS), new Module("com.uwyn.rife2", "rife2", new VersionNumber(1, 9, 1, "SNAPSHOT")));
         var tmp1 = Files.createTempDirectory("transfers").toFile();
         var tmp2 = Files.createTempDirectory("modules").toFile();
         try {

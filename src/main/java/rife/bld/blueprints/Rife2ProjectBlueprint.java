@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.List;
 
 import static rife.bld.dependencies.Repository.MAVEN_CENTRAL;
-import static rife.bld.dependencies.Repository.SONATYPE_SNAPSHOTS;
+import static rife.bld.dependencies.Repository.CENTRAL_SNAPSHOTS;
 import static rife.bld.dependencies.Scope.*;
 
 /**
@@ -37,7 +37,7 @@ public class Rife2ProjectBlueprint extends WebProject {
         version = versionNumber;
 
         downloadSources = true;
-        repositories = List.of(MAVEN_CENTRAL, SONATYPE_SNAPSHOTS);
+        repositories = List.of(MAVEN_CENTRAL, CENTRAL_SNAPSHOTS);
         scope(compile)
             .include(dependency("com.uwyn.rife2", "rife2", version(1,9,1)));
         scope(test)
