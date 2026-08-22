@@ -141,6 +141,8 @@ public class HelpOperation {
      */
     public void executePrintWelcome() {
         System.err.println("Welcome to bld " + BldVersion.getVersion() + ".");
+        System.err.println("Java version " + System.getProperty("java.version") +
+                           " (" + System.getProperty("java.vendor") + ").");
         System.err.println();
     }
 
