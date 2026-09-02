@@ -7,6 +7,8 @@ package rife.bld.dependencies;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import rife.bld.dependencies.exceptions.RepositoryLocationInvalidException;
+import rife.bld.dependencies.exceptions.RepositoryNotResolvedException;
 import rife.ioc.HierarchicalProperties;
 
 import java.nio.file.Path;
@@ -124,7 +126,6 @@ public class TestRepository {
     void testResolveRepository() {
         var properties = new HierarchicalProperties();
 
-        assertEquals(new Repository("myrepo"), Repository.resolveRepository(properties, "myrepo"));
         assertEquals(new Repository("https://some.repo"), Repository.resolveRepository(properties, "https://some.repo"));
 
         properties.put("bld.repo.therepo", "https://the.repo/is/here");
@@ -135,5 +136,39 @@ public class TestRepository {
 
         properties.put("bld.repo.therepo.password", "thepassword");
         assertEquals(new Repository("https://the.repo/is/here", "theuser", "thepassword"), Repository.resolveRepository(properties, "therepo"));
+    }
+
+    @Test
+    void testResolveRepositoryLocations() {
+        var properties = new HierarchicalProperties();
+
+        // a location doesn't have to be a URL
+        assertEquals(new Repository("/var/repository"), Repository.resolveRepository(properties, "/var/repository"));
+        assertEquals(new Repository("file:///var/repository"), Repository.resolveRepository(properties, "file:///var/repository"));
+        assertEquals(new Repository("http://localhost:8080/releases"), Repository.resolveRepository(properties, "http://localhost:8080/releases"));
+    }
+
+    @Test
+    void testResolveRepositoryUnknownName() {
+        var properties = new HierarchicalProperties();
+
+        var e = assertThrows(RepositoryNotResolvedException.class,
+            () -> Repository.resolveRepository(properties, "myrepo"));
+        assertEquals("myrepo", e.getName());
+        assertEquals("bld.repo.myrepo", e.getProperty());
+
+        properties.put("bld.repo.myrepo", "https://my.repo/releases/");
+        assertEquals(new Repository("https://my.repo/releases/"), Repository.resolveRepository(properties, "myrepo"));
+    }
+
+    @Test
+    void testResolveRepositoryPropertyThatIsntALocation() {
+        var properties = new HierarchicalProperties();
+        properties.put("bld.repo.typo", "rife2-releases");
+
+        var e = assertThrows(RepositoryLocationInvalidException.class,
+            () -> Repository.resolveRepository(properties, "typo"));
+        assertEquals("bld.repo.typo", e.getProperty());
+        assertEquals("rife2-releases", e.getLocation());
     }
 }

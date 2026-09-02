@@ -4,6 +4,8 @@
  */
 package rife.bld.dependencies;
 
+import rife.bld.dependencies.exceptions.RepositoryLocationInvalidException;
+import rife.bld.dependencies.exceptions.RepositoryNotResolvedException;
 import rife.ioc.HierarchicalProperties;
 import rife.tools.StringEncryptor;
 
@@ -77,11 +79,16 @@ public record Repository(String location, String username, String password) {
      * @param properties     the hierarchical properties to look into
      * @param locationOrName the text to resolve a repository name or to be used as a location
      * @return the repository instance
+     * @throws RepositoryNotResolvedException when the name doesn't resolve to anything and isn't a location itself
+     * @throws RepositoryLocationInvalidException when the property that declares it doesn't hold a location
      * @since 1.5.12
      */
     public static Repository resolveRepository(HierarchicalProperties properties, String locationOrName) {
         if (properties != null && properties.contains(PROPERTY_BLD_REPO_PREFIX + locationOrName)) {
             var location = properties.getValueString(PROPERTY_BLD_REPO_PREFIX + locationOrName);
+            if (!isLocation(location)) {
+                throw new RepositoryLocationInvalidException(PROPERTY_BLD_REPO_PREFIX + locationOrName, location);
+            }
             var username = properties.getValueString(PROPERTY_BLD_REPO_PREFIX + locationOrName + PROPERTY_BLD_REPO_USERNAME_SUFFIX);
             var password = properties.getValueString(PROPERTY_BLD_REPO_PREFIX + locationOrName + PROPERTY_BLD_REPO_PASSWORD_SUFFIX);
             return new Repository(location, username, password);
@@ -101,8 +108,33 @@ public record Repository(String location, String username, String password) {
             case "SECURECHAIN_VETTED" -> SECURECHAIN_VETTED;
             case "CENTRAL_RELEASES" -> Repository.CENTRAL_RELEASES;
             case "CENTRAL_SNAPSHOTS" -> Repository.CENTRAL_SNAPSHOTS;
-            default -> new Repository(locationOrName);
+            default -> {
+                // without this a name that resolves to nothing becomes a
+                // repository at that relative path, which publishes into a
+                // directory instead of failing
+                if (!isLocation(locationOrName)) {
+                    throw new RepositoryNotResolvedException(locationOrName, PROPERTY_BLD_REPO_PREFIX + locationOrName);
+                }
+                yield new Repository(locationOrName);
+            }
         };
+    }
+
+    /**
+     * Indicates whether text can be used as a repository location, which is
+     * a URL with a scheme or an absolute path on the file system. Anything
+     * else is a name that has to resolve to one.
+     *
+     * @param text the text to check
+     * @return {@code true} when the text is a location; or {@code false} otherwise
+     * @since 3.0
+     */
+    public static boolean isLocation(String text) {
+        return text != null &&
+               (text.contains("://") ||
+                text.startsWith("file:") ||
+                text.startsWith("/") ||
+                WINDOWS_ABSOLUTE_PATH.matcher(text).find());
     }
 
     /**
