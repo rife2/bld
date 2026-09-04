@@ -37,7 +37,7 @@ public class LibProjectBlueprint extends Project {
         downloadSources = true;
         repositories = List.of(MAVEN_CENTRAL, CENTRAL_SNAPSHOTS);
         scope(test)
-            .include(dependency("org.junit.jupiter", "junit-jupiter", version(6,1,2)))
-            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(6,1,2)));
+            .include(dependency("org.junit.jupiter", "junit-jupiter", version(6,1,3)))
+            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(6,1,3)));
     }
 }

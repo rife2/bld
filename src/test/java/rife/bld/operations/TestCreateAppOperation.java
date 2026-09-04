@@ -106,20 +106,20 @@ public class TestCreateAppOperation {
                     /my-app/lib/test/apiguardian-api-1\\.1\\.2\\.jar
                     /my-app/lib/test/jspecify-1\\.0\\.0-sources\\.jar
                     /my-app/lib/test/jspecify-1\\.0\\.0\\.jar
-                    /my-app/lib/test/junit-jupiter-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-jupiter-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-jupiter-api-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-jupiter-api-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-jupiter-engine-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-jupiter-engine-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-jupiter-params-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-jupiter-params-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-platform-commons-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-platform-commons-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-platform-console-standalone-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-platform-console-standalone-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-platform-engine-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-platform-engine-6\\.1\\.2\\.jar
+                    /my-app/lib/test/junit-jupiter-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-jupiter-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-jupiter-api-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-jupiter-api-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-jupiter-engine-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-jupiter-engine-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-jupiter-params-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-jupiter-params-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-platform-commons-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-platform-commons-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-platform-console-standalone-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-platform-console-standalone-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-platform-engine-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-platform-engine-6\\.1\\.3\\.jar
                     /my-app/lib/test/modules
                     /my-app/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
                     /my-app/lib/test/opentest4j-1\\.3\\.0\\.jar
@@ -192,20 +192,20 @@ public class TestCreateAppOperation {
                     /my-app/lib/test/apiguardian-api-1\\.1\\.2\\.jar
                     /my-app/lib/test/jspecify-1\\.0\\.0-sources\\.jar
                     /my-app/lib/test/jspecify-1\\.0\\.0\\.jar
-                    /my-app/lib/test/junit-jupiter-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-jupiter-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-jupiter-api-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-jupiter-api-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-jupiter-engine-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-jupiter-engine-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-jupiter-params-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-jupiter-params-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-platform-commons-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-platform-commons-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-platform-console-standalone-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-platform-console-standalone-6\\.1\\.2\\.jar
-                    /my-app/lib/test/junit-platform-engine-6\\.1\\.2-sources\\.jar
-                    /my-app/lib/test/junit-platform-engine-6\\.1\\.2\\.jar
+                    /my-app/lib/test/junit-jupiter-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-jupiter-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-jupiter-api-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-jupiter-api-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-jupiter-engine-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-jupiter-engine-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-jupiter-params-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-jupiter-params-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-platform-commons-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-platform-commons-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-platform-console-standalone-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-platform-console-standalone-6\\.1\\.3\\.jar
+                    /my-app/lib/test/junit-platform-engine-6\\.1\\.3-sources\\.jar
+                    /my-app/lib/test/junit-platform-engine-6\\.1\\.3\\.jar
                     /my-app/lib/test/modules
                     /my-app/lib/test/opentest4j-1\\.3\\.0-sources\\.jar
                     /my-app/lib/test/opentest4j-1\\.3\\.0\\.jar
@@ -398,20 +398,20 @@ public class TestCreateAppOperation {
                 /my-app/lib/local/apiguardian-api-1\\.1\\.2\\.jar
                 /my-app/lib/local/jspecify-1\\.0\\.0-sources\\.jar
                 /my-app/lib/local/jspecify-1\\.0\\.0\\.jar
-                /my-app/lib/local/junit-jupiter-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local/junit-jupiter-6\\.1\\.2\\.jar
-                /my-app/lib/local/junit-jupiter-api-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local/junit-jupiter-api-6\\.1\\.2\\.jar
-                /my-app/lib/local/junit-jupiter-engine-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local/junit-jupiter-engine-6\\.1\\.2\\.jar
-                /my-app/lib/local/junit-jupiter-params-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local/junit-jupiter-params-6\\.1\\.2\\.jar
-                /my-app/lib/local/junit-platform-commons-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local/junit-platform-commons-6\\.1\\.2\\.jar
-                /my-app/lib/local/junit-platform-console-standalone-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local/junit-platform-console-standalone-6\\.1\\.2\\.jar
-                /my-app/lib/local/junit-platform-engine-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local/junit-platform-engine-6\\.1\\.2\\.jar
+                /my-app/lib/local/junit-jupiter-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local/junit-jupiter-6\\.1\\.3\\.jar
+                /my-app/lib/local/junit-jupiter-api-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local/junit-jupiter-api-6\\.1\\.3\\.jar
+                /my-app/lib/local/junit-jupiter-engine-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local/junit-jupiter-engine-6\\.1\\.3\\.jar
+                /my-app/lib/local/junit-jupiter-params-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local/junit-jupiter-params-6\\.1\\.3\\.jar
+                /my-app/lib/local/junit-platform-commons-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local/junit-platform-commons-6\\.1\\.3\\.jar
+                /my-app/lib/local/junit-platform-console-standalone-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local/junit-platform-console-standalone-6\\.1\\.3\\.jar
+                /my-app/lib/local/junit-platform-engine-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local/junit-platform-engine-6\\.1\\.3\\.jar
                 /my-app/lib/local/opentest4j-1\\.3\\.0-sources\\.jar
                 /my-app/lib/local/opentest4j-1\\.3\\.0\\.jar
                 /my-app/lib/provided
@@ -527,20 +527,20 @@ public class TestCreateAppOperation {
                 /my-app/lib/local_test/apiguardian-api-1\\.1\\.2\\.jar
                 /my-app/lib/local_test/jspecify-1\\.0\\.0-sources\\.jar
                 /my-app/lib/local_test/jspecify-1\\.0\\.0\\.jar
-                /my-app/lib/local_test/junit-jupiter-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local_test/junit-jupiter-6\\.1\\.2\\.jar
-                /my-app/lib/local_test/junit-jupiter-api-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local_test/junit-jupiter-api-6\\.1\\.2\\.jar
-                /my-app/lib/local_test/junit-jupiter-engine-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local_test/junit-jupiter-engine-6\\.1\\.2\\.jar
-                /my-app/lib/local_test/junit-jupiter-params-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local_test/junit-jupiter-params-6\\.1\\.2\\.jar
-                /my-app/lib/local_test/junit-platform-commons-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local_test/junit-platform-commons-6\\.1\\.2\\.jar
-                /my-app/lib/local_test/junit-platform-console-standalone-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local_test/junit-platform-console-standalone-6\\.1\\.2\\.jar
-                /my-app/lib/local_test/junit-platform-engine-6\\.1\\.2-sources\\.jar
-                /my-app/lib/local_test/junit-platform-engine-6\\.1\\.2\\.jar
+                /my-app/lib/local_test/junit-jupiter-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local_test/junit-jupiter-6\\.1\\.3\\.jar
+                /my-app/lib/local_test/junit-jupiter-api-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local_test/junit-jupiter-api-6\\.1\\.3\\.jar
+                /my-app/lib/local_test/junit-jupiter-engine-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local_test/junit-jupiter-engine-6\\.1\\.3\\.jar
+                /my-app/lib/local_test/junit-jupiter-params-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local_test/junit-jupiter-params-6\\.1\\.3\\.jar
+                /my-app/lib/local_test/junit-platform-commons-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local_test/junit-platform-commons-6\\.1\\.3\\.jar
+                /my-app/lib/local_test/junit-platform-console-standalone-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local_test/junit-platform-console-standalone-6\\.1\\.3\\.jar
+                /my-app/lib/local_test/junit-platform-engine-6\\.1\\.3-sources\\.jar
+                /my-app/lib/local_test/junit-platform-engine-6\\.1\\.3\\.jar
                 /my-app/lib/local_test/opentest4j-1\\.3\\.0-sources\\.jar
                 /my-app/lib/local_test/opentest4j-1\\.3\\.0\\.jar
                 /my-app/lib/provided
