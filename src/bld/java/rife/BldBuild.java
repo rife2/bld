@@ -163,6 +163,14 @@ public class BldBuild extends AbstractRife2Build {
         zipBld();
     }
 
+    @BuildCommand(value = "release-train", summary = "Orchestrates the interdependent bld, RIFE2 and extensions release")
+    public void releaseTrain() throws Exception {
+        new ReleaseTrainOperation()
+            .fromProject(this)
+            .arguments(arguments())
+            .execute();
+    }
+
     @BuildCommand(summary = "Runs the JUnit reporter")
     public void reporter() throws Exception {
         new JUnitReporterOperation()
