@@ -87,9 +87,9 @@ public class BldBuild extends AbstractRife2Build {
                     "-group", "RIFE2/core", "rife:rife.cmf*:rife.config*:rife.database*:rife.datastructures*:rife.engine*:rife.forms*:rife.instrument*:rife.ioc*:rife.resources*:rife.selector*:rife.template*:rife.tools*:rife.validation*:rife.xml*"));
 
         publishOperation()
-            .repository(version.isSnapshot() ? repository("rife2-snapshots") : repository("rife2-releases"))
-            .repository(version.isSnapshot() ? repository("central-snapshots") : repository("central-releases"))
-            .repository(repository("github"))
+            .repository(version.isSnapshot() ? "rife2-snapshots" : "rife2-releases")
+            .repository(version.isSnapshot() ? "central-snapshots" : "central-releases")
+            .repository("github")
             .info(new PublishInfo()
                 .groupId("com.uwyn.rife2")
                 .artifactId("bld")
