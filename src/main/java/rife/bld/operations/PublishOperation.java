@@ -122,7 +122,10 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
             return;
         }
         for (var name : repositoryNames_) {
-            repositories_.add(Repository.resolveRepository(properties(), name));
+            var resolved = Repository.resolveRepository(properties(), name);
+            if (!resolved.isUnresolved()) {
+                repositories_.add(resolved);
+            }
         }
         repositoryNames_.clear();
     }
@@ -823,7 +826,11 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * @since 1.5.7
      */
     public PublishOperation repository(Repository repository) {
-        repositories_.add(repository);
+        // a name a build file resolved itself arrives here unresolved, the
+        // other repositories of the publication still get their artifacts
+        if (repository != null && !repository.isUnresolved()) {
+            repositories_.add(repository);
+        }
         return this;
     }
 
@@ -854,7 +861,9 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * @since 1.5.18
      */
     public PublishOperation repositories(Repository... repositories) {
-        repositories_.addAll(List.of(repositories));
+        for (var repository : repositories) {
+            repository(repository);
+        }
         return this;
     }
 

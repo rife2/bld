@@ -14,7 +14,6 @@ import rife.bld.Project;
 import rife.bld.WebProject;
 import rife.bld.blueprints.AppProjectBlueprint;
 import rife.bld.dependencies.*;
-import rife.bld.dependencies.exceptions.RepositoryNotResolvedException;
 import rife.bld.publish.PublishArtifact;
 import rife.bld.publish.PublishInfo;
 import rife.ioc.HierarchicalProperties;
@@ -81,14 +80,40 @@ public class TestPublishOperation {
     }
 
     @Test
-    void testRepositoryNameResolvesWhenPublishing() {
-        // naming a repository that isn't declared may only fail a publication,
-        // never the construction of a build file, which would take every other
-        // command down with it
-        var operation = assertDoesNotThrow(() ->
-            new PublishOperation().repository("this-name-is-not-declared"));
+    void testRepositoryNameThatIsntDeclaredIsSkipped() {
+        // a name that resolves to nothing is left out with a warning, the
+        // repositories around it still receive the publication
+        var properties = new HierarchicalProperties();
+        properties.put("bld.repo.declared-name", "https://repo.example.com/releases/");
+
+        var operation = assertDoesNotThrow(() -> new PublishOperation()
+            .properties(properties)
+            .repository("this-name-is-not-declared")
+            .repository("declared-name"));
         assertTrue(operation.repositories().isEmpty());
-        assertThrows(RepositoryNotResolvedException.class, operation::execute);
+
+        operation.executeResolveRepositoryNames();
+        assertEquals(1, operation.repositories().size());
+        assertEquals("https://repo.example.com/releases/", operation.repositories().get(0).location());
+    }
+
+    @Test
+    void testUnresolvedRepositoryHandedOverIsSkipped() {
+        // a build file resolves the name itself and passes the result on,
+        // which is the placeholder when nothing declares it
+        var unresolved = Repository.resolveRepository(new HierarchicalProperties(), "this-name-is-not-declared");
+        var operation = new PublishOperation()
+            .repository(unresolved)
+            .repository(Repository.MAVEN_CENTRAL);
+        assertEquals(1, operation.repositories().size());
+        assertEquals(Repository.MAVEN_CENTRAL, operation.repositories().get(0));
+
+        // and putting it in a list, which is what a build file does, is safe
+        assertDoesNotThrow(() -> List.of(Repository.MAVEN_CENTRAL, unresolved));
+
+        // the varargs and list forms leave it out as well
+        assertEquals(List.of(Repository.MAVEN_CENTRAL),
+            new PublishOperation().repositories(unresolved, Repository.MAVEN_CENTRAL).repositories());
     }
 
     @Test

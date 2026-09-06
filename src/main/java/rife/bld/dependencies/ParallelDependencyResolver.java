@@ -39,10 +39,7 @@ public class ParallelDependencyResolver {
     public ParallelDependencyResolver(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories) {
         resolution_ = resolution;
         retriever_ = retriever;
-        if (repositories == null) {
-            repositories = List.of();
-        }
-        repositories_ = repositories;
+        repositories_ = Repository.usable(repositories);
     }
 
     /**

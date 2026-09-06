@@ -31,6 +31,22 @@ import static rife.bld.dependencies.Scope.runtime;
 
 public class TestDependencyResolver {
     @Test
+    void testInstantiationSkipsUnresolvedRepositories() {
+        // a build file can put an unresolved name straight into its own list,
+        // so the resolvers are where it has to be left out
+        var repos = List.of(MAVEN_CENTRAL, Repository.UNRESOLVED, RIFE2_RELEASES);
+        var dependency = new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 4, 0));
+
+        var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties()),
+            ArtifactRetriever.instance(), repos, dependency);
+        assertEquals(List.of(MAVEN_CENTRAL, RIFE2_RELEASES), resolver.repositories());
+
+        var parallel = new ParallelDependencyResolver(new VersionResolution(new HierarchicalProperties()),
+            ArtifactRetriever.instance(), repos);
+        assertEquals(List.of(MAVEN_CENTRAL, RIFE2_RELEASES), parallel.repositories());
+    }
+
+    @Test
     void testInstantiation() {
         var repos = new ArrayList<>(MAVEN_CENTRAL_REPOSITORIES);
         Collections.addAll(repos, GOOGLE, CENTRAL_RELEASES, CENTRAL_SNAPSHOTS, RIFE2_RELEASES, RIFE2_SNAPSHOTS);

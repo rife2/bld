@@ -42,10 +42,7 @@ public class DependencyResolver {
     public DependencyResolver(VersionResolution resolution, ArtifactRetriever retriever, List<Repository> repositories, Dependency dependency) {
         resolution_ = resolution;
         retriever_ = retriever;
-        if (repositories == null) {
-            repositories = Collections.emptyList();
-        }
-        repositories_ = repositories;
+        repositories_ = Repository.usable(repositories);
         dependency_ = dependency;
     }
 

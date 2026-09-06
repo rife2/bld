@@ -8,10 +8,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import rife.bld.dependencies.exceptions.RepositoryLocationInvalidException;
-import rife.bld.dependencies.exceptions.RepositoryNotResolvedException;
 import rife.ioc.HierarchicalProperties;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -149,13 +150,25 @@ public class TestRepository {
     }
 
     @Test
+    void testUsable() {
+        assertEquals(List.of(), Repository.usable(null));
+        assertEquals(List.of(), Repository.usable(List.of()));
+        assertEquals(List.of(Repository.MAVEN_CENTRAL),
+            Repository.usable(Arrays.asList(Repository.MAVEN_CENTRAL, null, Repository.UNRESOLVED)));
+        assertFalse(Repository.MAVEN_CENTRAL.isUnresolved());
+        assertTrue(Repository.UNRESOLVED.isUnresolved());
+    }
+
+    @Test
     void testResolveRepositoryUnknownName() {
         var properties = new HierarchicalProperties();
 
-        var e = assertThrows(RepositoryNotResolvedException.class,
-            () -> Repository.resolveRepository(properties, "myrepo"));
-        assertEquals("myrepo", e.getName());
-        assertEquals("bld.repo.myrepo", e.getProperty());
+        var unresolved = Repository.resolveRepository(properties, "myrepo");
+        assertEquals(Repository.UNRESOLVED, unresolved);
+        assertTrue(unresolved.isUnresolved());
+        // it can sit in a list without breaking it, and is left out of use
+        assertEquals(List.of(Repository.MAVEN_CENTRAL),
+            Repository.usable(List.of(Repository.MAVEN_CENTRAL, unresolved)));
 
         properties.put("bld.repo.myrepo", "https://my.repo/releases/");
         assertEquals(new Repository("https://my.repo/releases/"), Repository.resolveRepository(properties, "myrepo"));

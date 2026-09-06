@@ -715,7 +715,10 @@ public class BaseProject extends BuildExecutor {
      * {@code bld.repo.myrepo.password} (optional)
      *
      * @param locationOrName the repository location or name
-     * @return a newly created {@code Repository} instance
+     * @return a newly created {@code Repository} instance; or
+     * {@link Repository#UNRESOLVED} when the name isn't declared anywhere,
+     * which is reported as a warning and is left out wherever repositories
+     * are used, instead of stopping the build
      * @since 1.5.6
      */
     public Repository repository(String locationOrName) {

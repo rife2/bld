@@ -76,7 +76,10 @@ class ExtensionClasspath {
         resolution_ = new VersionResolution(properties);
         Repository.resolveMavenLocal(properties);
         for (var repository : wrapper.repositories()) {
-            repositories_.add(Repository.resolveRepository(properties, repository));
+            var resolved = Repository.resolveRepository(properties, repository);
+            if (!resolved.isUnresolved()) {
+                repositories_.add(resolved);
+            }
         }
         extensions_.addAll(wrapper.extensions().stream().map(d -> resolution_.overrideDependency(Dependency.parse(d))).toList());
 

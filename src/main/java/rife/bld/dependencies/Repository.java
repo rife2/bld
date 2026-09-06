@@ -5,13 +5,13 @@
 package rife.bld.dependencies;
 
 import rife.bld.dependencies.exceptions.RepositoryLocationInvalidException;
-import rife.bld.dependencies.exceptions.RepositoryNotResolvedException;
 import rife.ioc.HierarchicalProperties;
 import rife.tools.StringEncryptor;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -38,6 +38,14 @@ public record Repository(String location, String username, String password) {
     public static final Repository CENTRAL_SNAPSHOTS = new Repository("https://central.sonatype.com/repository/maven-snapshots/");
     public static final Repository RIFE2_RELEASES = new Repository("https://repo.rife2.com/releases/");
     public static final Repository RIFE2_SNAPSHOTS = new Repository("https://repo.rife2.com/snapshots/");
+    /**
+     * The repository a name resolves to when nothing declares it. It has no
+     * location, so it can be put in a list without breaking it, and it is
+     * left out wherever repositories are actually used.
+     *
+     * @since 3.0
+     */
+    public static final Repository UNRESOLVED = new Repository(null);
 
     private static final String MAVEN_LOCAL_REPO_PROPERTY = "maven.repo.local";
 
@@ -78,8 +86,9 @@ public record Repository(String location, String username, String password) {
      *
      * @param properties     the hierarchical properties to look into
      * @param locationOrName the text to resolve a repository name or to be used as a location
-     * @return the repository instance
-     * @throws RepositoryNotResolvedException when the name doesn't resolve to anything and isn't a location itself
+     * @return the repository instance; or {@link #UNRESOLVED} when the name
+     * doesn't resolve to anything and isn't a location itself, which is
+     * reported as a warning so that the rest of the build carries on without it
      * @throws RepositoryLocationInvalidException when the property that declares it doesn't hold a location
      * @since 1.5.12
      */
@@ -109,15 +118,45 @@ public record Repository(String location, String username, String password) {
             case "CENTRAL_RELEASES" -> Repository.CENTRAL_RELEASES;
             case "CENTRAL_SNAPSHOTS" -> Repository.CENTRAL_SNAPSHOTS;
             default -> {
-                // without this a name that resolves to nothing becomes a
-                // repository at that relative path, which publishes into a
-                // directory instead of failing
+                // a name that resolves to nothing used to become a repository
+                // at that relative path, which publishes into a directory
+                // instead of where it was meant to go
                 if (!isLocation(locationOrName)) {
-                    throw new RepositoryNotResolvedException(locationOrName, PROPERTY_BLD_REPO_PREFIX + locationOrName);
+                    System.out.println("WARNING: '" + locationOrName + "' isn't a repository, declare it with a '" +
+                                       PROPERTY_BLD_REPO_PREFIX + locationOrName + "' property, use one of the " +
+                                       "built-in names, or give a location, skipping.");
+                    yield UNRESOLVED;
                 }
                 yield new Repository(locationOrName);
             }
         };
+    }
+
+    /**
+     * Keeps only the repositories that can actually be used, leaving out the
+     * ones a name didn't resolve to. The warning was already given when the
+     * name was resolved, so this is silent.
+     *
+     * @param repositories the repositories to filter, may be {@code null}
+     * @return the repositories that have a location
+     * @since 3.0
+     */
+    public static List<Repository> usable(List<Repository> repositories) {
+        if (repositories == null) {
+            return List.of();
+        }
+        return repositories.stream().filter(r -> r != null && !r.isUnresolved()).toList();
+    }
+
+    /**
+     * Indicates whether this repository has no location, which is what a name
+     * that nothing declares resolves to.
+     *
+     * @return {@code true} when the repository can't be used; or {@code false} otherwise
+     * @since 3.0
+     */
+    public boolean isUnresolved() {
+        return location() == null;
     }
 
     /**

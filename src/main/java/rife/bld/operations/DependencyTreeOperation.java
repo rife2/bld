@@ -244,7 +244,10 @@ public class DependencyTreeOperation extends AbstractOperation<DependencyTreeOpe
             extensionProperties(extension_properties);
 
             for (var repository : wrapper.repositories()) {
-                extensionRepositories().add(Repository.resolveRepository(extensionProperties(), repository));
+                var resolved = Repository.resolveRepository(extensionProperties(), repository);
+                if (!resolved.isUnresolved()) {
+                    extensionRepositories().add(resolved);
+                }
             }
             extensionDependencies().scope(compile).addAll(wrapper.extensions().stream().map(Dependency::parse).toList());
         } catch (IOException e) {

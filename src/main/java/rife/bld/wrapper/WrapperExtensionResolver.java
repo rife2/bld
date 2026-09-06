@@ -52,7 +52,10 @@ public class WrapperExtensionResolver {
         destinationDirectory_ = destinationDirectory;
 
         for (var repository : repositories) {
-            repositories_.add(Repository.resolveRepository(properties, repository));
+            var resolved = Repository.resolveRepository(properties, repository);
+            if (!resolved.isUnresolved()) {
+                repositories_.add(resolved);
+            }
         }
 
         dependencies_.addAll(extensions.stream().map(d -> resolution_.overrideDependency(Dependency.parse(d))).toList());
