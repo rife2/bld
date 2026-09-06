@@ -53,6 +53,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
 
     private ZonedDateTime moment_ = null;
     private final List<Repository> repositories_ = new ArrayList<>();
+    private final List<String> repositoryNames_ = new ArrayList<>();
     private final List<Repository> dependencyRepositories_ = new ArrayList<>();
     private final DependencyScopes dependencies_ = new DependencyScopes();
     private PublishInfo info_ = new PublishInfo();
@@ -69,6 +70,8 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
             System.out.println("Offline mode: publish is disabled");
             return;
         }
+
+        executeResolveRepositoryNames();
 
         if (repositories().isEmpty()) {
             throw new OperationOptionException("ERROR: the publication repositories should be specified");
@@ -104,6 +107,24 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
         if (!silent()) {
             System.out.println("Publishing finished successfully.");
         }
+    }
+
+    /**
+     * Part of the {@link #execute} operation, resolves the repositories that
+     * were provided by name. A name is looked up when the publication runs
+     * rather than when the build file configures it, so that a name that
+     * isn't declared fails the publication instead of every other command.
+     *
+     * @since 3.0
+     */
+    protected void executeResolveRepositoryNames() {
+        if (repositoryNames_.isEmpty()) {
+            return;
+        }
+        for (var name : repositoryNames_) {
+            repositories_.add(Repository.resolveRepository(properties(), name));
+        }
+        repositoryNames_.clear();
     }
 
     /**
@@ -803,6 +824,25 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      */
     public PublishOperation repository(Repository repository) {
         repositories_.add(repository);
+        return this;
+    }
+
+    /**
+     * Provides the name or the location of a repository to publish to, can be
+     * called multiple times to add more repositories.
+     * <p>
+     * A name is resolved against the hierarchical properties when the
+     * operation executes, not when it is provided, so a build file that names
+     * a repository it can't resolve still compiles, tests and generates
+     * javadoc, and only its publication fails.
+     *
+     * @param locationOrName the location of a repository, or the name it is
+     *                       declared under in a {@code bld.repo.} property
+     * @return this operation instance
+     * @since 3.0
+     */
+    public PublishOperation repository(String locationOrName) {
+        repositoryNames_.add(locationOrName);
         return this;
     }
 

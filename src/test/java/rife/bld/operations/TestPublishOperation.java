@@ -14,8 +14,10 @@ import rife.bld.Project;
 import rife.bld.WebProject;
 import rife.bld.blueprints.AppProjectBlueprint;
 import rife.bld.dependencies.*;
+import rife.bld.dependencies.exceptions.RepositoryNotResolvedException;
 import rife.bld.publish.PublishArtifact;
 import rife.bld.publish.PublishInfo;
+import rife.ioc.HierarchicalProperties;
 import rife.tools.FileUtils;
 import rife.tools.exceptions.FileUtilsErrorException;
 
@@ -76,6 +78,35 @@ public class TestPublishOperation {
             super(work, packageName, projectName, baseName, versionNumber);
             javaRelease = 17;
         }
+    }
+
+    @Test
+    void testRepositoryNameResolvesWhenPublishing() {
+        // naming a repository that isn't declared may only fail a publication,
+        // never the construction of a build file, which would take every other
+        // command down with it
+        var operation = assertDoesNotThrow(() ->
+            new PublishOperation().repository("this-name-is-not-declared"));
+        assertTrue(operation.repositories().isEmpty());
+        assertThrows(RepositoryNotResolvedException.class, operation::execute);
+    }
+
+    @Test
+    void testRepositoryNameResolvedFromProperties() {
+        var properties = new HierarchicalProperties();
+        properties.put("bld.repo.declared-name", "https://repo.example.com/releases/");
+        properties.put("bld.repo.declared-name.username", "user");
+        properties.put("bld.repo.declared-name.password", "secret");
+
+        var operation = new PublishOperation().properties(properties).repository("declared-name");
+        assertTrue(operation.repositories().isEmpty());
+
+        operation.executeResolveRepositoryNames();
+        assertEquals(1, operation.repositories().size());
+        var repository = operation.repositories().get(0);
+        assertEquals("https://repo.example.com/releases/", repository.location());
+        assertEquals("user", repository.username());
+        assertEquals("secret", repository.password());
     }
 
     @Test
