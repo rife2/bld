@@ -42,9 +42,9 @@ import java.util.regex.Pattern;
  * It also doesn't police the workspace. It refuses only where the mistake
  * would be public and permanent: publishing a version that is already out,
  * publishing something other than what was built, publishing from a checkout
- * whose push would then fail, and a simulated run that could reach the
- * outside world. Everything else is visible in the output to whoever is
- * watching it.
+ * whose push would then fail, releasing a build that depends on a snapshot,
+ * and a simulated run that could reach the outside world. Everything else is
+ * visible in the output to whoever is watching it.
  * <p>
  * <b>The order</b> is the extensions, then core, then RIFE2, then bld.
  * Generated projects resolve from Maven Central only, so the RIFE2 the
@@ -54,9 +54,12 @@ import java.util.regex.Pattern;
  * each piece is published. The extensions go first because bld is what
  * names them: a bld released before them would carry a wrapper naming
  * extension versions that aren't public, and anyone building it from its
- * own tag would fail. The reverse window is harmless, a just published
- * extension can't be resolved until bld is public, since its pom names bld
- * in compile scope, but nothing public references that version yet.
+ * own tag would fail. The reverse window costs source builds only: a just
+ * published extension can't be resolved until bld is public, since its pom
+ * names bld in compile scope, and the core and RIFE2 tags pushed in the
+ * meantime name that bld and those extensions in their wrappers, so neither
+ * builds from its tag until bld is out. No published artifact depends on
+ * any of them before then.
  * <p>
  * The versions live in {@code release-train.properties}. The shape argument
  * decides which of them a run releases: {@code bld}, {@code bld+rife2},
@@ -83,6 +86,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
     // in its source rather than configured anywhere
     private static final String REPOSITORIES = "repositories = List.of(";
     private static final String LOCAL_REPOSITORIES = "repositories = List.of(MAVEN_LOCAL, ";
+    private static final String JVM_PROPERTY_SUFFIX = " through a -D of this JVM";
 
     private static final Pattern BLD_DEPENDENCY = Pattern.compile(
         "(dependency\\(\"com\\.uwyn\\.rife2\",\\s*\"bld\",\\s*version\\()[^)]+(\\)\\))");
@@ -92,6 +96,9 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
     // some_tool_version = version(...) can never match
     private static final Pattern EXTENSION_OWN_VERSION = Pattern.compile(
         "(?m)^(\\s*version\\s*=\\s*version\\()[^)]+(\\))");
+    // a snapshot version, as a qualifier or spelled out, wherever a build
+    // source keeps it
+    private static final Pattern SNAPSHOT_LITERAL = Pattern.compile("\"[^\"\\n]*-SNAPSHOT\"|\"SNAPSHOT\"");
 
     private File workspace_;
     private File bldDir_;
@@ -103,6 +110,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
     private String coreVersion_;
     private String releasesRepository_;
     private boolean simulate_;
+    private boolean tests_;
     private boolean releaseRife2_;
     private boolean releaseCore_;
     private final LinkedHashMap<String, String> extensionVersions_ = new LinkedHashMap<>();
@@ -177,7 +185,8 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             .sorted()
             .forEach(name -> extensionVersions_.put(name.substring("train.extension.".length()), version(config, name)));
         releasesRepository_ = config.getProperty("train.releases.repository", "").trim();
-        simulate_ = flag(config, "train.simulate");
+        simulate_ = flag(config, "train.simulate", false);
+        tests_ = flag(config, "train.tests", true);
         for (var follower : config.getProperty("train.followers", "").split(",")) {
             if (!follower.isBlank()) {
                 followers_.add(follower.trim());
@@ -209,8 +218,8 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
         }
     }
 
-    private static boolean flag(Properties config, String name) {
-        var value = config.getProperty(name, "false").trim();
+    private static boolean flag(Properties config, String name, boolean fallback) {
+        var value = config.getProperty(name, String.valueOf(fallback)).trim();
         if (value.isEmpty() || value.equals("false")) {
             return false;
         }
@@ -258,6 +267,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             System.out.println("  " + name + "  -> " + version + "  (" + dir + (dir.exists() ? ")" : ") MISSING CHECKOUT"));
         });
         followers_.forEach(follower -> System.out.println("  follower   " + follower + "  (converge only)"));
+        System.out.println("  tests      " + (tests_ ? "run by every build in the train" : "left to CI, the builds only compile"));
         System.out.println();
         problems().forEach(problem -> System.out.println("  ! " + problem));
         System.out.println();
@@ -284,15 +294,15 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             writeVersion(coreDir_, CORE_VERSION_FILE, coreVersion_);
             // RIFE2 compiles core from its own checkout
             writeVersion(rife2CoreDir_, CORE_VERSION_FILE, coreVersion_);
-            step("build and test core");
-            bld(coreDir_, "clean", "compile", "test");
+            step(tests_ ? "build and test core" : "build core");
+            build(coreDir_);
         }
 
         step("set bld version " + bldVersion_);
         writeVersion(bldDir_, BLD_VERSION_FILE, bldVersion_);
 
         step("bootstrap build of bld with the previous wrapper");
-        bld(bldDir_, "clean", "compile", "test");
+        build(bldDir_);
         bld(bldDir_, "publish-local");
 
         for (var extension : extensionVersions_.entrySet()) {
@@ -305,22 +315,22 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             // an extension compiles against the bld being released, which is
             // only in the local repository until the publish phase
             addLocalRepository(dir, build_file);
-            bld(dir, "clean", "compile", "test");
+            build(dir);
             bld(dir, "publish-local");
         }
 
         step("rebuild bld with itself and the new extensions");
         pointWrapperAtLocalBld(bldDir_);
         pinExtensions(bldDir_);
-        bld(bldDir_, "clean", "compile", "test");
+        build(bldDir_);
         bld(bldDir_, "publish-local");
 
         if (releaseRife2_) {
-            step("build, test and locally publish rife2 with the new bld and extensions");
+            step((tests_ ? "build, test and locally publish" : "build and locally publish") + " rife2 with the new bld and extensions");
             writeVersion(rife2Dir_, RIFE2_VERSION_FILE, rife2Version_);
             pointWrapperAtLocalBld(rife2Dir_);
             pinExtensions(rife2Dir_);
-            bld(rife2Dir_, "clean", "compile", "test");
+            build(rife2Dir_);
             // the smoke project resolves this version
             bld(rife2Dir_, "publish-local");
         }
@@ -332,7 +342,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             step("put " + repo.getName() + " on bld " + bldVersion_);
             makeWrapperCoherent(repo);
             if (members.contains(repo)) {
-                bld(repo, "clean", "compile", "test");
+                build(repo);
             } else {
                 bld(repo, "clean", "compile");
             }
@@ -388,7 +398,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             // whether or not RIFE2 is released here, or the two checkouts
             // are left recording different cores
             step("put the core checkout of rife2 on the released core commit");
-            advanceRife2Core(core_commit);
+            advanceRife2Core(core_commit, "refs/tags/" + coreVersion_);
         }
         if (releaseRife2_) {
             releaseRepo(rife2Dir_, rife2Version_, "Released RIFE2 " + rife2Version_);
@@ -396,10 +406,10 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             // generated projects resolve from Central only
             step("wait until rife2 " + rife2Version_ + " is resolvable");
             waitForRelease("rife2", rife2Version_);
-            // only now can these tests run, see the local phase
-            step("point the blueprint at rife2 " + rife2Version_ + ", build and test bld");
+            // only now can bld build against it, see the local phase
+            step("point the blueprint at rife2 " + rife2Version_ + (tests_ ? ", build and test bld" : " and build bld"));
             bumpBlueprint();
-            bld(bldDir_, "clean", "compile", "test");
+            build(bldDir_);
         }
         releaseRepo(bldDir_, bldVersion_, "Released bld " + bldVersion_);
         step("wait until bld " + bldVersion_ + " is resolvable");
@@ -440,6 +450,12 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             // a run that committed and then failed to push leaves a clean
             // repository whose commit hasn't arrived
             git.pushBranch();
+            // RIFE2 compiles core from its own checkout, so that one follows
+            // the update just made to bld's, as it follows a release
+            if (repo.equals(coreDir_) && rife2CoreDir_.exists() &&
+                !git.head().equals(git(rife2CoreDir_).head())) {
+                advanceRife2Core(git.head(), git.requireBranch());
+            }
         }
 
         step("verify that nothing is left on a local build or a snapshot");
@@ -574,12 +590,13 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
     }
 
     /**
-     * Puts RIFE2's core checkout on the commit the core release was published
-     * from, so that the RIFE2 release commit records the core it was built
-     * against. The version file the local phase wrote there is what that
-     * commit holds, so it makes way for the checkout.
+     * Puts RIFE2's core checkout on a commit of bld's: the one a core release
+     * was published from, so that the RIFE2 release commit records the core
+     * it was built against, or the one converge just made there. The version
+     * file the local phase wrote is what a release commit holds, so it makes
+     * way for the checkout.
      */
-    private void advanceRife2Core(String releasedCommit)
+    private void advanceRife2Core(String commit, String ref)
     throws Exception {
         var rife2_core = git(rife2CoreDir_);
         var unexpected = rife2_core.uncommittedPaths().stream()
@@ -590,8 +607,8 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
                                             String.join(", ", unexpected) + "), sort those out first.");
         }
         rife2_core.run("checkout", "--", ".");
-        rife2_core.run("fetch", coreDir_.getAbsolutePath(), "refs/tags/" + coreVersion_);
-        rife2_core.run("checkout", "--detach", releasedCommit);
+        rife2_core.run("fetch", coreDir_.getAbsolutePath(), ref);
+        rife2_core.run("checkout", "--detach", commit);
     }
 
     /*
@@ -654,12 +671,58 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
                 // core, so a run that stopped in between isn't a state to
                 // refuse over, it is one this phase finishes
                 if (!coreAlreadyReleased(bld_core)) {
-                    problems.add("the core checkouts of bld and rife2 aren't on the same commit");
+                    problems.add("the core checkouts aren't on the same commit, " + bld_core + " in " + coreDir_ +
+                                 " and " + rife2_core + " in " + rife2CoreDir_ + ", check out the same one in both");
                 }
             }
         }
 
+        problems.addAll(snapshotDependencyProblems());
         problems.addAll(simulationProblems());
+        return problems;
+    }
+
+    /**
+     * A release built from sources that depend on a snapshot can't be rebuilt
+     * from its tag once that snapshot moves on. The builds of bld and RIFE2
+     * extend core's, so core's build sources count for every release, RIFE2's
+     * only when RIFE2 is released. A member's own version and the bld
+     * dependency of an extension are exempt, the phases set those.
+     */
+    private List<String> snapshotDependencyProblems() {
+        var problems = new ArrayList<String>();
+        var dirs = new ArrayList<File>();
+        dirs.add(coreDir_);
+        dirs.add(bldDir_);
+        if (releaseRife2_) {
+            dirs.add(rife2Dir_);
+        }
+        extensionVersions_.keySet().forEach(name -> dirs.add(new File(workspace_, name)));
+        for (var dir : dirs) {
+            var sources = new File(dir, "src/bld/java");
+            if (!sources.exists()) {
+                continue;
+            }
+            for (var name : FileUtils.getFileList(sources)) {
+                if (!name.endsWith("Build.java")) {
+                    continue;
+                }
+                var build_file = new File(sources, name);
+                try {
+                    var source = FileUtils.readString(build_file);
+                    source = BLD_DEPENDENCY.matcher(source).replaceAll("$1$2");
+                    source = EXTENSION_OWN_VERSION.matcher(source).replaceAll("$1$2");
+                    for (var line : source.lines().toList()) {
+                        if (SNAPSHOT_LITERAL.matcher(line).find()) {
+                            problems.add(dir.getName() + " depends on a snapshot in " + build_file + ": " + line.trim() +
+                                         ", pin it to a released version first");
+                        }
+                    }
+                } catch (Exception e) {
+                    problems.add("couldn't read " + build_file + ": " + e.getMessage());
+                }
+            }
+        }
         return problems;
     }
 
@@ -700,7 +763,8 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             publicationDestinations(dir).forEach((name, location) -> {
                 if (!staysOnThisMachine(location)) {
                     problems.add(dir.getName() + " publishes to " + name + " at " + location +
-                                 ", override it in its " + BuildExecutor.LOCAL_PROPERTIES);
+                                 (name.endsWith(JVM_PROPERTY_SUFFIX) ? ", drop that -D" :
+                                  ", override it in its " + BuildExecutor.LOCAL_PROPERTIES));
                 }
             });
             var push = git(dir).pushUrl();
@@ -765,14 +829,15 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
                 }
             }
         }
-        // a -D outranks both files, and the builds launched from here inherit
-        // it the same way this JVM did
+        // a -D outranks both files in this JVM, and reaches the builds launched
+        // from here only when it came in through the environment, so it is
+        // checked next to the files rather than in place of them
         var system = System.getProperties();
         for (var name : system.stringPropertyNames()) {
             if (name.startsWith(Repository.PROPERTY_BLD_REPO_PREFIX) &&
                 !name.endsWith(Repository.PROPERTY_BLD_REPO_USERNAME_SUFFIX) &&
                 !name.endsWith(Repository.PROPERTY_BLD_REPO_PASSWORD_SUFFIX)) {
-                destinations.put(name.substring(Repository.PROPERTY_BLD_REPO_PREFIX.length()),
+                destinations.put(name.substring(Repository.PROPERTY_BLD_REPO_PREFIX.length()) + JVM_PROPERTY_SUFFIX,
                     system.getProperty(name).trim());
             }
         }
@@ -904,7 +969,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
                                 problems.add(repo.getName() + " uses the snapshot extension '" + declaration.trim() +
                                              "', release it here or pin it to a released version first");
                             }
-                        } else if (!released.equals(coordinate[2].trim())) {
+                        } else if (!released.equals(coordinate[2].trim().split("@")[0])) { // the version can carry a type
                             problems.add(repo.getName() + " uses " + coordinate[1].trim() + " " + coordinate[2].trim() +
                                          " instead of the " + released + " being released");
                         }
@@ -1256,6 +1321,20 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
      * them builds with the bld its wrapper names, and during a release that
      * isn't the same one for all of them.
      */
+    /**
+     * A clean build of a repository, with its test suite when the train is
+     * configured to run them. CI runs the suites on every push, so a release
+     * doesn't have to run them again.
+     */
+    private void build(File dir)
+    throws Exception {
+        if (tests_) {
+            bld(dir, "clean", "compile", "test");
+        } else {
+            bld(dir, "clean", "compile");
+        }
+    }
+
     private void bld(File dir, String... commands)
     throws Exception {
         exec(dir, "bld " + String.join(" ", commands),
