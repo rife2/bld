@@ -427,6 +427,14 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
     throws Exception {
         requireNoProblems();
 
+        // RIFE2 compiles core from its own checkout, so it follows the commit
+        // converge makes in bld's, but only when the two already agreed. A
+        // shape that never required them to match keeps them as they are
+        // rather than moving RIFE2 onto core sources it wasn't built against
+        var bld_core_before = coreDir_.exists() ? git(coreDir_).head() : null;
+        var rife2_core_before = rife2CoreDir_.exists() ? git(rife2CoreDir_).head() : null;
+        var cores_agreed = bld_core_before != null && bld_core_before.equals(rife2_core_before);
+
         for (var repo : convergeDirs()) {
             var git = git(repo);
             // whatever wasn't released still carries the local repository
@@ -450,9 +458,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             // a run that committed and then failed to push leaves a clean
             // repository whose commit hasn't arrived
             git.pushBranch();
-            // RIFE2 compiles core from its own checkout, so that one follows
-            // the update just made to bld's, as it follows a release
-            if (repo.equals(coreDir_) && rife2CoreDir_.exists() &&
+            if (repo.equals(coreDir_) && cores_agreed &&
                 !git.head().equals(git(rife2CoreDir_).head())) {
                 advanceRife2Core(git.head(), git.requireBranch());
             }
@@ -798,10 +804,10 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
 
     /**
      * Where a repository would publish to: its own {@code local.properties}
-     * on top of the ones declared for the user, and the properties of this
-     * JVM on top of both, the order bld resolves them in. Every name declared
-     * anywhere counts, since which of them a build file reaches for isn't
-     * visible from here.
+     * on top of the ones declared for the user, plus every {@code bld.repo.}
+     * property of this JVM, listed separately since a {@code -D} doesn't
+     * reach the builds this launches. Every name declared anywhere counts,
+     * since which of them a build file reaches for isn't visible from here.
      */
     private LinkedHashMap<String, String> publicationDestinations(File dir) {
         var destinations = new LinkedHashMap<String, String>();
@@ -1317,11 +1323,6 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
     }
 
     /**
-     * Runs a bld command through a repository's own wrapper, since each of
-     * them builds with the bld its wrapper names, and during a release that
-     * isn't the same one for all of them.
-     */
-    /**
      * A clean build of a repository, with its test suite when the train is
      * configured to run them. CI runs the suites on every push, so a release
      * doesn't have to run them again.
@@ -1335,6 +1336,11 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
         }
     }
 
+    /**
+     * Runs a bld command through a repository's own wrapper, since each of
+     * them builds with the bld its wrapper names, and during a release that
+     * isn't the same one for all of them.
+     */
     private void bld(File dir, String... commands)
     throws Exception {
         exec(dir, "bld " + String.join(" ", commands),
