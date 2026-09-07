@@ -283,8 +283,9 @@ ones, so a sandbox is worth throwing away and rebuilding rather than reusing.
 
 ### Setting up the sandbox
 
-`rehearse.sh <directory>` builds one and prints the phases to run from it.
-What it has to do, and what any other way of doing it has to cover:
+`rehearsal/rehearse.sh <directory> [port]` builds one and prints the phases
+to run from it, next to the `RepositoryServer.java` it starts. What it has
+to do, and what any other way of doing it has to cover:
 
 * clone every member, extension and follower, each with a bare clone next
   to it as its remote, so a push stays local
@@ -307,6 +308,12 @@ What it has to do, and what any other way of doing it has to cover:
   projects can resolve a RIFE2 that Central will never have
 * set `train.releases.repository` to the loopback repository and
   `train.simulate=true`
+
+It takes the members from the directory the bld project sits in, and reads
+their committed state, so anything uncommitted in a checkout stays out of
+the rehearsal. A dependency that is still a snapshot stops the run the way
+it stops a release, so those have to be released and pinned first, in the
+sandbox or for real.
 
 ### What still touches the machine
 
