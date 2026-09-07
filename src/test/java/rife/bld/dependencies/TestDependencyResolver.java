@@ -6,6 +6,7 @@ package rife.bld.dependencies;
 
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
+import rife.bld.dependencies.exceptions.DependencyXmlParsingErrorException;
 import rife.bld.testing.RetryTest;
 import rife.ioc.HierarchicalProperties;
 import rife.tools.FileUtils;
@@ -2442,6 +2443,75 @@ public class TestDependencyResolver {
         });
         server.setExecutor(Executors.newCachedThreadPool());
         return server;
+    }
+
+    @Test
+    void testTruncatedPomFallsThroughToTheNextRepository()
+    throws Exception {
+        // a mirror that serves a truncated document answers with a success, so
+        // the transport sees nothing wrong and only the parse fails
+        var truncated_requests = new AtomicInteger();
+        var truncated = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        truncated.createContext("/", exchange -> {
+            truncated_requests.incrementAndGet();
+            var body = buildPom("root", List.of());
+            body = body.substring(0, body.length() / 2);
+            var bytes = body.getBytes();
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (var out = exchange.getResponseBody()) {
+                out.write(bytes);
+            }
+        });
+        var intact = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        intact.createContext("/", exchange -> {
+            var bytes = buildPom("root", List.of()).getBytes();
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (var out = exchange.getResponseBody()) {
+                out.write(bytes);
+            }
+        });
+
+        truncated.start();
+        intact.start();
+        try {
+            var repositories = List.of(
+                new Repository("http://localhost:" + truncated.getAddress().getPort() + "/"),
+                new Repository("http://localhost:" + intact.getAddress().getPort() + "/"));
+            var root = new Dependency("com.example", "root", new VersionNumber(1, 0, 0));
+
+            var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repositories, root);
+            assertEquals(1, resolver.getAllDependencies(compile).size());
+            assertTrue(truncated_requests.get() >= 1, "the broken repository should have been tried first");
+        } finally {
+            truncated.stop(0);
+            intact.stop(0);
+        }
+    }
+
+    @Test
+    void testUnparseablePomEverywhereStillFails()
+    throws Exception {
+        // falling through is not the same as ignoring, a document that no
+        // repository can supply intact still fails the resolution
+        var server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        server.createContext("/", exchange -> {
+            var body = buildPom("root", List.of());
+            var bytes = body.substring(0, body.length() / 2).getBytes();
+            exchange.sendResponseHeaders(200, bytes.length);
+            try (var out = exchange.getResponseBody()) {
+                out.write(bytes);
+            }
+        });
+        server.start();
+        try {
+            var repositories = List.of(new Repository("http://localhost:" + server.getAddress().getPort() + "/"));
+            var root = new Dependency("com.example", "root", new VersionNumber(1, 0, 0));
+
+            var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), repositories, root);
+            assertThrows(DependencyXmlParsingErrorException.class, () -> resolver.getAllDependencies(compile));
+        } finally {
+            server.stop(0);
+        }
     }
 
     private static String buildPom(String artifact, List<String> children) {

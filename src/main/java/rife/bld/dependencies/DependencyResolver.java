@@ -410,6 +410,10 @@ public class DependencyResolver {
             throw transient_failure;
         }
 
+        throw notFound(artifacts, locationsDescription);
+    }
+
+    private ArtifactNotFoundException notFound(List<RepositoryArtifact> artifacts, String locationsDescription) {
         var location = artifacts.stream().map(RepositoryArtifact::location).collect(Collectors.joining(", "));
         if (location.isEmpty()) {
             if (repositories_.isEmpty()) {
@@ -419,7 +423,7 @@ public class DependencyResolver {
                 location = "[no " + locationsDescription + " defined]";
             }
         }
-        throw new ArtifactNotFoundException(dependency_, location);
+        return new ArtifactNotFoundException(dependency_, location);
     }
 
     private static <T extends Throwable> T rememberFailure(T remembered, T failure) {
@@ -444,18 +448,42 @@ public class DependencyResolver {
     }
 
     Xml2MavenPom getMavenPom(Dependency parent) {
-        var retrieved = retrieveFirstAvailable(getPomLocations(), "pom locations");
+        var artifacts = getPomLocations();
+        ArtifactRetrievalErrorException transient_failure = null;
+        DependencyXmlParsingErrorException parsing_failure = null;
 
-        var xml = new Xml2MavenPom(parent, resolution_, retriever_, repositories_);
-        // first pass only extracts the properties from the pom
-        if (!xml.processXml(retrieved.content())) {
-            throw new DependencyXmlParsingErrorException(dependency_, retrieved.artifact().location(), xml.getErrors());
-        }
-        // second pass parses all the rest so that the properties are available anywhere
-        if (!xml.processXml(retrieved.content())) {
-            throw new DependencyXmlParsingErrorException(dependency_, retrieved.artifact().location(), xml.getErrors());
+        for (var artifact : artifacts) {
+            String content;
+            try {
+                content = retriever_.readString(artifact);
+            } catch (FileUtilsErrorException e) {
+                if (e.getCause() instanceof FileNotFoundException) {
+                    continue;
+                }
+                // a transient issue with this repository, try the next one
+                // before giving up
+                transient_failure = rememberFailure(transient_failure, new ArtifactRetrievalErrorException(dependency_, artifact.location(), e));
+                continue;
+            }
+
+            var xml = new Xml2MavenPom(parent, resolution_, retriever_, repositories_);
+            // first pass only extracts the properties from the pom, the second
+            // parses all the rest so that they are available anywhere
+            if (xml.processXml(content) && xml.processXml(content)) {
+                return xml;
+            }
+            // a repository that hands out a truncated document answers with a
+            // success, so a pom that doesn't parse is as good a reason to try
+            // the next repository as one that never arrived
+            parsing_failure = rememberFailure(parsing_failure, new DependencyXmlParsingErrorException(dependency_, artifact.location(), xml.getErrors()));
         }
 
-        return xml;
+        if (transient_failure != null) {
+            throw transient_failure;
+        }
+        if (parsing_failure != null) {
+            throw parsing_failure;
+        }
+        throw notFound(artifacts, "pom locations");
     }
 }
