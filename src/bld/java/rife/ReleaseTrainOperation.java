@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 
 /**
  * Releases bld together with RIFE2, RIFE2/core and the extensions bld
- * builds with, in the order that keeps them usable at every moment.
+ * builds with, in the order their dependencies demand.
  * <p>
  * <b>What this is.</b> The bash script this would otherwise be: the release
  * steps, run by the one person who has the permissions to release these

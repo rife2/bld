@@ -1,8 +1,7 @@
 # Release train
 
 Releases bld together with the extensions it builds with, and optionally
-RIFE2 and RIFE2/core, in an order that keeps everything usable at every
-moment.
+RIFE2 and RIFE2/core, in the order their dependencies demand.
 
 ```bash
 ./bld release-train plan bld+rife2
