@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
@@ -259,26 +260,75 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
 
     private void plan() {
         System.out.println("Release plan:");
-        System.out.println("  core       " + memberPlan(coreDir_, CORE_VERSION_FILE, releaseCore_ ? coreVersion_ : null));
-        System.out.println("  bld        " + memberPlan(bldDir_, BLD_VERSION_FILE, bldVersion_));
-        System.out.println("  rife2      " + memberPlan(rife2Dir_, RIFE2_VERSION_FILE, releaseRife2_ ? rife2Version_ : null));
+
+        var rows = new ArrayList<PlanRow>();
+        rows.add(memberRow("core", coreDir_, currentVersion(coreDir_, CORE_VERSION_FILE), releaseCore_ ? coreVersion_ : null));
+        rows.add(memberRow("bld", bldDir_, currentVersion(bldDir_, BLD_VERSION_FILE), bldVersion_));
+        rows.add(memberRow("rife2", rife2Dir_, currentVersion(rife2Dir_, RIFE2_VERSION_FILE), releaseRife2_ ? rife2Version_ : null));
         extensionVersions_.forEach((name, version) -> {
             var dir = new File(workspace_, name);
-            System.out.println("  " + name + "  -> " + version + "  (" + dir + (dir.exists() ? ")" : ") MISSING CHECKOUT"));
+            rows.add(memberRow(name, dir, currentExtensionVersion(dir), version));
         });
-        followers_.forEach(follower -> System.out.println("  follower   " + follower + "  (converge only)"));
-        System.out.println("  tests      " + (tests_ ? "run by every build in the train" : "left to CI, the builds only compile"));
+        followers_.forEach(follower -> rows.add(new PlanRow("follower", null, follower + "  (converge only)", null)));
+        rows.add(new PlanRow("tests", null, tests_ ? "run by every build in the train" : "left to CI, the builds only compile", null));
+
+        var versioned = rows.stream().filter(row -> row.current() != null).toList();
+        var labels = width(rows, PlanRow::label);
+        var currents = width(versioned, PlanRow::current);
+        var changes = width(versioned, PlanRow::change);
+        for (var row : rows) {
+            var line = new StringBuilder("  ").append(pad(row.label(), labels));
+            if (row.current() == null) {
+                line.append("  ").append(row.change());
+            } else {
+                line.append("  ").append(pad(row.current(), currents))
+                    .append("  ").append(pad(row.change(), changes))
+                    .append("  ").append(row.trailer());
+            }
+            System.out.println(line.toString().stripTrailing());
+        }
+
         System.out.println();
         problems().forEach(problem -> System.out.println("  ! " + problem));
         System.out.println();
         System.out.println("Phases: local -> publish -> converge, run each with './bld release-train <phase> <shape>'.");
     }
 
-    private String memberPlan(File dir, String versionFile, String version) {
-        if (version == null) {
-            return currentVersion(dir, versionFile) + " (not in this release, converge only)  (" + dir + ")";
+    private record PlanRow(String label, String current, String change, String trailer) {
+    }
+
+    private PlanRow memberRow(String label, File dir, String current, String version) {
+        return new PlanRow(label, current,
+            version == null ? "(not in this release, converge only)" : "->  " + version,
+            "(" + dir + ")" + (dir.exists() ? "" : "  MISSING CHECKOUT"));
+    }
+
+    private static int width(List<PlanRow> rows, Function<PlanRow, String> cell) {
+        return rows.stream().mapToInt(row -> cell.apply(row).length()).max().orElse(0);
+    }
+
+    private static String pad(String text, int width) {
+        return text.length() >= width ? text : text + " ".repeat(width - text.length());
+    }
+
+    /**
+     * The version an extension declares for itself, which is where its
+     * version lives rather than in a version file.
+     */
+    private String currentExtensionVersion(File dir) {
+        try {
+            var matcher = EXTENSION_OWN_VERSION.matcher(FileUtils.readString(findBuildFile(dir)));
+            if (!matcher.find()) {
+                return "?";
+            }
+            // the pattern brackets the arguments without capturing them, since
+            // replacing a version relies on those two groups being the ends
+            var literal = matcher.group();
+            return literal.substring(matcher.group(1).length(), literal.length() - matcher.group(2).length())
+                .replace(" ", "").replace(",", ".");
+        } catch (Exception e) {
+            return "?";
         }
-        return currentVersion(dir, versionFile) + " -> " + version + "  (" + dir + ")";
     }
 
     /**
