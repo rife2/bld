@@ -8,13 +8,11 @@ import org.junit.jupiter.api.Test;
 import rife.bld.NamedFile;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.tools.FileUtils;
-import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
 
@@ -157,24 +155,15 @@ public class TestUberJarOperation {
                 assertTrue(jar.size() > 1300);
             }
 
-            var check_result = new StringBuilder();
             var run_operation = new RunOperation()
                 .javaOptions(List.of("-jar"))
                 .mainClass(uberjar_file.getAbsolutePath());
-            var executor = Executors.newSingleThreadScheduledExecutor();
             var checked_url = new URL("http://localhost:8080");
-            executor.schedule(() -> {
-                try {
-                    check_result.append(FileUtils.readString(checked_url));
-                } catch (FileUtilsErrorException e) {
-                    throw new RuntimeException(e);
-                }
-            }, 2, TimeUnit.SECONDS);
-            executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
+            var served = RunOperationTestHelper.serveThenStop(checked_url, run_operation);
             assertThrows(ExitStatusException.class, run_operation::execute);
-            Thread.sleep(2000);
+            var check_result = served.get(60, TimeUnit.SECONDS);
 
-            assertTrue(check_result.toString().contains("<p>Hello World app</p>"));
+            assertTrue(check_result.contains("<p>Hello World app</p>"), check_result);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }

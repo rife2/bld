@@ -9,7 +9,6 @@ import rife.bld.dependencies.LocalDependency;
 import rife.bld.dependencies.Scope;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.tools.FileUtils;
-import rife.tools.exceptions.FileUtilsErrorException;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
@@ -17,7 +16,6 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -304,21 +302,12 @@ public class TestCreateRife2Operation {
                     /my-app/src/test/resources""").matcher(FileUtils.generateDirectoryListing(tmp)).matches());
 
             var run_operation = new RunOperation().fromProject(create_operation.project());
-            var executor = Executors.newSingleThreadScheduledExecutor();
             var checked_url = new URL("http://localhost:8080");
-            var check_result = new StringBuilder();
-            executor.schedule(() -> {
-                try {
-                    check_result.append(FileUtils.readString(checked_url));
-                } catch (FileUtilsErrorException e) {
-                    throw new RuntimeException(e);
-                }
-            }, 2, TimeUnit.SECONDS);
-            executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
+            var served = RunOperationTestHelper.serveThenStop(checked_url, run_operation);
             assertThrows(ExitStatusException.class, run_operation::execute);
-            Thread.sleep(2000);
+            var check_result = served.get(60, TimeUnit.SECONDS);
 
-            assertTrue(check_result.toString().contains("<p>Hello World my-app</p>"));
+            assertTrue(check_result.contains("<p>Hello World my-app</p>"));
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
@@ -573,21 +562,12 @@ public class TestCreateRife2Operation {
                 /my-app/src/test/resources""").matcher(FileUtils.generateDirectoryListing(tmp)).matches());
 
             var run_operation = new RunOperation().fromProject(create_operation.project());
-            var executor = Executors.newSingleThreadScheduledExecutor();
             var checked_url = new URL("http://localhost:8080");
-            var check_result = new StringBuilder();
-            executor.schedule(() -> {
-                try {
-                    check_result.append(FileUtils.readString(checked_url));
-                } catch (FileUtilsErrorException e) {
-                    throw new RuntimeException(e);
-                }
-            }, 2, TimeUnit.SECONDS);
-            executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
+            var served = RunOperationTestHelper.serveThenStop(checked_url, run_operation);
             assertThrows(ExitStatusException.class, run_operation::execute);
-            Thread.sleep(2000);
+            var check_result = served.get(60, TimeUnit.SECONDS);
 
-            assertTrue(check_result.toString().contains("<p>Hello World my-app</p>"), check_result.toString());
+            assertTrue(check_result.contains("<p>Hello World my-app</p>"), check_result);
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
@@ -751,21 +731,12 @@ public class TestCreateRife2Operation {
                 /my-app/src/test/resources""").matcher(FileUtils.generateDirectoryListing(tmp)).matches());
 
             var run_operation = new RunOperation().fromProject(create_operation.project());
-            var executor = Executors.newSingleThreadScheduledExecutor();
             var checked_url = new URL("http://localhost:8080");
-            var check_result = new StringBuilder();
-            executor.schedule(() -> {
-                try {
-                    check_result.append(FileUtils.readString(checked_url));
-                } catch (FileUtilsErrorException e) {
-                    throw new RuntimeException(e);
-                }
-            }, 2, TimeUnit.SECONDS);
-            executor.schedule(() -> run_operation.process().destroy(), 4, TimeUnit.SECONDS);
+            var served = RunOperationTestHelper.serveThenStop(checked_url, run_operation);
             assertThrows(ExitStatusException.class, run_operation::execute);
-            Thread.sleep(2000);
+            var check_result = served.get(60, TimeUnit.SECONDS);
 
-            assertTrue(check_result.toString().contains("<p>Hello World my-app</p>"));
+            assertTrue(check_result.contains("<p>Hello World my-app</p>"));
         } finally {
             FileUtils.deleteDirectory(tmp);
         }
