@@ -38,13 +38,13 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * The server communicates over standard input and output with
  * newline-delimited JSON-RPC messages, following the MCP stdio transport.
- * Every build command is exposed as an MCP tool, invoking a tool executes
+ * The build commands are exposed as MCP tools, apart from the {@code mcp}
+ * command itself and any others a build excludes. Invoking a tool executes
  * the corresponding command as a separate build process and returns its
- * console output, so that every call behaves exactly like a command line
- * invocation and can never disturb the protocol streams. The project
- * layout, the declared dependencies and the transitive dependency tree
- * are exposed as MCP resources. The server runs until its input stream
- * ends.
+ * console output, captured separately so that a call can never disturb the
+ * protocol streams. The project layout, the declared dependencies and the
+ * transitive dependency tree are exposed as MCP resources. The server runs
+ * until its input stream ends.
  * <p>
  * MCP support is experimental and its behavior may still change.
  *
@@ -716,10 +716,12 @@ public class McpOperation extends AbstractOperation<McpOperation> {
      * command with the provided arguments as a separate build process,
      * capturing its console output.
      * <p>
-     * Running every tool call as a separate process makes it behave
-     * exactly like a command line invocation: one-shot operations always
-     * execute, changes to the build classes are picked up, and the
-     * process can never disturb the protocol streams of the server.
+     * Running every tool call as a separate process is what gives it a
+     * build of its own: one-shot operations always execute, changes to the
+     * build classes are picked up, and the process can never disturb the
+     * protocol streams of the server. Its standard input is closed, so a
+     * command that would prompt reads end of input instead of leaving the
+     * server waiting on an answer that can't arrive.
      *
      * @param command   the name of the build command to execute
      * @param arguments the arguments to pass to the build command
