@@ -13,8 +13,7 @@
 
 # What is bld?
 
-`bld` is a new build system that allows you to write your build logic in pure
-Java.
+`bld` is a build tool that lets you write your build logic in pure Java.
 
 `bld` was created because we're not really interested in build tools. We use
 them because we have to, but we'd rather just get on with coding the real stuff.
@@ -30,12 +29,10 @@ them because we have to, but we'd rather just get on with coding the real stuff.
 
 # Designed for modern Java
 
-bld relies on Java 17 and leverages many of the features that this version of
-Java provides. Thanks to modern Java, your build logic stays concise and
-readable, and any Java IDE understands it.
-You automatically get support for auto-completion and javadoc documentation,
-and you can split your build logic into multiple files and classes when you
-outgrow a single file.
+`bld` requires Java 17 or later and supports the latest JDK releases. Your
+build logic stays concise and readable, and any Java IDE understands it. You
+get auto-completion and javadoc documentation, and you can split your build
+logic into multiple files and classes when you outgrow a single file.
 
 Here is a complete bld file for a Java application using JUnit 5 for its tests.
 Nothing else is needed to be able to run it, test it and distribute it:
@@ -73,6 +70,42 @@ public class MyAppBuild extends Project {
 > be written as `dependency("org.junit.jupiter:junit-jupiter:6.1.2")`. Which format you use,
 > is a matter of personal taste.
 
+# Where does `bld` fit?
+
+Maven and Gradle describe a build for the tool to execute. `bld` is ordinary
+Java that runs directly.
+
+|                              | Maven             | Gradle               | `bld`                                             |
+|------------------------------|-------------------|----------------------|---------------------------------------------------|
+| Language                     | XML               | Groovy / Kotlin      | Java                                              |
+| IDE completion & refactoring | limited           | with a plugin        | full, it's Java                                   |
+| Debugging                    | attach to the JVM | attach to the daemon | the whole Java debugger: breakpoints, watches, .. |
+| Extensions                   | plugins           | plugins / DSL        | any Java jar, or a `bld` extension                |
+
+Writing your build logic in the same language as your application (Java)
+reduces the cognitive load, and taking actions immediately without having to
+mentally construct a described plan makes it easier to reason about your
+build.
+
+# One jar, everything included
+
+Out of the box, `bld` knows how to create, compile, test, document, run,
+package and publish your projects. Transitive dependencies are resolved and
+downloaded in parallel with live progress reporting, Maven bills of materials
+keep versions consistent across your dependency tree, builds run offline when
+you want them to, and your artifacts publish straight to Maven Central through
+the Sonatype Central Portal.
+
+Modern Java deployment is covered as well, with first-class operations for Java
+modules, `jmod`, `jlink` runtime images, `jpackage` native installers, and
+annotation processing.
+
+When you need more, there's a growing collection of
+[extensions](https://github.com/rife2/bld/wiki/Extensions): Kotlin, Spring
+Boot, Checkstyle, PMD, SpotBugs, JaCoCo code coverage, ANTLR4, PIT mutation
+testing, TestNG, and many others. Writing your own extension is just writing
+Java code.
+
 # Ready for AI agents
 
 Since version 3.0, `bld` can serve your build commands as Model Context
@@ -86,24 +119,6 @@ API-defined, agents just get a first-class way to drive it.
 ./bld mcp install cursor  # register with Cursor
 ./bld mcp install vscode  # register with VS Code
 ```
-
-# Where does `bld` fit?
-
-From a very high level, build tools can be organized in a matrix:
-* either your tool is declarative or in code
-* either your tool first describes a plan or immediately executes a plan
-
-
-|        | Declarative | Code | Describes | Immediate |
-|--------|-------------|------|-----------|-----------|
-| Maven  | X           |      | X         |           |
-| Gradle |             | X    | X         |           |
-| `bld`  |             | X    |           | X         |
-
-Writing your build logic in the same language as your application (Java),
-significantly reduces the cognitive load, and taking actions immediately
-without having to mentally construct a described plan, makes it easier to
-reason about your build.
 
 # IDE support
 
@@ -133,6 +148,12 @@ applications.
 
 Get started immediately by [installing](https://github.com/rife2/bld/wiki/Installation) `bld`
 through Homebrew, SDKMAN!, JBang, zip archive, or run it directly from its jar file.
+
+```console
+brew install rife2/tools/bld    # using Homebrew
+sdk install bld                 # using SDKMAN!
+jbang com.uwyn.rife2:bld:3.0.0  # using JBang
+```
 
 If you merely want to create a new project, `bld` can also be used by executing this one-liner:
 
