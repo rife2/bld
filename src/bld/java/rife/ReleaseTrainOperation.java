@@ -733,9 +733,55 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             }
         }
 
+        problems.addAll(snapshotExtensionProblems());
         problems.addAll(snapshotDependencyProblems());
         problems.addAll(simulationProblems());
         return problems;
+    }
+
+    /**
+     * A wrapper that names a snapshot extension this release doesn't publish
+     * would tag a repository against something that can still change. Whether
+     * that is so doesn't depend on how far a release got, so it is refused
+     * before anything is published rather than between two publications.
+     */
+    private List<String> snapshotExtensionProblems() {
+        var problems = new ArrayList<String>();
+        for (var repo : convergeDirs()) {
+            if (!repo.exists()) {
+                continue;
+            }
+            for (var line : wrapperLines(repo)) {
+                if (line.startsWith(EXTENSION_PREFIX)) {
+                    forEachExtension(line, (artifact, version, declaration) -> {
+                        if (!extensionVersions_.containsKey(artifact) && declaration.contains("-SNAPSHOT")) {
+                            problems.add(repo.getName() + " uses the snapshot extension '" + declaration +
+                                         "', release it here or pin it to a released version first");
+                        }
+                    });
+                }
+            }
+        }
+        return problems;
+    }
+
+    /**
+     * Walks the extension coordinates of a wrapper line, which can hold
+     * several of them separated by commas, and whose version can carry a type.
+     */
+    private static void forEachExtension(String line, ExtensionConsumer consumer) {
+        for (var declaration : line.substring(line.indexOf('=') + 1).split(",")) {
+            var coordinate = declaration.trim().split(":");
+            if (coordinate.length < 3 || !coordinate[0].trim().equals(GROUP)) {
+                continue;
+            }
+            consumer.accept(coordinate[1].trim(), coordinate[2].trim().split("@")[0], declaration.trim());
+        }
+    }
+
+    @FunctionalInterface
+    private interface ExtensionConsumer {
+        void accept(String artifact, String version, String declaration);
     }
 
     /**
@@ -1013,23 +1059,13 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
                 } else if (line.startsWith("bld.downloadLocation=") && !line.substring("bld.downloadLocation=".length()).isBlank()) {
                     problems.add(repo.getName() + " still has a download location override");
                 } else if (line.startsWith(EXTENSION_PREFIX)) {
-                    // the value can hold several comma separated coordinates
-                    for (var declaration : line.substring(line.indexOf('=') + 1).split(",")) {
-                        var coordinate = declaration.trim().split(":");
-                        if (coordinate.length < 3 || !coordinate[0].trim().equals(GROUP)) {
-                            continue;
-                        }
-                        var released = extensionVersions_.get(coordinate[1].trim());
-                        if (released == null) {
-                            if (declaration.contains("-SNAPSHOT")) {
-                                problems.add(repo.getName() + " uses the snapshot extension '" + declaration.trim() +
-                                             "', release it here or pin it to a released version first");
-                            }
-                        } else if (!released.equals(coordinate[2].trim().split("@")[0])) { // the version can carry a type
-                            problems.add(repo.getName() + " uses " + coordinate[1].trim() + " " + coordinate[2].trim() +
+                    forEachExtension(line, (artifact, version, declaration) -> {
+                        var released = extensionVersions_.get(artifact);
+                        if (released != null && !released.equals(version)) {
+                            problems.add(repo.getName() + " uses " + artifact + " " + version +
                                          " instead of the " + released + " being released");
                         }
-                    }
+                    });
                 }
             }
         }
