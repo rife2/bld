@@ -61,7 +61,7 @@ public class Project extends BaseProject {
      * Retrieves the project's default instrument operation.
      *
      * @return the default instrument operation instance
-     * @since 2.4
+     * @since 3.0.0
      */
     public InstrumentOperation instrumentOperation() {
         return instrumentOperation_;
@@ -140,7 +140,7 @@ public class Project extends BaseProject {
      * Standard build command, instruments the compiled classes ahead of
      * time, as an alternative to the java agent.
      *
-     * @since 2.4
+     * @since 3.0.0
      */
     @BuildCommand(help = InstrumentHelp.class)
     public void instrument()

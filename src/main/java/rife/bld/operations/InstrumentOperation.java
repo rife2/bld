@@ -28,7 +28,7 @@ import java.util.List;
  * image.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.4
+ * @since 3.0.0
  */
 public class InstrumentOperation extends AbstractProcessOperation<InstrumentOperation> {
     public static final String DEPLOYER_CLASS = "rife.instrument.InstrumentationDeployer";
@@ -40,7 +40,7 @@ public class InstrumentOperation extends AbstractProcessOperation<InstrumentOper
      * Part of the {@link #execute} operation, constructs the command list
      * to use for building the process.
      *
-     * @since 2.4
+     * @since 3.0.0
      */
     protected List<String> executeConstructProcessCommandList() {
         var args = new ArrayList<String>();
@@ -70,7 +70,7 @@ public class InstrumentOperation extends AbstractProcessOperation<InstrumentOper
      * the instrumentation.
      *
      * @param project the project to configure the instrument operation from
-     * @since 2.4
+     * @since 3.0.0
      */
     public InstrumentOperation fromProject(BaseProject project) {
         return classpath(project.runClasspath())
@@ -83,7 +83,7 @@ public class InstrumentOperation extends AbstractProcessOperation<InstrumentOper
      *
      * @param directories source directories
      * @return this operation instance
-     * @since 2.4
+     * @since 3.0.0
      */
     public InstrumentOperation sourceDirectories(File... directories) {
         sourceDirectories_.addAll(List.of(directories));
@@ -96,7 +96,7 @@ public class InstrumentOperation extends AbstractProcessOperation<InstrumentOper
      *
      * @param directories a list of source directories
      * @return this operation instance
-     * @since 2.4
+     * @since 3.0.0
      */
     public InstrumentOperation sourceDirectories(Collection<File> directories) {
         sourceDirectories_.addAll(directories);
@@ -109,7 +109,7 @@ public class InstrumentOperation extends AbstractProcessOperation<InstrumentOper
      *
      * @param directory the instrumentation destination directory
      * @return this operation instance
-     * @since 2.4
+     * @since 3.0.0
      */
     public InstrumentOperation destinationDirectory(File directory) {
         destinationDirectory_ = directory;
@@ -121,7 +121,7 @@ public class InstrumentOperation extends AbstractProcessOperation<InstrumentOper
      * <p>This is a modifiable list that can be retrieved and changed.
      *
      * @return the instrumentation source directories
-     * @since 2.4
+     * @since 3.0.0
      */
     public List<File> sourceDirectories() {
         return sourceDirectories_;
@@ -132,7 +132,7 @@ public class InstrumentOperation extends AbstractProcessOperation<InstrumentOper
      * will be stored.
      *
      * @return the instrumentation destination directory
-     * @since 2.4
+     * @since 3.0.0
      */
     public File destinationDirectory() {
         return destinationDirectory_;

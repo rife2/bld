@@ -11,7 +11,7 @@ import rife.tools.StringUtils;
  * Provides help for the instrument command.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.4
+ * @since 3.0.0
  */
 public class InstrumentHelp implements CommandHelp {
     public String getSummary() {
