@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java](https://img.shields.io/badge/java-17%2B-blue)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-[![bld](https://img.shields.io/badge/2.3.0-FA9052?label=bld&labelColor=2392FF)](https://rife2.com/bld)
+[![bld](https://img.shields.io/badge/3.0.0-FA9052?label=bld&labelColor=2392FF)](https://rife2.com/bld)
 [![Release](https://img.shields.io/github/release/rife2/bld.svg)](https://github.com/rife2/bld/releases/latest)
 [![Maven Central](https://img.shields.io/maven-central/v/com.uwyn.rife2/bld)](https://central.sonatype.com/artifact/com.uwyn.rife2/bld)
 [![GitHub Snapshot](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fcom%2Fuwyn%2Frife2%2Fbld%2Fmaven-metadata.xml)](https://github.com/rife2/bld/packages/2214741/versions)
@@ -73,6 +73,20 @@ public class MyAppBuild extends Project {
 > be written as `dependency("org.junit.jupiter:junit-jupiter:6.1.2")`. Which format you use,
 > is a matter of personal taste.
 
+# Ready for AI agents
+
+Since version 3.0, `bld` can serve your build commands as Model Context
+Protocol (MCP) tools. AI coding agents get a structured interface to compile,
+test and run your project, with streamed command output and execution
+metadata instead of scraped terminal text. Your build stays explicit and
+API-defined, agents just get a first-class way to drive it.
+
+```console
+./bld mcp install         # register the project with Claude Code
+./bld mcp install cursor  # register with Cursor
+./bld mcp install vscode  # register with VS Code
+```
+
 # Where does `bld` fit?
 
 From a very high level, build tools can be organized in a matrix:
@@ -124,6 +138,12 @@ If you merely want to create a new project, `bld` can also be used by executing 
 
 ```console
 bash -c "$(curl -fsSL https://rife2.com/bld/create.sh)"
+```
+
+Or on Windows:
+
+```console
+irm https://rife2.com/bld/create.ps1 | iex
 ```
 
 If you have any questions, suggestions, ideas or just want to chat, feel free
