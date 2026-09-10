@@ -71,12 +71,11 @@ extension's publication and bld's the new extension version can't be
 resolved by anyone. It lasts as long as the rest of the train, the wait for
 RIFE2 on Central included, so think hours rather than minutes. No published
 artifact depends on those versions before bld is out: the blueprint names
-them only then, and the poms of core and RIFE2 don't name them at all. What
-the window does hold is source builds. The core and RIFE2 tags pushed during
-it name the new bld and extensions in their wrappers, so a checkout of
-either tag doesn't build until bld is public. Inside the train it costs
-nothing, since every build that resolves a just released extension still
-has the local repository in its wrapper.
+them only then, and the poms of core and RIFE2 don't name them at all. No
+tag is public during it either, since the pushes wait until everything is
+published, so nothing can be checked out and built against half a release.
+Inside the train the window costs nothing, since every build that resolves
+a just released extension still has the local repository in its wrapper.
 
 ## The phases
 
@@ -171,11 +170,16 @@ from the local repository at this point.
 Then, per repository in the order above: take the local repository back out
 of the wrapper and, for an extension, out of its build file, check that this
 one repository is on the bld and the extensions being released, commit, tag
-with an annotated tag, publish, and push the commit and the tag in one atomic
-push. Before publishing it checks that the push would fast-forward, since a
-branch that moved on independently would otherwise only surface once the
-artifacts are already public. It asks before every publication and shows what
-the release commit contains.
+with an annotated tag, and publish. Before publishing it checks that the push
+would fast-forward, since a branch that moved on independently would
+otherwise only surface once the artifacts are already public. It asks before
+every publication and shows what the release commit contains.
+
+The pushes wait until the whole set is published, and then go out together,
+each commit and its tag in one atomic push. Pushing a tag is what starts the
+builds that resolve the release, so a repository pushed while the rest is
+still being published would build against a release only part of which
+exists.
 
 Publishing builds the project again, against a release that is still only in
 the local repository, so the local repository goes back in for that build
@@ -191,14 +195,38 @@ they generate projects against has to be public. After bld is published it
 waits for that too, so that converge doesn't tell everyone to use a version
 that hasn't landed yet.
 
-A repository whose release tag is already where it pushes to is skipped. The
-tag goes out together with the release commit right after publishing, so it
-is the thing that says a release is out, which is what makes rerunning this
-phase safe after it stopped halfway. Skipping needs the checkout to be on
-that same commit and clean; anything else is a question for you rather than
-something to assume. A local tag of that version on another commit stops the
-phase instead of being moved, and it is judged against the release commit, so
-a correction made after a failed attempt can't leave the tag behind.
+A repository whose release tag is already where it pushes to is skipped
+entirely. Skipping needs the checkout to be on that same commit and clean;
+anything else is a question for you rather than something to assume. A local
+tag of that version on another commit stops the phase instead of being moved,
+and it is judged against the release commit, so a correction made after a
+failed attempt can't leave the tag behind.
+
+Since the pushes come last, a phase that stopped between publishing and
+pushing leaves artifacts no tag points at yet. Rerunning it skips a
+publication only when both halves of the evidence agree: the repository
+already carries that version's tag from the earlier run, and the pom is where
+`train.published.repository` points. Neither half proves anything on its own.
+A tag can name sources that were never published, and a coordinate sitting in
+a repository says nothing about what went into it, so a version found there
+that this checkout has no tag for stops the phase rather than being taken
+for this one.
+
+The gate is its own setting rather than the one the waits use, because the
+two answer different questions. A wait has to watch the repository the next
+step resolves from, which is Maven Central for bld and RIFE2. The gate only
+has to watch a repository every member publishes to, and the extensions never
+reach Central at all, so it points at repo.rife2.com instead. A gate on
+Central would miss an extension's publication and offer to publish it twice.
+
+Publishing never happens while the gate can't be read. A repository that
+times out, or that answers with anything but a plain "not there", stops the
+phase. Nothing has been committed or tagged by then, so running it again once
+the repository answers is the whole of the recovery. When a tagged
+repository's release isn't at the gate, the phase stops and prints the tag to
+delete for the case where the earlier run never published. It doesn't offer
+to push instead: a tag pushed while the rest of the set is still unpublished
+starts exactly the builds the deferred pushes exist to prevent.
 
 When core is released, RIFE2's own core checkout is moved onto the released
 core commit right after, whether or not RIFE2 is part of the release, since
@@ -210,10 +238,10 @@ those are what gets compiled.
 
 A publication is the one thing here that can't be undone. It publishes to
 several repositories in one command, so if it fails, check which of them
-already have the release before running the phase again. If publishing
-succeeded and only the push failed, it says so and prints the push to run
-by hand, running the phase again in that state would publish the same
-version twice.
+already have the release before running the phase again. If a push fails,
+everything is published already and the pushes are all that is left, so it
+prints the ones that still have to run and running those by hand is the
+shortest way out.
 
 > **NOTE:** when the wait for a release doesn't see the artifacts, it asks
 > every fifteen minutes whether to keep waiting. That's fine with somebody at
@@ -252,6 +280,7 @@ train.extension.bld-archive=0.6.4
 train.extension.bld-tests-badge=1.6.4
 train.followers=rife2-bld-hello
 train.releases.repository=
+train.published.repository=https://repo.rife2.com/releases
 train.simulate=false
 train.tests=false
 ```
@@ -279,12 +308,14 @@ world. Three things would:
 | `bld publish` | `bld.repo.<name>` properties per repository |
 | `git push` | a local bare clone as the remote |
 | the wait for the release | `train.releases.repository` |
+| the publication gate | `train.published.repository`, or the line above when it isn't set |
 
 Set `train.simulate=true` and the phases refuse to start unless
 `train.releases.repository` is an absolute path or a URL on this machine,
-every `bld.repo.*` destination every repository could publish to is one of
-those, and every URL a push would reach is one. A remote it can't read counts
-as a problem, not as a pass.
+`train.published.repository` is one too or is left unset, every `bld.repo.*`
+destination every repository could publish to is one of those, and every URL
+a push would reach is one. A remote it can't read counts as a problem, not as
+a pass.
 
 A directory works as the destination, but publishing to one skips the upload
 path entirely: bld copies the files and doesn't generate checksums or

@@ -55,12 +55,11 @@ import java.util.regex.Pattern;
  * each piece is published. The extensions go first because bld is what
  * names them: a bld released before them would carry a wrapper naming
  * extension versions that aren't public, and anyone building it from its
- * own tag would fail. The reverse window costs source builds only: a just
- * published extension can't be resolved until bld is public, since its pom
- * names bld in compile scope, and the core and RIFE2 tags pushed in the
- * meantime name that bld and those extensions in their wrappers, so neither
- * builds from its tag until bld is out. No published artifact depends on
- * any of them before then.
+ * own tag would fail. The reverse window costs nothing that anyone can see: a
+ * just published extension can't be resolved until bld is public, since its
+ * pom names bld in compile scope, but no published artifact depends on it
+ * before then and no tag is public either, because the pushes wait until the
+ * whole set is out.
  * <p>
  * The versions live in {@code release-train.properties}. The shape argument
  * decides which of them a run releases: {@code bld}, {@code bld+rife2},
@@ -113,11 +112,13 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
     private String rife2Version_;
     private String coreVersion_;
     private String releasesRepository_;
+    private String publishedRepository_;
     private boolean simulate_;
     private boolean tests_;
     private boolean releaseRife2_;
     private boolean releaseCore_;
     private final LinkedHashMap<String, String> extensionVersions_ = new LinkedHashMap<>();
+    private final List<PendingPush> pushes_ = new ArrayList<>();
     private final List<String> followers_ = new ArrayList<>();
     private List<String> arguments_ = new ArrayList<>();
 
@@ -190,6 +191,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             .sorted()
             .forEach(name -> extensionVersions_.put(name.substring("train.extension.".length()), version(config, name)));
         releasesRepository_ = config.getProperty("train.releases.repository", "").trim();
+        publishedRepository_ = config.getProperty("train.published.repository", "").trim();
         simulate_ = flag(config, "train.simulate", false);
         tests_ = flag(config, "train.tests", true);
         for (var follower : config.getProperty("train.followers", "").split(",")) {
@@ -590,19 +592,19 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
         // extensions first: bld is what names them, so a bld released
         // before them would tag a wrapper naming versions that aren't out
         for (var extension : extensionVersions_.entrySet()) {
-            releaseRepo(new File(workspace_, extension.getKey()), extension.getValue(),
+            releaseRepo(new File(workspace_, extension.getKey()), extension.getKey(), extension.getValue(),
                 "Released " + extension.getKey() + " " + extension.getValue());
         }
 
         if (releaseCore_) {
-            var core_commit = releaseRepo(coreDir_, coreVersion_, "Released RIFE2/core " + coreVersion_);
+            var core_commit = releaseRepo(coreDir_, "rife2-core", coreVersion_, "Released RIFE2/core " + coreVersion_);
             // whether or not RIFE2 is released here, or the two checkouts
             // are left recording different cores
             step("put the core checkout of rife2 on the released core commit");
             advanceRife2Core(core_commit, "refs/tags/" + coreVersion_);
         }
         if (releaseRife2_) {
-            releaseRepo(rife2Dir_, rife2Version_, "Released RIFE2 " + rife2Version_);
+            releaseRepo(rife2Dir_, "rife2", rife2Version_, "Released RIFE2 " + rife2Version_);
             // the blueprint of the bld that follows names this version, and
             // generated projects resolve from Central only
             step("wait until rife2 " + rife2Version_ + " is resolvable");
@@ -612,9 +614,11 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             bumpBlueprint();
             build(bldDir_);
         }
-        releaseRepo(bldDir_, bldVersion_, "Released bld " + bldVersion_);
+        releaseRepo(bldDir_, "bld", bldVersion_, "Released bld " + bldVersion_);
         step("wait until bld " + bldVersion_ + " is resolvable");
         waitForRelease("bld", bldVersion_);
+
+        pushReleases();
 
         System.out.println();
         System.out.println("Publish phase done. Continue with './bld release-train converge <shape>'.");
@@ -673,10 +677,11 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
     }
 
     /**
-     * Commits the release, tags it, publishes it and pushes the commit and
-     * the tag. Returns the commit that was released.
+     * Commits the release, tags it, publishes it and queues the push of the
+     * commit and the tag for {@link #pushReleases}. Returns the commit that
+     * was released.
      */
-    private String releaseRepo(File dir, String version, String message)
+    private String releaseRepo(File dir, String artifactId, String version, String message)
     throws Exception {
         var git = git(dir);
 
@@ -703,6 +708,13 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             throw new IllegalStateException(dir.getName() + " isn't ready to be released.");
         }
 
+        // a tag of this version says an earlier run of this phase got as far
+        // as tagging, which is the only thing tying a publication to these
+        // sources. Both are read before anything is committed, so a refusal
+        // doesn't leave behind the tag that would change the answer next time
+        var tagged_before = git.hasTag(version);
+        var already_published = publicationAlreadyHappened(dir, artifactId, version, tagged_before);
+
         // committed first, so that a tag left by an earlier attempt is judged
         // against the commit that will actually be published
         var changes = git.status();
@@ -713,7 +725,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
                 System.out.println("   nothing to commit, only content inside a submodule differs");
             }
         }
-        if (!git.hasTag(version)) {
+        if (!tagged_before) {
             git.run("tag", "-a", "-m", message, version);
         } else if (!git.head().equals(git.commitOf(version))) {
             throw new IllegalStateException("The tag " + version + " in " + dir.getName() + " is on " + git.commitOf(version) +
@@ -725,42 +737,152 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
         // release is public
         git.requireFastForward();
 
-        if (!confirm("Publish " + dir.getName() + " " + version + (simulate_ ? " to the simulated repository?" : " publicly?"))) {
-            throw new IllegalStateException("Publication of " + dir.getName() + " wasn't confirmed.");
+        if (already_published) {
+            step(artifactId + " " + version + " is already published, it only has to be pushed");
+        } else {
+            if (!confirm("Publish " + dir.getName() + " " + version + (simulate_ ? " to the simulated repository?" : " publicly?"))) {
+                throw new IllegalStateException("Publication of " + dir.getName() + " wasn't confirmed.");
+            }
+            // publishing builds again, against a release that is still only in
+            // the local repository. The commit just made is the clean one
+            useLocalRepositoryFor(dir);
+            try {
+                bld(dir, "clean", "publish");
+            } catch (Exception e) {
+                // released coordinates are immutable, so a publication that
+                // reached some of its repositories can't be repeated
+                System.out.println();
+                System.out.println("The publication of " + dir.getName() + " " + version + " failed. It publishes to");
+                System.out.println("several repositories in one command, so check which of them already have it");
+                System.out.println("before running this phase again.");
+                throw e;
+            } finally {
+                restoreCommitted(dir);
+            }
         }
-        // publishing builds again, against a release that is still only in
-        // the local repository. The commit just made is the clean one
-        useLocalRepositoryFor(dir);
-        try {
-            bld(dir, "clean", "publish");
-        } catch (Exception e) {
-            // released coordinates are immutable, so a publication that
-            // reached some of its repositories can't be repeated
+        pushes_.add(new PendingPush(dir, version));
+        return git.head();
+    }
+
+    /**
+     * Whether this release was already published, which a rerun after a
+     * failed push has to know, since released coordinates can't be written
+     * twice. The gate reads one repository, and a coordinate sitting there
+     * says nothing about the sources it was built from, so the only
+     * publication this skips is one an earlier run left behind: its tag is
+     * still on the commit being published, and the gate can see the release.
+     * Anything else stops the phase and says what to check.
+     */
+    private boolean publicationAlreadyHappened(File dir, String artifactId, String version, boolean taggedBefore) {
+        var published = publicationState(artifactId, version);
+
+        // a publication can't be undone, so it never happens while the gate
+        // can't be read. Nothing has been committed or tagged by this point,
+        // so running the phase again is the whole of the recovery
+        if (published == Published.UNKNOWN) {
             System.out.println();
-            System.out.println("The publication of " + dir.getName() + " " + version + " failed. It publishes to");
-            System.out.println("several repositories in one command, so check which of them already have it");
-            System.out.println("before running this phase again.");
-            throw e;
-        } finally {
-            restoreCommitted(dir);
+            System.out.println(publishedGate() + " couldn't be reached, so whether " + artifactId + " " + version);
+            System.out.println("is already published can't be established. Nothing has been committed or");
+            System.out.println("tagged yet, so run this phase again once it answers.");
+            throw new IllegalStateException("Couldn't reach " + publishedGate() + " to see whether " +
+                                            artifactId + " " + version + " is published.");
         }
 
-        // together or not at all, so the tag can't name a commit that never
-        // arrived
-        try {
-            git.pushRelease(version);
-        } catch (Exception e) {
-            System.out.println();
-            System.out.println(dir.getName() + " " + version + " IS PUBLISHED, only pushing it failed.");
-            System.out.println("Don't run this phase again before that push has gone through, it would");
-            System.out.println("publish the same version once more. Once it has, running the phase again");
-            System.out.println("is how the repositories after this one get released.");
-            System.out.println("Push it yourself with:");
-            System.out.println("  git -C " + dir + " push --atomic " + git.pushRemote() +
-                               " HEAD:refs/heads/" + git.requireBranch() + " refs/tags/" + version);
-            throw e;
+        if (!taggedBefore) {
+            if (published == Published.YES) {
+                System.out.println();
+                System.out.println(artifactId + " " + version + " is already in " + publishedGate() + ",");
+                System.out.println("and " + dir.getName() + " carries no tag for it, so nothing says that what is");
+                System.out.println("published there came from these sources. Find the commit it was built");
+                System.out.println("from before releasing this version.");
+                throw new IllegalStateException(artifactId + " " + version + " is published from an unknown commit.");
+            }
+            return false;
         }
-        return git.head();
+        if (published == Published.YES) {
+            return true;
+        }
+
+        System.out.println();
+        System.out.println(dir.getName() + " already carries the tag " + version + " from an earlier run of this phase,");
+        System.out.println("and " + publishedGate() + " doesn't have " + artifactId + " " + version + ".");
+        System.out.println("If that run never published, remove the tag with");
+        System.out.println("  git -C " + dir + " tag -d " + version);
+        System.out.println("and run this phase again. If it did publish, don't push the tag by hand: the");
+        System.out.println("pushes wait until the whole set is out, and a tag pushed before bld is public");
+        System.out.println("starts builds that can't resolve it. Point train.published.repository at a");
+        System.out.println("repository that has the release and run this phase again instead.");
+        throw new IllegalStateException("Can't establish whether " + artifactId + " " + version + " is already published.");
+    }
+
+    /**
+     * What the gate can say about a release, where not being able to reach a
+     * repository is its own answer rather than an absence.
+     */
+    private enum Published {
+        YES, NO, UNKNOWN
+    }
+
+    private Published publicationState(String artifactId, String version) {
+        var repository = publishedRepository().isBlank() ? Repository.MAVEN_CENTRAL : new Repository(publishedRepository());
+        var directory = repository.getArtifactLocation(GROUP, artifactId) + version + "/";
+        var pom = artifactId + "-" + version + ".pom";
+        if (repository.isLocal()) {
+            return new File(directory + pom).exists() ? Published.YES : Published.NO;
+        }
+        return availability(directory + pom);
+    }
+
+    /**
+     * Where the gate looks to see whether a publication happened, which isn't
+     * the question {@link #waitForRelease} asks. That one watches the
+     * repository the next step resolves from, Maven Central for bld and
+     * RIFE2. This one only needs a repository every member publishes to, and
+     * the extensions never reach Central at all.
+     */
+    private String publishedRepository() {
+        return publishedRepository_.isBlank() ? releasesRepository_ : publishedRepository_;
+    }
+
+    private String publishedGate() {
+        return publishedRepository().isBlank() ? "Maven Central" : publishedRepository();
+    }
+
+    /**
+     * Pushes every release that was published, which is what makes the tags
+     * public and starts the builds that resolve them. Held back until the
+     * whole set is out, so that no build starts against a release that only
+     * some of it can see.
+     */
+    private void pushReleases()
+    throws Exception {
+        if (pushes_.isEmpty()) {
+            return;
+        }
+        step("push the releases now that they are all published");
+        for (var i = 0; i < pushes_.size(); ++i) {
+            var push = pushes_.get(i);
+            var git = git(push.dir());
+            // together or not at all, so the tag can't name a commit that
+            // never arrived
+            try {
+                git.pushRelease(push.version());
+            } catch (Exception e) {
+                System.out.println();
+                System.out.println(push.dir().getName() + " " + push.version() + " IS PUBLISHED, only pushing it failed.");
+                System.out.println("Everything is published, the pushes are all that's left. Run the ones");
+                System.out.println("that didn't go through yourself:");
+                for (var left : pushes_.subList(i, pushes_.size())) {
+                    var left_git = git(left.dir());
+                    System.out.println("  git -C " + left.dir() + " push --atomic " + left_git.pushRemote() +
+                                       " HEAD:refs/heads/" + left_git.requireBranch() + " refs/tags/" + left.version());
+                }
+                throw e;
+            }
+        }
+    }
+
+    private record PendingPush(File dir, String version) {
     }
 
     /**
@@ -1004,10 +1126,16 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             if (!releasesRepository_.isBlank() && staysOnThisMachine(releasesRepository_)) {
                 problems.add("train.releases.repository stays on this machine while train.simulate is false");
             }
+            if (!publishedRepository_.isBlank() && staysOnThisMachine(publishedRepository_)) {
+                problems.add("train.published.repository stays on this machine while train.simulate is false");
+            }
             return problems;
         }
         if (releasesRepository_.isBlank() || !staysOnThisMachine(releasesRepository_)) {
             problems.add("train.simulate is set but train.releases.repository isn't an absolute path or a URL on this machine");
+        }
+        if (!publishedRepository_.isBlank() && !staysOnThisMachine(publishedRepository_)) {
+            problems.add("train.simulate is set but train.published.repository isn't an absolute path or a URL on this machine");
         }
         for (var dir : convergeDirs()) {
             if (!dir.exists()) {
@@ -1274,15 +1402,33 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
         }
     }
 
+    /**
+     * Whether the artifact is there. The waits keep waiting for anything that
+     * isn't a plain yes.
+     */
     private boolean isAvailable(String url) {
+        return availability(url) == Published.YES;
+    }
+
+    private Published availability(String url) {
         try {
             var connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("HEAD");
             connection.setConnectTimeout(10_000);
             connection.setReadTimeout(10_000);
-            return connection.getResponseCode() == 200;
+            var code = connection.getResponseCode();
+            if (code == HttpURLConnection.HTTP_OK) {
+                return Published.YES;
+            }
+            // only a plain "it isn't there" is an answer. A repository that
+            // hides what it holds behind authentication, or that is having a
+            // bad day, says nothing about whether the release exists
+            if (code == HttpURLConnection.HTTP_NOT_FOUND) {
+                return Published.NO;
+            }
+            return Published.UNKNOWN;
         } catch (IOException e) {
-            return false;
+            return Published.UNKNOWN;
         }
     }
 

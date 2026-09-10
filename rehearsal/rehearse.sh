@@ -131,6 +131,9 @@ echo "== declaring the rehearsal in release-train.properties"
 CONFIG="$SB/bld/release-train.properties"
 cp "$W/bld/release-train.properties" "$CONFIG"
 perl -0pi -e "s{^train\.releases\.repository=.*\$}{train.releases.repository=$REPO_URL}m" "$CONFIG"
+# emptied rather than redirected: it falls back to the line above, and the
+# loopback repository is where everything a rehearsal publishes ends up
+perl -0pi -e "s{^train\.published\.repository=.*\$}{train.published.repository=}m" "$CONFIG"
 perl -0pi -e "s{^train\.simulate=.*\$}{train.simulate=true}m" "$CONFIG"
 cp "$W/bld/src/bld/java/rife/ReleaseTrainOperation.java" "$SB/bld/src/bld/java/rife/"
 cp "$W/bld/src/bld/java/rife/BldBuild.java" "$SB/bld/src/bld/java/rife/"
