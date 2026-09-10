@@ -43,7 +43,7 @@ public record Repository(String location, String username, String password) {
      * location, so it can be put in a list without breaking it, and it is
      * left out wherever repositories are actually used.
      *
-     * @since 3.0
+     * @since 3.0.0
      */
     public static final Repository UNRESOLVED = new Repository(null);
 
@@ -139,7 +139,7 @@ public record Repository(String location, String username, String password) {
      *
      * @param repositories the repositories to filter, may be {@code null}
      * @return the repositories that have a location
-     * @since 3.0
+     * @since 3.0.0
      */
     public static List<Repository> usable(List<Repository> repositories) {
         if (repositories == null) {
@@ -153,7 +153,7 @@ public record Repository(String location, String username, String password) {
      * that nothing declares resolves to.
      *
      * @return {@code true} when the repository can't be used; or {@code false} otherwise
-     * @since 3.0
+     * @since 3.0.0
      */
     public boolean isUnresolved() {
         return location() == null;
@@ -166,7 +166,7 @@ public record Repository(String location, String username, String password) {
      *
      * @param text the text to check
      * @return {@code true} when the text is a location; or {@code false} otherwise
-     * @since 3.0
+     * @since 3.0.0
      */
     public static boolean isLocation(String text) {
         return text != null &&

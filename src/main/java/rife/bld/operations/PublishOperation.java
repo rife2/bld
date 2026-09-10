@@ -115,7 +115,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * rather than when the build file configures it, so that a name that
      * isn't declared fails the publication instead of every other command.
      *
-     * @since 3.0
+     * @since 3.0.0
      */
     protected void executeResolveRepositoryNames() {
         if (repositoryNames_.isEmpty()) {
@@ -847,7 +847,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      *                       declared under in a {@code bld.repo.} property
      * @return this operation instance
      * @see #clearRepositories()
-     * @since 3.0
+     * @since 3.0.0
      */
     public PublishOperation repository(String locationOrName) {
         repositoryNames_.add(locationOrName);
@@ -863,7 +863,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * operation executes.
      *
      * @return this operation instance
-     * @since 3.0
+     * @since 3.0.0
      */
     public PublishOperation clearRepositories() {
         repositories_.clear();
