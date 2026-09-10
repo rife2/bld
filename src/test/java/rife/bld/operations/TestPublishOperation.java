@@ -80,6 +80,48 @@ public class TestPublishOperation {
     }
 
     @Test
+    void testPublishLocalDoesNotReachANamedRepository()
+    throws Exception {
+        // publish-local clears the repositories a build file provided and puts
+        // the local one in their place, which has to drop the names too or the
+        // publication reaches the real repositories
+        var remote_requests = new java.util.concurrent.atomic.AtomicInteger();
+        var server = com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress("localhost", 0), 0);
+        server.createContext("/", exchange -> {
+            remote_requests.incrementAndGet();
+            exchange.sendResponseHeaders(201, -1);
+            exchange.close();
+        });
+        server.start();
+
+        var tmp_local = Files.createTempDirectory("publishlocal").toFile();
+        var artifact_file = File.createTempFile("myapp", ".jar");
+        try {
+            var properties = new HierarchicalProperties();
+            properties.put("bld.repo.remote", "http://localhost:" + server.getAddress().getPort() + "/");
+
+            var operation = new PublishOperation()
+                .properties(properties)
+                .repository("remote")
+                .info(new PublishInfo()
+                    .groupId("test.pkg")
+                    .artifactId("myapp")
+                    .version(new VersionNumber(3, 3, 3)))
+                .artifacts(List.of(new PublishArtifact(artifact_file, "", "jar")));
+
+            operation.clearRepositories().repository(new Repository(tmp_local.getAbsolutePath()));
+            operation.execute();
+
+            assertEquals(0, remote_requests.get(), "the named repository was published to");
+            assertTrue(new File(tmp_local, "test/pkg/myapp/3.3.3/myapp-3.3.3.pom").exists());
+        } finally {
+            server.stop(0);
+            FileUtils.deleteDirectory(tmp_local);
+            artifact_file.delete();
+        }
+    }
+
+    @Test
     void testRepositoryNameThatIsntDeclaredIsSkipped() {
         // a name that resolves to nothing is left out with a warning, the
         // repositories around it still receive the publication

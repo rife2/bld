@@ -232,10 +232,9 @@ public class Project extends BaseProject {
         jar();
         jarSources();
         jarJavadoc();
-        publishOperation().executeOnce(() ->  {
-            var repositories = publishOperation().fromProject(this).repositories();
-            repositories.clear();
-            repositories.add(Repository.MAVEN_LOCAL);
-        });
+        publishOperation().executeOnce(() ->
+            publishOperation().fromProject(this)
+                .clearRepositories()
+                .repository(Repository.MAVEN_LOCAL));
     }
 }

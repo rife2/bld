@@ -846,10 +846,28 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * @param locationOrName the location of a repository, or the name it is
      *                       declared under in a {@code bld.repo.} property
      * @return this operation instance
+     * @see #clearRepositories()
      * @since 3.0
      */
     public PublishOperation repository(String locationOrName) {
         repositoryNames_.add(locationOrName);
+        return this;
+    }
+
+    /**
+     * Removes every repository that was provided, both the ones that were
+     * given as instances and the names that are still to be resolved.
+     * <p>
+     * Emptying the list returned by {@link #repositories()} only removes the
+     * instances, the names would still be resolved and added when the
+     * operation executes.
+     *
+     * @return this operation instance
+     * @since 3.0
+     */
+    public PublishOperation clearRepositories() {
+        repositories_.clear();
+        repositoryNames_.clear();
         return this;
     }
 
