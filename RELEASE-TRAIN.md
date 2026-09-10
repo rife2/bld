@@ -142,12 +142,15 @@ often as needed.
 Shows what is waiting to be committed in every repository the release
 touches, with the rewrites the phases made separated from whatever was
 already there. A release commits everything a repository holds, so the
-second group rides along with it.
+second group rides along with it. The two are told apart by path, so an edit
+of your own in a file the phases rewrite goes unmarked. What it catches is
+the file a release has no reason to touch at all.
 
 It then lists what the local phase put in the local repository, which is the
 preview of what `publish` uploads, and names any pom that depends on a
-snapshot. Core isn't listed, it is compiled into bld and RIFE2 rather than
-published on its own.
+snapshot. Core isn't listed because the local phase doesn't publish it there.
+It does have a publication of its own, which `publish` makes when the shape
+includes core.
 
 This only reads and refuses nothing, so it can be run between any two
 phases.
@@ -247,7 +250,6 @@ train.bld.version=3.0.0
 train.extension.bld-antlr4=1.4.4
 train.extension.bld-archive=0.6.4
 train.extension.bld-tests-badge=1.6.4
-train.extension.bld-junit-reporter=1.2.0
 train.followers=rife2-bld-hello
 train.releases.repository=
 train.simulate=false

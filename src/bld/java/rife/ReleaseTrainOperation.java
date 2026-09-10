@@ -342,42 +342,59 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
      * already there. A release commits everything a repository holds, so the
      * second group rides along with it.
      * <p>
+     * The two are told apart by path, so an edit of your own in a file the
+     * phases rewrite goes unmarked. What it catches is the file a release has
+     * no reason to touch at all.
+     * <p>
      * It only reads, which makes it safe to run between any two phases.
      */
     private void review() {
-        var pending = false;
+        var pending = new LinkedHashMap<File, List<String>>();
         for (var repo : reviewDirs()) {
             if (!repo.exists()) {
                 continue;
             }
             var changes = git(repo).status();
-            if (changes == null || changes.isBlank()) {
-                continue;
+            if (changes != null && !changes.isBlank()) {
+                pending.put(repo, changes.lines().toList());
             }
-            pending = true;
-            System.out.println(repo.getName() + "  (" + repo + ")");
+        }
+
+        // the note trails the longest of them all, so it reads as one column
+        // instead of following each path around
+        var marked = pending.values().stream().flatMap(List::stream)
+            .filter(line -> !isTrainRewrite(statusPath(line)))
+            .mapToInt(String::length).max().orElse(0);
+
+        for (var entry : pending.entrySet()) {
+            System.out.println(entry.getKey().getName() + "  (" + entry.getKey() + ")");
             var foreign = new ArrayList<String>();
-            for (var line : changes.lines().toList()) {
-                if (isTrainRewrite(line.substring(Math.min(3, line.length())))) {
+            for (var line : entry.getValue()) {
+                if (isTrainRewrite(statusPath(line))) {
                     System.out.println("   " + line);
                 } else {
                     foreign.add(line);
                 }
             }
-            foreign.forEach(line -> System.out.println("   " + line + "   <- not from the release, it gets committed too"));
+            foreign.forEach(line -> System.out.println("   " + pad(line, marked) +
+                                                       "   <- not from the release, it gets committed too"));
             System.out.println();
         }
-        if (!pending) {
+        if (!pending.isEmpty()) {
+            System.out.println("The unmarked paths are the ones a release rewrites. An edit of your own");
+            System.out.println("in one of them is unmarked as well, and gets committed with them.");
+        } else {
             System.out.println("Nothing is waiting to be committed.");
-            System.out.println();
         }
+        System.out.println();
         reviewPublications();
     }
 
     /**
      * Shows what the local phase left in the local repository, which is the
-     * preview of what the publish phase uploads. Core isn't listed, it is
-     * compiled into bld and RIFE2 rather than published on its own.
+     * preview of what the publish phase uploads. Core isn't listed because the
+     * local phase doesn't publish it there. It does have a publication of its
+     * own, which the publish phase makes when the shape includes core.
      * <p>
      * A pom that names a snapshot is what a consumer would resolve, so a
      * build source the local phase failed to rewrite surfaces here rather
@@ -431,6 +448,10 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             snapshots.add("(couldn't read " + pom + ": " + e.getMessage() + ")");
         }
         return snapshots;
+    }
+
+    private static String statusPath(String statusLine) {
+        return statusLine.substring(Math.min(3, statusLine.length()));
     }
 
     private List<File> reviewDirs() {
@@ -881,7 +902,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
             if (!repo.exists()) {
                 continue;
             }
-            for (var line : wrapperLines(repo)) {
+            for (var line : committedWrapperLines(repo)) {
                 if (line.startsWith(EXTENSION_PREFIX)) {
                     forEachExtension(line, (artifact, version, declaration) -> {
                         if (!extensionVersions_.containsKey(artifact) && declaration.contains("-SNAPSHOT")) {
@@ -1191,7 +1212,12 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
                 } else if (line.startsWith(EXTENSION_PREFIX)) {
                     forEachExtension(line, (artifact, version, declaration) -> {
                         var released = extensionVersions_.get(artifact);
-                        if (released != null && !released.equals(version)) {
+                        if (released == null) {
+                            if (declaration.contains("-SNAPSHOT")) {
+                                problems.add(repo.getName() + " uses the snapshot extension '" + declaration +
+                                             "', release it here or pin it to a released version first");
+                            }
+                        } else if (!released.equals(version)) {
                             problems.add(repo.getName() + " uses " + artifact + " " + version +
                                          " instead of the " + released + " being released");
                         }
@@ -1334,15 +1360,29 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
         return new File(wrapperProperties(dir).getAbsolutePath() + WRAPPER_BACKUP_SUFFIX);
     }
 
+    /**
+     * The wrapper lines a release would commit: the backup a local phase took
+     * when there is one, the file itself otherwise. {@link #finalizeWrapper}
+     * puts that backup back before the release commit, so it is what a check
+     * has to look at rather than whatever the file says now.
+     */
+    private List<String> committedWrapperLines(File dir) {
+        var backup = wrapperBackup(dir);
+        return backup.exists() ? readLines(backup) : wrapperLines(dir);
+    }
+
     private List<String> wrapperLines(File dir) {
-        var wrapper = wrapperProperties(dir);
+        return readLines(wrapperProperties(dir));
+    }
+
+    private static List<String> readLines(File wrapper) {
         if (!wrapper.exists()) {
             return List.of();
         }
         try {
             return List.of(FileUtils.readString(wrapper).split("\n"));
         } catch (Exception e) {
-            throw new IllegalStateException("Couldn't read the wrapper of " + dir.getName() + ".", e);
+            throw new IllegalStateException("Couldn't read " + wrapper + ".", e);
         }
     }
 
