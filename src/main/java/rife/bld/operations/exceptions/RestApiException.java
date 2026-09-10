@@ -12,7 +12,7 @@ import java.io.Serial;
  * When thrown, indicates that something went wrong during the use of a rest API call.
  *
  * @author Geert Bevin (gbevin[remove] at uwyn dot com)
- * @since 2.2.2
+ * @since 2.3.0
  */
 public class RestApiException extends RuntimeException {
     @Serial private static final long serialVersionUID = -6753423938407177328L;

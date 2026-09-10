@@ -649,7 +649,7 @@ public class PublishOperation extends AbstractOperation<PublishOperation> {
      * Part of the {@link #execute} operation, closes the OSSRH staging API repository.
      *
      * @param repository the repository to close a staging repository in
-     * @since 2.2.2
+     * @since 2.3.0
      */
     protected void executeCloseOSSRHStagingRepository(Repository repository) {
         var url_search = OSSRH_STAGING_MANUAL_SEARCH;
