@@ -99,6 +99,9 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
         "(?m)^(\\s*version\\s*=\\s*version\\()[^)]+(\\))");
     // a snapshot version, as a qualifier or spelled out, wherever a build
     // source keeps it
+    private static final List<String> ARTIFACTS = List.of(".pom", ".jar", "-sources.jar", "-javadoc.jar");
+    private static final Pattern POM_DEPENDENCY = Pattern.compile(
+        "(?s)<dependency>\\s*<groupId>([^<]+)</groupId>\\s*<artifactId>([^<]+)</artifactId>\\s*<version>([^<]+)</version>");
     private static final Pattern SNAPSHOT_LITERAL = Pattern.compile("\"[^\"\\n]*-SNAPSHOT\"|\"SNAPSHOT\"");
 
     private File workspace_;
@@ -156,11 +159,12 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
 
         switch (command) {
             case "plan" -> plan();
+            case "review" -> review();
             case "local" -> local();
             case "publish" -> publish();
             case "converge" -> converge();
             default -> throw new IllegalStateException("Unknown release-train command '" + command +
-                                                       "', use: plan, local, publish, converge");
+                                                       "', use: plan, local, review, publish, converge");
         }
     }
 
@@ -292,6 +296,7 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
         problems().forEach(problem -> System.out.println("  ! " + problem));
         System.out.println();
         System.out.println("Phases: local -> publish -> converge, run each with './bld release-train <phase> <shape>'.");
+        System.out.println("'review' shows what a phase changed and what it published, without changing anything.");
     }
 
     private record PlanRow(String label, String current, String change, String trailer) {
@@ -329,6 +334,131 @@ public class ReleaseTrainOperation extends AbstractOperation<ReleaseTrainOperati
         } catch (Exception e) {
             return "?";
         }
+    }
+
+    /**
+     * Shows what is waiting to be committed in every repository the release
+     * touches, with the rewrites the phases made separated from whatever was
+     * already there. A release commits everything a repository holds, so the
+     * second group rides along with it.
+     * <p>
+     * It only reads, which makes it safe to run between any two phases.
+     */
+    private void review() {
+        var pending = false;
+        for (var repo : reviewDirs()) {
+            if (!repo.exists()) {
+                continue;
+            }
+            var changes = git(repo).status();
+            if (changes == null || changes.isBlank()) {
+                continue;
+            }
+            pending = true;
+            System.out.println(repo.getName() + "  (" + repo + ")");
+            var foreign = new ArrayList<String>();
+            for (var line : changes.lines().toList()) {
+                if (isTrainRewrite(line.substring(Math.min(3, line.length())))) {
+                    System.out.println("   " + line);
+                } else {
+                    foreign.add(line);
+                }
+            }
+            foreign.forEach(line -> System.out.println("   " + line + "   <- not from the release, it gets committed too"));
+            System.out.println();
+        }
+        if (!pending) {
+            System.out.println("Nothing is waiting to be committed.");
+            System.out.println();
+        }
+        reviewPublications();
+    }
+
+    /**
+     * Shows what the local phase left in the local repository, which is the
+     * preview of what the publish phase uploads. Core isn't listed, it is
+     * compiled into bld and RIFE2 rather than published on its own.
+     * <p>
+     * A pom that names a snapshot is what a consumer would resolve, so a
+     * build source the local phase failed to rewrite surfaces here rather
+     * than after the release is public.
+     */
+    private void reviewPublications() {
+        var published = new LinkedHashMap<String, String>();
+        published.put("bld", bldVersion_);
+        extensionVersions_.forEach(published::put);
+        if (releaseRife2_) {
+            published.put("rife2", rife2Version_);
+        }
+
+        System.out.println("Published into " + localRepository() + ":");
+        var names = published.keySet().stream().mapToInt(String::length).max().orElse(0);
+        var versions = published.values().stream().mapToInt(String::length).max().orElse(0);
+        for (var entry : published.entrySet()) {
+            var directory = new File(localRepository(), GROUP.replace('.', File.separatorChar) +
+                                                        File.separator + entry.getKey() + File.separator + entry.getValue());
+            var line = new StringBuilder("  ").append(pad(entry.getKey(), names))
+                .append("  ").append(pad(entry.getValue(), versions)).append("  ");
+            if (!directory.isDirectory()) {
+                System.out.println(line + "not published locally");
+                continue;
+            }
+            var files = List.of(directory.list() == null ? new String[0] : directory.list());
+            var base = entry.getKey() + "-" + entry.getValue();
+            var missing = ARTIFACTS.stream().filter(artifact -> !files.contains(base + artifact)).toList();
+            System.out.println(line + (missing.isEmpty() ? "pom, jar, sources, javadoc"
+                                                         : "missing " + String.join(", ", missing)));
+            snapshotsInPom(new File(directory, base + ".pom"))
+                .forEach(dependency -> System.out.println("     ! its pom depends on the snapshot " + dependency));
+        }
+    }
+
+    private File localRepository() {
+        return new File(System.getProperty("user.home"), ".m2" + File.separator + "repository");
+    }
+
+    private static List<String> snapshotsInPom(File pom) {
+        var snapshots = new ArrayList<String>();
+        try {
+            var source = FileUtils.readString(pom);
+            var matcher = POM_DEPENDENCY.matcher(source);
+            while (matcher.find()) {
+                if (matcher.group(3).contains("SNAPSHOT")) {
+                    snapshots.add(matcher.group(1) + ":" + matcher.group(2) + ":" + matcher.group(3));
+                }
+            }
+        } catch (Exception e) {
+            snapshots.add("(couldn't read " + pom + ": " + e.getMessage() + ")");
+        }
+        return snapshots;
+    }
+
+    private List<File> reviewDirs() {
+        var dirs = new ArrayList<File>();
+        dirs.add(bldDir_);
+        dirs.add(coreDir_);
+        dirs.add(rife2Dir_);
+        dirs.add(rife2CoreDir_);
+        extensionVersions_.keySet().forEach(name -> dirs.add(new File(workspace_, name)));
+        followers_.forEach(follower -> dirs.add(new File(workspace_, follower)));
+        return dirs;
+    }
+
+    /**
+     * Whether a path is one the phases rewrite themselves. The wrapper also
+     * regenerates the IDE files it maintains, and a version file inside a
+     * submodule moves the pointer that records it.
+     */
+    private static boolean isTrainRewrite(String path) {
+        return path.equals(VERSION_DIRECTORY + BLD_VERSION_FILE) ||
+               path.equals(VERSION_DIRECTORY + CORE_VERSION_FILE) ||
+               path.equals(VERSION_DIRECTORY + RIFE2_VERSION_FILE) ||
+               path.equals(BLUEPRINT_SOURCE) ||
+               path.equals("core") ||
+               path.equals("bld") || path.equals("bld.bat") ||
+               path.startsWith("lib/bld/") ||
+               path.startsWith(".idea/") || path.startsWith(".vscode/") ||
+               path.startsWith("src/bld/java/") && path.endsWith("Build.java");
     }
 
     /**

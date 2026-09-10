@@ -133,6 +133,25 @@ edit for real once RIFE2 is public.
 Nothing has left the machine at this point, so this phase can be run as
 often as needed.
 
+### review
+
+```bash
+./bld release-train review bld+rife2
+```
+
+Shows what is waiting to be committed in every repository the release
+touches, with the rewrites the phases made separated from whatever was
+already there. A release commits everything a repository holds, so the
+second group rides along with it.
+
+It then lists what the local phase put in the local repository, which is the
+preview of what `publish` uploads, and names any pom that depends on a
+snapshot. Core isn't listed, it is compiled into bld and RIFE2 rather than
+published on its own.
+
+This only reads and refuses nothing, so it can be run between any two
+phases.
+
 ### publish
 
 ```bash
