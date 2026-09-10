@@ -30,7 +30,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: 17
-          cache-jdk: true
 
       - name: Download dependencies
         run: ./bld download

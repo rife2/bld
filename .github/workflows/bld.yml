@@ -133,7 +133,6 @@ jobs:
           distribution: "corretto"
           java-version: ${{ matrix.java-version }}
           check-latest: true
-          cache-jdk: true
 
       - name: Cache bld dependencies
         uses: actions/cache@v6

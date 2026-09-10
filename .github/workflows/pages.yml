@@ -42,7 +42,6 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: 17
-          cache-jdk: true
 
       - name: Cache bld dependencies
         id: cache-bld
