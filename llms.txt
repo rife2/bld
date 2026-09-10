@@ -1,0 +1,42 @@
+# bld
+
+> bld is a build tool for Java projects whose build logic is written in plain Java. The build is a Java class in src/bld/java, every command is a method on it, and running a command executes it immediately with no daemon and no described plan. There is no XML, no DSL and no lock file, you change the build by editing Java. It ships as a single jar, runs on Java 17 and later, and a project carries a wrapper so ./bld works without bld being installed.
+
+bld is designed to be read rather than traced. Dependencies, repositories and options are ordinary method calls in one class, so your IDE completes them, refactors them and navigates to their javadocs, and a debugger steps through your build the way it steps through your application. That also makes it comfortable to work on with an AI coding assistant: the build is type-checked Java rather than untyped configuration, `bld help` lists exactly what a project can do including what its extensions contribute, and since version 3.0 bld can serve those same commands to agents over the Model Context Protocol instead of having them scrape terminal output.
+
+## Start here
+- [What is bld?](https://github.com/rife2/bld/wiki/What-Is-Bld): the design principles, and where bld sits next to Maven and Gradle
+- [Quickstart](https://github.com/rife2/bld/wiki/Quickstart): create, run, test and package a first project
+- [Installation](https://github.com/rife2/bld/wiki/Installation): Homebrew, SDKMAN!, JBang, a zip archive, or the jar on its own
+- [Project Creation](https://github.com/rife2/bld/wiki/Project-Creation): the project types bld generates and what each one contains
+- [Project on GitHub](https://github.com/rife2/bld): source, issues and releases
+- [Javadocs](https://rife2.github.io/bld/): the complete API reference for every class and method
+
+## Driving a build
+- [Standard Commands](https://github.com/rife2/bld/wiki/Standard-Commands): compile, test, run, jar, war, uberjar, javadoc, publish and the rest, with their arguments
+- [Custom Commands](https://github.com/rife2/bld/wiki/Custom-Commands): add a project command by writing a method and annotating it with @BuildCommand
+- [MCP server](https://github.com/rife2/bld/wiki/Standard-Commands#mcp): serve every build command as an MCP tool over stdio, register it with a client using ./bld mcp install
+- [Instrumenting ahead of time](https://github.com/rife2/bld/wiki/Standard-Commands#instrument): apply RIFE2's bytecode transformations to class files, so continuations work without the java agent and inside a GraalVM native image
+
+## Configuring a build
+- [Project Options](https://github.com/rife2/bld/wiki/Project-Options): the properties a build class sets, from the main class to the compiler options
+- [Configuring Files](https://github.com/rife2/bld/wiki/Configuring-Files): where sources, resources and build output live, and how to move them
+- [Dependencies](https://github.com/rife2/bld/wiki/Dependencies): scopes, transitive resolution in parallel, local jars, Java modules, BOMs and version overrides
+- [Sensitive and Common Data](https://github.com/rife2/bld/wiki/Sensitive-and-Common-Data): keep credentials and shared settings out of the build sources with hierarchical properties
+- [Team Setup](https://github.com/rife2/bld/wiki/Team-Setup): share one bld version and one configuration across a team
+
+## Distributing
+- [Publishing](https://github.com/rife2/bld/wiki/Publishing): publish to Maven Central, a private repository or a local directory, with the POM generated from your project
+- [JDK Tools](https://github.com/rife2/bld/wiki/JDK-Tools): jlink runtimes, jpackage installers and the other JDK tools
+- [CI Integration](https://github.com/rife2/bld/wiki/CI-Integration): run bld on GitHub Actions, GitLab and friends, with dependency caching
+- [Upgrading](https://github.com/rife2/bld/wiki/Upgrading): move a project to a newer bld, including what changes in 3.0
+
+## Extending
+- [Extensions](https://github.com/rife2/bld/wiki/Extensions): use published extensions, or write one as an ordinary Java class
+- [Kotlin Support](https://github.com/rife2/bld/wiki/Kotlin-Support): compile and test Kotlin sources through the Kotlin extension
+- [Examples](https://github.com/rife2/bld/wiki/Examples): complete build files for common project shapes
+
+## Related
+- [RIFE2](https://rife2.com): the full-stack Java web framework bld was built for, usable on its own
+- [bld IntelliJ IDEA plugin](https://github.com/rife2/bld-idea): run commands, browse the dependency tree and invalidate caches from the IDE
+- [Community forums](https://forum.uwyn.com) and [Discord](https://discord.gg/zDG6anEXQX): questions, suggestions and chat
