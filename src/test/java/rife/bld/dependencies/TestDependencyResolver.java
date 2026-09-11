@@ -84,6 +84,24 @@ public class TestDependencyResolver {
     }
 
     @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
+    void testManagedDependencyPrecedence() {
+        // jetty-security declares the junit artifacts without a scope and imports
+        // a BOM that scopes them to test, while a BOM an ancestor imported leaves
+        // the scope open. slf4j-api is the other way round: an ancestor declares
+        // it directly at 2.0.17, which outranks the 1.7.36 of this pom's own BOM
+        var resolver = new DependencyResolver(VersionResolution.dummy(), ArtifactRetriever.instance(), getNextRepositories(),
+            new Dependency("org.eclipse.jetty", "jetty-security", new VersionNumber(12, 1, 13)));
+        var dependencies = resolver.getAllDependencies(compile, runtime);
+        assertEquals("""
+            org.eclipse.jetty:jetty-security:12.1.13
+            org.eclipse.jetty:jetty-server:12.1.13
+            org.slf4j:slf4j-api:2.0.17
+            org.eclipse.jetty:jetty-http:12.1.13
+            org.eclipse.jetty:jetty-io:12.1.13
+            org.eclipse.jetty:jetty-util:12.1.13""", StringUtils.join(dependencies, "\n"));
+    }
+
+    @RetryTest(value = 3, delay = 2, withExceptions = IOException.class)
     void testCheckVersionOverride() {
         var resolver = new DependencyResolver(new VersionResolution(new HierarchicalProperties().put(PROPERTY_OVERRIDE_PREFIX, "com.uwyn.rife2:rife2:1.8.0")),
             ArtifactRetriever.instance(), getNextRepositories(), new Dependency("com.uwyn.rife2", "rife2", new VersionNumber(1, 3, 9)));

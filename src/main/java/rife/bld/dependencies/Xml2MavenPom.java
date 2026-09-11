@@ -25,7 +25,13 @@ class Xml2MavenPom extends Xml2Data {
     private final List<Repository> repositories_;
     private Map<Scope, Set<PomDependency>> resolvedDependencies_ = null;
 
-    private final Map<PomDependency, PomDependency> dependencyManagement_ = new LinkedHashMap<>();
+    // maven ranks managed dependencies in this order, so the lookups below
+    // walk the three in turn: something written out beats something imported
+    // even when the declaration is inherited, and this pom's own import beats
+    // one it inherited
+    private final Map<PomDependency, PomDependency> declaredManagement_ = new LinkedHashMap<>();
+    private final Map<PomDependency, PomDependency> importedManagement_ = new LinkedHashMap<>();
+    private final Map<PomDependency, PomDependency> inheritedImports_ = new LinkedHashMap<>();
     private final Set<PomDependency> dependencies_ = new LinkedHashSet<>();
     private final Map<String, String> mavenProperties_ = new HashMap<>();
     private final Stack<String> elementStack_ = new Stack<>();
@@ -68,7 +74,7 @@ class Xml2MavenPom extends Xml2Data {
 
             if (!dependencies_.isEmpty()) {
                 for (var dependency : dependencies_) {
-                    var managed_dependency = dependencyManagement_.get(dependency);
+                    var managed_dependency = managedDependency(dependency);
                     var version = dependency.version();
                     var dep_scope = dependency.scope();
                     var optional = dependency.optional();
@@ -134,10 +140,23 @@ class Xml2MavenPom extends Xml2Data {
         // iterate the values since putting an entry with an equal key
         // preserves the original key instance while the value reflects
         // the actual managed dependency
-        for (var managed : dependencyManagement_.values()) {
-            result.add(resolveDependency(managed));
+        for (var management : List.of(declaredManagement_, importedManagement_, inheritedImports_)) {
+            for (var managed : management.values()) {
+                result.add(resolveDependency(managed));
+            }
         }
         return result;
+    }
+
+    private PomDependency managedDependency(PomDependency dependency) {
+        var managed = declaredManagement_.get(dependency);
+        if (managed == null) {
+            managed = importedManagement_.get(dependency);
+        }
+        if (managed == null) {
+            managed = inheritedImports_.get(dependency);
+        }
+        return managed;
     }
 
     PomDependency resolveDependency(PomDependency dependency) {
@@ -216,8 +235,14 @@ class Xml2MavenPom extends Xml2Data {
                         parent.mavenProperties_.keySet().removeAll(mavenProperties_.keySet());
                         mavenProperties_.putAll(parent.mavenProperties_);
 
-                        parent.dependencyManagement_.keySet().removeAll(dependencyManagement_.keySet());
-                        dependencyManagement_.putAll(parent.dependencyManagement_);
+                        for (var managed : parent.declaredManagement_.entrySet()) {
+                            declaredManagement_.putIfAbsent(managed.getKey(), managed.getValue());
+                        }
+                        for (var management : List.of(parent.importedManagement_, parent.inheritedImports_)) {
+                            for (var managed : management.entrySet()) {
+                                inheritedImports_.putIfAbsent(managed.getKey(), managed.getValue());
+                            }
+                        }
 
                         parent.dependencies_.removeAll(dependencies_);
                         dependencies_.addAll(parent.dependencies_);
@@ -239,18 +264,11 @@ class Xml2MavenPom extends Xml2Data {
                         if (dependency.isPomImport()) {
                             var import_dependency = new Dependency(resolveMavenProperties(lastGroupId_), resolveMavenProperties(lastArtifactId_), Version.parse(resolveMavenProperties(lastVersion_)));
                             var imported_pom = new DependencyResolver(resolution_, retriever_, repositories_, import_dependency).getMavenPom(parent_);
-                            imported_pom.dependencyManagement_.keySet().removeAll(dependencyManagement_.keySet());
-                            var resolved_dependencies = new LinkedHashSet<PomDependency>();
-                            for (var managed_dependency : imported_pom.dependencyManagement_.keySet()) {
-                                resolved_dependencies.add(imported_pom.resolveDependency(managed_dependency));
-                            }
-
-                            resolved_dependencies.removeAll(dependencyManagement_.keySet());
-                            for (var resolved_dependency : resolved_dependencies) {
-                                dependencyManagement_.put(resolved_dependency, resolved_dependency);
+                            for (var managed_dependency : imported_pom.getManagedDependencies()) {
+                                importedManagement_.putIfAbsent(managed_dependency, managed_dependency);
                             }
                         } else {
-                            dependencyManagement_.put(dependency, dependency);
+                            declaredManagement_.put(dependency, dependency);
                         }
                     } else if (collectDependencies_) {
                         dependencies_.add(dependency);
