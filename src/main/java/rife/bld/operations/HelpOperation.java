@@ -191,12 +191,13 @@ public class HelpOperation {
                 
                 The following bld arguments are supported:
                 
-                  --offline         Works without Internet (only as first argument)
-                  --use-stderr      Sends the build output to standard error
-                  -?, -h, --help    Shows the help
-                  -D<name>=<value>  Sets a JVM system property
-                  -s, --stacktrace  Prints out the stacktrace for exceptions
-                  -v, --verbose     Prints out detailed information about the operations
+                  --auto-download-purge  Downloads and purges dependencies automatically
+                  --offline              Works without Internet (only as first argument)
+                  --use-stderr           Sends the build output to standard error
+                  -?, -h, --help         Shows the help
+                  -D<name>=<value>       Sets a JVM system property
+                  -s, --stacktrace       Prints out the stacktrace for exceptions
+                  -v, --verbose          Prints out detailed information about the operations
                 """);
     }
 }
