@@ -39,7 +39,7 @@ public class Rife2ProjectBlueprint extends WebProject {
         downloadSources = true;
         repositories = List.of(MAVEN_CENTRAL, CENTRAL_SNAPSHOTS);
         scope(compile)
-            .include(dependency("com.uwyn.rife2", "rife2", version(1,10,0)));
+            .include(dependency("com.uwyn.rife2", "rife2", version(1,10,1)));
         scope(test)
             .include(dependency("org.jsoup", "jsoup", version(1,23,2)))
             .include(dependency("org.junit.jupiter", "junit-jupiter", version(6,1,3)))
