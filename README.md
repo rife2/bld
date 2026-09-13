@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java](https://img.shields.io/badge/java-17%2B-blue)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-[![bld](https://img.shields.io/badge/3.0.0-FA9052?label=bld&labelColor=2392FF)](https://rife2.com/bld)
+[![bld](https://img.shields.io/badge/3.0.1-FA9052?label=bld&labelColor=2392FF)](https://rife2.com/bld)
 [![Release](https://img.shields.io/github/release/rife2/bld.svg)](https://github.com/rife2/bld/releases/latest)
 [![Maven Central](https://img.shields.io/maven-central/v/com.uwyn.rife2/bld)](https://central.sonatype.com/artifact/com.uwyn.rife2/bld)
 [![GitHub Snapshot](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fcom%2Fuwyn%2Frife2%2Fbld%2Fmaven-metadata.xml)](https://github.com/rife2/bld/packages/2214741/versions)
@@ -55,8 +55,8 @@ public class MyAppBuild extends Project {
         downloadSources = true;
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
         scope(test)
-            .include(dependency("org.junit.jupiter", "junit-jupiter", version(6,1,2)))
-            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(6,1,2)));
+            .include(dependency("org.junit.jupiter", "junit-jupiter", version(6,1,3)))
+            .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(6,1,3)));
     }
 
     public static void main(String[] args) {
@@ -66,8 +66,8 @@ public class MyAppBuild extends Project {
 ```
 
 > **NOTE:** `bld` supports different ways to describe dependencies,
-> `dependency("org.junit.jupiter", "junit-jupiter", version(6,1,2))` can for instance also
-> be written as `dependency("org.junit.jupiter:junit-jupiter:6.1.2")`. Which format you use,
+> `dependency("org.junit.jupiter", "junit-jupiter", version(6,1,3))` can for instance also
+> be written as `dependency("org.junit.jupiter:junit-jupiter:6.1.3")`. Which format you use,
 > is a matter of personal taste.
 
 # Where does `bld` fit?
@@ -152,7 +152,7 @@ through Homebrew, SDKMAN!, JBang, zip archive, or run it directly from its jar f
 ```console
 brew install rife2/tools/bld    # using Homebrew
 sdk install bld                 # using SDKMAN!
-jbang com.uwyn.rife2:bld:3.0.0  # using JBang
+jbang com.uwyn.rife2:bld:3.0.1  # using JBang
 ```
 
 If you merely want to create a new project, `bld` can also be used by executing this one-liner:
