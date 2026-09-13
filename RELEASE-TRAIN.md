@@ -272,12 +272,12 @@ moves on, you can see it and decide.
 versions, whether a given run releases them or not:
 
 ```properties
-train.core.version=1.10.0
-train.rife2.version=1.10.0
-train.bld.version=3.0.0
-train.extension.bld-antlr4=1.4.4
-train.extension.bld-archive=0.6.4
-train.extension.bld-tests-badge=1.6.4
+train.core.version=1.10.1
+train.rife2.version=1.10.1
+train.bld.version=3.0.1
+train.extension.bld-antlr4=1.4.5
+train.extension.bld-archive=0.6.5
+train.extension.bld-tests-badge=1.6.5
 train.followers=rife2-bld-hello
 train.releases.repository=
 train.published.repository=https://repo.rife2.com/releases
