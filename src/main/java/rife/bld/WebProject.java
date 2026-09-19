@@ -51,6 +51,29 @@ public class WebProject extends Project {
         return warOperation_;
     }
 
+    private final DevOperation devOperation_ = new DevOperation();
+
+    /**
+     * Retrieves the project's default dev operation.
+     *
+     * @return the default dev operation instance
+     * @since 3.1.0
+     */
+    protected DevOperation devOperation() {
+        return devOperation_;
+    }
+
+    /**
+     * Standard build command, runs the project and reloads it while developing.
+     *
+     * @since 3.1.0
+     */
+    @BuildCommand(help = DevHelp.class)
+    public void dev()
+    throws Exception {
+        devOperation().executeOnce(() -> devOperation().fromProject(this));
+    }
+
     /**
      * Standard build command, creates an UberJar archive for the web project.
      *
