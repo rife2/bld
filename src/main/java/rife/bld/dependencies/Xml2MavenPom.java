@@ -390,6 +390,8 @@ class Xml2MavenPom extends Xml2Data {
             return null;
         }
 
+        var seen = new HashSet<String>();
+        seen.add(data);
         boolean replaced;
         do {
             replaced = false;
@@ -413,7 +415,14 @@ class Xml2MavenPom extends Xml2Data {
                 processed_data.append(data.substring(last_end));
             }
 
-            data = processed_data.toString();
+            var resolved_data = processed_data.toString();
+            if (replaced && !seen.add(resolved_data)) {
+                // A property can refer to itself, directly or through a
+                // cycle. Leave the unresolved placeholder in place instead
+                // of repeatedly expanding the same values forever.
+                return resolved_data;
+            }
+            data = resolved_data;
         } while (replaced);
 
         return data;
