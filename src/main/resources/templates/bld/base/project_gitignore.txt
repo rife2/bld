@@ -9,6 +9,7 @@ lib/provided/
 lib/runtime/
 lib/standalone/
 lib/test/
+lib/.sandbox/
 
 # IDEA ignores
 
