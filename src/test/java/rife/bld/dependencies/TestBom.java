@@ -273,6 +273,42 @@ public class TestBom {
     }
 
     @Test
+    void testCyclicMavenPropertiesDoNotHang() throws Exception {
+        var server = createArtifactServer(Map.of(
+            "a:1.0.0", """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>a</artifactId>
+                    <version>1.0.0</version>
+                    <properties>
+                        <first>${second}</first>
+                        <second>${first}</second>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.example</groupId>
+                            <artifactId>b</artifactId>
+                            <version>${first}</version>
+                        </dependency>
+                    </dependencies>
+                </project>"""));
+        server.start();
+        try {
+            var resolver = new DependencyResolver(
+                VersionResolution.dummy(), ArtifactRetriever.instance(), serverRepositories(server),
+                new Dependency("com.example", "a", Version.parse("1.0.0")));
+
+            var dependencies = resolver.getDirectDependencies(compile);
+
+            assertEquals(Version.parse("${first}"), dependencies.get(new Dependency("com.example", "b")).version());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
     void testUncoveredVersionlessStillResolvesLatest() throws Exception {
         var server = createArtifactServer(Map.of(
                 "bom1:1.0.0", bomPom("bom1", "1.0.0", managed("a", "1.4.0")),
