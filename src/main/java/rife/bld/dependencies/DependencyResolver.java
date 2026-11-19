@@ -362,6 +362,18 @@ public class DependencyResolver {
         }).toList();
     }
 
+    // Some published documents start with a UTF-8 byte order mark, for
+    // instance dk.brics.automaton:automaton:1.11-8 on Maven Central. Maven
+    // reads them, but once the bytes are decoded into a string the mark is
+    // a character in front of the document and the XML parser refuses it
+    // with "Content is not allowed in prolog".
+    private static String stripByteOrderMark(String content) {
+        if (content != null && !content.isEmpty() && content.charAt(0) == '\uFEFF') {
+            return content.substring(1);
+        }
+        return content;
+    }
+
     private List<RepositoryArtifact> getArtifactLocations() {
         return repositories_.stream().map(repository -> new RepositoryArtifact(repository, repository.getArtifactLocation(dependency_))).toList();
     }
@@ -379,7 +391,7 @@ public class DependencyResolver {
         var retrieved = retrieveFirstAvailable(artifacts, "metadata locations");
 
         var xml = new Xml2MavenMetadata();
-        if (!xml.processXml(retrieved.content())) {
+        if (!xml.processXml(stripByteOrderMark(retrieved.content()))) {
             throw new DependencyXmlParsingErrorException(dependency_, retrieved.artifact().location(), xml.getErrors());
         }
 
@@ -465,6 +477,8 @@ public class DependencyResolver {
                 transient_failure = rememberFailure(transient_failure, new ArtifactRetrievalErrorException(dependency_, artifact.location(), e));
                 continue;
             }
+
+            content = stripByteOrderMark(content);
 
             var xml = new Xml2MavenPom(parent, resolution_, retriever_, repositories_);
             // first pass only extracts the properties from the pom, the second
