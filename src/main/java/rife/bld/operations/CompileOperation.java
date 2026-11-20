@@ -187,8 +187,11 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
             options.addAll(compileOptions());
 
             var compilation_task = compiler.getTask(null, file_manager, diagnostics, options, null, compilation_units);
-            if (!compilation_task.call()) {
+            var success = compilation_task.call();
+            if (!success) {
                 diagnostics_.addAll(diagnostics.getDiagnostics());
+            }
+            if (!success || !silent()) {
                 executeProcessDiagnostics(diagnostics);
             }
 
