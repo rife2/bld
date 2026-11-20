@@ -19,6 +19,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestJavadocOperation {
     @Test
+    void testJavadocOptionsLambda() {
+        var op = new JavadocOperation().javadocOptions(o -> o.docTitle("foo"));
+
+        assertEquals(2, op.javadocOptions().size());
+        assertTrue(op.javadocOptions().contains("-doctitle"));
+        assertTrue(op.javadocOptions().contains("foo"));
+    }
+
+    @Test
     void testInstantiation() {
         var operation = new JavadocOperation();
         assertNull(operation.buildDirectory());

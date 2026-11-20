@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 /**
@@ -297,6 +298,18 @@ public class JavadocOperation extends AbstractOperation<JavadocOperation> {
      */
     public JavadocOperation javadocOptions(List<String> options) {
         javadocOptions_.addAll(options);
+        return this;
+    }
+
+    /**
+     * Configures the javadoc options using a lambda configurator.
+     * <p>
+     * @param configurer the configurer for the javadoc options
+     * @return this operation instance
+     * @since 3.0.2
+     */
+    public JavadocOperation javadocOptions(Consumer<JavadocOptions> configurer) {
+        configurer.accept(javadocOptions_);
         return this;
     }
 

@@ -7,6 +7,7 @@ package rife.bld.operations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Create run-time images using the jlink tool.
@@ -61,6 +62,18 @@ public class JlinkOperation extends AbstractToolProviderOperation<JlinkOperation
      */
     public JlinkOperation jlinkOptions(Map<String, String> options) {
         jlinkOptions_.putAll(options);
+        return this;
+    }
+
+    /**
+     * Configures the jlink options using a lambda configurator.
+     * <p>
+     * @param configurer the configurer for the jlink options
+     * @return this operation instance
+     * @since 3.0.2
+     */
+    public JlinkOperation jlinkOptions(Consumer<JlinkOptions> configurer) {
+        configurer.accept(jlinkOptions_);
         return this;
     }
 

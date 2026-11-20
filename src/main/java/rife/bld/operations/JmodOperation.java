@@ -7,6 +7,7 @@ package rife.bld.operations;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Create JMOD files with the jmod tool.
@@ -106,6 +107,18 @@ public class JmodOperation extends AbstractToolProviderOperation<JmodOperation> 
      */
     public JmodOperation jmodOptions(Map<String, String> options) {
         jmodOptions_.putAll(options);
+        return this;
+    }
+
+    /**
+     * Configures the jmod options using a lambda configurator.
+     * <p>
+     * @param configurer the configurer for the jmod options
+     * @return this operation instance
+     * @since 3.0.2
+     */
+    public JmodOperation jmodOptions(Consumer<JmodOptions> configurer) {
+        configurer.accept(jmodOptions_);
         return this;
     }
 

@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Package self-contained Java applications with the jpackage tool.
@@ -86,6 +87,18 @@ public class JpackageOperation extends AbstractToolProviderOperation<JpackageOpe
      */
     public JpackageOperation jpackageOptions(Map<String, String> options) {
         jpackageOptions_.putAll(options);
+        return this;
+    }
+
+    /**
+     * Configures the jpackage options using a lambda configurator.
+     * <p>
+     * @param configurer the configurer for the jpackage options
+     * @return this operation instance
+     * @since 3.0.2
+     */
+    public JpackageOperation jpackageOptions(Consumer<JpackageOptions> configurer) {
+        configurer.accept(jpackageOptions_);
         return this;
     }
 

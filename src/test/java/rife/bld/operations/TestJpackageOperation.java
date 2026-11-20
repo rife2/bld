@@ -316,6 +316,15 @@ public class TestJpackageOperation {
     }
 
     @Test
+    void testJpackageOptionsLambda() {
+        var op = new JpackageOperation().jpackageOptions(o -> o.copyright("foo"));
+
+        assertEquals(1, op.jpackageOptions().size());
+        assertTrue(op.jpackageOptions().containsKey("--copyright"));
+        assertTrue(op.jpackageOptions().containsValue("foo"));
+    }
+
+    @Test
     void testIcon() {
         var options = new JpackageOptions().icon("foo");
         assertEquals("foo", options.get("--icon"));

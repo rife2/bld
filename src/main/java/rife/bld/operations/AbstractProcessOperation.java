@@ -11,6 +11,7 @@ import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -221,6 +222,18 @@ public abstract class AbstractProcessOperation<T extends AbstractProcessOperatio
      */
     public T javaOptions(List<String> options) {
         javaOptions_.addAll(options);
+        return (T) this;
+    }
+
+    /**
+     * Configures the java options using a lambda configurator.
+     * <p>
+     * @param configurer the configurer for the java options
+     * @return this operation instance
+     * @since 3.0.2
+     */
+    public T javaOptions(Consumer<JavaOptions> configurer) {
+        configurer.accept(javaOptions_);
         return (T) this;
     }
 
