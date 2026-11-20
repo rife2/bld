@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Compiles main and test sources in the relevant build directories.
@@ -503,6 +504,19 @@ public class CompileOperation extends AbstractOperation<CompileOperation> {
      */
     public CompileOperation compileOptions(List<String> options) {
         compileOptions_.addAll(options);
+        return this;
+    }
+
+
+    /**
+     * Configures the compile options using a lambda configurator.
+     * <p>
+     * @param configurer the configurer for the compile options
+     * @return this operation instance
+     * @since 3.0.2
+     */
+    public CompileOperation compileOptions(Consumer<JavacOptions> configurer) {
+        configurer.accept(compileOptions_);
         return this;
     }
 

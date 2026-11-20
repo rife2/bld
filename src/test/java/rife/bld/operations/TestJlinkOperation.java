@@ -156,6 +156,14 @@ public class TestJlinkOperation {
     }
 
     @Test
+    void testJlinkOptionsLambda() {
+        var op = new JlinkOperation().jlinkOptions(o -> o.stripDebug(true));
+
+        assertEquals(1, op.jlinkOptions().size());
+        assertTrue(op.jlinkOptions().containsKey("--strip-debug"));
+    }
+
+    @Test
     void testModulePath() {
         var options = new JlinkOptions();
         options.modulePath("foo");

@@ -253,6 +253,15 @@ public class TestJmodOperation {
     }
 
     @Test
+    void testJmodOptionsLambda() {
+        var op = new JmodOperation().jmodOptions(o -> o.config("foo"));
+
+        assertEquals(1, op.jmodOptions().size());
+        assertTrue(op.jmodOptions().containsKey("--config"));
+        assertTrue(op.jmodOptions().containsValue("foo"));
+    }
+
+    @Test
     void testLegalNotices() {
         var options = new JmodOptions().legalNotices("foo");
         assertEquals("foo", options.get("--legal-notices"));

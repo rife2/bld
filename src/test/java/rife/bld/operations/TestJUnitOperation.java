@@ -37,6 +37,14 @@ public class TestJUnitOperation {
     }
 
     @Test
+    void tesJavaOptionsLambda() {
+        var op = new JUnitOperation().javaOptions(o -> o.initialHeapSize(1));
+
+        assertEquals(1, op.javaOptions().size());
+        assertTrue(op.javaOptions_.contains("-Xms1m"));
+    }
+
+    @Test
     void testPopulation()
     throws Exception {
         var environment = Map.of("env1", "val1", "env2", "val2", "env3", "val3");

@@ -20,6 +20,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCompileOperation {
     @Test
+    void testCompileOptionsLambda() {
+        var op = new CompileOperation().compileOptions(o -> o.encoding("UTF-8"));
+
+        assertEquals(2, op.compileOptions().size());
+        assertTrue(op.compileOptions().contains("-encoding"));
+        assertTrue(op.compileOptions().contains("UTF-8"));
+    }
+
+    @Test
     void testInstantiation() {
         var operation = new CompileOperation();
         assertNull(operation.buildMainDirectory());
@@ -62,7 +71,8 @@ public class TestCompileOperation {
             .testSourceFiles(List.of(test_source_file1, test_source_file2))
             .mainSourceDirectories(List.of(main_source_directory1, main_source_directory2))
             .testSourceDirectories(List.of(test_source_directory1, test_source_directory2))
-            .compileOptions(List.of(compile_option1, compile_option2));
+            .compileOptions(List.of(compile_option1, compile_option2))
+            .compileOptions(o -> o.encoding("UTF-8"));
 
         assertEquals(build_main_directory, operation1.buildMainDirectory());
         assertEquals(build_test_directory, operation1.buildTestDirectory());
